@@ -233,9 +233,11 @@
 
         <div class="aboutme__grid">
           <figure class="aboutme__photo">
+            <!-- Loaded eagerly (not lazy) so it's ready to fade in smoothly with
+                 the rest of the About section instead of popping in late. -->
             <img src="assets/author.jpg"
                  alt="Elliot, founder of Silicon From Scratch, standing outdoors beside a railway."
-                 loading="lazy" decoding="async" />
+                 decoding="async" />
           </figure>
 
           <div class="prose aboutme__body">
