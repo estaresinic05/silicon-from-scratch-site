@@ -1,0 +1,647 @@
+/* =========================================================================
+   Silicon From Scratch — main.css
+   Phase 1: static foundation. Organized in sections so later phases
+   (animations, extra components) can be added cleanly.
+
+   CONTENTS
+   1. Design tokens (CSS variables)
+   2. Reset & base
+   3. Typography
+   4. Page background (engineering grid texture)
+   5. Layout helpers (container, section, kicker)
+   6. Buttons
+   7. Top bar / nav
+   8. Hero
+   9. The idea
+   10. Epigraph
+   11. Learn ladder (circuit-node path)
+   12. What you'll find
+   13. Tools
+   14. About
+   15. Footer
+   16. Motion (load fade-up) + prefers-reduced-motion
+   17. Responsive
+   ========================================================================= */
+
+/* ------------------------------------------------------------------ *
+   1. DESIGN TOKENS
+ * ------------------------------------------------------------------ */
+:root {
+  /* Color */
+  --bg:          #F7F8F3;   /* page background — matches the logo */
+  --paper:       #FCFCF9;   /* cards / raised surfaces */
+  --ink:         #23232A;   /* primary text */
+  --soft-ink:    #56565F;   /* secondary text */
+  --accent:      #6B2FC9;   /* purple, from the logo */
+  --accent-deep: #4F1F9E;   /* hover */
+  --hairline:    rgba(35, 35, 42, 0.12);
+  --grid-line:   rgba(35, 35, 42, 0.06);
+
+  /* Type families */
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body:    "Newsreader", Georgia, serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* Spacing scale */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-5: 3rem;
+  --space-6: 5rem;
+  --space-7: 8rem;
+
+  /* Layout */
+  --maxw:        72rem;   /* outer content width */
+  --maxw-prose:  44rem;   /* comfortable measure for body prose */
+  --radius:      14px;
+  --radius-sm:   10px;
+
+  /* Effects */
+  --shadow-soft: 0 1px 2px rgba(35, 35, 42, 0.04),
+                 0 8px 24px rgba(35, 35, 42, 0.06);
+  --shadow-lift: 0 2px 6px rgba(35, 35, 42, 0.06),
+                 0 16px 40px rgba(35, 35, 42, 0.10);
+
+  /* Motion */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ------------------------------------------------------------------ *
+   2. RESET & BASE
+ * ------------------------------------------------------------------ */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1.0625rem;          /* ~17px */
+  line-height: 1.65;
+  color: var(--ink);
+  background-color: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img { max-width: 100%; height: auto; display: block; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-deep); }
+
+/* Visible, on-brand focus ring for keyboard users */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Skip link for keyboard / screen-reader users */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--ink);
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 var(--radius-sm) 0;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  z-index: 100;
+}
+.skip-link:focus {
+  left: 0;
+  color: #fff;
+}
+
+/* ------------------------------------------------------------------ *
+   3. TYPOGRAPHY
+ * ------------------------------------------------------------------ */
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 var(--space-3);
+}
+
+h1 { font-size: clamp(2.4rem, 6vw, 4rem); }
+h2 { font-size: clamp(1.9rem, 4vw, 2.8rem); }
+h3 { font-size: clamp(1.15rem, 2vw, 1.4rem); letter-spacing: -0.01em; }
+
+p { margin: 0 0 var(--space-3); }
+
+/* Kicker: mono, uppercase, letter-spaced label above section headings */
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  margin: 0 0 var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+/* Small tick mark before kicker text, echoing a circuit lead */
+.kicker::before {
+  content: "";
+  width: 1.5rem;
+  height: 1px;
+  background: var(--accent);
+  display: inline-block;
+}
+
+/* Inline code / tool names */
+code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: rgba(107, 47, 201, 0.07);
+  color: var(--accent-deep);
+  padding: 0.12em 0.4em;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ *
+   4. PAGE BACKGROUND — faint engineering-grid texture
+ * ------------------------------------------------------------------ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right,  var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ------------------------------------------------------------------ *
+   5. LAYOUT HELPERS
+ * ------------------------------------------------------------------ */
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--space-3);
+}
+
+.section {
+  padding-block: var(--space-7);
+  border-top: 1px solid var(--hairline);
+}
+
+.section__head { max-width: var(--maxw-prose); margin-bottom: var(--space-5); }
+.section__note {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--soft-ink);
+  margin-top: calc(var(--space-2) * -1 + 0.25rem);
+}
+
+.prose { max-width: var(--maxw-prose); }
+.prose p { color: var(--soft-ink); }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+/* ------------------------------------------------------------------ *
+   6. BUTTONS
+ * ------------------------------------------------------------------ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  padding: 0.9rem 1.4rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.18s var(--ease),
+              box-shadow 0.18s var(--ease),
+              background-color 0.18s var(--ease),
+              border-color 0.18s var(--ease),
+              color 0.18s var(--ease);
+}
+
+.btn--primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn--primary:hover {
+  background: var(--accent-deep);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+
+.btn--ghost {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--hairline);
+}
+.btn--ghost:hover {
+  color: var(--accent-deep);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft);
+}
+
+/* ------------------------------------------------------------------ *
+   7. TOP BAR / NAV
+ * ------------------------------------------------------------------ */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: saturate(1.2) blur(8px);
+  border-bottom: 1px solid var(--hairline);
+}
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  height: 4rem;
+}
+
+.wordmark {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.wordmark:hover { color: var(--ink); }
+.wordmark__dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 2.5vw, 2.2rem);
+}
+.nav a {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: var(--soft-ink);
+  position: relative;
+  padding: 0.25rem 0;
+}
+.nav a:hover { color: var(--accent-deep); }
+/* Animated hairline underline on hover/focus */
+.nav a::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -2px;
+  width: 100%; height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s var(--ease);
+}
+.nav a:hover::after,
+.nav a:focus-visible::after { transform: scaleX(1); }
+
+/* Mobile menu toggle — hidden on desktop */
+.nav-toggle {
+  display: none;
+  width: 2.6rem; height: 2.6rem;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.nav-toggle__bars,
+.nav-toggle__bars::before,
+.nav-toggle__bars::after {
+  content: "";
+  display: block;
+  width: 18px; height: 2px;
+  background: var(--ink);
+  border-radius: 2px;
+  transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+.nav-toggle__bars::before { transform: translateY(-6px); }
+.nav-toggle__bars::after  { transform: translateY(4px); }
+
+/* ------------------------------------------------------------------ *
+   8. HERO
+ * ------------------------------------------------------------------ */
+.hero {
+  padding-block: clamp(var(--space-5), 8vw, var(--space-7));
+  text-align: center;
+}
+.hero__logo {
+  width: min(620px, 90%);
+  margin: 0 auto var(--space-2);
+  /* Logo has a baked-in #F7F8F3 background; page bg matches so no visible box */
+}
+.hero h1 {
+  max-width: 18ch;
+  margin-inline: auto;
+}
+.hero h1 .accent { color: var(--accent); }
+.hero__intro {
+  max-width: 46ch;
+  margin: 0 auto var(--space-4);
+  font-size: 1.2rem;
+  color: var(--soft-ink);
+}
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+/* ------------------------------------------------------------------ *
+   9. THE IDEA
+ * ------------------------------------------------------------------ */
+.idea .prose p {
+  font-size: 1.18rem;
+  color: var(--ink);
+}
+.idea .prose p + p { color: var(--soft-ink); font-size: 1.0625rem; }
+
+/* ------------------------------------------------------------------ *
+   10. EPIGRAPH — centered italic pull-quote
+ * ------------------------------------------------------------------ */
+.epigraph {
+  padding-block: var(--space-6);
+  border-top: 1px solid var(--hairline);
+}
+.epigraph blockquote {
+  max-width: 38ch;
+  margin: 0 auto;
+  text-align: center;
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.4;
+  color: var(--ink);
+}
+/* Small purple node marks framing the quote, echoing the circuit motif */
+.epigraph blockquote::before,
+.epigraph blockquote::after {
+  content: "";
+  display: block;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin: 0 auto var(--space-3);
+}
+.epigraph blockquote::after { margin: var(--space-3) auto 0; }
+
+/* ------------------------------------------------------------------ *
+   11. LEARN LADDER — circuit-node path
+ * ------------------------------------------------------------------ */
+.ladder {
+  position: relative;
+  max-width: 50rem;
+  margin-top: var(--space-5);
+  padding-left: 2.5rem;
+}
+/* Vertical connector line */
+.ladder::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0,
+    var(--hairline) 1.5rem,
+    var(--hairline) calc(100% - 1.5rem),
+    transparent 100%);
+}
+
+.step {
+  position: relative;
+  padding: 0 0 var(--space-5) 0;
+}
+.step:last-child { padding-bottom: 0; }
+
+/* The circuit node dot on the connector line */
+.step::before {
+  content: "";
+  position: absolute;
+  left: calc(-2.5rem + 1px);
+  top: 0.4rem;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 4px var(--bg);
+}
+/* Filled node for the active/first step */
+.step--active::before { background: var(--accent); }
+
+.step__tag {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  display: inline-block;
+  margin-bottom: 0.4rem;
+}
+.step--planned .step__tag { color: var(--soft-ink); }
+.step h3 { margin-bottom: 0.5rem; }
+.step p { color: var(--soft-ink); margin: 0; max-width: 60ch; }
+
+/* ------------------------------------------------------------------ *
+   12. WHAT YOU'LL FIND
+ * ------------------------------------------------------------------ */
+.findings {
+  list-style: none;
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+.finding {
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+.finding:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
+}
+.finding__num {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  display: block;
+  margin-bottom: var(--space-2);
+}
+.finding h3 { margin-bottom: 0.5rem; }
+.finding p { color: var(--soft-ink); margin: 0; }
+
+/* ------------------------------------------------------------------ *
+   13. TOOLS
+ * ------------------------------------------------------------------ */
+.tools .prose p { font-size: 1.12rem; }
+
+/* ------------------------------------------------------------------ *
+   14. ABOUT
+ * ------------------------------------------------------------------ */
+.about .prose p { color: var(--soft-ink); }
+.about__actions { margin-top: var(--space-4); }
+
+/* ------------------------------------------------------------------ *
+   15. FOOTER
+ * ------------------------------------------------------------------ */
+.footer {
+  border-top: 1px solid var(--hairline);
+  padding-block: var(--space-5);
+}
+.footer__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.footer a {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: var(--soft-ink);
+}
+.footer a:hover { color: var(--accent-deep); }
+
+/* ------------------------------------------------------------------ *
+   16. MOTION — gentle staggered fade-up on initial load
+   (Phase 1: load-only. No scroll-driven animation.)
+ * ------------------------------------------------------------------ */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Stagger the above-the-fold hero on first paint */
+.hero > * {
+  opacity: 0;
+  animation: fade-up 0.7s var(--ease) forwards;
+}
+.hero__logo    { animation-delay: 0.05s; }
+.hero h1       { animation-delay: 0.18s; }
+.hero__intro   { animation-delay: 0.31s; }
+.hero__actions { animation-delay: 0.44s; }
+
+/* Respect users who prefer reduced motion: no movement anywhere. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .hero > * { opacity: 1; transform: none; }
+}
+
+/* ------------------------------------------------------------------ *
+   17. RESPONSIVE
+ * ------------------------------------------------------------------ */
+
+/* Tablet and below: collapse nav into a toggle menu */
+@media (max-width: 768px) {
+  .nav-toggle { display: inline-flex; }
+
+  .nav {
+    position: absolute;
+    top: 4rem;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--hairline);
+    padding: var(--space-2) var(--space-3) var(--space-3);
+    box-shadow: var(--shadow-soft);
+
+    /* Hidden by default; revealed via .is-open (JS toggle) */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: opacity 0.2s var(--ease),
+                transform 0.2s var(--ease),
+                visibility 0.2s var(--ease);
+  }
+  .nav.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .nav a {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .nav a:last-child { border-bottom: 0; }
+  .nav a::after { display: none; }
+
+  /* Active toggle becomes an X */
+  .nav-toggle[aria-expanded="true"] .nav-toggle__bars {
+    background: transparent;
+  }
+  .nav-toggle[aria-expanded="true"] .nav-toggle__bars::before {
+    transform: translateY(0) rotate(45deg);
+  }
+  .nav-toggle[aria-expanded="true"] .nav-toggle__bars::after {
+    transform: translateY(-2px) rotate(-45deg);
+  }
+
+  /* Tighter vertical rhythm on smaller screens */
+  :root { --space-7: 5rem; --space-6: 3.5rem; }
+
+  .findings { grid-template-columns: 1fr; }
+}
+
+/* Phones */
+@media (max-width: 480px) {
+  body { font-size: 1rem; }
+  .ladder { padding-left: 2rem; }
+  .step::before { left: calc(-2rem + 1px); }
+  .hero__actions .btn { width: 100%; justify-content: center; }
+}

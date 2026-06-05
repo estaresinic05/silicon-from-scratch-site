@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Silicon From Scratch — Learn how processors are actually built</title>
+  <meta name="description"
+        content="A learning hub for anyone curious about how the processors inside modern devices are designed and built — start with a single logic block and climb to a working CPU." />
+
+  <!-- Favicon uses the logo (relative path — domain-ready) -->
+  <link rel="icon" href="assets/logo.jpg" />
+
+  <!-- Google Fonts: Bricolage Grotesque (display), Newsreader (body), JetBrains Mono (labels/code) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Site styles (relative path — domain-ready) -->
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — home">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="#learn">Learn</a>
+        <a href="#inside">Inside</a>
+        <a href="#tools">Tools</a>
+        <a href="#about">About</a>
+        <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+           target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <button class="nav-toggle" id="nav-toggle"
+              aria-label="Toggle navigation menu"
+              aria-expanded="false" aria-controls="primary-nav">
+        <span class="nav-toggle__bars" aria-hidden="true"></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ================================ HERO ============================= -->
+    <section class="hero container" aria-labelledby="hero-title">
+      <img class="hero__logo" src="assets/logo.jpg"
+           alt="Silicon From Scratch — a circuit-board emblem with an upward arrow" />
+      <h1 id="hero-title">
+        Learn how processors are <span class="accent">actually built</span>.
+      </h1>
+      <p class="hero__intro">
+        Silicon From Scratch is a learning hub for anyone curious about how the
+        processors inside modern devices are designed and built — and who would
+        rather build one than just read about it.
+      </p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#learn">Start with the ALU</a>
+        <a class="btn btn--ghost"
+           href="https://github.com/estaresinic05/Silicon-From-Scratch"
+           target="_blank" rel="noopener">View on GitHub</a>
+      </div>
+    </section>
+
+    <!-- =============================== THE IDEA ========================== -->
+    <section class="section idea" aria-labelledby="idea-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">The idea</p>
+          <h2 id="idea-title">Dive in.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            The whole approach is built around one idea. You don't need a degree,
+            an expensive software license, or anyone's permission to get started.
+            Start with a single logic block, watch it come alive in a waveform,
+            then climb your way up to a complete CPU.
+          </p>
+          <p>
+            This is for students, hobbyists, career-switchers, tinkerers, and the
+            merely curious — young or old. If you've ever wondered how a sliver of
+            sand ends up running your code, this is for you.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================== EPIGRAPH ========================== -->
+    <section class="epigraph" aria-label="Pull quote">
+      <div class="container">
+        <blockquote>
+          You don't learn to ride a bike by reading about it; you strap on your
+          helmet and push off, finding your balance as you go, with hope that your
+          leap into the unknown will take you to somewhere you couldn't have
+          reached standing still.
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- ================================ LEARN =========================== -->
+    <section class="section learn" id="learn" aria-labelledby="learn-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Start here</p>
+          <h2 id="learn-title">A path from one logic block to a working CPU.</h2>
+          <p class="section__note">Each project assumes only what came before it.</p>
+        </div>
+
+        <ol class="ladder">
+          <li class="step step--active">
+            <span class="step__tag">Beginner — start here</span>
+            <h3>ALU</h3>
+            <p>
+              A parameterized N-bit ALU supporting AND, OR, ADD, SUB, SLT, NOR,
+              and NAND. The single best place to understand how arithmetic and
+              logic are done in hardware.
+            </p>
+          </li>
+          <li class="step">
+            <span class="step__tag">Intermediate</span>
+            <h3>Single-Cycle RV32I CPU</h3>
+            <p>
+              A full RISC-V processor — datapath, control, register file, and
+              memory working together to execute real programs. Verified against
+              a golden model and a hand-derived final-state oracle.
+            </p>
+          </li>
+          <li class="step step--planned">
+            <span class="step__tag">Advanced — planned</span>
+            <h3>Pipelined CPU</h3>
+            <p>
+              A 5-stage pipeline with hazard detection and forwarding — the leap
+              from "it works" to "it works fast."
+            </p>
+          </li>
+          <li class="step step--planned">
+            <span class="step__tag">Advanced — planned</span>
+            <h3>Physical Design</h3>
+            <p>
+              Schematic capture, layout, transistor-level simulation, synthesis,
+              and timing — taking a design all the way down to silicon.
+            </p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ========================== WHAT YOU'LL FIND ====================== -->
+    <section class="section findings-section" id="inside" aria-labelledby="inside-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">What you'll find</p>
+          <h2 id="inside-title">Every design is built to be opened up.</h2>
+        </div>
+
+        <ul class="findings">
+          <li class="finding">
+            <span class="finding__num">01 / RTL</span>
+            <h3>The design itself</h3>
+            <p>
+              Synthesizable Verilog/SystemVerilog for the datapath, control unit,
+              register file, ALU, and memory.
+            </p>
+          </li>
+          <li class="finding">
+            <span class="finding__num">02 / Testbenches</span>
+            <h3>Proof it's correct</h3>
+            <p>
+              Self-checking verification, including lockstep comparison against an
+              independent golden model.
+            </p>
+          </li>
+          <li class="finding">
+            <span class="finding__num">03 / Waveforms</span>
+            <h3>See it happen</h3>
+            <p>
+              VCD traces that let you watch behavior cycle by cycle.
+            </p>
+          </li>
+          <li class="finding">
+            <span class="finding__num">04 / Programs</span>
+            <h3>What it runs</h3>
+            <p>
+              RISC-V machine-code test programs exercising arithmetic, logic,
+              memory, and control flow.
+            </p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================================ TOOLS =========================== -->
+    <section class="section tools" id="tools" aria-labelledby="tools-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Tools</p>
+          <h2 id="tools-title">You can start for free.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            The core projects run on free, open-source tools — no licenses, no
+            cost: <code>Icarus Verilog</code> for simulation and
+            <code>GTKWave</code> / <code>EPWave</code> for inspecting waveforms.
+            The advanced physical-design track uses the professional
+            <code>Cadence</code> suite — useful to know it exists, but you don't
+            need it to learn the fundamentals or to get started.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================ ABOUT =========================== -->
+    <section class="section about" id="about" aria-labelledby="about-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">About</p>
+          <h2 id="about-title">Built to be explored.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            These projects began as one person's way to deepen their understanding
+            of computer architecture and the complete digital design flow — from a
+            line of Verilog to a physical layout. Along the way it became clear the
+            material could help anyone else curious about the field. That's what
+            this hub is for.
+          </p>
+          <div class="about__actions">
+            <a class="btn btn--primary"
+               href="https://github.com/estaresinic05/Silicon-From-Scratch"
+               target="_blank" rel="noopener">
+              Explore the code on GitHub
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+  </footer>
+
+  <!-- Minimal vanilla JS (mobile nav toggle) -->
+  <script src="scripts/main.js" defer></script>
+</body>
+</html>
