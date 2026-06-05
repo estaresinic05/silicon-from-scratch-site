@@ -593,25 +593,41 @@ body::before {
 .footer a:hover { color: var(--accent-deep); }
 
 /* ------------------------------------------------------------------ *
-   16. MOTION — gentle staggered fade-up on initial load
-   (Phase 1: load-only. No scroll-driven animation.)
+   16. MOTION — Phase 2: scroll-driven reveals (GSAP + ScrollTrigger)
+   CSS here defines ONLY the pre-reveal hidden state, and ONLY when the
+   `js` class is present on <html>. Without JavaScript the whole page is
+   fully visible. GSAP animates elements into place (scripts/scroll.js).
  * ------------------------------------------------------------------ */
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 
-/* Stagger the above-the-fold hero on first paint */
-.hero > * {
+/* Reveal targets start hidden only when JS is active (prevents a flash,
+   while staying fully visible if JS never runs). */
+html.js .hero > *,
+html.js .section__head > *,
+html.js .idea .prose > *,
+html.js .tools .prose > *,
+html.js .epigraph blockquote,
+html.js .ladder .step,
+html.js .findings .finding,
+html.js .aboutme__photo,
+html.js .aboutme__body > * {
   opacity: 0;
-  animation: fade-up 0.7s var(--ease) forwards;
 }
-.hero__logo    { animation-delay: 0.05s; }
-.hero h1       { animation-delay: 0.18s; }
-.hero__intro   { animation-delay: 0.31s; }
-.hero__actions { animation-delay: 0.44s; }
 
-/* Respect users who prefer reduced motion: no movement anywhere. */
+/* Learn path: the connector line is "drawn" downward (scaleY from the top)
+   and the node dots "pop" in — both driven by GSAP via CSS variables.
+   Defaults (1) mean fully drawn, so without JS the path looks normal. */
+.ladder::before {
+  transform: scaleY(var(--line-progress, 1));
+  transform-origin: top center;
+}
+.step::before {
+  transform: scale(var(--node-scale, 1));
+}
+html.js .ladder { --line-progress: 0; }
+html.js .ladder .step { --node-scale: 0; }
+
+/* Reduced motion: never hide, never move — show the final state instantly.
+   (scripts/scroll.js also disables all animation in this case.) */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *,
@@ -621,7 +637,21 @@ body::before {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
-  .hero > * { opacity: 1; transform: none; }
+  html.js .hero > *,
+  html.js .section__head > *,
+  html.js .idea .prose > *,
+  html.js .tools .prose > *,
+  html.js .epigraph blockquote,
+  html.js .ladder .step,
+  html.js .findings .finding,
+  html.js .aboutme__photo,
+  html.js .aboutme__body > * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  /* Show the Learn path fully, undrawn-state disabled. */
+  html.js .ladder { --line-progress: 1 !important; }
+  html.js .ladder .step { --node-scale: 1 !important; }
 }
 
 /* ------------------------------------------------------------------ *

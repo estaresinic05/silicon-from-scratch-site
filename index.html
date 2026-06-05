@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- Progressive enhancement: mark that JS is available BEFORE first paint, so the
+       "hidden-before-reveal" styles only apply when JS can reveal them again.
+       Without JS this never runs and the full page stays visible. -->
+  <script>document.documentElement.classList.add("js");</script>
+
   <title>Silicon From Scratch — Learn how processors are actually built</title>
   <meta name="description"
         content="A learning hub for anyone curious about how the processors inside modern devices are designed and built — start with a single logic block and climb to a working CPU." />
@@ -287,5 +292,12 @@
 
   <!-- Minimal vanilla JS (mobile nav toggle) -->
   <script src="scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger from CDN (free, no build step). External URLs are fine
+       here — only internal links must stay relative for custom-domain readiness. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+  <!-- Scroll-driven motion (Phase 2). Relative path — domain-ready. -->
+  <script src="scripts/scroll.js" defer></script>
 </body>
 </html>
