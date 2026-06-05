@@ -521,10 +521,54 @@ body::before {
 .tools .prose p { font-size: 1.12rem; }
 
 /* ------------------------------------------------------------------ *
-   14. ABOUT
+   14. ABOUT ME
  * ------------------------------------------------------------------ */
-.about .prose p { color: var(--soft-ink); }
+.aboutme__grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) 1fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: start;
+}
+
+/* Circular portrait with a faint accent ring + a circuit-node dot on the rim */
+.aboutme__photo {
+  position: relative;
+  margin: 0;
+  width: 100%;
+}
+.aboutme__photo img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: 50% 50%;   /* crop centred so the face sits upper-middle */
+  border-radius: 50%;
+  border: 1px solid var(--hairline);
+  box-shadow: 0 0 0 7px var(--paper),
+              0 0 0 8px rgba(107, 47, 201, 0.18),
+              var(--shadow-soft);
+}
+.aboutme__photo::after {
+  content: "";
+  position: absolute;
+  right: 8%;
+  bottom: 11%;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--bg);
+}
+
+.aboutme__body p { color: var(--soft-ink); }
+.aboutme__body p:first-child {        /* the greeting reads as a lead-in */
+  font-size: 1.18rem;
+  color: var(--ink);
+}
 .about__actions { margin-top: var(--space-4); }
+
+@media (max-width: 768px) {
+  .aboutme__grid { grid-template-columns: 1fr; justify-items: center; text-align: left; }
+  .aboutme__photo { max-width: 220px; margin-inline: auto; }
+}
 
 /* ------------------------------------------------------------------ *
    15. FOOTER
