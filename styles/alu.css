@@ -1,0 +1,229 @@
+/* =========================================================================
+   Silicon From Scratch — alu.css
+   Page-specific components for the ALU deep-dive (alu.html). Built entirely on
+   the design tokens defined in main.css (loaded first): colours, fonts, spacing
+   scale, radii, shadows, --ease. Keep this file to things the home page never
+   needed — figures, data tables, code blocks, the doc hero, disclosures.
+   ========================================================================= */
+
+/* ------------------------------------------------------------------ *
+   DOC HERO — a calmer, left-aligned hero for a content page
+ * ------------------------------------------------------------------ */
+.doc-hero {
+  padding-block: clamp(var(--space-5), 7vw, var(--space-6));
+  max-width: var(--maxw-prose);
+}
+.backlink {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--soft-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: var(--space-3);
+}
+.backlink:hover { color: var(--accent-deep); }
+
+.doc-hero__tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  margin: 0 0 var(--space-2);
+}
+.doc-hero h1 { margin-bottom: var(--space-3); }
+.doc-hero__lead {
+  font-size: 1.22rem;
+  color: var(--soft-ink);
+  margin-bottom: var(--space-4);
+}
+.doc-hero__lead strong { color: var(--ink); font-weight: 600; }
+.doc-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Sub-headings inside long sections (e.g. "The control vector") */
+.subhead {
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-3);
+}
+
+/* Small muted note paragraph (e.g. the `make` requirement) */
+.prose--note {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: var(--soft-ink);
+  margin-top: var(--space-2);
+}
+
+/* ------------------------------------------------------------------ *
+   FIGURES — the hand-drawn schematics sit on a paper card so the white
+   drawing background blends into a deliberate panel rather than floating.
+ * ------------------------------------------------------------------ */
+.figure {
+  margin: var(--space-5) 0 0;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: clamp(var(--space-2), 3vw, var(--space-4));
+  box-shadow: var(--shadow-soft);
+}
+.figure img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  margin-inline: auto;
+}
+/* The ripple-carry diagram is tall/portrait — cap its width so it doesn't
+   tower over the reading column. */
+.figure--tall img { max-width: 460px; }
+.figure figcaption {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--hairline);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--soft-ink);
+  text-align: left;
+}
+
+/* ------------------------------------------------------------------ *
+   DATA TABLES
+ * ------------------------------------------------------------------ */
+.table-wrap {
+  margin-top: var(--space-4);
+  overflow-x: auto;                 /* horizontal scroll on narrow phones */
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: var(--shadow-soft);
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--hairline);
+  vertical-align: top;
+}
+.data-table thead th {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  background: rgba(107, 47, 201, 0.04);
+  white-space: nowrap;
+}
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table tbody tr:hover { background: rgba(35, 35, 42, 0.02); }
+.data-table code { white-space: nowrap; }
+.data-table .yes {
+  color: var(--accent);
+  font-weight: 600;
+  text-align: center;
+}
+.data-table--compact th,
+.data-table--compact td {
+  padding: 0.5rem 0.7rem;
+  font-size: 0.88rem;
+}
+
+/* ------------------------------------------------------------------ *
+   CODE BLOCKS — multi-line <pre>; inline <code> is already styled in main.css
+ * ------------------------------------------------------------------ */
+.code {
+  margin: var(--space-4) 0 0;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-3) var(--space-4);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--ink);
+}
+.code code {
+  /* reset the inline-code chrome from main.css inside a block */
+  background: none;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  white-space: pre;
+}
+.code--tree { color: var(--soft-ink); }
+.code--banner {
+  color: var(--accent-deep);
+  background: rgba(107, 47, 201, 0.05);
+  border-color: rgba(107, 47, 201, 0.18);
+}
+
+/* ------------------------------------------------------------------ *
+   DISCLOSURE — <details> for the long control decode + manual build
+ * ------------------------------------------------------------------ */
+.disclosure {
+  margin-top: var(--space-4);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+.disclosure > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--accent-deep);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.disclosure > summary::-webkit-details-marker { display: none; }
+.disclosure > summary::before {
+  content: "+";
+  font-size: 1.1em;
+  line-height: 1;
+  color: var(--accent);
+  transition: transform 0.2s var(--ease);
+}
+.disclosure[open] > summary::before { content: "\2212"; } /* minus */
+.disclosure > summary:hover { color: var(--accent); }
+.disclosure__body {
+  padding: 0 var(--space-4) var(--space-4);
+}
+.disclosure__body .table-wrap { box-shadow: none; }
+
+/* ------------------------------------------------------------------ *
+   NEXT STEP — a gently tinted closing band
+ * ------------------------------------------------------------------ */
+.nextstep {
+  background:
+    linear-gradient(to bottom, rgba(107, 47, 201, 0.03), transparent);
+}
+
+/* ------------------------------------------------------------------ *
+   RESPONSIVE
+ * ------------------------------------------------------------------ */
+@media (max-width: 768px) {
+  .doc-hero__lead { font-size: 1.1rem; }
+  .doc-hero__actions .btn,
+  .nextstep .doc-hero__actions .btn { flex: 1 1 auto; justify-content: center; }
+  .figure--tall img { max-width: 100%; }
+}

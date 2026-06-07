@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. Without JS the
+       whole page stays visible. -->
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>The ALU — Silicon From Scratch</title>
+  <meta name="description"
+        content="A deep dive into the parameterized N-bit Arithmetic Logic Unit — built from 1-bit slices in the classic ripple-carry style, the first project on the path from one logic block to a working CPU." />
+
+  <link rel="icon" href="assets/logo.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles + this page's components (relative paths — domain-ready) -->
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/alu.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="index.html" aria-label="Silicon From Scratch — home">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="index.html#learn">Learn</a>
+        <a href="index.html#inside">Inside</a>
+        <a href="index.html#tools">Tools</a>
+        <a href="index.html#about">About</a>
+        <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+           target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <button class="nav-toggle" id="nav-toggle"
+              aria-label="Toggle navigation menu"
+              aria-expanded="false" aria-controls="primary-nav">
+        <span class="nav-toggle__bars" aria-hidden="true"></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================== DOC HERO ============================ -->
+    <section class="doc-hero container" aria-labelledby="alu-title">
+      <a class="backlink" href="index.html#learn">
+        <span aria-hidden="true">&larr;</span> Back to the path
+      </a>
+      <p class="doc-hero__tag">Project 01 · Beginner — start here</p>
+      <h1 id="alu-title">The Arithmetic&nbsp;Logic&nbsp;Unit</h1>
+      <p class="doc-hero__lead">
+        The ALU is where a processor actually does arithmetic and logic — and it's
+        the clearest place to see a real circuit emerge from nothing but gates.
+        This one is a parameterized, fully combinational <strong>N-bit ALU</strong>
+        built from 1-bit slices in the classic Patterson &amp; Hennessy style, so
+        you can trace every wire from a single bit up to a complete 32-bit
+        operation.
+      </p>
+      <div class="doc-hero__actions">
+        <a class="btn btn--primary"
+           href="https://github.com/estaresinic05/Silicon-From-Scratch"
+           target="_blank" rel="noopener">View the code on GitHub</a>
+        <a class="btn btn--ghost" href="#architecture">See the architecture</a>
+      </div>
+    </section>
+
+    <!-- ============================== OVERVIEW =========================== -->
+    <section class="section" aria-labelledby="overview-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Overview</p>
+          <h2 id="overview-title">What you're looking at.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            The least-significant bits are identical <code>alu_slice</code> blocks
+            chained together as a ripple-carry adder, terminated by a dedicated
+            <code>alu_msb</code> block that produces the overflow flag and the
+            signed set-less-than signal. There's no clock and no
+            synthesis-specific magic — the whole thing is combinational logic you
+            could, in principle, draw out by hand.
+          </p>
+          <p>
+            It's verified by a self-checking testbench that applies directed
+            edge-case vectors and validates <code>result</code>, <code>ovf</code>,
+            and <code>zero</code> against an independent behavioral model — so you
+            can trust that what you're reading actually works, not just that it
+            compiles.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ ARCHITECTURE ========================= -->
+    <section class="section" id="architecture" aria-labelledby="arch-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Architecture</p>
+          <h2 id="arch-title">A ripple-carry chain.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            Picture 32 one-bit blocks stacked on top of each other. Each one
+            computes a single bit of the result and passes its carry up to the
+            next — the carry "ripples" from the bottom of the chain to the top,
+            exactly like adding numbers by hand, column by column. Bits 0 through
+            30 are identical <code>alu_slice</code> blocks; bit 31 is a special
+            <code>alu_msb</code> block that also generates overflow and the signed
+            comparison signal.
+          </p>
+          <p>
+            The clever part is the initial carry-in: it's driven by
+            <code>Bnegate</code>. Setting it to 1 (and inverting operand B) turns
+            the very same adder into a subtractor — <code>a + ~b + 1 = a&nbsp;-&nbsp;b</code>
+            — with no separate subtraction hardware at all.
+          </p>
+        </div>
+
+        <figure class="figure figure--tall">
+          <img src="assets/architecture.jpg"
+               alt="A vertical chain of 32 one-bit ALU blocks (ALU0 at the top through ALU31 at the bottom). Each block's carry-out feeds the next block's carry-in. The Ainvert, Bnegate, and operation control lines run down the left and feed every block. Every block's result bit feeds a large NOR gate on the right that outputs zero, and the bottom block (ALU31) outputs set and overflow."
+               loading="lazy" decoding="async" />
+          <figcaption>
+            The 32-bit ripple-carry chain. Carry-out of each slice feeds the
+            carry-in of the next; all result bits feed a NOR gate that produces
+            <code>zero</code>; and the MSB (ALU31) produces <code>set</code> and
+            <code>overflow</code>. The MSB's <code>set</code> is routed all the way
+            back to the <code>less</code> input of slice&nbsp;0 — that's what makes
+            signed "set less than" land a 1 in bit 0 and 0 everywhere else.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============================ INSIDE A SLICE ======================= -->
+    <section class="section" id="slice" aria-labelledby="slice-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Inside one bit</p>
+          <h2 id="slice-title">A slice is just a few gates and muxes.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            Zoom into a single bit and the whole design stops being intimidating.
+            Operand <code>a</code> and operand <code>b</code> each pass through a
+            2:1 multiplexer that can optionally invert them (<code>Ainvert</code> /
+            <code>Binvert</code>). Those operands then feed an AND gate, an OR
+            gate, and a full adder <em>in parallel</em>. Finally a 4:1 multiplexer
+            picks which of those — AND, OR, the sum, or the <code>less</code>
+            signal — becomes this bit's output.
+          </p>
+          <p>
+            Every bit but the last uses this exact slice. The most-significant bit
+            adds one thing on top: an overflow-detection block, plus the
+            <code>set</code> output that gets fed back down to bit&nbsp;0 for signed
+            comparison.
+          </p>
+        </div>
+
+        <figure class="figure figure--wide">
+          <img src="assets/slice-architecture.jpg"
+               alt="Two side-by-side schematics of a 1-bit ALU slice. Each shows operand a and b entering 2:1 inverting multiplexers controlled by Ainvert and Binvert, feeding an AND gate, an OR gate, and a full adder, whose outputs enter a 4:1 result multiplexer selected by the operation control. The left schematic outputs a carry-out. The right schematic adds an overflow-detection block and a set output."
+               loading="lazy" decoding="async" />
+          <figcaption>
+            <strong>Left:</strong> the generic <code>alu_slice</code> used for bits
+            0&nbsp;…&nbsp;N&minus;2. <strong>Right:</strong> the <code>alu_msb</code>
+            for bit N&minus;1, which adds the overflow-detection block and the
+            <code>set</code> output used for signed comparison.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ========================= SUPPORTED OPERATIONS ==================== -->
+    <section class="section" id="operations" aria-labelledby="ops-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Supported operations</p>
+          <h2 id="ops-title">Seven operations, one datapath.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            A 4-bit <code>control</code> vector drives the whole ALU. These seven
+            operations are the ones the control unit actually issues; the same
+            gates quietly produce a handful of other combinations too (see the
+            full decode further down).
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Operation</th><th>control[3:0]</th><th>Function</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>AND</td>  <td><code>0000</code></td><td><code>a &amp; b</code></td></tr>
+              <tr><td>OR</td>   <td><code>0001</code></td><td><code>a | b</code></td></tr>
+              <tr><td>ADD</td>  <td><code>0010</code></td><td><code>a + b</code></td></tr>
+              <tr><td>SUB</td>  <td><code>0110</code></td><td><code>a - b</code></td></tr>
+              <tr><td>SLT</td>  <td><code>0111</code></td><td>signed <code>a &lt; b</code> (1 or 0)</td></tr>
+              <tr><td>NOR</td>  <td><code>1100</code></td><td><code>~(a | b)</code></td></tr>
+              <tr><td>NAND</td> <td><code>1101</code></td><td><code>~(a &amp; b)</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================= KEY DESIGN DECISIONS ==================== -->
+    <section class="section" id="decisions" aria-labelledby="decisions-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Key ideas</p>
+          <h2 id="decisions-title">The four tricks that make it work.</h2>
+        </div>
+
+        <ul class="findings">
+          <li class="finding">
+            <span class="finding__num">01 / Reuse</span>
+            <h3>Built from 1-bit slices</h3>
+            <p>
+              <code>alu_full</code> instantiates N&minus;1 identical
+              <code>alu_slice</code> modules and one <code>alu_msb</code> via a
+              <code>generate</code> loop, so the design scales to any width through
+              the <code>N</code> parameter without touching the source.
+            </p>
+          </li>
+          <li class="finding">
+            <span class="finding__num">02 / Subtract</span>
+            <h3>Subtraction by inversion</h3>
+            <p>
+              <code>Bnegate</code> inverts operand B <em>and</em> forces the
+              chain's carry-in to 1, forming <code>a + ~b + 1 = a&nbsp;-&nbsp;b</code>
+              — no dedicated subtractor required.
+            </p>
+          </li>
+          <li class="finding">
+            <span class="finding__num">03 / Logic</span>
+            <h3>NOR &amp; NAND via De Morgan</h3>
+            <p>
+              They reuse the AND/OR datapath with both operands inverted:
+              <code>~(a | b) = ~a &amp; ~b</code> and
+              <code>~(a &amp; b) = ~a | ~b</code>. The forced carry-in is harmless
+              because the adder output isn't selected.
+            </p>
+          </li>
+          <li class="finding">
+            <span class="finding__num">04 / Compare</span>
+            <h3>Signed compare &amp; overflow</h3>
+            <p>
+              The MSB derives <code>ovf = cin ^ msbCout</code> and
+              <code>setLess = sum[MSB] ^ ovf</code>, correcting the sign of
+              <code>a&nbsp;-&nbsp;b</code> on overflow and feeding it back to bit 0 —
+              so even min-negative vs. max-positive compares correctly.
+            </p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ========================== MODULE HIERARCHY ======================= -->
+    <section class="section" id="hierarchy" aria-labelledby="hier-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">How it's organized</p>
+          <h2 id="hier-title">Module hierarchy.</h2>
+        </div>
+
+        <pre class="code code--tree" aria-label="Module hierarchy tree"><code>alu_full
+├── alu_slice   (×(N-1))
+│   ├── mux_2x1      (A invert)
+│   ├── mux_2x1      (B invert)
+│   ├── full_adder
+│   └── mux_4x1      (operation select)
+└── alu_msb
+    ├── mux_2x1      (A invert)
+    ├── mux_2x1      (B invert)
+    ├── full_adder
+    └── mux_4x1      (operation select)</code></pre>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Module</th><th>File</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>alu_full</code></td><td><code>rtl/alu_full.v</code></td><td>Top level. Instantiates N&minus;1 slices + one MSB block; produces <code>result</code>, <code>ovf</code>, <code>zero</code>.</td></tr>
+              <tr><td><code>alu_slice</code></td><td><code>rtl/alu_slice.v</code></td><td>1-bit ALU slice for bits 0 … N&minus;2.</td></tr>
+              <tr><td><code>alu_msb</code></td><td><code>rtl/alu_msb.v</code></td><td>MSB slice; adds overflow detection and <code>setLess</code> generation.</td></tr>
+              <tr><td><code>full_adder</code></td><td><code>rtl/full_adder.v</code></td><td>1-bit combinational full adder.</td></tr>
+              <tr><td><code>mux_2x1</code></td><td><code>rtl/mux_2x1.v</code></td><td>N-bit 2:1 multiplexer (operand inversion).</td></tr>
+              <tr><td><code>mux_4x1</code></td><td><code>rtl/mux_4x1.v</code></td><td>N-bit 4:1 multiplexer (operation select).</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================== INTERFACE & CONTROL =================== -->
+    <section class="section" id="interface" aria-labelledby="iface-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Interface</p>
+          <h2 id="iface-title">Ports &amp; control.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            The top-level <code>alu_full</code> has a small, clean interface.
+            Parameter <code>N</code> defaults to <code>32</code>.
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Port</th><th>Dir</th><th>Width</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>a</code></td>      <td>in</td>  <td><code>N</code></td><td>Operand A</td></tr>
+              <tr><td><code>b</code></td>      <td>in</td>  <td><code>N</code></td><td>Operand B</td></tr>
+              <tr><td><code>control</code></td><td>in</td>  <td><code>4</code></td><td>Operation control vector (below)</td></tr>
+              <tr><td><code>result</code></td> <td>out</td> <td><code>N</code></td><td>Operation result</td></tr>
+              <tr><td><code>ovf</code></td>    <td>out</td> <td><code>1</code></td><td>Overflow (signed add/sub)</td></tr>
+              <tr><td><code>zero</code></td>   <td>out</td> <td><code>1</code></td><td>Asserted when <code>result == 0</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="subhead">The control vector</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Bits</th><th>Name</th><th>Function</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>control[3]</code></td>  <td><code>Ainvert</code></td>  <td>Invert operand A</td></tr>
+              <tr><td><code>control[2]</code></td>  <td><code>Bnegate</code></td>  <td>Invert operand B <strong>and</strong> set carry-in (two's-complement subtract)</td></tr>
+              <tr><td><code>control[1:0]</code></td><td><code>operation</code></td><td>Result mux select: <code>00</code>=AND, <code>01</code>=OR, <code>10</code>=ADD, <code>11</code>=less</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details class="disclosure">
+          <summary>Show the full 16-value control decode</summary>
+          <div class="disclosure__body">
+            <p class="prose">
+              All 16 <code>control</code> values, for completeness. The ✓ rows are
+              the operations the control unit actually drives; the rest are
+              byproducts the datapath can still produce.
+              <code>aMuxOut = Ainvert ? ~a : a</code>,
+              <code>bMuxOut = Bnegate ? ~b : b</code>, and the adder carry-in equals
+              <code>Bnegate</code>.
+            </p>
+            <div class="table-wrap">
+              <table class="data-table data-table--compact">
+                <thead>
+                  <tr><th>control</th><th>Ainv</th><th>Bneg</th><th>op</th><th>Result</th><th>Operation</th><th></th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>0000</code></td><td>0</td><td>0</td><td><code>00</code></td><td><code>a &amp; b</code></td><td>AND</td><td class="yes">✓</td></tr>
+                  <tr><td><code>0001</code></td><td>0</td><td>0</td><td><code>01</code></td><td><code>a | b</code></td><td>OR</td><td class="yes">✓</td></tr>
+                  <tr><td><code>0010</code></td><td>0</td><td>0</td><td><code>10</code></td><td><code>a + b</code></td><td>ADD</td><td class="yes">✓</td></tr>
+                  <tr><td><code>0011</code></td><td>0</td><td>0</td><td><code>11</code></td><td>less of <code>a + b</code></td><td>— no meaningful compare</td><td></td></tr>
+                  <tr><td><code>0100</code></td><td>0</td><td>1</td><td><code>00</code></td><td><code>a &amp; ~b</code></td><td>logic byproduct</td><td></td></tr>
+                  <tr><td><code>0101</code></td><td>0</td><td>1</td><td><code>01</code></td><td><code>a | ~b</code></td><td>logic byproduct</td><td></td></tr>
+                  <tr><td><code>0110</code></td><td>0</td><td>1</td><td><code>10</code></td><td><code>a + ~b + 1</code> = <code>a - b</code></td><td>SUB</td><td class="yes">✓</td></tr>
+                  <tr><td><code>0111</code></td><td>0</td><td>1</td><td><code>11</code></td><td>signed <code>a &lt; b</code></td><td>SLT</td><td class="yes">✓</td></tr>
+                  <tr><td><code>1000</code></td><td>1</td><td>0</td><td><code>00</code></td><td><code>~a &amp; b</code></td><td>logic byproduct</td><td></td></tr>
+                  <tr><td><code>1001</code></td><td>1</td><td>0</td><td><code>01</code></td><td><code>~a | b</code></td><td>logic byproduct</td><td></td></tr>
+                  <tr><td><code>1010</code></td><td>1</td><td>0</td><td><code>10</code></td><td><code>~a + b</code> = <code>b - a - 1</code></td><td>arith byproduct</td><td></td></tr>
+                  <tr><td><code>1011</code></td><td>1</td><td>0</td><td><code>11</code></td><td>less of <code>~a + b</code></td><td>— no meaningful compare</td><td></td></tr>
+                  <tr><td><code>1100</code></td><td>1</td><td>1</td><td><code>00</code></td><td><code>~a &amp; ~b</code> = <code>~(a | b)</code></td><td>NOR</td><td class="yes">✓</td></tr>
+                  <tr><td><code>1101</code></td><td>1</td><td>1</td><td><code>01</code></td><td><code>~a | ~b</code> = <code>~(a &amp; b)</code></td><td>NAND</td><td class="yes">✓</td></tr>
+                  <tr><td><code>1110</code></td><td>1</td><td>1</td><td><code>10</code></td><td><code>~a + ~b + 1</code> = <code>-(a + b) - 1</code></td><td>arith byproduct</td><td></td></tr>
+                  <tr><td><code>1111</code></td><td>1</td><td>1</td><td><code>11</code></td><td>less of <code>~a + ~b + 1</code></td><td>— no meaningful compare</td><td></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============================= VERIFICATION ======================== -->
+    <section class="section" id="verification" aria-labelledby="verify-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Proof it's correct</p>
+          <h2 id="verify-title">Verified against an independent model.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            The ALU is combinational, so the testbench is a stand-alone unit test
+            rather than a clocked lockstep model. For every stimulus a behavioral
+            <em>golden model</em> re-derives the expected outputs <strong>without</strong>
+            copying the gate-level structure: <code>result</code> from native
+            Verilog operators, <code>ovf</code> from the independent sign-bit
+            overflow identity, and <code>zero</code> as <code>result == 0</code>.
+          </p>
+          <p>
+            Every vector is compared with 4-state equality (<code>!==</code>), so
+            stray X/Z on the outputs is caught too. A curated set of 13 directed
+            vectors targets the edge cases — all four logic ops, ADD with and
+            without overflow in both directions, SUB of equal operands and SUB
+            overflow, and signed SLT including the min-negative / max-positive
+            overflow-correction cases.
+          </p>
+        </div>
+
+        <pre class="code code--banner" aria-label="Passing test run output"><code>==================================================
+ Total vectors applied: 13
+ RESULT: PASS - 0 errors. DUT == behavioral oracle.
+==================================================</code></pre>
+
+        <figure class="figure figure--wide">
+          <img src="assets/waveform.jpg"
+               alt="A digital simulation waveform showing the ALU's a, b, control, result, ovf, and zero signals changing across the applied test vectors."
+               loading="lazy" decoding="async"
+               onerror="this.closest('.figure').style.display='none'" />
+          <figcaption>The simulation waveform — every vector, traced signal by signal.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============================= RUNNING IT ========================== -->
+    <section class="section" id="run" aria-labelledby="run-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Try it yourself</p>
+          <h2 id="run-title">Run the simulation.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            Everything runs on free, open-source tools — no licenses, no cost.
+            Grab the repo and go.
+          </p>
+        </div>
+
+        <h3 class="subhead">Option 1 — Makefile (recommended)</h3>
+        <pre class="code"><code># from the alu/ root
+make        # compile only
+make run    # compile and run</code></pre>
+        <p class="prose prose--note">
+          Requires <code>make</code>. On Windows:
+          <code>winget install GnuWin32.Make</code>
+        </p>
+
+        <details class="disclosure">
+          <summary>Option 2 — manual compile</summary>
+          <div class="disclosure__body">
+            <pre class="code"><code># Windows (PowerShell) — single line
+iverilog -g2012 -o sim testbench/tb_alu_full.v rtl/alu_full.v rtl/alu_msb.v rtl/alu_slice.v rtl/full_adder.v rtl/mux_2x1.v rtl/mux_4x1.v
+
+# Run
+vvp sim
+
+# View waveforms
+gtkwave waveforms/dump.vcd</code></pre>
+          </div>
+        </details>
+
+        <h3 class="subhead">Tools</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td>Icarus Verilog 12.0</td><td>RTL simulation</td></tr>
+              <tr><td>GTKWave / EPWave</td><td>Waveform inspection</td></tr>
+              <tr><td>GNU Make</td><td>Build automation</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================== NEXT STEP ========================= -->
+    <section class="section nextstep" aria-labelledby="next-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Where this leads</p>
+          <h2 id="next-title">This is step one toward a CPU.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            Once the ALU clicks, it becomes a building block: it's the arithmetic
+            heart of the single-cycle RISC-V processor that comes next. Read the
+            full source, run it, break it, and rebuild it — that's how this stuff
+            actually sticks.
+          </p>
+        </div>
+        <div class="doc-hero__actions">
+          <a class="btn btn--primary"
+             href="https://github.com/estaresinic05/Silicon-From-Scratch"
+             target="_blank" rel="noopener">Explore the code on GitHub</a>
+          <a class="btn btn--ghost" href="index.html#learn">Back to the path</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+  </footer>
+
+  <!-- Mobile nav toggle -->
+  <script src="scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger from CDN (free, no build step) for the same
+       scroll-reveal feel as the home page. If they fail to load, scroll.js
+       removes the `js` class and the page is simply fully visible. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+  <script src="scripts/scroll.js" defer></script>
+</body>
+</html>
