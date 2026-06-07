@@ -385,6 +385,88 @@ body::before {
 }
 
 /* ------------------------------------------------------------------ *
+   8b. THE CHIP — a CPU with a subtle, scroll-driven arc (Phase 3)
+   The model lives in a normal-flow canvas inside .cpu-stage__viewport, so the
+   page scrolls straight through (no pinning, no overlay). scripts/cpu-hero.js
+   maps the section's progress through the viewport to a gentle zoom + a few
+   degrees of rotation that peak when the section is centred. The static emblem
+   is both the loading state and the no-WebGL / reduced-motion fallback.
+ * ------------------------------------------------------------------ */
+.cpu-stage {
+  padding-block: var(--space-7);
+  border-top: 1px solid var(--hairline);
+}
+.kicker--center { justify-content: center; }   /* centre the kicker tick + text */
+.cpu-stage h2 { margin-bottom: var(--space-2); }
+.cpu-stage__lead {
+  color: var(--soft-ink);
+  font-size: 1.15rem;
+  max-width: 42ch;
+  margin: var(--space-2) 0 0;
+}
+
+/* Two columns: text on the left, the two rendering stages on the right. */
+.cpu-stage__layout {
+  position: relative;                  /* the canvas overlay positions against this */
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  text-align: left;
+}
+.cpu-stage__text {
+  flex: 0 0 36%;
+  max-width: 36%;
+  position: relative;                  /* keep text in the same stacking context */
+  z-index: 1;                          /* canvas (z-index 2) overlaps it */
+}
+
+/* Reserved-height box on the right. It holds nothing but the fallback emblem
+   and reserves the stage height so the async model load causes no layout shift;
+   the actual chips render in the shared canvas overlay above. */
+.cpu-stage__stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;                        /* let flex children shrink below content */
+  height: min(60vh, 520px);
+}
+
+/* One transparent canvas spanning the whole layout (text + stage). Both chips
+   render into it, so there's no clip seam between them and they can overlap the
+   text. pointer-events: none keeps the text beneath it selectable. */
+.cpu-stage__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;                          /* layer the chips above the text + emblem */
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none;
+  opacity: 0;                          /* fades in once the model is ready */
+  transition: opacity 0.6s ease;
+  will-change: transform;
+}
+html.cpu-ready .cpu-stage__canvas { opacity: 1; }
+
+/* Static fallback emblem — centred in the stage box. It is the loading state
+   and the standin whenever the 3D can't run; hidden once the model is ready. */
+.cpu-stage__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  opacity: 0.85;
+}
+.cpu-stage__fallback svg { width: min(40vmin, 220px); height: auto; }
+html.cpu-ready .cpu-stage__fallback { display: none; }
+
+@media (max-width: 768px) {
+  .cpu-stage__lead { font-size: 1.05rem; }
+  .cpu-stage__layout { flex-direction: column; }   /* text above, stage below */
+  .cpu-stage__text { flex-basis: auto; max-width: none; }
+  .cpu-stage__stage { height: min(50vh, 380px); }
+}
+
+/* ------------------------------------------------------------------ *
    9. THE IDEA
  * ------------------------------------------------------------------ */
 .idea .prose p {
@@ -591,6 +673,22 @@ body::before {
   color: var(--soft-ink);
 }
 .footer a:hover { color: var(--accent-deep); }
+
+/* 3D-model attribution — small, muted line under the main footer row. */
+.footer__credit {
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  line-height: 1.7;
+  color: var(--soft-ink);
+  opacity: 0.85;
+}
+.footer__credit a {
+  font-size: inherit;                  /* sit inline with the sentence, not the 0.8rem links */
+  letter-spacing: inherit;
+  text-decoration: underline;
+}
 
 /* ------------------------------------------------------------------ *
    16. MOTION — Phase 2: scroll-driven reveals (GSAP + ScrollTrigger)

@@ -76,6 +76,52 @@
       </div>
     </section>
 
+    <!-- ============================== THE CHIP =========================== -->
+    <!-- Phase 3: a photoreal CPU in a normal-flow canvas that animates with a
+         subtle, scroll-driven arc (gentle zoom + a few degrees of rotation,
+         peaking when the section is centred). No pinning, no scroll-jacking —
+         the page scrolls straight through. If the 3D can't run (no WebGL /
+         reduced motion / CDN blocked), the static emblem stands in. Filled +
+         animated by scripts/cpu-hero.js. -->
+    <section class="cpu-stage" id="chip" aria-labelledby="chip-title">
+      <div class="container cpu-stage__layout" data-cpu-layout>
+        <div class="cpu-stage__text">
+          <p class="kicker">The chip</p>
+          <h2 id="chip-title">This is what you're building toward.</h2>
+          <p class="cpu-stage__lead">
+            Every project here is a step toward the silicon below — a complete
+            processor, the kind that runs the device you're reading this on.
+          </p>
+        </div>
+
+        <!-- Reserved-height stage on the right. A single transparent canvas is
+             injected into the layout above and spans the whole row, so both
+             chips share one context (no clip seam between them) and can overlap
+             the text. This box reserves the height so there's no layout shift;
+             its emblem is the loading state and the no-WebGL / reduced-motion
+             fallback. -->
+        <div class="cpu-stage__stage">
+          <div class="cpu-stage__fallback" data-cpu-fallback>
+            <svg viewBox="0 0 120 120" role="img"
+                 aria-label="Stylized processor chip" focusable="false">
+              <g fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round">
+                <g opacity="0.55">
+                  <path d="M38 18v-9 M52 18v-9 M66 18v-9 M82 18v-9" />
+                  <path d="M38 111v-9 M52 111v-9 M66 111v-9 M82 111v-9" />
+                  <path d="M18 38h-9 M18 52h-9 M18 66h-9 M18 82h-9" />
+                  <path d="M111 38h9 M111 52h9 M111 66h9 M111 82h9" />
+                </g>
+                <rect x="22" y="22" width="76" height="76" rx="8" />
+                <rect x="42" y="42" width="36" height="36" rx="4" opacity="0.8" />
+                <circle cx="60" cy="60" r="5" fill="currentColor" stroke="none" />
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- =============================== THE IDEA ========================== -->
     <section class="section idea" aria-labelledby="idea-title">
       <div class="container">
@@ -242,7 +288,7 @@
 
           <div class="prose aboutme__body">
             <p>
-              Hi, I'm Elliot! I'm glad you found your way here! I founded Silicon
+              Hi, I'm Elliot! I'm glad you found your way here! I created Silicon
               From Scratch with the idea that the inside of a computer chip
               shouldn't be a mystery reserved for people with the right degree, the
               right software, or the right connections. When I started learning how
@@ -290,6 +336,14 @@
       <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
          target="_blank" rel="noopener">GitHub Repository</a>
     </div>
+    <p class="container footer__credit">
+      <a href="https://sketchfab.com/3d-models/amd-ryzen-5-7600x-high-poly-b803c0ecc3b4441d991e676cf1df62b4"
+         target="_blank" rel="noopener">"AMD Ryzen 5 7600X - HIGH POLY"</a>
+      by <a href="https://sketchfab.com/PolyDavid"
+         target="_blank" rel="noopener">PolyDavid</a>, licensed under
+      <a href="https://creativecommons.org/licenses/by/4.0/"
+         target="_blank" rel="noopener">CC BY 4.0</a>. Modified for web use.
+    </p>
   </footer>
 
   <!-- Minimal vanilla JS (mobile nav toggle) -->
@@ -301,5 +355,19 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
   <!-- Scroll-driven motion (Phase 2). Relative path — domain-ready. -->
   <script src="scripts/scroll.js" defer></script>
+
+  <!-- Phase 3: rotating CPU hero (three.js as ES modules via importmap). The
+       external CDN is fine here — only internal links must stay relative for
+       custom-domain readiness. Module scripts are deferred by default, and if
+       the browser ignores them the static fallback in #chip simply remains. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="scripts/cpu-hero.js"></script>
 </body>
 </html>
