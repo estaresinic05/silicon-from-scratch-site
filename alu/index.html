@@ -13,16 +13,17 @@
   <meta name="description"
         content="A deep dive into the parameterized N-bit Arithmetic Logic Unit — built from 1-bit slices in the classic ripple-carry style, the first project on the path from one logic block to a working CPU." />
 
-  <link rel="icon" href="assets/logo.jpg" />
+  <link rel="icon" href="../assets/logo.jpg" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
         rel="stylesheet" />
 
-  <!-- Shared site styles + this page's components (relative paths — domain-ready) -->
-  <link rel="stylesheet" href="styles/main.css" />
-  <link rel="stylesheet" href="styles/alu.css" />
+  <!-- Shared site styles + this page's components. This page lives at /alu/,
+       one level down, so shared assets are reached with ../ (domain-ready). -->
+  <link rel="stylesheet" href="../styles/main.css" />
+  <link rel="stylesheet" href="../styles/alu.css" />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -30,16 +31,16 @@
   <!-- ============================== TOP BAR ============================== -->
   <header class="topbar">
     <div class="container topbar__inner">
-      <a class="wordmark" href="index.html" aria-label="Silicon From Scratch — home">
+      <a class="wordmark" href="../" aria-label="Silicon From Scratch — home">
         <span class="wordmark__dot" aria-hidden="true"></span>
         Silicon From Scratch
       </a>
 
       <nav class="nav" id="primary-nav" aria-label="Primary">
-        <a href="index.html#learn">Learn</a>
-        <a href="index.html#inside">Inside</a>
-        <a href="index.html#tools">Tools</a>
-        <a href="index.html#about">About</a>
+        <a href="../#learn">Learn</a>
+        <a href="../#inside">Inside</a>
+        <a href="../#tools">Tools</a>
+        <a href="../#about">About</a>
         <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
            target="_blank" rel="noopener">GitHub</a>
       </nav>
@@ -57,7 +58,7 @@
 
     <!-- ============================== DOC HERO ============================ -->
     <section class="doc-hero container" aria-labelledby="alu-title">
-      <a class="backlink" href="index.html#learn">
+      <a class="backlink" href="../#learn">
         <span aria-hidden="true">&larr;</span> Back to the path
       </a>
       <p class="doc-hero__tag">Project 01 · Beginner — start here</p>
@@ -131,7 +132,7 @@
         </div>
 
         <figure class="figure figure--tall">
-          <img src="assets/architecture.jpg"
+          <img src="../assets/architecture.jpg"
                alt="A vertical chain of 32 one-bit ALU blocks (ALU0 at the top through ALU31 at the bottom). Each block's carry-out feeds the next block's carry-in. The Ainvert, Bnegate, and operation control lines run down the left and feed every block. Every block's result bit feeds a large NOR gate on the right that outputs zero, and the bottom block (ALU31) outputs set and overflow."
                loading="lazy" decoding="async" />
           <figcaption>
@@ -172,7 +173,7 @@
         </div>
 
         <figure class="figure figure--wide">
-          <img src="assets/slice-architecture.jpg"
+          <img src="../assets/slice-architecture.jpg"
                alt="Two side-by-side schematics of a 1-bit ALU slice. Each shows operand a and b entering 2:1 inverting multiplexers controlled by Ainvert and Binvert, feeding an AND gate, an OR gate, and a full adder, whose outputs enter a 4:1 result multiplexer selected by the operation control. The left schematic outputs a carry-out. The right schematic adds an overflow-detection block and a set output."
                loading="lazy" decoding="async" />
           <figcaption>
@@ -427,7 +428,7 @@
 ==================================================</code></pre>
 
         <figure class="figure figure--wide">
-          <img src="assets/waveform.jpg"
+          <img src="../assets/waveform.jpg"
                alt="A digital simulation waveform showing the ALU's a, b, control, result, ovf, and zero signals changing across the applied test vectors."
                loading="lazy" decoding="async"
                onerror="this.closest('.figure').style.display='none'" />
@@ -506,7 +507,7 @@ gtkwave waveforms/dump.vcd</code></pre>
           <a class="btn btn--primary"
              href="https://github.com/estaresinic05/Silicon-From-Scratch"
              target="_blank" rel="noopener">Explore the code on GitHub</a>
-          <a class="btn btn--ghost" href="index.html#learn">Back to the path</a>
+          <a class="btn btn--ghost" href="../#learn">Back to the path</a>
         </div>
       </div>
     </section>
@@ -525,13 +526,13 @@ gtkwave waveforms/dump.vcd</code></pre>
   </footer>
 
   <!-- Mobile nav toggle -->
-  <script src="scripts/main.js" defer></script>
+  <script src="../scripts/main.js" defer></script>
 
   <!-- GSAP + ScrollTrigger from CDN (free, no build step) for the same
        scroll-reveal feel as the home page. If they fail to load, scroll.js
        removes the `js` class and the page is simply fully visible. -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-  <script src="scripts/scroll.js" defer></script>
+  <script src="../scripts/scroll.js" defer></script>
 </body>
 </html>
