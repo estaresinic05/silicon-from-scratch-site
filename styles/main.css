@@ -461,7 +461,11 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
 
 @media (max-width: 768px) {
   .cpu-stage__lead { font-size: 1.05rem; }
-  .cpu-stage__layout { flex-direction: column; }   /* text above, stage below */
+  /* Stack: text above, stage below. `align-items: stretch` keeps both children
+     full-width — without it the stage box (whose only content is the absolutely
+     positioned canvas + emblem) would collapse to zero width, leaving the
+     re-mounted canvas with nothing to render into. */
+  .cpu-stage__layout { flex-direction: column; align-items: stretch; }
   .cpu-stage__text { flex-basis: auto; max-width: none; }
   .cpu-stage__stage { height: min(50vh, 380px); }
 }

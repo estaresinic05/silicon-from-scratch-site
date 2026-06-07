@@ -38,6 +38,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
   var root = document.documentElement;
   var layout = document.querySelector("[data-cpu-layout]");
   if (!layout) return;
+  var stage = layout.querySelector(".cpu-stage__stage"); // mobile canvas home
 
   var prefersReduced =
     window.matchMedia &&
@@ -77,13 +78,18 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
   /* ----- placement tuning (single shared scene) -----
      World units. Each chip is normalised so its largest dimension is CHIP_SIZE.
-     The camera looks at the origin from CAM_DIST; x=0 is the centre of the
-     stage. Larger CAM_DIST = smaller chips. Nudge CHIP_*_X toward each other to
+     The camera looks at the origin from `camDist`; x=0 is the centre of the
+     stage. Larger camDist = smaller chips. Nudge aX/bX toward each other to
      overlap more, or negative to spill left over the text. */
   var CHIP_SIZE = 2.4;
-  var CAM_DIST  = 8;                          // smaller = larger chips
-  var CHIP_A_X  = 0.5;   var CHIP_A_Y = 0;   // left chip (turntable) — clears the text
-  var CHIP_B_X  = 3.3;   var CHIP_B_Y = 0;   // right chip (spin-y) — separated from A
+  /* Two placements, swapped at the 768px breakpoint by applyPlacement().
+     DESKTOP keeps both chips off to the right so they clear the 36%-wide text
+     column and can overlap it. On phones the section stacks (text above, stage
+     below) and the canvas is mounted into the stage box ONLY, so the chips can
+     never cover the text; there we re-centre the pair around x=0 and pull the
+     camera back a touch so both fit the narrower, squarer stage. */
+  var DESKTOP = { camDist: 8,   aX: 0.5,  aY: 0, bX: 3.3, bY: 0 };
+  var MOBILE  = { camDist: 9.5, aX: -1.4, aY: 0, bX: 1.4, bY: 0 };
 
   /* ----- renderer (bail to static fallback if WebGL is unavailable) ----- */
   var renderer;
@@ -98,7 +104,8 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   var canvas = renderer.domElement;
   canvas.classList.add("cpu-stage__canvas");
-  layout.appendChild(canvas);                   // spans the whole layout (text + stage)
+  // The canvas is mounted by applyPlacement(): the whole layout on desktop (so
+  // the chips can overlap the text), or the stage box alone on phones.
 
   var scene = new THREE.Scene();
 
@@ -116,20 +123,47 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
   addLight(1.2, 0, 5, 0.5);    // top
 
   var camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-  camera.position.set(0, 0, CAM_DIST);
+  camera.position.set(0, 0, DESKTOP.camDist);   // overwritten by applyPlacement()
   camera.lookAt(0, 0, 0);
 
   /* Each chip is a small group hierarchy:
        outer (world placement) > [tilt] > spin (scroll-driven) > model
      Chip A carries the lid-toward-camera tilt; chip B reads flat. */
-  var outerA = new THREE.Group(); outerA.position.set(CHIP_A_X, CHIP_A_Y, 0); scene.add(outerA);
+  var outerA = new THREE.Group(); scene.add(outerA);   // placed by applyPlacement()
   var tiltA  = new THREE.Group(); tiltA.rotation.x = BASE_TILT; outerA.add(tiltA);
   var spinA  = new THREE.Group(); tiltA.add(spinA);
 
-  var outerB = new THREE.Group(); outerB.position.set(CHIP_B_X, CHIP_B_Y, 0); scene.add(outerB);
+  var outerB = new THREE.Group(); scene.add(outerB);   // placed by applyPlacement()
   var spinB  = new THREE.Group(); outerB.add(spinB);
 
   var loaded = false;
+
+  /* Mount the canvas + place the chips/camera for the current breakpoint. The
+     canvas only changes parent when we actually cross the breakpoint, so normal
+     resizes (or scrolling) don't churn the DOM. */
+  var mount = null;          // the canvas's current parent element
+  var currentMobile = null;  // last breakpoint we mounted for (null = unmounted)
+
+  function isMobile() {
+    return window.matchMedia("(max-width: 768px)").matches;
+  }
+
+  function applyPlacement() {
+    var mobile = isMobile();
+    var P = mobile ? MOBILE : DESKTOP;
+    outerA.position.set(P.aX, P.aY, 0);
+    outerB.position.set(P.bX, P.bY, 0);
+    camera.position.z = P.camDist;
+
+    if (mobile !== currentMobile) {
+      currentMobile = mobile;
+      var target = (mobile && stage) ? stage : layout;
+      if (target !== mount) {
+        mount = target;
+        mount.appendChild(canvas);
+      }
+    }
+  }
 
   function poseA(yaw, pitch) { spinA.rotation.y = yaw; spinA.rotation.x = pitch; }
   function poseB(yaw, pitch) { spinB.rotation.y = yaw; spinB.rotation.x = pitch; }
@@ -149,14 +183,16 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
   }
 
   function resize() {
-    var w = layout.clientWidth || 1;
-    var h = layout.clientHeight || 1;
+    var el = mount || layout;                   // size to whatever the canvas lives in
+    var w = el.clientWidth || 1;
+    var h = el.clientHeight || 1;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     if (loaded) render();
   }
-  window.addEventListener("resize", resize);
+  // Re-evaluate the breakpoint (may re-mount + re-place) before re-sizing.
+  window.addEventListener("resize", function () { applyPlacement(); resize(); });
 
   function gsapReady() { return window.gsap && window.ScrollTrigger; }
 
@@ -209,6 +245,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
       spinA.add(modelA);
       spinB.add(modelB);
 
+      applyPlacement();   // mount the canvas + place chips for this breakpoint
       resize();
       loaded = true;
       root.classList.add("cpu-ready");
