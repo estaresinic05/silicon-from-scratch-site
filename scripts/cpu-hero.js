@@ -89,7 +89,9 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
      never cover the text; there we re-centre the pair around x=0 and pull the
      camera back a touch so both fit the narrower, squarer stage. */
   var DESKTOP = { camDist: 8,   aX: 0.5,  aY: 0, bX: 3.3, bY: 0 };
-  var MOBILE  = { camDist: 9.5, aX: -1.4, aY: 0, bX: 1.4, bY: 0 };
+  // Closer camera + tighter spacing so the pair fills the short mobile band
+  // (see .cpu-stage__stage height in main.css) with little blank above/below.
+  var MOBILE  = { camDist: 5.8, aX: -1.3, aY: 0, bX: 1.3, bY: 0 };
 
   /* ----- renderer (bail to static fallback if WebGL is unavailable) ----- */
   var renderer;

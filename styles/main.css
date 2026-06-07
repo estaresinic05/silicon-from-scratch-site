@@ -465,9 +465,15 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
      full-width — without it the stage box (whose only content is the absolutely
      positioned canvas + emblem) would collapse to zero width, leaving the
      re-mounted canvas with nothing to render into. */
-  .cpu-stage__layout { flex-direction: column; align-items: stretch; }
+  .cpu-stage__layout { flex-direction: column; align-items: stretch; gap: var(--space-3); }
   .cpu-stage__text { flex-basis: auto; max-width: none; }
-  .cpu-stage__stage { height: min(50vh, 380px); }
+  /* `flex: none` is essential: the base rule's `flex: 1` becomes flex-basis:0%
+     in a column and would override the height below, collapsing the box to 0px
+     (canvas + emblem are absolute, so they add no intrinsic height) — which left
+     the re-mounted canvas with zero height and nothing to render. The height is
+     kept tight (wide, short band) so the side-by-side chips fill it with little
+     blank space above/below; cpu-hero.js's MOBILE camDist is tuned to match. */
+  .cpu-stage__stage { flex: none; height: min(40vh, 220px); }
 }
 
 /* ------------------------------------------------------------------ *
