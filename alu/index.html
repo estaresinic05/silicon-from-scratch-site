@@ -94,19 +94,12 @@
         </div>
         <div class="prose">
           <p>
-            The least-significant bits are identical <code>alu_slice</code> blocks
-            chained together as a ripple-carry adder, terminated by a dedicated
-            <code>alu_msb</code> block that produces the overflow flag and the
-            signed set-less-than signal. There's no clock and no
-            synthesis-specific magic — the whole thing is combinational logic you
-            could, in principle, draw out by hand.
-          </p>
-          <p>
-            It's verified by a self-checking testbench that applies directed
-            edge-case vectors and validates <code>result</code>, <code>ovf</code>,
-            and <code>zero</code> against an independent behavioral model — so you
-            can trust that what you're reading actually works, not just that it
-            compiles.
+            The ALU is where a processor actually does arithmetic and logic — and
+            it's the clearest place to see a real circuit emerge from nothing but
+            gates. This one is a parameterized, fully combinational
+            <strong>N-bit ALU</strong> built from 1-bit slices in the classic
+            Patterson &amp; Hennessy style, so you can trace every wire from a
+            single bit up to a complete 32-bit operation.
           </p>
         </div>
       </div>
