@@ -117,69 +117,31 @@
       </div>
     </section>
 
-    <!-- ============================ ARCHITECTURE ========================= -->
-    <section class="section" id="architecture" aria-labelledby="arch-title">
-      <div class="container">
-        <div class="section__head">
-          <p class="kicker">Architecture</p>
-          <h2 id="arch-title">A ripple-carry chain.</h2>
-        </div>
-        <div class="prose">
-          <p>
-            Picture 32 one-bit blocks stacked on top of each other. Each one
-            computes a single bit of the result and passes its carry up to the
-            next — the carry "ripples" from the bottom of the chain to the top,
-            exactly like adding numbers by hand, column by column. Bits 0 through
-            30 are identical <code>alu_slice</code> blocks; bit 31 is a special
-            <code>alu_msb</code> block that also generates overflow and the signed
-            comparison signal.
-          </p>
-          <p>
-            The clever part is the initial carry-in: it's driven by
-            <code>Bnegate</code>. Setting it to 1 (and inverting operand B) turns
-            the very same adder into a subtractor — <code>a + ~b + 1 = a&nbsp;-&nbsp;b</code>
-            — with no separate subtraction hardware at all.
-          </p>
-        </div>
-
-        <figure class="figure figure--tall">
-          <img src="../assets/architecture.jpg"
-               alt="A vertical chain of 32 one-bit ALU blocks (ALU0 at the top through ALU31 at the bottom). Each block's carry-out feeds the next block's carry-in. The Ainvert, Bnegate, and operation control lines run down the left and feed every block. Every block's result bit feeds a large NOR gate on the right that outputs zero, and the bottom block (ALU31) outputs set and overflow."
-               loading="lazy" decoding="async" />
-          <figcaption>
-            The 32-bit ripple-carry chain. Carry-out of each slice feeds the
-            carry-in of the next; all result bits feed a NOR gate that produces
-            <code>zero</code>; and the MSB (ALU31) produces <code>set</code> and
-            <code>overflow</code>. The MSB's <code>set</code> is routed all the way
-            back to the <code>less</code> input of slice&nbsp;0 — that's what makes
-            signed "set less than" land a 1 in bit 0 and 0 everywhere else.
-          </figcaption>
-        </figure>
-      </div>
-    </section>
-
     <!-- ============================ INSIDE A SLICE ======================= -->
     <section class="section" id="slice" aria-labelledby="slice-title">
       <div class="container">
         <div class="section__head">
-          <p class="kicker">Inside one bit</p>
+          <p class="kicker">Start with one bit</p>
           <h2 id="slice-title">A slice is just a few gates and muxes.</h2>
         </div>
         <div class="prose">
           <p>
-            Zoom into a single bit and the whole design stops being intimidating.
-            Operand <code>a</code> and operand <code>b</code> each pass through a
-            2:1 multiplexer that can optionally invert them (<code>Ainvert</code> /
-            <code>Binvert</code>). Those operands then feed an AND gate, an OR
-            gate, and a full adder <em>in parallel</em>. Finally a 4:1 multiplexer
-            picks which of those — AND, OR, the sum, or the <code>less</code>
-            signal — becomes this bit's output.
+            Before worrying about 32 bits, look at a single one — that's where the
+            whole design stops being intimidating. Operand <code>a</code> and
+            operand <code>b</code> each pass through a 2:1 multiplexer that can
+            optionally invert them (<code>Ainvert</code> / <code>Binvert</code>).
+            Those operands then feed an AND gate, an OR gate, and a full adder
+            <em>in parallel</em>. A 4:1 multiplexer picks which of those — AND, OR,
+            the sum, or the <code>less</code> signal — becomes this bit's output,
+            and the adder hands a carry-out to the next bit along.
           </p>
           <p>
-            Every bit but the last uses this exact slice. The most-significant bit
-            adds one thing on top: an overflow-detection block, plus the
-            <code>set</code> output that gets fed back down to bit&nbsp;0 for signed
-            comparison.
+            There are only two kinds of slice. Almost every bit uses the generic
+            <code>alu_slice</code> on the left. The single most-significant bit
+            uses <code>alu_msb</code> on the right, which adds an
+            overflow-detection block and a <code>set</code> output used for signed
+            comparison. The entire ALU is nothing more than a stack of the first
+            kind, capped by one of the second.
           </p>
         </div>
 
@@ -192,6 +154,57 @@
             0&nbsp;…&nbsp;N&minus;2. <strong>Right:</strong> the <code>alu_msb</code>
             for bit N&minus;1, which adds the overflow-detection block and the
             <code>set</code> output used for signed comparison.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============================ ARCHITECTURE ========================= -->
+    <section class="section" id="architecture" aria-labelledby="arch-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Architecture</p>
+          <h2 id="arch-title">Stacking the slices into a chain.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            Now stack those slices and let the carries flow. The least-significant
+            slice, <code>ALU0</code>, sits at the <strong>top</strong>; its
+            carry-out drops straight down into the carry-in of the slice just below
+            it, and so on down the column. The carry "ripples" from the top of the
+            chain to the bottom, one bit at a time, until it reaches the
+            most-significant slice — <code>ALU31</code>, the <code>alu_msb</code> —
+            at the very bottom. It's long addition, just written vertically.
+          </p>
+          <p>
+            The initial carry-in, fed in at the top of the chain, is driven by
+            <code>Bnegate</code>. Setting it to 1 (and inverting operand B) turns
+            the same chain of adders into a subtractor —
+            <code>a + ~b + 1 = a&nbsp;-&nbsp;b</code> — with no separate subtraction
+            hardware at all.
+          </p>
+          <p>
+            Two wires tie the chain together. Every slice's result bit feeds a NOR
+            gate that asserts <code>zero</code> when the whole result is 0; and the
+            MSB's <code>set</code> at the bottom is routed all the way back up to
+            the <code>less</code> input of <code>ALU0</code> at the top — which is
+            what makes signed "set less than" land a 1 in bit 0 and 0 everywhere
+            else.
+          </p>
+        </div>
+
+        <figure class="figure figure--tall">
+          <img src="../assets/architecture.jpg"
+               alt="A vertical chain of 32 one-bit ALU blocks, ALU0 at the top through ALU31 at the bottom. Each block's carry-out feeds downward into the next block's carry-in. The Ainvert, Bnegate, and operation control lines run down the left and feed every block. Every block's result bit feeds a large NOR gate on the right that outputs zero, and the bottom block (ALU31) outputs set and overflow."
+               loading="lazy" decoding="async" />
+          <figcaption>
+            The 32-bit ripple-carry chain, read top to bottom: carry-out of each
+            slice feeds the carry-in of the slice <em>below</em> it, from
+            <code>ALU0</code> down to <code>ALU31</code>. All result bits feed a NOR
+            gate that produces <code>zero</code>, and the bottom slice
+            (<code>ALU31</code>) produces <code>set</code> and <code>overflow</code>.
+            Its <code>set</code> runs back up to the <code>less</code> input of
+            <code>ALU0</code>.
           </figcaption>
         </figure>
       </div>
