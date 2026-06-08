@@ -47,6 +47,28 @@
   height: auto;
   border-radius: var(--radius-sm);
 }
+/* Logo variant (e.g. the Icarus emblem on the setup page): a small image, so
+   centre it and don't upscale it to fill the card. */
+.doc-hero__art--logo { display: grid; place-items: center; }
+.doc-hero__art--logo img { width: auto; max-width: 220px; max-height: 280px; }
+
+/* Numbered steps (setup / how-to instructions) */
+.steps {
+  margin: var(--space-4) 0 0;
+  padding-left: 1.5rem;
+  max-width: var(--maxw-prose);
+}
+.steps li {
+  margin-bottom: var(--space-2);
+  padding-left: 0.3rem;
+  color: var(--soft-ink);
+  line-height: 1.6;
+}
+.steps li::marker {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
 .backlink {
   font-family: var(--font-mono);
   font-size: 0.78rem;

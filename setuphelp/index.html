@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. -->
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>Setup help — Silicon From Scratch</title>
+  <meta name="description"
+        content="How to install the free, open-source tools used across Silicon From Scratch — Icarus Verilog for simulation and GTKWave for inspecting waveforms." />
+
+  <link rel="icon" href="../assets/logo.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles + the doc-page components (this page lives at
+       /setuphelp/, one level down, so shared assets are reached with ../). -->
+  <link rel="stylesheet" href="../styles/main.css" />
+  <link rel="stylesheet" href="../styles/alu.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../" aria-label="Silicon From Scratch — home">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="../#learn">Learn</a>
+        <a href="../#inside">Inside</a>
+        <a href="../#tools">Tools</a>
+        <a href="../#about">About</a>
+        <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+           target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <button class="nav-toggle" id="nav-toggle"
+              aria-label="Toggle navigation menu"
+              aria-expanded="false" aria-controls="primary-nav">
+        <span class="nav-toggle__bars" aria-hidden="true"></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================== DOC HERO ============================ -->
+    <section class="doc-hero container" aria-labelledby="setup-title">
+      <div class="doc-hero__text">
+        <a class="backlink" href="../#tools">
+          <span aria-hidden="true">&larr;</span> Back to Tools
+        </a>
+        <p class="doc-hero__tag">Setup help</p>
+        <h1 id="setup-title">Get your tools ready</h1>
+        <p class="doc-hero__lead">
+          Everything on Silicon From Scratch runs on free, open-source tools.
+          Here's how to get them installed so you can simulate your designs and
+          watch them run, cycle by cycle.
+        </p>
+      </div>
+
+      <figure class="doc-hero__art doc-hero__art--logo">
+        <img src="../assets/icarus-logo.jpg"
+             alt="The Icarus Verilog logo: a winged figure on a red emblem with a banner reading ICARUS."
+             decoding="async" />
+      </figure>
+    </section>
+
+    <!-- ===================== INSTALLING ICARUS + GTKWAVE ================= -->
+    <section class="section" id="icarus" aria-labelledby="icarus-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Simulation &amp; waveforms</p>
+          <h2 id="icarus-title">Installing Icarus Verilog and GTKWave</h2>
+        </div>
+
+        <div class="prose">
+          <p>
+            <strong>Icarus Verilog</strong> compiles and simulates your Verilog,
+            and <strong>GTKWave</strong> lets you open the resulting waveform
+            traces to watch signals change over time. On Windows the good news is
+            that they come together: the official Icarus Verilog installer
+            <em>bundles GTKWave</em>, so a single download gets you both.
+          </p>
+        </div>
+
+        <ol class="steps">
+          <li>
+            Open the Icarus Verilog for Windows download page:
+            <a href="https://bleyer.org/icarus/" target="_blank" rel="noopener">bleyer.org/icarus</a>.
+          </li>
+          <li>
+            Under <strong>Download</strong>, grab the latest installer — the file
+            ending in <code>.exe</code> (for example
+            <code>iverilog-v12-...-x64_setup.exe</code>).
+          </li>
+          <li>
+            Run the installer. It includes <strong>both</strong> Icarus Verilog
+            and GTKWave, so there's no separate GTKWave download to chase down.
+          </li>
+          <li>
+            On the components screen, keep the defaults and make sure the option
+            to <strong>add the executables to your PATH</strong> is checked — that's
+            what lets you run <code>iverilog</code> and <code>gtkwave</code> from
+            any terminal.
+          </li>
+          <li>
+            Finish the installer, then open a <em>new</em> PowerShell window and
+            confirm everything is in place.
+          </li>
+        </ol>
+
+        <pre class="code"><code># check that both tools are on your PATH
+iverilog -V
+gtkwave --version</code></pre>
+
+        <div class="tools__actions">
+          <a class="btn btn--primary"
+             href="https://bleyer.org/icarus/"
+             target="_blank" rel="noopener">
+            Download from bleyer.org
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+
+        <details class="disclosure">
+          <summary>On macOS or Linux instead?</summary>
+          <div class="disclosure__body">
+            <p class="prose">
+              The Windows bundle is the simplest path, but the same tools are a
+              package manager away elsewhere:
+            </p>
+            <pre class="code"><code># macOS (Homebrew)
+brew install icarus-verilog
+brew install --cask gtkwave
+
+# Debian / Ubuntu Linux
+sudo apt install iverilog gtkwave</code></pre>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- =============================== NEXT STEP ========================= -->
+    <section class="section nextstep" aria-labelledby="next-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker">Once you're set up</p>
+          <h2 id="next-title">Start building.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            With the tools installed, you're ready to compile a design, run its
+            testbench, and open the waveform. The ALU is the place to begin.
+          </p>
+        </div>
+        <div class="doc-hero__actions">
+          <a class="btn btn--primary" href="../alu/">Start with the ALU</a>
+          <a class="btn btn--ghost" href="../#learn">Back to the path</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+  </footer>
+
+  <!-- Mobile nav toggle + clean-anchor behavior -->
+  <script src="../scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger for the same scroll-reveal feel as the rest of the
+       site. If they fail to load, scroll.js removes the `js` class and the page
+       is simply fully visible. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+  <script src="../scripts/scroll.js" defer></script>
+</body>
+</html>
