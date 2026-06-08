@@ -11,17 +11,24 @@
  * ------------------------------------------------------------------ */
 .doc-hero {
   padding-block: clamp(var(--space-5), 7vw, var(--space-6));
+  /* A touch wider than the standard 72rem container so the diagram has room to
+     grow once the text column is pinned to the title's width. */
+  max-width: 80rem;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.85fr);
-  gap: clamp(var(--space-4), 5vw, var(--space-6));
+  /* Left column hugs the title's width (~36rem) so the intro paragraph is no
+     wider than the title; the diagram takes all the remaining width on the
+     right, so it renders larger. */
+  grid-template-columns: minmax(0, 36rem) minmax(0, 1fr);
+  gap: clamp(var(--space-3), 4vw, var(--space-5));
   align-items: center;
 }
-.doc-hero__text { max-width: 40rem; }
+.doc-hero__text { max-width: 36rem; }
 
 /* On wide screens, nudge the whole hero — text and diagram together — a little
-   left of the centred container so it doesn't crowd the right edge. Only when
-   there's gutter to spare, so nothing ever clips off the left. */
-@media (min-width: 1240px) {
+   left of the centred container so it doesn't crowd the right edge. Gated above
+   the 80rem hero width + the shift, so it only applies when there's gutter to
+   spare and nothing ever clips off the left. */
+@media (min-width: 1344px) {
   .doc-hero { transform: translateX(-2rem); }
 }
 
