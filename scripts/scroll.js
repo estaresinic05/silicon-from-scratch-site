@@ -84,6 +84,23 @@
               { opacity: 1, scale: 1, duration: 0.9, clearProps: "transform" }, "-=0.6");
   }
 
+  /* ---- Diagram figures: fade + gently scale in as they scroll into view, the
+         same reveal as the hero diagram above. ---- */
+  gsap.utils.toArray(".figure").forEach(function (fig) {
+    gsap.fromTo(
+      fig,
+      { opacity: 0, scale: 0.96 },
+      {
+        opacity: 1,
+        scale: 1,
+        duration: 0.9,
+        ease: EASE,
+        clearProps: "transform",
+        scrollTrigger: { trigger: fig, start: "top 85%" }
+      }
+    );
+  });
+
   /* ---- Section headings: kicker -> heading -> note, staggered ---- */
   gsap.utils.toArray(".section__head").forEach(function (head) {
     reveal(head.querySelectorAll(".kicker, h2, .section__note"), head, {
