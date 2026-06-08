@@ -629,6 +629,7 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
    13. TOOLS
  * ------------------------------------------------------------------ */
 .tools .prose p { font-size: 1.12rem; }
+.tools__actions { margin-top: var(--space-4); }
 
 /* ------------------------------------------------------------------ *
    14. ABOUT ME
