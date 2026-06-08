@@ -51,25 +51,38 @@
     );
   }
 
-  /* ---- Hero: a gentle settling-in on load ---- */
-  gsap
-    .timeline({ defaults: { ease: EASE } })
-    .fromTo(".hero__logo", { opacity: 0, scale: 0.94 },
-            { opacity: 1, scale: 1, duration: 0.9 })
-    .fromTo(".hero h1", { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5")
-    .fromTo(".hero__intro", { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5")
-    .fromTo(".hero__actions", { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5");
+  /* ---- Home hero: a gentle settling-in on load ---- */
+  if (document.querySelector(".hero")) {
+    gsap
+      .timeline({ defaults: { ease: EASE } })
+      .fromTo(".hero__logo", { opacity: 0, scale: 0.94 },
+              { opacity: 1, scale: 1, duration: 0.9 })
+      .fromTo(".hero h1", { opacity: 0, y: 20 },
+              { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5")
+      .fromTo(".hero__intro", { opacity: 0, y: 20 },
+              { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5")
+      .fromTo(".hero__actions", { opacity: 0, y: 20 },
+              { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5");
 
-  /* ---- Hero: subtle logo parallax as the hero scrolls away ---- */
-  var smallScreen = window.matchMedia("(max-width: 768px)").matches;
-  gsap.to(".hero__logo", {
-    yPercent: smallScreen ? -5 : -10, // lighter drift on phones
-    ease: "none",
-    scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true }
-  });
+    /* subtle logo parallax as the hero scrolls away */
+    var smallScreen = window.matchMedia("(max-width: 768px)").matches;
+    gsap.to(".hero__logo", {
+      yPercent: smallScreen ? -5 : -10, // lighter drift on phones
+      ease: "none",
+      scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true }
+    });
+  }
+
+  /* ---- Doc hero (e.g. the ALU page): on load, settle the text up in sequence,
+         then fade + gently scale the diagram in — mirrors the home hero feel. */
+  if (document.querySelector(".doc-hero")) {
+    gsap
+      .timeline({ defaults: { ease: EASE } })
+      .fromTo(".doc-hero__text > *", { opacity: 0, y: 20 },
+              { opacity: 1, y: 0, duration: 0.7, stagger: 0.1, clearProps: "transform" })
+      .fromTo(".doc-hero__art", { opacity: 0, scale: 0.96 },
+              { opacity: 1, scale: 1, duration: 0.9, clearProps: "transform" }, "-=0.6");
+  }
 
   /* ---- Section headings: kicker -> heading -> note, staggered ---- */
   gsap.utils.toArray(".section__head").forEach(function (head) {

@@ -728,6 +728,8 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
 /* Reveal targets start hidden only when JS is active (prevents a flash,
    while staying fully visible if JS never runs). */
 html.js .hero > *,
+html.js .doc-hero__text > *,
+html.js .doc-hero__art,
 html.js .section__head > *,
 html.js .idea .prose > *,
 html.js .tools .prose > *,
@@ -764,6 +766,8 @@ html.js .ladder .step { --node-scale: 0; }
     transition-duration: 0.001ms !important;
   }
   html.js .hero > *,
+  html.js .doc-hero__text > *,
+  html.js .doc-hero__art,
   html.js .section__head > *,
   html.js .idea .prose > *,
   html.js .tools .prose > *,
