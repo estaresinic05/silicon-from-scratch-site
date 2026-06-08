@@ -69,6 +69,8 @@
   font-family: var(--font-mono);
   font-weight: 500;
 }
+/* A call-to-action button sitting inside a step, on its own line. */
+.step__cta { display: block; margin-top: var(--space-2); }
 
 /* Troubleshooting issues — each gets an accent left rule so the long list of
    problems stays scannable. */
