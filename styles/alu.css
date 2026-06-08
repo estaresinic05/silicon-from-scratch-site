@@ -69,6 +69,46 @@
   font-family: var(--font-mono);
   font-weight: 500;
 }
+
+/* Troubleshooting issues — each gets an accent left rule so the long list of
+   problems stays scannable. */
+.issue {
+  margin-top: var(--space-4);
+  padding: 0 0 0 var(--space-3);
+  border-left: 2px solid var(--hairline);
+  max-width: var(--maxw-prose);
+}
+.issue h3 { margin-bottom: var(--space-2); }
+.issue p { color: var(--soft-ink); margin: 0 0 var(--space-2); }
+.issue p:last-child { margin-bottom: 0; }
+.issue strong { color: var(--ink); }
+.issue .code { margin: var(--space-2) 0; }
+
+/* Checklist — square markers, monospace ticks feel */
+.checklist {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  max-width: var(--maxw-prose);
+}
+.checklist li {
+  position: relative;
+  padding-left: 2rem;
+  margin-bottom: var(--space-2);
+  color: var(--soft-ink);
+  line-height: 1.6;
+}
+.checklist li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.35em;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--accent);
+  border-radius: 4px;
+}
+.checklist strong { color: var(--ink); }
 .backlink {
   font-family: var(--font-mono);
   font-size: 0.78rem;
