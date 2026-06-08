@@ -12,14 +12,18 @@
 .doc-hero {
   padding-block: clamp(var(--space-5), 7vw, var(--space-6));
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(180px, 300px);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.85fr);
   gap: clamp(var(--space-4), 5vw, var(--space-6));
   align-items: center;
 }
-/* Title + intro live in the left column, the ALU block sits on the right. The
-   title is kept on one line ("The Arithmetic Logic Unit") and sized so it fits
-   the text column without wrapping. */
-.doc-hero h1 { white-space: nowrap; font-size: clamp(1.9rem, 3.6vw, 2.9rem); }
+.doc-hero__text { max-width: 40rem; }
+
+/* On wide screens, nudge the whole hero — text and diagram together — a little
+   left of the centred container so it doesn't crowd the right edge. Only when
+   there's gutter to spare, so nothing ever clips off the left. */
+@media (min-width: 1240px) {
+  .doc-hero { transform: translateX(-2rem); }
+}
 
 /* The ALU block symbol sits beside the intro, on a paper card so the white
    drawing reads as a deliberate panel (matching the diagram figures below). */
@@ -245,10 +249,8 @@
    RESPONSIVE
  * ------------------------------------------------------------------ */
 @media (max-width: 768px) {
-  /* Stack the hero: text first, then the ALU block diagram below it. The title
-     wraps here — one line can't fit at phone widths. */
+  /* Stack the hero: text first, then the ALU block diagram below it. */
   .doc-hero { grid-template-columns: 1fr; gap: var(--space-4); }
-  .doc-hero h1 { white-space: normal; }
   .doc-hero__text { max-width: none; }
   .doc-hero__art { max-width: 340px; margin-inline: auto; }
   .doc-hero__lead { font-size: 1.1rem; }
