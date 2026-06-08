@@ -11,7 +11,27 @@
  * ------------------------------------------------------------------ */
 .doc-hero {
   padding-block: clamp(var(--space-5), 7vw, var(--space-6));
-  max-width: var(--maxw-prose);
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.85fr);
+  gap: clamp(var(--space-4), 5vw, var(--space-6));
+  align-items: center;
+}
+.doc-hero__text { max-width: 40rem; }
+
+/* The ALU block symbol sits beside the intro, on a paper card so the white
+   drawing reads as a deliberate panel (matching the diagram figures below). */
+.doc-hero__art {
+  margin: 0;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: clamp(var(--space-3), 4vw, var(--space-4));
+  box-shadow: var(--shadow-soft);
+}
+.doc-hero__art img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
 }
 .backlink {
   font-family: var(--font-mono);
@@ -222,6 +242,10 @@
    RESPONSIVE
  * ------------------------------------------------------------------ */
 @media (max-width: 768px) {
+  /* Stack the hero: text first, then the ALU block diagram below it. */
+  .doc-hero { grid-template-columns: 1fr; gap: var(--space-4); }
+  .doc-hero__text { max-width: none; }
+  .doc-hero__art { max-width: 340px; margin-inline: auto; }
   .doc-hero__lead { font-size: 1.1rem; }
   .doc-hero__actions .btn,
   .nextstep .doc-hero__actions .btn { flex: 1 1 auto; justify-content: center; }
