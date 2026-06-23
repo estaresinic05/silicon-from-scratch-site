@@ -373,101 +373,11 @@ body::before {
   padding: 0.25rem 0;
 }
 
-/* Right-hand group in the bar: nav + section index + mobile toggle */
+/* Right-hand group in the bar: nav + mobile toggle */
 .topbar__right {
   display: flex;
   align-items: center;
   gap: clamp(1rem, 2.5vw, 2.2rem);
-}
-
-/* ------------------------------------------------------------------ *
-   PAGE SECTION INDEX — the ☰ button reveals a list of this page's
-   headings on hover (desktop) or tap (touch) to jump to a section.
- * ------------------------------------------------------------------ */
-.toc {
-  position: relative;
-  display: inline-flex;
-  transition: transform 0.28s ease;
-}
-/* The bar auto-hides, but the section-index button stays put in the top-right:
-   when the bar slides up, the ☰ counter-translates back down so it's always
-   reachable. (The rest of the bar — wordmark + nav — still hides.) */
-.topbar.is-hidden .toc {
-  transform: translateY(calc(4rem + 1px));
-}
-.toc__btn {
-  width: 2.4rem; height: 2.4rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  /* a soft backdrop so it reads as a control even when floating over content */
-  background: color-mix(in srgb, var(--bg) 86%, transparent);
-  backdrop-filter: saturate(1.2) blur(8px);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-.toc__bars,
-.toc__bars::before,
-.toc__bars::after {
-  content: "";
-  display: block;
-  width: 18px; height: 2px;
-  background: var(--ink);
-  border-radius: 2px;
-}
-.toc__bars::before { transform: translateY(-6px); }
-.toc__bars::after  { transform: translateY(4px); }
-
-.toc__menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
-  min-width: 230px;
-  max-width: 330px;
-  max-height: 70vh;
-  overflow: auto;
-  margin: 0;
-  padding: 0.4rem;
-  list-style: none;
-  background: var(--paper);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.16);
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-6px);
-  transition: opacity 0.18s var(--ease), transform 0.18s var(--ease), visibility 0.18s;
-  z-index: 60;
-}
-.toc:hover .toc__menu,
-.toc:focus-within .toc__menu,
-.toc.is-open .toc__menu {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-.toc__menu li { margin: 0; }
-.toc__menu a {
-  display: block;
-  padding: 0.5rem 0.6rem;
-  border-radius: 6px;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  letter-spacing: 0.02em;
-  line-height: 1.3;
-  color: var(--soft-ink);
-}
-.toc__menu a:hover,
-.toc__menu a:focus-visible {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent-deep);
-}
-.toc__empty {
-  padding: 0.5rem 0.6rem;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--soft-ink);
 }
 
 /* anchored sections clear the (overlay) top bar when jumped to */

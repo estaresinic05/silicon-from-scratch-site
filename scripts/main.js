@@ -53,9 +53,8 @@
     function showBar() { topbar.classList.remove("is-hidden"); }
     function hideBar() {
       if (document.body.classList.contains("nav-open")) return;
-      /* keep the bar up while the pointer is over it or the section menu is open */
+      /* keep the bar up while the pointer is over it */
       if (topbar.matches(":hover")) return;
-      if (document.querySelector(".toc.is-open")) return;
       topbar.classList.add("is-hidden");
     }
     hideBar(); /* start tucked away */
@@ -79,63 +78,6 @@
         else if (y > lastY + 4) hideBar();
         lastY = y;
       }, { passive: true });
-    }
-  }
-
-  /* ---- 1.6 Page section index (the ☰ menu) -----------------------------
-     Build a jump list from this page's section headings. Hover (desktop) or
-     tap (touch) the ☰ to open it; clicking an entry scrolls to that section. */
-  var toc = document.getElementById("page-toc");
-  if (toc) {
-    var tocMenu = toc.querySelector(".toc__menu");
-    var tocBtn = toc.querySelector(".toc__btn");
-    var scope = document.getElementById("main") || document.body;
-    var seen = {};
-
-    Array.prototype.forEach.call(scope.querySelectorAll("section"), function (sec) {
-      var h = sec.querySelector("h1, h2");
-      if (!h) return;
-      var text = (h.textContent || "").replace(/\s+/g, " ").trim();
-      if (!text) return;
-      var target = sec.id || h.id;
-      if (!target) {
-        target = "sec-" + text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-        sec.id = target;
-      }
-      if (seen[target]) return;
-      seen[target] = 1;
-      var li = document.createElement("li");
-      var a = document.createElement("a");
-      a.href = "#" + target;
-      a.textContent = text;
-      li.appendChild(a);
-      tocMenu.appendChild(li);
-    });
-
-    if (!tocMenu.children.length) {
-      var empty = document.createElement("li");
-      empty.className = "toc__empty";
-      empty.textContent = "No sections on this page";
-      tocMenu.appendChild(empty);
-    }
-
-    if (tocBtn) {
-      tocBtn.addEventListener("click", function () {
-        var open = toc.classList.toggle("is-open");
-        tocBtn.setAttribute("aria-expanded", open ? "true" : "false");
-      });
-      tocMenu.addEventListener("click", function (e) {
-        if (e.target.closest("a")) {
-          toc.classList.remove("is-open");
-          tocBtn.setAttribute("aria-expanded", "false");
-        }
-      });
-      document.addEventListener("click", function (e) {
-        if (!toc.contains(e.target)) {
-          toc.classList.remove("is-open");
-          tocBtn.setAttribute("aria-expanded", "false");
-        }
-      });
     }
   }
 
