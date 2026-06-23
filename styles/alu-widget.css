@@ -1,0 +1,423 @@
+/* =========================================================================
+   Silicon From Scratch — alu-widget.css
+   Scoped styles for the interactive ALU datapath explorer (scripts/alu-widget.js).
+   Everything is built on the design tokens in main.css. Self-contained: remove
+   this file + alu-widget.js + the #alu-explore <section> and nothing else breaks.
+
+   TWEAKING THE LOOK
+   - Highlight (active) colour ......... --alu-active   (defaults to the brand --accent)
+   - Inverted-leg (NOT) colour ......... --alu-invert   (the purple used for NOR/NAND/sub)
+   - Inactive wire/line colour ......... --alu-idle
+   ========================================================================= */
+
+.alu-widget {
+  /* Local knobs — change these to retheme the diagram. */
+  --alu-active:  var(--accent);          /* lit wires / blocks            */
+  --alu-active-2: var(--accent-deep);    /* lit text                      */
+  --alu-invert:  var(--accent);          /* inverted (NOT) legs — purple */
+  --alu-control: #3B82F6;                /* control inputs (blue, like the schematic) */
+  --alu-idle:    rgba(35, 35, 42, 0.22); /* dimmed / inactive             */
+  --alu-idle-ink: var(--soft-ink);
+
+  /* Two columns: the datapath on the LEFT, and a slim right column holding the
+     control panel (top) above the heading/intro text (bottom). */
+  margin-top: var(--space-5);
+  display: grid;
+  grid-template-columns: 1fr minmax(26rem, 36rem);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+/* Datapath on the left, the side column (heading + intro text on top, control
+   panel below) on the right. */
+.alu-widget__stage { order: 1; }
+.alu-side { order: 2; }
+/* Let the heading + intro fill the full width of the (wider) side column
+   instead of being capped at the default prose width. */
+.alu-side .section__head,
+.alu-side .prose { max-width: none; }
+
+/* ------------------------------------------------------------------ *
+   LEFT — heading + intro + control panel, stacked in one column
+ * ------------------------------------------------------------------ */
+.alu-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.alu-panel {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+}
+.alu-controls__group { display: grid; gap: 0.55rem; }
+.alu-controls__label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--soft-ink);
+}
+
+/* Readout: the current operation, shown large at the top of the panel */
+.alu-readout {
+  display: grid;
+  gap: 0.25rem;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--hairline);
+}
+.alu-readout__label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--soft-ink);
+}
+.alu-readout__name {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--accent-deep);
+}
+.alu-readout__bits {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  letter-spacing: 0.34em;
+  color: var(--soft-ink);
+}
+
+/* Named-operation presets — a tidy 2-up grid of flat chips */
+.alu-presets { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+.alu-preset {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 500;
+  padding: 0.5rem 0.4rem;
+  text-align: center;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color 0.18s var(--ease), border-color 0.18s var(--ease),
+              background 0.18s var(--ease);
+}
+.alu-preset:hover { color: var(--accent-deep); border-color: var(--accent); }
+.alu-preset[aria-pressed="true"] {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Four control-bit toggles — 4 across */
+.alu-bits { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35rem; }
+.alu-bit {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.2rem;
+  font-family: var(--font-mono);
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.18s var(--ease), background 0.18s var(--ease);
+}
+.alu-bit:hover { border-color: var(--accent); }
+.alu-bit__name {
+  font-size: 0.52rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--soft-ink);
+}
+.alu-bit__val {
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--soft-ink);
+  font-variant-numeric: tabular-nums;
+}
+.alu-bit[aria-pressed="true"] {
+  background: rgba(107, 47, 201, 0.08);
+  border-color: var(--accent);
+}
+.alu-bit[aria-pressed="true"] .alu-bit__val { color: var(--accent-deep); }
+
+/* ------------------------------------------------------------------ *
+   RIGHT — DIAGRAM STAGE
+ * ------------------------------------------------------------------ */
+.alu-widget__stage {
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  overflow: hidden;
+  /* hug the height-filled diagram and centre it */
+  display: grid;
+  place-items: center;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 0;
+  /* hug the left of the column so the datapath sits at the far left */
+  margin-inline: 0;
+  justify-self: start;
+}
+#alu-diagram {
+  display: block;
+  /* Fill the height the section hands the stage (see #explore below) so the
+     whole portrait diagram is on screen at once. Width follows the 685:970
+     viewBox ratio. */
+  aspect-ratio: 685 / 970;
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* --- the module boundary box: a clear rectangle around each slice so the two
+       slices read as separate components. Internal logic is drawn inside it;
+       signals cross it as inputs/outputs. Never dimmed (structural). --- */
+.alu-block {
+  fill: rgba(35, 35, 42, 0.015);
+  stroke: var(--ink);          /* dark, so each slice boundary is clearly apparent */
+  stroke-width: 1.8;
+}
+
+/* --- wires: idle = thin solid grey; active = thick glowing accent --- */
+.alu-wire {
+  fill: none;
+  stroke: var(--alu-idle);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  transition: stroke 0.3s var(--ease), stroke-width 0.3s var(--ease),
+              opacity 0.3s var(--ease);
+}
+.alu-wire.is-active {
+  stroke: var(--alu-active);
+  stroke-width: 3;
+}
+/* inverted (NOT) legs use the invert colour (also purple); kept solid so the
+   whole active path reads as one calm, unified line */
+.alu-wire--inv.is-active {
+  stroke: var(--alu-invert);
+}
+
+/* --- blocks (mux / gate / adder / overflow / NOR) --- */
+.alu-node .alu-shape {
+  fill: var(--paper);
+  stroke: var(--alu-idle);
+  stroke-width: 1.6;
+  transition: stroke 0.3s var(--ease), fill 0.3s var(--ease);
+}
+.alu-node .alu-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  fill: var(--alu-idle-ink);
+  text-anchor: middle;
+  dominant-baseline: middle;
+  transition: fill 0.3s var(--ease);
+}
+.alu-node.is-active .alu-shape {
+  stroke: var(--alu-active);
+  stroke-width: 2.4;
+  fill: rgba(107, 47, 201, 0.07);
+}
+.alu-node.is-active .alu-label { fill: var(--alu-active-2); }
+.alu-label--sm { font-size: 9.5px; }
+/* a lit NOT gate uses the invert colour to match its legs */
+.alu-node--inv.is-active .alu-shape {
+  stroke: var(--alu-invert);
+  fill: rgba(107, 47, 201, 0.08);
+}
+
+/* arrowheads: small OPEN chevrons (two converging strokes, no fill). They
+   inherit the colour of the wire they sit on (context-stroke) so a lit input
+   gets a purple head; older engines fall back to the static colour. */
+.alu-arrowhead {
+  fill: none;
+  stroke: var(--soft-ink);
+  stroke: context-stroke;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.alu-arrowhead-ctrl {
+  fill: none;
+  stroke: var(--alu-control);
+  stroke: context-stroke;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* control-input select lines (Ainvert / Binvert / Operation) are drawn blue,
+   like the hand-drawn schematic. They are control, not datapath, so they never
+   light up — they stay this colour. */
+.alu-wire.alu-ctrl-wire { stroke: var(--alu-control); }
+
+/* solid blue junction bubble where bit-0's Binvert taps into the carry-in */
+.alu-ctrl-dot { fill: var(--alu-control); stroke: none; }
+
+/* solid junction bubble on a datapath tap (the MSB adder output → overflow) */
+.alu-tapdot { fill: var(--ink); stroke: none; transition: fill 0.3s var(--ease); }
+.alu-tapdot.is-active { fill: var(--alu-active); }
+
+/* junction bubbles where datapath wires connect (fan-outs, taps, the Set branch):
+   drawn like an input-port dot — hollow paper with a grey ring when idle,
+   purple-filled when the path flowing through them is live. */
+.alu-jdot {
+  fill: var(--paper);
+  stroke: var(--alu-idle);
+  stroke-width: 1.6;
+  transition: fill 0.3s var(--ease), stroke 0.3s var(--ease);
+}
+.alu-jdot.is-active { fill: var(--alu-active); stroke: var(--alu-active); }
+
+/* --- result-mux input stubs --- */
+.alu-instub {
+  stroke: var(--alu-idle);
+  stroke-width: 2;
+  transition: stroke 0.3s var(--ease), stroke-width 0.3s var(--ease);
+}
+.alu-instub.is-active { stroke: var(--alu-active); stroke-width: 4; }
+
+/* --- ports --- */
+.alu-dot { fill: var(--paper); stroke: var(--alu-idle); stroke-width: 1.6; transition: stroke 0.3s var(--ease), fill 0.3s var(--ease); }
+.alu-port.is-active .alu-dot { fill: var(--alu-active); stroke: var(--alu-active); }
+.alu-portlabel { font-family: var(--font-mono); font-size: 11px; fill: var(--soft-ink); dominant-baseline: middle; }
+.alu-port.is-active .alu-portlabel { fill: var(--alu-active-2); }
+
+/* --- captions / labels on the diagram --- */
+.alu-pin  { font-family: var(--font-mono); font-size: 10px; fill: var(--soft-ink); }
+.alu-ctrl { font-family: var(--font-mono); font-size: 10.5px; fill: var(--soft-ink); }
+.alu-ctrl--blue { fill: var(--alu-control); }   /* Ainvert / Binvert / Operation */
+.alu-cap  { font-family: var(--font-mono); font-size: 10px; fill: var(--soft-ink); }
+.alu-slicecap {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  fill: var(--accent);
+}
+
+/* the active path is solid purple at rest. A small "bead" of light flows along
+   it like a wave: rebuildBeads() lays one short overlay path on each active wire
+   in flow order, and each bead slides via stroke-dashoffset, staggered by its
+   --flow index, so the light travels the whole path (a/b inputs → muxes →
+   gates/adder → result, top slice then bottom, or however the op flows).
+   The soft glow lives on the layer (one filter, not one-per-bead). */
+.alu-beads { filter: drop-shadow(0 0 3px var(--alu-active)); }
+/* Shape only — motion is driven per-bead in JS (rebuildBeads) so every bead
+   moves at the SAME pixel speed (duration ∝ wire length). With reduced-motion
+   no animation is created, so the beads stay hidden and the path is solid. */
+.alu-bead {
+  fill: none;
+  stroke: var(--alu-active);      /* same purple as the wire — it's the pipe swelling */
+  stroke-width: 8;                /* fatter than the 3px wire, so the pipe bulges */
+  stroke-linecap: round;          /* rounded ends taper the bulge into the pipe */
+  stroke-dasharray: 14 100000;    /* one fixed-size bulge (real units, single bead) */
+  opacity: 0;                     /* hidden at rest; the JS animation reveals it */
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ *
+   LIVE CAPTION
+ * ------------------------------------------------------------------ */
+/* the live path description is kept for screen readers (aria-live) but hidden
+   from the panel. */
+.alu-widget__live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.alu-noscript {
+  margin: 0;
+  padding: var(--space-3);
+  color: var(--soft-ink);
+}
+
+/* ------------------------------------------------------------------ *
+   RESPONSIVE
+ * ------------------------------------------------------------------ */
+@media (max-width: 860px) {
+  /* stack: panel on top, datapath below; panel stops being sticky */
+  .alu-widget { grid-template-columns: 1fr; gap: var(--space-3); align-items: start; }
+  .alu-panel { position: static; top: auto; }
+  .alu-readout__name { font-size: 1.6rem; }
+  /* stacked view scrolls normally — drop the viewport-fill, size to width */
+  #explore { display: block; min-height: 0; padding-top: var(--space-5); }
+  #explore > .container { display: block; }
+  #explore .alu-widget { display: grid; }
+  .alu-widget__stage { width: auto; }
+  #alu-diagram { height: auto; width: 100%; max-width: 685px; }
+}
+
+/* =======================================================================
+   EXPERIMENT — a matte graphite band for the interactive section only.
+   Replaces the page's white graph-paper backdrop with a flat dark surface
+   for #explore; the control panel + diagram float on it as light cards.
+   Fully scoped to #explore, so the rest of the site is untouched. Delete
+   this whole block (and restore the inline padding) to revert.
+   ===================================================================== */
+#explore {
+  background: #2f2f36;                  /* flat matte graphite — no gradient/texture */
+  margin-block: 0;                      /* a clean, full-width stripe between sections */
+  /* One self-contained viewport-height panel: compact heading on top, then the
+     widget fills the rest so the diagram is fully visible without scrolling. */
+  min-height: 100vh;
+  padding-top: 5rem;                    /* clears the 4rem sticky topbar */
+  padding-bottom: var(--space-4);
+  display: flex;
+}
+#explore > .container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+/* heading + intro live in the left column now; the side's gap spaces them */
+#explore .section__head { margin-bottom: 0; }
+#explore .prose { margin-bottom: 0; font-size: 0.88rem; }
+/* the widget fills the whole viewport height; both columns stretch into it,
+   so the datapath on the RIGHT gets the full height — no scrolling. */
+#explore .alu-widget {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 0;
+  align-items: stretch;
+}
+#explore .alu-side { justify-content: flex-start; }   /* content sits up top */
+
+/* heading + intro copy sit directly on the dark band → lighten them */
+#explore .kicker { color: #b7a6ef; }
+#explore .section__head h2 { color: #f4f4f7; }
+#explore .prose,
+#explore .prose p { color: #c2c2cb; }
+#explore .prose strong { color: #ececf0; }
+#explore .prose code {
+  color: #ececf0;
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* lift the two light cards off the dark surface with a soft drop shadow */
+#explore .alu-panel,
+#explore .alu-widget__stage {
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.32);
+}

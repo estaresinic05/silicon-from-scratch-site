@@ -24,6 +24,9 @@
        one level down, so shared assets are reached with ../ (domain-ready). -->
   <link rel="stylesheet" href="../styles/main.css" />
   <link rel="stylesheet" href="../styles/alu.css" />
+  <!-- Interactive ALU datapath explorer (self-contained; pairs with
+       ../scripts/alu-widget.js and the #alu-explore section below). -->
+  <link rel="stylesheet" href="../styles/alu-widget.css" />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -37,19 +40,28 @@
       </a>
 
       <nav class="nav" id="primary-nav" aria-label="Primary">
-        <a href="../#learn">Learn</a>
-        <a href="../#inside">Inside</a>
-        <a href="../#tools">Tools</a>
-        <a href="../#about">About</a>
-        <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
-           target="_blank" rel="noopener">GitHub</a>
+        <a href="../">Home</a>
+        <a href="#top">ALU</a>
+        <a href="../about/">About</a>
+        <span class="nav__pending" aria-disabled="true" title="Coming soon">Help</span>
       </nav>
 
-      <button class="nav-toggle" id="nav-toggle"
-              aria-label="Toggle navigation menu"
-              aria-expanded="false" aria-controls="primary-nav">
-        <span class="nav-toggle__bars" aria-hidden="true"></span>
-      </button>
+      <div class="topbar__right">
+        <!-- Section index: hover (or tap) the ☰ to jump to a heading on this page -->
+        <div class="toc" id="page-toc">
+          <button class="toc__btn" type="button" aria-haspopup="true"
+                  aria-expanded="false" aria-label="Jump to a section on this page">
+            <span class="toc__bars" aria-hidden="true"></span>
+          </button>
+          <ul class="toc__menu" aria-label="Sections on this page"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -86,21 +98,132 @@
     </section>
 
     <!-- ============================== OVERVIEW =========================== -->
-    <section class="section" aria-labelledby="overview-title">
-      <div class="container">
-        <div class="section__head">
-          <p class="kicker">Overview</p>
+    <!-- Full-bleed split band: the die shot fills the entire right half of
+         the viewport (no page background visible), with the text sitting on
+         its own dark panel on the left. -->
+    <section class="overview-band" aria-labelledby="overview-title">
+      <div class="overview-band__panel">
+        <div class="overview-band__panel-inner">
+          <p class="kicker">On the Die</p>
           <h2 id="overview-title">What you're looking at.</h2>
-        </div>
-        <div class="prose">
           <p>
-            The ALU is where a processor actually does arithmetic and logic — and
-            it's the clearest place to see a real circuit emerge from nothing but
-            gates. This one is a parameterized, fully combinational
-            <strong>N-bit ALU</strong> built from 1-bit slices in the classic
-            Patterson &amp; Hennessy style, so you can trace every wire from a
-            single bit up to a complete 32-bit operation.
+            The ALU presented in this project is represented as a single unit.
+            Modern processors such as AMD's Ryzen&trade; 5 9600X use a more
+            advanced design. Instead of one ALU, each CPU core contains multiple
+            execution units, including integer ALUs, address generation units
+            (AGUs), branch units, and floating-point/vector units. These
+            specialized units allow several operations to be executed in
+            parallel, greatly increasing performance compared to a single-ALU
+            design.
           </p>
+          <p>
+            For simplicity, we start with a pared-down version of the integer
+            execution that goes on in a processor. The processor does simple
+            arithmetic, logic operations, and even a set-less-than operation.
+            See how the ALU works below!
+          </p>
+        </div>
+      </div>
+      <figure class="overview-band__art">
+        <!-- Fixed crop window: stays the same size/position while scroll.js
+             scales the image *inside* it (zoom-within-frame). -->
+        <div class="overview-band__crop">
+          <!-- Image + highlight share one transformed layer so the highlight
+               stays locked to the silicon as scroll.js zooms/pans. -->
+          <div class="overview-band__zoom">
+            <img src="../assets/ccd-dieshot-detail-opt.jpg"
+                 alt="A high-resolution die shot of a CCD processor, showing the silicon detail of the chip."
+                 decoding="async" />
+            <!-- Revealed after the zoom lands: the integer-execution block of
+                 this core (see assets/ccd-dieshot-bottom-left-detail.jpg). -->
+            <div class="overview-band__hl">
+              <span class="overview-band__hl-text">Integer Execution</span>
+            </div>
+          </div>
+        </div>
+      </figure>
+    </section>
+
+    <!-- ===================== INTERACTIVE DATAPATH EXPLORER ===============
+         Self-contained widget. Styles: ../styles/alu-widget.css.
+         Behaviour + the inline SVG schematic: ../scripts/alu-widget.js, which
+         builds the diagram into #alu-diagram and lights the active datapath.
+         To remove the widget, delete this <section>, the alu-widget.css <link>
+         in <head>, and the alu-widget.js <script> near </body>. -->
+    <section class="section" id="explore" aria-labelledby="explore-title">
+      <div class="container">
+        <div class="alu-widget" id="alu-widget">
+          <!-- ============ LEFT: heading, intro + control panel ============ -->
+          <div class="alu-side">
+            <div class="section__head">
+              <p class="kicker">Try It</p>
+              <h2 id="explore-title">Light up the active datapath.</h2>
+            </div>
+            <div class="prose">
+              <p>
+                Your chance to play around with the ALU before we begin our deep
+                dive. See how the active path changes as you manipulate the 4-bit
+                control input.
+              </p>
+            </div>
+
+            <aside class="alu-panel">
+            <!-- current operation, shown large -->
+            <div class="alu-readout" aria-hidden="true">
+              <span class="alu-readout__label">Operation</span>
+              <span class="alu-readout__name" id="alu-op-name">add</span>
+              <span class="alu-readout__bits" id="alu-op-bits">0010</span>
+            </div>
+
+            <div class="alu-controls__group" role="group" aria-label="Named operations">
+              <span class="alu-controls__label">Presets</span>
+              <!-- data-code is the decimal value of control[3:0] -->
+              <div class="alu-presets">
+                <button class="alu-preset" type="button" data-code="0"  aria-pressed="false">AND</button>
+                <button class="alu-preset" type="button" data-code="1"  aria-pressed="false">OR</button>
+                <button class="alu-preset" type="button" data-code="2"  aria-pressed="false">add</button>
+                <button class="alu-preset" type="button" data-code="6"  aria-pressed="false">subtract</button>
+                <button class="alu-preset" type="button" data-code="7"  aria-pressed="false">slt</button>
+                <button class="alu-preset" type="button" data-code="12" aria-pressed="false">NOR</button>
+                <button class="alu-preset" type="button" data-code="13" aria-pressed="false">NAND</button>
+              </div>
+            </div>
+
+            <div class="alu-controls__group" role="group" aria-label="Control bits">
+              <span class="alu-controls__label">control[3:0]</span>
+              <!-- data-bit is the bit position; 3 = Ainvert, 2 = Bnegate, 1:0 = Operation -->
+              <div class="alu-bits">
+                <button class="alu-bit" type="button" data-bit="3" aria-pressed="false" aria-label="control bit 3, Ainvert">
+                  <span class="alu-bit__name">Ainv</span><span class="alu-bit__val">0</span>
+                </button>
+                <button class="alu-bit" type="button" data-bit="2" aria-pressed="false" aria-label="control bit 2, Bnegate">
+                  <span class="alu-bit__name">Bneg</span><span class="alu-bit__val">0</span>
+                </button>
+                <button class="alu-bit" type="button" data-bit="1" aria-pressed="false" aria-label="control bit 1, Operation high">
+                  <span class="alu-bit__name">Op1</span><span class="alu-bit__val">0</span>
+                </button>
+                <button class="alu-bit" type="button" data-bit="0" aria-pressed="false" aria-label="control bit 0, Operation low">
+                  <span class="alu-bit__name">Op0</span><span class="alu-bit__val">0</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- live, screen-reader-friendly description of the current path -->
+            <p class="alu-widget__live" aria-live="polite"></p>
+            </aside>
+          </div>
+
+          <!-- ============ RIGHT: the datapath ============ -->
+          <div class="alu-widget__stage">
+            <svg id="alu-diagram" viewBox="0 0 685 970" role="img"
+                 aria-label="ALU datapath schematic. Choose an operation to highlight the active path."></svg>
+            <noscript>
+              <p class="alu-noscript">
+                This interactive diagram needs JavaScript. The same architecture
+                is drawn in the static schematics further down the page.
+              </p>
+            </noscript>
+          </div>
         </div>
       </div>
     </section>
@@ -545,6 +668,10 @@ gtkwave waveforms/dump.vcd</code></pre>
 
   <!-- Mobile nav toggle -->
   <script src="../scripts/main.js" defer></script>
+
+  <!-- Interactive ALU datapath explorer (builds the #alu-diagram SVG and runs
+       the highlight engine). Self-contained, no dependencies. -->
+  <script src="../scripts/alu-widget.js" defer></script>
 
   <!-- GSAP + ScrollTrigger from CDN (free, no build step) for the same
        scroll-reveal feel as the home page. If they fail to load, scroll.js

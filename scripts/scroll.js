@@ -84,6 +84,46 @@
               { opacity: 1, scale: 1, duration: 0.9, clearProps: "transform" }, "-=0.6");
   }
 
+  /* ---- Overview band: pin the full-bleed split and zoom the die shot in
+         toward the column-1 / row-3 core as the reader scrolls. The focal
+         point lives in CSS (transform-origin on the img); here we just scrub
+         the scale so it tracks scroll position. ---- */
+  var overviewBand = document.querySelector(".overview-band");
+  if (overviewBand) {
+    var zoomLayer = overviewBand.querySelector(".overview-band__zoom");
+    var hl = overviewBand.querySelector(".overview-band__hl");
+    if (zoomLayer) {
+      var zoomTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: overviewBand,
+          start: "top top",
+          end: "+=170%",
+          scrub: true,
+          pin: true,
+          anticipatePin: 1
+        }
+      });
+      // Zoom runs across the whole scroll; the rightward pan only begins
+      // partway in (at 55% of the timeline) so it eases in later.
+      zoomTl
+        .fromTo(zoomLayer, { scale: 1 },
+                { scale: 2.6, ease: "none", duration: 1 }, 0)
+        .fromTo(zoomLayer, { xPercent: 0 },
+                { xPercent: 5, ease: "none", duration: 0.45 }, 0.55);
+
+      // Once the zoom + pan have landed, fade the integer-execution
+      // highlight in. (Plain opacity — cheaper than an extra transform.)
+      if (hl) {
+        zoomTl.fromTo(
+          hl,
+          { opacity: 0 },
+          { opacity: 1, ease: "none", duration: 0.3 },
+          1.05
+        );
+      }
+    }
+  }
+
   /* ---- Diagram figures: fade + gently scale in as they scroll into view, the
          same reveal as the hero diagram above. ---- */
   gsap.utils.toArray(".figure").forEach(function (fig) {

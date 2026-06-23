@@ -161,6 +161,152 @@
 }
 
 /* ------------------------------------------------------------------ *
+   OVERVIEW BAND — a full-bleed 50/50 split. The die shot fills the entire
+   right half of the viewport edge-to-edge (object-fit: cover, so no page
+   background shows through), and the text sits on its own dark panel on
+   the left. Stacks vertically on narrow screens.
+ * ------------------------------------------------------------------ */
+.overview-band {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  border-top: 1px solid var(--hairline);
+  /* Shared dark backdrop with a soft accent glow — spans the whole band so
+     the panel and the image area read as one continuous surface. */
+  background:
+    radial-gradient(80% 70% at 15% 20%,
+                    rgba(107, 47, 201, 0.28), transparent 60%),
+    #1b1b22;
+}
+
+/* Left half — text sits directly on the shared band background. */
+.overview-band__panel {
+  display: flex;
+  align-items: center;
+  /* Center the text within the left half (between the screen edge and the
+     picture) rather than hugging the image. */
+  justify-content: center;
+  padding: clamp(var(--space-4), 5vw, var(--space-7));
+}
+.overview-band__panel-inner {
+  max-width: 40rem;
+}
+.overview-band__panel .kicker {
+  color: #b794f6;
+}
+.overview-band__panel h2 {
+  color: #fdfdfb;
+}
+.overview-band__panel p {
+  color: rgba(253, 253, 251, 0.74);
+  margin-bottom: 0;
+}
+/* Extra breathing room between the two overview paragraphs. */
+.overview-band__panel p + p {
+  margin-top: 2.5em;
+}
+.overview-band__panel strong {
+  color: #fdfdfb;
+  font-weight: 600;
+}
+
+/* Right half — the whole image stays visible (contain) over the shared
+   band background. Extra padding on the right nudges the image leftward so
+   a strip of the background shows along its right edge. */
+.overview-band__art {
+  margin: 0;
+  height: 100%;
+  padding-right: clamp(var(--space-3), 4vw, var(--space-6));
+  /* Image hugs the left so the shared background shows along its right. */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+/* The crop window: matches the die-shot's aspect ratio, sits at a fixed size
+   and position, and clips whatever spills past it. The zoom happens *inside*
+   this frame, so the window itself never moves or resizes. */
+.overview-band__crop {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 7849 / 6737;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-sm);
+}
+/* The zoom layer holds the image + highlight so they scale/pan together.
+   scroll.js scrubs scale()/x on this element. */
+.overview-band__zoom {
+  position: absolute;
+  inset: 0;
+  /* Zoom focal point — column 1, row 3 core. Tweak these two %s to re-aim
+     the zoom (x across, y down). */
+  transform-origin: 4% 53%;
+}
+.overview-band__zoom img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Highlight over the integer-execution block of the zoomed core. Positioned
+   as a %-of-image rectangle so it rides along with the zoom. The numbers are
+   derived from the labeled floorplan (ccd-dieshot-bottom-left-detail.jpg);
+   nudge left/top/width/height to re-aim. Hidden until scroll.js reveals it. */
+.overview-band__hl {
+  position: absolute;
+  left: 12.95%;
+  top: 47.45%;
+  width: 6.45%;
+  height: 5.99%;
+  background: rgba(205, 180, 242, 0.45); /* translucent light-purple fill */
+  opacity: 0;
+  pointer-events: none;
+  /* Body = lower rectangle + square bump on the right of its top edge; a skinny
+     rectangle hanging below the bottom (left edge out to ~2/3 across); plus a
+     box jutting right from the bottom-right corner. Box-local %s. */
+  clip-path: polygon(
+    0% 39.2%, 44.2% 39.2%, 44.2% 0%, 78.3% 0%,
+    78.3% 73.3%, 100% 73.3%, 100% 88.3%, 53% 88.3%,
+    53% 100%, 0% 100%
+  );
+}
+/* Label centered in the main rectangle of the highlight. Sized in image-space
+   px (tiny) so the zoom magnifies it to a legible size. */
+.overview-band__hl-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 63%;
+  transform: translate(-5px, -50%);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 3.2px;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  color: #fdfdfb;
+  text-shadow: 0 0 1.5px rgba(20, 20, 26, 0.7);
+}
+
+@media (max-width: 760px) {
+  .overview-band {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .overview-band__art {
+    padding: var(--space-3);
+    justify-content: center;
+  }
+  .overview-band__crop {
+    width: 100%;
+    height: auto;
+  }
+}
+
+/* ------------------------------------------------------------------ *
    FIGURES — the hand-drawn schematics sit on a paper card so the white
    drawing background blends into a deliberate panel rather than floating.
  * ------------------------------------------------------------------ */
