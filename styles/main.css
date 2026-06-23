@@ -384,13 +384,25 @@ body::before {
    PAGE SECTION INDEX — the ☰ button reveals a list of this page's
    headings on hover (desktop) or tap (touch) to jump to a section.
  * ------------------------------------------------------------------ */
-.toc { position: relative; display: inline-flex; }
+.toc {
+  position: relative;
+  display: inline-flex;
+  transition: transform 0.28s ease;
+}
+/* The bar auto-hides, but the section-index button stays put in the top-right:
+   when the bar slides up, the ☰ counter-translates back down so it's always
+   reachable. (The rest of the bar — wordmark + nav — still hides.) */
+.topbar.is-hidden .toc {
+  transform: translateY(calc(4rem + 1px));
+}
 .toc__btn {
   width: 2.4rem; height: 2.4rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  /* a soft backdrop so it reads as a control even when floating over content */
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: saturate(1.2) blur(8px);
   border: 1px solid var(--hairline);
   border-radius: var(--radius-sm);
   cursor: pointer;

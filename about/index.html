@@ -21,6 +21,18 @@
 
   <!-- Shared site styles (this page lives at /about/, one level down). -->
   <link rel="stylesheet" href="../styles/main.css" />
+
+  <!-- Center the About content vertically so it's mid-screen on landing. -->
+  <style>
+    .aboutme {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: safe center;
+      border-top: 0;
+      padding-block: var(--space-4);
+    }
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
