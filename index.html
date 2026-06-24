@@ -44,6 +44,15 @@
       </nav>
 
       <div class="topbar__right">
+        <!-- Section index (desktop only): hover the ☰ to jump to a section on this page -->
+        <div class="toc" id="page-toc">
+          <button class="toc__btn" type="button" aria-haspopup="true"
+                  aria-expanded="false" aria-label="Jump to a section on this page">
+            <span class="nav-toggle__bars" aria-hidden="true"></span>
+          </button>
+          <ul class="toc__menu" aria-label="Sections on this page"></ul>
+        </div>
+
         <button class="nav-toggle" id="nav-toggle"
                 aria-label="Toggle navigation menu"
                 aria-expanded="false" aria-controls="primary-nav">

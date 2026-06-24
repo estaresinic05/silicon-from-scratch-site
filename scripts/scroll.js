@@ -84,32 +84,33 @@
               { opacity: 1, scale: 1, duration: 0.9, clearProps: "transform" }, "-=0.6");
   }
 
-  /* ---- Overview band: pin the full-bleed split and zoom the die shot in
-         toward the column-1 / row-3 core as the reader scrolls. The focal
-         point lives in CSS (transform-origin on the img); here we just scrub
-         the scale so it tracks scroll position. ---- */
+  /* ---- Overview band: zoom the die shot in toward the column-1 / row-3 core.
+         The animation plays on its own (not scrubbed) but only starts once the
+         reader is halfway into the section. It zooms in once and stays there.
+         The focal point lives in CSS (transform-origin on the img). Durations
+         are in seconds — tweak freely. ---- */
   var overviewBand = document.querySelector(".overview-band");
   if (overviewBand) {
     var zoomLayer = overviewBand.querySelector(".overview-band__zoom");
     var hl = overviewBand.querySelector(".overview-band__hl");
     if (zoomLayer) {
+      // Paused until the section's midpoint reaches the viewport centre, then
+      // it plays through once and holds.
       var zoomTl = gsap.timeline({
+        paused: true,
         scrollTrigger: {
           trigger: overviewBand,
-          start: "top top",
-          end: "+=170%",
-          scrub: true,
-          pin: true,
-          anticipatePin: 1
+          start: "center center",
+          toggleActions: "play none none none"
         }
       });
-      // Zoom runs across the whole scroll; the rightward pan only begins
-      // partway in (at 55% of the timeline) so it eases in later.
+
+      // Zoom runs across the whole timeline; the rightward pan eases in later.
       zoomTl
         .fromTo(zoomLayer, { scale: 1 },
-                { scale: 2.6, ease: "none", duration: 1 }, 0)
+                { scale: 2.6, ease: "power1.inOut", duration: 4 }, 0)
         .fromTo(zoomLayer, { xPercent: 0 },
-                { xPercent: 5, ease: "none", duration: 0.45 }, 0.55);
+                { xPercent: 5, ease: "power1.inOut", duration: 1.8 }, 2.2);
 
       // Once the zoom + pan have landed, fade the integer-execution
       // highlight in. (Plain opacity — cheaper than an extra transform.)
@@ -117,8 +118,8 @@
         zoomTl.fromTo(
           hl,
           { opacity: 0 },
-          { opacity: 1, ease: "none", duration: 0.3 },
-          1.05
+          { opacity: 1, ease: "none", duration: 1 },
+          3.2
         );
       }
     }

@@ -44,20 +44,26 @@
   });
 
   /* ---- 1.5 Auto-hiding top bar ------------------------------------------
-     The bar is a fixed overlay, hidden by default. On hover-capable devices it
-     reveals when the pointer nears the top of the viewport; on touch devices it
-     reveals while the user scrolls and tucks away again once scrolling stops.
-     It never hides while the mobile menu is open. */
+     The bar is a fixed overlay that's always visible at the top of the page;
+     it only hides once the reader scrolls down. On hover-capable devices it
+     also reveals when the pointer nears the top of the viewport; on touch
+     devices it reveals while scrolling up. It never hides while the mobile
+     menu is open. */
   var topbar = document.querySelector(".topbar");
   if (topbar) {
+    var TOP_ZONE = 4; /* px from the top still counts as "at the top of the page" */
+    function atTop() { return (window.pageYOffset || 0) <= TOP_ZONE; }
+
     function showBar() { topbar.classList.remove("is-hidden"); }
     function hideBar() {
       if (document.body.classList.contains("nav-open")) return;
       /* keep the bar up while the pointer is over it */
       if (topbar.matches(":hover")) return;
+      /* always visible at the top of the page */
+      if (atTop()) return;
       topbar.classList.add("is-hidden");
     }
-    hideBar(); /* start tucked away */
+    showBar(); /* visible at launch — we start at the top */
 
     var hoverCapable = window.matchMedia &&
       window.matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -68,6 +74,11 @@
         if (e.clientY <= REVEAL) showBar();
         else if (e.clientY > topbar.offsetHeight + 28) hideBar();
       });
+      /* Hide once the reader scrolls down; reveal again at the very top. */
+      window.addEventListener("scroll", function () {
+        if (atTop()) showBar();
+        else hideBar();
+      }, { passive: true });
     } else {
       /* Classic: reveal when scrolling up (or at the very top), hide when
          scrolling down. A small threshold avoids jitter on tiny moves. */
@@ -78,6 +89,46 @@
         else if (y > lastY + 4) hideBar();
         lastY = y;
       }, { passive: true });
+    }
+  }
+
+  /* ---- 1.6 Page section index (desktop ☰) ------------------------------
+     Build a jump list from this page's section headings. Hover the ☰ in the
+     top bar to open it; clicking an entry scrolls to that section. Limited to
+     the first two sections for now. */
+  var toc = document.getElementById("page-toc");
+  if (toc) {
+    var tocMenu = toc.querySelector(".toc__menu");
+    var scope = document.getElementById("main") || document.body;
+    var seen = {};
+    var MAX_SECTIONS = 2;
+
+    Array.prototype.forEach.call(scope.querySelectorAll("section"), function (sec) {
+      if (tocMenu.children.length >= MAX_SECTIONS) return;
+      var h = sec.querySelector("h1, h2");
+      if (!h) return;
+      var text = (h.textContent || "").replace(/\s+/g, " ").trim();
+      if (!text) return;
+      var target = sec.id || h.id;
+      if (!target) {
+        target = "sec-" + text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+        sec.id = target;
+      }
+      if (seen[target]) return;
+      seen[target] = 1;
+      var li = document.createElement("li");
+      var a = document.createElement("a");
+      a.href = "#" + target;
+      a.textContent = text;
+      li.appendChild(a);
+      tocMenu.appendChild(li);
+    });
+
+    if (!tocMenu.children.length) {
+      var empty = document.createElement("li");
+      empty.className = "toc__empty";
+      empty.textContent = "No sections on this page";
+      tocMenu.appendChild(empty);
     }
   }
 

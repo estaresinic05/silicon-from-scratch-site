@@ -373,11 +373,95 @@ body::before {
   padding: 0.25rem 0;
 }
 
-/* Right-hand group in the bar: nav + mobile toggle */
+/* Right-hand group in the bar: nav + section index + mobile toggle */
 .topbar__right {
   display: flex;
   align-items: center;
   gap: clamp(1rem, 2.5vw, 2.2rem);
+}
+
+/* ------------------------------------------------------------------ *
+   PAGE SECTION INDEX — desktop only. A ☰ button (styled like the mobile
+   nav toggle) sits in the top bar and reveals this page's sections on
+   hover. It lives inside the bar, so it slides away with it.
+ * ------------------------------------------------------------------ */
+.toc {
+  position: relative;
+  display: inline-flex; /* desktop-only — hidden on mobile (see media query) */
+  /* nudge the ☰ toward the right edge of the bar */
+  margin-right: -0.75rem;
+}
+/* Button matches the mobile nav toggle exactly (same bars, size, border) */
+.toc__btn {
+  width: 2.6rem; height: 2.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  /* push the icon out near the right screen edge (on the button only, so the
+     fixed dropdown's position isn't affected). max() keeps it from sliding off
+     on narrower desktops where the container isn't centred. */
+  transform: translateX(max(0px, calc((100vw - var(--maxw)) / 2 - 1.2rem)));
+}
+/* Dropdown styled as a seamless extension of the top bar: it hangs flush from
+   the bar's bottom edge (no gap, no top border) with the same translucent,
+   blurred background, so the two read as one continuous sheet. */
+.toc__menu {
+  /* Fixed so the right edge meets the screen edge (the top bar spans full
+     width), rather than aligning to the button inside the padded container. */
+  position: fixed;
+  right: 0;
+  /* overlap the bar by 1px so its bottom hairline is fully covered — no seam */
+  top: calc(4rem - 1px);
+  width: min(34vw, 460px);
+  min-width: 320px;
+  min-height: 320px;
+  max-height: 80vh;
+  overflow: auto;
+  margin: 0;
+  padding: var(--space-4);
+  list-style: none;
+  /* opaque so the bar's bottom border can't bleed through the seam */
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  border-top: 0; /* the sheet is one surface with the bar above it */
+  border-radius: 0 0 0 var(--radius-sm); /* only the bottom-left corner curves */
+  box-shadow: var(--shadow-soft);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.18s var(--ease), transform 0.18s var(--ease), visibility 0.18s;
+  z-index: 60;
+}
+.toc:hover .toc__menu,
+.toc:focus-within .toc__menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.toc__menu li { margin: 0; }
+.toc__menu a {
+  display: block;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--hairline);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  line-height: 1.3;
+  color: var(--soft-ink);
+}
+.toc__menu li:last-child a { border-bottom: 0; }
+.toc__menu a:hover,
+.toc__menu a:focus-visible { color: var(--accent-deep); }
+.toc__empty {
+  padding: 0.75rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: var(--soft-ink);
 }
 
 /* anchored sections clear the (overlay) top bar when jumped to */
@@ -823,6 +907,7 @@ html.js .ladder .step { --node-scale: 0; }
 /* Tablet and below: collapse nav into a toggle menu */
 @media (max-width: 768px) {
   .nav-toggle { display: inline-flex; }
+  .toc { display: none; } /* section index is desktop-only */
 
   .nav {
     position: absolute;
