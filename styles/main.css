@@ -623,6 +623,17 @@ main section[id] { scroll-margin-top: 5rem; }
 }
 
 @media (max-width: 768px) {
+  /* On phones, let the hero own the first screen: fill the viewport and centre
+     its content so the logo clears the fixed top bar (4rem) and the AMD chip in
+     the journey section stays below the fold until the reader scrolls. */
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: calc(4rem + var(--space-4)) var(--space-5);
+  }
+
   .journey__layout { flex-direction: column; }
   /* Drop the pin when stacked: image on top, copy below. */
   .journey__media { position: static; height: auto; }
