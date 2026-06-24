@@ -15,3 +15,15 @@ desktop.ini
 assets/ccd-dieshot-detail.jpg
 # Scratch reference screenshot used while positioning the highlight
 assets/reference.png
+
+# Oversized source images — only the web-sized (*-web) versions are committed.
+# Originals are kept locally as the source for re-exporting.
+assets/iod-dieshot.jpg
+assets/pads-underside_9600x.jpg
+assets/ccd-dieshot.jpg
+assets/ccd-dieshot2.jpg
+assets/ccd-dieshot3.jpg
+assets/ccd-dieshot4.jpg
+assets/ihs-top_9600x.jpg
+assets/delid-color_dies-on-substrate.jpg
+assets/delid-grayscaled_dies-on-substrate.jpg

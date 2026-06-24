@@ -25,7 +25,7 @@
   <!-- Site styles (relative path — domain-ready) -->
   <link rel="stylesheet" href="styles/main.css" />
 </head>
-<body>
+<body class="theme-dark">
   <a class="skip-link" href="#main">Skip to content</a>
 
   <!-- ============================== TOP BAR ============================== -->
@@ -73,15 +73,102 @@
         Learn how processors are <span class="accent">actually built</span>.
       </h1>
       <p class="hero__intro">
-        Silicon From Scratch is a learning hub for anyone curious about how the
-        processors inside modern devices are designed and built — and who would
-        rather build one than just read about it.
+        For students, hobbyists, career-switchers, tinkerers, and the merely
+        curious — young or old. Learn the genius behind the heart of modern
+        computing.
       </p>
       <div class="hero__actions">
         <a class="btn btn--primary" href="alu/">Start with the ALU</a>
         <a class="btn btn--ghost"
            href="https://github.com/estaresinic05/Silicon-From-Scratch"
            target="_blank" rel="noopener">View on GitHub</a>
+      </div>
+    </section>
+
+    <!-- ===================== THE JOURNEY (pinned media) ================= -->
+    <!-- One pinned image, centred in the viewport, that cross-fades through
+         three states as the copy scrolls past: the chip's top face (IHS) ->
+         the delidded dies -> their greyscale internals. Each text chunk fades
+         in as the reader approaches it. All three images are cropped (zoom +
+         rounded frame) so only the chip shows. -->
+    <section class="journey" id="journey" aria-label="Introducing the processor">
+      <div class="journey__layout">
+        <div class="journey__media">
+          <div class="journey__crop">
+            <img class="journey__img journey__img--ihs"
+                 src="assets/ihs-top_9600x-web.jpg"
+                 alt="The top face of an AMD Ryzen 5 9600X processor — the metal heat
+                      spreader stamped with the AMD Ryzen logo over a teal substrate."
+                 decoding="async" />
+            <img class="journey__img journey__img--dies" aria-hidden="true"
+                 src="assets/delid-color_dies-on-substrate-web.jpg"
+                 alt="" decoding="async" loading="lazy" />
+            <img class="journey__img journey__img--gray" aria-hidden="true"
+                 src="assets/delid-grayscaled_dies-on-substrate-web.jpg"
+                 alt="" decoding="async" loading="lazy" />
+          </div>
+          <!-- The die map gets its own larger frame, faded in over the smaller
+               one. Web-sized 1400px version (~0.6 MB) so it decodes fast for the
+               cross-fade; the raw die map is ~88 MB / 3200px. -->
+          <div class="journey__detail" aria-hidden="true">
+            <img class="journey__img journey__img--detail"
+                 src="assets/ccd-dieshot-detail-web.jpg"
+                 alt="" decoding="async" />
+          </div>
+        </div>
+
+        <div class="journey__copy">
+          <div class="journey__step">
+            <p class="kicker">Meet the processor</p>
+            <h2 class="journey__title">Where our journey begins</h2>
+            <p>
+              Every project here is a step towards the silicon you use each day —
+              whether that's in your phone, your computer, or the car you drive.
+              Throughout this journey, we will make references to the
+              AMD&nbsp;Ryzen&trade;&nbsp;5&nbsp;9600X, a powerful processor used in
+              desktop computers.
+            </p>
+          </div>
+
+          <div class="journey__step">
+            <h2 class="journey__subhead">Under the covers</h2>
+            <p>
+              As we take apart the processor, we first see two metallic
+              rectangles — these are called <strong>dies</strong>. A desktop CPU
+              can have anywhere from one die to well over a dozen, depending on
+              the design. In the Ryzen&nbsp;5&nbsp;9600X there are two: an
+              <strong>I/O Die (IOD)</strong> on top, and a
+              <strong>Core Complex Die (CCD)</strong> on the bottom.
+            </p>
+            <p class="journey__roles">
+              The CCD is like the engine of the processor, whose task is to
+              execute instructions as fast as possible, and the IOD acts as a
+              communication hub, whose job is to move data between the processor
+              cores, memory, graphics card, and the rest of the computer.
+            </p>
+          </div>
+
+          <div class="journey__step journey__step--gallery">
+            <h2 class="journey__subhead">Where the beauty lies</h2>
+            <p>
+              The real beauty of the silicon actually lives on the underside of
+              the dies. With a special camera, we can see many of the small
+              details on the die — the rows of cores, the dense banks of cache,
+              and the fine wiring that ties them together. What looks like a
+              plain metal rectangle from the outside is, up close, an entire city
+              of circuitry, with every block carefully placed and routed to do a
+              specific job.
+            </p>
+
+            <!-- Other CCD die shots, in a row beneath the text, faded in on scroll. -->
+            <div class="journey__gallery">
+              <img class="journey__accent" aria-hidden="true"
+                   src="assets/ccd-dieshot-web.jpg" alt="" decoding="async" loading="lazy" />
+              <img class="journey__accent" aria-hidden="true"
+                   src="assets/ccd-dieshot2-web.jpg" alt="" decoding="async" loading="lazy" />
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 

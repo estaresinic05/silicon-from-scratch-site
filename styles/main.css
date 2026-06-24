@@ -498,6 +498,143 @@ main section[id] { scroll-margin-top: 5rem; }
 }
 
 /* ------------------------------------------------------------------ *
+   8a. THE JOURNEY — one pinned image that cross-fades through three chip
+   states (face -> dies -> internals) while the copy scrolls past and fades
+   in chunk by chunk. Full-bleed so the chip hugs the screen edge.
+ * ------------------------------------------------------------------ */
+.journey { padding-block: var(--space-6); }
+.journey__layout {
+  display: flex;
+  align-items: flex-start;
+  /* push the image + copy pair toward the right (free space falls on the left) */
+  justify-content: flex-end;
+  gap: clamp(var(--space-4), 6vw, var(--space-7));
+  padding-inline: clamp(var(--space-3), 5vw, var(--space-6));
+}
+/* Media column: pinned and centred in the viewport while the copy scrolls. */
+.journey__media {
+  flex: 0 0 auto;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+}
+/* Crop frame: square window zoomed past the grey border; the three substrate
+   states are stacked so they line up pixel-for-pixel and can cross-fade. */
+.journey__crop {
+  position: relative;
+  width: clamp(320px, 42vw, 560px);
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-soft);
+}
+/* The die map gets its own, larger frame centred over the smaller one and
+   faded in. Its aspect ratio matches the image, so the whole map shows with no
+   crop and no letterbox — just bigger, with its own (correspondingly larger)
+   border. (It's positioned against the sticky media, which is already a
+   containing block.) */
+.journey__detail {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(380px, 50vw, 680px);   /* larger than the .journey__crop frame */
+  aspect-ratio: 1400 / 1202;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-soft);
+  opacity: 0;            /* faded in on scroll */
+  will-change: opacity;
+  pointer-events: none;
+}
+.journey__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.15);   /* zoom past the grey border so only the chip shows */
+  /* Promote each state to its own compositor layer so the scrubbed opacity
+     cross-fade is GPU-composited (no per-frame repaint of the large image). */
+  will-change: opacity;
+  backface-visibility: hidden;
+}
+.journey__img--ihs { transform: scale(1.16); }
+/* The die map fills its own frame exactly (frame shares its aspect ratio), so
+   the whole image shows with no crop. The .journey__detail wrapper carries the
+   fade, so the image itself stays fully opaque. */
+.journey__img--detail { transform: none; }
+/* The dies/internals states start hidden and are revealed on scroll. */
+.journey__img--dies,
+.journey__img--gray { opacity: 0; }
+
+/* Copy column: wide measure. Each chunk is tall enough to give the pinned
+   media room to hold and to pace the line-by-line reveal, but the text itself
+   is grouped tightly — the empty space sits between chunks, not between lines. */
+/* Don't grow — stay at the 60rem measure — so the layout's justify-content
+   can centre the image + copy pair instead of the copy filling to the edge. */
+.journey__copy { flex: 0 1 auto; min-width: 0; max-width: 60rem; padding-block: 12vh; }
+.journey__step {
+  min-height: 56vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.journey__step + .journey__step { margin-top: var(--space-4); }
+.journey__step--gallery { min-height: 84vh; }
+.journey__step .kicker { margin-bottom: var(--space-3); }
+/* Each word is its own box so the line-by-line reveal can fade/translate it. */
+.journey__step .jw { display: inline-block; }
+.journey__step p {
+  color: var(--soft-ink);
+  font-size: clamp(1.15rem, 1.6vw, 1.35rem);
+  line-height: 1.65;
+}
+.journey__step:first-child p { color: var(--ink); }   /* opening chunk leads in ink */
+.journey__step strong { color: var(--ink); font-weight: 600; }
+
+/* Headings: the title and "Under the covers" share the same display size. */
+.journey__title,
+.journey__subhead { font-size: clamp(1.8rem, 4vw, 2.7rem); }
+.journey__subhead { margin-bottom: var(--space-3); }
+
+/* "Where the beauty lies": the other CCD die shots sit in a row beneath the
+   copy and fade in on scroll. */
+.journey__gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+.journey__accent {
+  flex: 1 1 240px;
+  min-width: 0;
+  max-width: 360px;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--hairline);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  opacity: 0;            /* faded in on scroll */
+}
+
+@media (max-width: 768px) {
+  .journey__layout { flex-direction: column; }
+  /* Drop the pin when stacked: image on top, copy below. */
+  .journey__media { position: static; height: auto; }
+  .journey__crop { width: min(360px, 100%); }
+  .journey__step { min-height: 0; margin-top: var(--space-5); }
+  .journey__step:first-child { margin-top: var(--space-3); }
+  /* Without the pin, show the dies/internals states stacked below the face. */
+  .journey__img--dies,
+  .journey__img--gray { position: static; opacity: 1; }
+}
+
+/* ------------------------------------------------------------------ *
    8b. THE CHIP — a CPU with a subtle, scroll-driven arc (Phase 3)
    The model lives in a normal-flow canvas inside .cpu-stage__viewport, so the
    page scrolls straight through (no pinning, no overlay). scripts/cpu-hero.js
@@ -848,6 +985,7 @@ html.js .figure,
 html.js .section__head > *,
 html.js .idea .prose > *,
 html.js .tools .prose > *,
+html.js .journey__step > *,
 html.js .epigraph blockquote,
 html.js .ladder .step,
 html.js .findings .finding,
@@ -967,3 +1105,64 @@ html.js .ladder .step { --node-scale: 0; }
   .step::before { left: calc(-2rem + 1px); }
   .hero__actions .btn { width: 100%; justify-content: center; }
 }
+
+/* ------------------------------------------------------------------ *
+   18. DARK THEME (homepage) — a die-shot-inspired dark surface with a
+   soft purple glow, echoing the ALU "On the die" band. Scoped to
+   <body class="theme-dark"> so other pages stay on the light theme.
+   It mostly works by re-pointing the design tokens; each section then
+   gets its own gradient so the glow shifts colour/position as you scroll
+   (similar mood, different per section).
+ * ------------------------------------------------------------------ */
+.theme-dark {
+  --bg:          #1b1b22;   /* die-shot base */
+  --paper:       #24242e;   /* raised dark surface (cards, nodes) */
+  --ink:         #fdfdfb;   /* primary text */
+  --soft-ink:    rgba(253, 253, 251, 0.72);
+  --accent:      #b794f6;   /* lighter purple reads on dark (matches the die kicker) */
+  --accent-deep: #d4bbff;   /* hover — lighter still */
+  --hairline:    rgba(253, 253, 251, 0.14);
+  --grid-line:   rgba(253, 253, 251, 0.045);
+
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.30),
+                 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.35),
+                 0 16px 40px rgba(0, 0, 0, 0.50);
+}
+
+/* Primary button: the accent is light on dark, so use dark text for contrast. */
+.theme-dark .btn--primary { color: #15151b; }
+.theme-dark .btn--primary:hover { color: #15151b; }
+
+/* Inline code: a touch more presence on the dark surface. */
+.theme-dark code {
+  background: rgba(183, 148, 246, 0.16);
+  color: #d9c6ff;
+}
+
+/* Skip link stays visible when focused on dark. */
+.theme-dark .skip-link { background: var(--accent); color: #15151b; }
+
+/* The logo art has a baked-in light background; frame it so it reads as an
+   intentional plate rather than a stray light box on the dark hero. */
+.theme-dark .hero__logo {
+  border-radius: var(--radius);
+  box-shadow: 0 0 0 1px var(--hairline), var(--shadow-soft);
+}
+
+/* One continuous surface: a single ambient glow fixed to the viewport, with the
+   section dividers removed so the whole homepage reads as one big page. */
+.theme-dark {
+  background:
+    radial-gradient(75% 55% at 50% 0%,
+                    rgba(107, 47, 201, 0.30), transparent 60%),
+    #1b1b22;
+  background-attachment: fixed;
+}
+.theme-dark .section,
+.theme-dark .cpu-stage,
+.theme-dark .epigraph,
+.theme-dark .footer { border-top: 0; }
+
+/* Drop the engineering-grid texture on the dark theme — just the smooth glow. */
+.theme-dark.theme-dark::before { display: none; }

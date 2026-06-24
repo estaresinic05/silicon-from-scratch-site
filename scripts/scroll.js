@@ -156,6 +156,137 @@
     reveal(p.children, p, { stagger: 0.12, start: "top 85%" });
   });
 
+  /* ---- The journey: the pinned image cross-fades through three states (face
+         -> dies -> internals) while the copy reveals line by line as it
+         scrolls past. ---- */
+  var journey = document.querySelector(".journey");
+  if (journey) {
+    var steps = gsap.utils.toArray(".journey__step");
+
+    // Warm up the die-map decode now so the cross-fade doesn't trigger a
+    // synchronous decode (the source of the load-in hitch).
+    var detailImg = journey.querySelector(".journey__img--detail");
+    if (detailImg && detailImg.decode) { detailImg.decode().catch(function () {}); }
+
+    /* Wrap each word in a span (preserving inline markup like <strong> and
+       non-breaking spaces), so we can group them into visual lines. */
+    function wrapWords(node, out) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (child) {
+        if (child.nodeType === 3) {
+          // Collapse ASCII whitespace (newlines + indentation) to single
+          // spaces — but leave non-breaking spaces intact — so source line
+          // breaks don't turn into stray words or leading gaps.
+          var txt = child.textContent.replace(/[ \t\r\n\f]+/g, " ");
+          if (txt === "") return;
+          var frag = document.createDocumentFragment();
+          txt.split(/( )/).forEach(function (part) {
+            if (part === "") return;
+            if (part === " ") {
+              frag.appendChild(document.createTextNode(" "));
+            } else {
+              var span = document.createElement("span");
+              span.className = "jw";
+              span.textContent = part;
+              frag.appendChild(span);
+              out.push(span);
+            }
+          });
+          node.replaceChild(frag, child);
+        } else if (child.nodeType === 1) {
+          wrapWords(child, out); // recurse into <strong>, etc.
+        }
+      });
+    }
+
+    /* Group word spans into visual lines by their vertical position. */
+    function toLines(words) {
+      var lines = [], cur = null, lastTop = null;
+      words.forEach(function (w) {
+        var top = w.getBoundingClientRect().top;
+        if (lastTop === null || Math.abs(top - lastTop) > 4) {
+          cur = [];
+          lines.push(cur);
+          lastTop = top;
+        }
+        cur.push(w);
+      });
+      return lines;
+    }
+
+    steps.forEach(function (step) {
+      var els = step.querySelectorAll(".kicker, h2, p");
+      var words = [];
+      Array.prototype.forEach.call(els, function (el) { wrapWords(el, words); });
+      gsap.set(els, { opacity: 1 }); // containers visible; the words carry the fade
+
+      var lines = toLines(words);
+
+      // Fade in, line by line, as the chunk approaches.
+      var tl = gsap.timeline({
+        scrollTrigger: { trigger: step, start: "top 85%", end: "top 38%", scrub: true }
+      });
+      lines.forEach(function (line, i) {
+        tl.fromTo(
+          line,
+          { opacity: 0, y: 14 },
+          { opacity: 1, y: 0, ease: "none", duration: 1 },
+          i // one step per line → they reveal in reading order
+        );
+      });
+
+      // Fade out, line by line — the same staggered animation reversed — as the
+      // chunk approaches and scrolls off the top. (immediateRender:false so it
+      // doesn't fight the fade-in at load.)
+      var tlOut = gsap.timeline({
+        scrollTrigger: { trigger: step, start: "top 18%", end: "top -42%", scrub: true }
+      });
+      lines.forEach(function (line, i) {
+        tlOut.fromTo(
+          line,
+          { opacity: 1, y: 0 },
+          { opacity: 0, y: -14, ease: "none", duration: 1, immediateRender: false },
+          i // first line first → they leave in reading order
+        );
+      });
+    });
+
+    /* Cross-fade the stacked images in step with the copy. Each later state
+       reveals over the previous one as its matching copy arrives:
+         face -> dies (chunk 2) -> internals (the roles line) -> die map (chunk 3). */
+    function crossfade(img, trigger, start, end) {
+      if (!img || !trigger) return;
+      gsap.fromTo(
+        img,
+        { opacity: 0 },
+        {
+          opacity: 1,
+          ease: "none",
+          scrollTrigger: { trigger: trigger, start: start || "top 80%", end: end || "top 40%", scrub: true }
+        }
+      );
+    }
+    crossfade(journey.querySelector(".journey__img--dies"), steps[1]);
+    // Start the greyscale later so the colour delid shot lingers a bit longer.
+    crossfade(journey.querySelector(".journey__img--gray"), journey.querySelector(".journey__roles"), "top 55%", "top 20%");
+    // Start the die map later so the greyscale internals linger a bit longer.
+    crossfade(journey.querySelector(".journey__detail"), steps[2], "top 45%", "top 12%");
+
+    /* The die shots beneath the final chunk fade in (staggered) as it arrives.
+       Their wrapper is hidden by the reveal CSS, so make it visible and fade
+       the images themselves. */
+    var gallery = journey.querySelector(".journey__gallery");
+    var accents = journey.querySelectorAll(".journey__accent");
+    if (accents.length && steps[2]) {
+      if (gallery) gsap.set(gallery, { opacity: 1 });
+      gsap.to(accents, {
+        opacity: 1,
+        ease: "none",
+        stagger: 0.2,
+        scrollTrigger: { trigger: steps[2], start: "top 80%", end: "top 45%", scrub: true }
+      });
+    }
+  }
+
   /* ---- Epigraph pull-quote ---- */
   if (document.querySelector(".epigraph blockquote")) {
     reveal(".epigraph blockquote", ".epigraph", { duration: 0.9, start: "top 80%" });
