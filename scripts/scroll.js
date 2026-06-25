@@ -312,6 +312,16 @@
       });
     }
 
+    // The two IFOP PHY highlights fade in together with the IFOP PHY copy.
+    var ifopHls = journey.querySelectorAll(".journey__hl--north");
+    var ifopStep = journey.querySelector(".journey__step--ifop");
+    if (ifopHls.length && ifopStep) {
+      gsap.fromTo(ifopHls, { opacity: 0 }, {
+        opacity: 1, ease: "none",
+        scrollTrigger: { trigger: ifopStep, start: "top 72%", end: "top 40%", scrub: true }
+      });
+    }
+
     /* The die shots beneath the final chunk fade in (staggered) as it arrives.
        Their wrapper is hidden by the reveal CSS, so make it visible and fade
        the images themselves. */

@@ -93,25 +93,41 @@
   }
 
   /* ---- 1.6 Page section index (desktop ☰) ------------------------------
-     Build a jump list from this page's section headings. Hover the ☰ in the
-     top bar to open it; clicking an entry scrolls to that section. Limited to
-     the first two sections for now. */
+     Build a jump list of this page's sections. Sections carrying a data-menu
+     attribute set their own label (and, if present, take priority); otherwise
+     we fall back to each section's heading. Clicking the ☰ slides a panel in
+     from the right edge of the screen; clicking an entry, the backdrop, or
+     pressing Escape closes it. Desktop only (the .toc button is hidden on
+     mobile via CSS). */
   var toc = document.getElementById("page-toc");
   if (toc) {
+    var tocBtn = toc.querySelector(".toc__btn");
     var tocMenu = toc.querySelector(".toc__menu");
     var scope = document.getElementById("main") || document.body;
     var seen = {};
-    var MAX_SECTIONS = 2;
 
-    Array.prototype.forEach.call(scope.querySelectorAll("section"), function (sec) {
-      if (tocMenu.children.length >= MAX_SECTIONS) return;
-      var h = sec.querySelector("h1, h2");
-      if (!h) return;
-      var text = (h.textContent || "").replace(/\s+/g, " ").trim();
-      if (!text) return;
-      var target = sec.id || h.id;
+    // Move the panel to <body>: the top bar uses transform/will-change, which
+    // would otherwise trap a position:fixed child and stop it filling the
+    // viewport height.
+    document.body.appendChild(tocMenu);
+    var backdrop = document.createElement("div");
+    backdrop.className = "toc-backdrop";
+    document.body.appendChild(backdrop);
+
+    // Prefer sections that opt in with data-menu; otherwise list them all.
+    var labeled = scope.querySelectorAll("section[data-menu]");
+    var sections = labeled.length ? labeled : scope.querySelectorAll("section");
+
+    Array.prototype.forEach.call(sections, function (sec) {
+      var label = (sec.getAttribute("data-menu") || "").trim();
+      if (!label) {
+        var h = sec.querySelector("h1, h2");
+        label = h ? (h.textContent || "").replace(/\s+/g, " ").trim() : "";
+      }
+      if (!label) return;
+      var target = sec.id;
       if (!target) {
-        target = "sec-" + text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+        target = "sec-" + label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
         sec.id = target;
       }
       if (seen[target]) return;
@@ -119,7 +135,7 @@
       var li = document.createElement("li");
       var a = document.createElement("a");
       a.href = "#" + target;
-      a.textContent = text;
+      a.textContent = label;
       li.appendChild(a);
       tocMenu.appendChild(li);
     });
@@ -130,6 +146,45 @@
       empty.textContent = "No sections on this page";
       tocMenu.appendChild(empty);
     }
+
+    function openToc() {
+      tocMenu.classList.add("is-open");
+      backdrop.classList.add("is-open");
+      tocBtn.setAttribute("aria-expanded", "true");
+    }
+    function closeToc() {
+      tocMenu.classList.remove("is-open");
+      backdrop.classList.remove("is-open");
+      tocBtn.setAttribute("aria-expanded", "false");
+    }
+    // Hover to open: opens when the pointer is over the ☰ or the drawer, and
+    // closes shortly after it leaves both (a small delay bridges the gap as the
+    // pointer travels from the button onto the panel).
+    var hideTimer;
+    function scheduleClose() {
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(function () {
+        // Bind to the button (not the .toc container): the button is shoved
+        // right with a transform, so the container's hit-box sits to its left
+        // and would otherwise open the menu before the cursor reaches the ☰.
+        if (!tocBtn.matches(":hover") && !tocMenu.matches(":hover")) closeToc();
+      }, 140);
+    }
+    function cancelClose() { clearTimeout(hideTimer); }
+    tocBtn.addEventListener("mouseenter", function () { cancelClose(); openToc(); });
+    tocBtn.addEventListener("mouseleave", scheduleClose);
+    tocMenu.addEventListener("mouseenter", cancelClose);
+    tocMenu.addEventListener("mouseleave", scheduleClose);
+    // Also open on keyboard focus of the button, for keyboard users.
+    tocBtn.addEventListener("focus", openToc);
+
+    backdrop.addEventListener("click", closeToc);
+    tocMenu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) closeToc();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeToc();
+    });
   }
 
   /* ---- 2. Mobile navigation toggle -------------------------------------- */

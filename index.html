@@ -92,7 +92,7 @@
          the delidded dies -> their greyscale internals. Each text chunk fades
          in as the reader approaches it. All three images are cropped (zoom +
          rounded frame) so only the chip shows. -->
-    <section class="journey" id="journey" aria-label="Introducing the processor">
+    <section class="journey" id="journey" data-menu="Meet the Processor" aria-label="Introducing the processor">
       <div class="journey__layout">
         <div class="journey__media">
           <div class="journey__crop">
@@ -131,6 +131,10 @@
             <div class="journey__hl journey__hl--core is-left  is-row-2"><span class="journey__hl-label journey__hl-label--core">Zen 5 Core</span></div>
             <div class="journey__hl journey__hl--core is-left  is-row-3"><span class="journey__hl-label journey__hl-label--core">Zen 5 Core</span></div>
             <div class="journey__hl journey__hl--core is-left  is-row-4"><span class="journey__hl-label journey__hl-label--core">Zen 5 Core</span></div>
+            <!-- A shorter rectangle above the top-left core, aligned to its left
+                 edge, top just shy of the image top. -->
+            <div class="journey__hl journey__hl--north"><span class="journey__hl-label journey__hl-label--core">IFOP PHY</span></div>
+            <div class="journey__hl journey__hl--north journey__hl--north2"><span class="journey__hl-label journey__hl-label--core">IFOP PHY</span></div>
           </div>
         </div>
 
@@ -158,10 +162,10 @@
               <strong>Core Complex Die (CCD)</strong> on the bottom.
             </p>
             <p class="journey__roles">
-              The CCD is like the engine of the processor, whose task is to
-              execute instructions as fast as possible, and the IOD acts as a
-              communication hub, whose job is to move data between the processor
-              cores, memory, graphics card, and the rest of the computer.
+              The CCD is like the engine of the processor, executing instructions
+              as fast as possible, while the IOD acts as a communication hub,
+              moving data between the processor cores, memory, graphics card, and
+              the rest of the system.
             </p>
           </div>
 
@@ -192,7 +196,7 @@
             <h2 class="journey__subhead">First stop: the L3 Cache</h2>
             <p>
               The image you're looking at now is the CCD. The first major
-              structure that stands out is the L3 cache, a shared pool of 32MB of
+              structure that stands out is the <strong>L3 cache</strong>, a shared pool of 32MB of
               ultra-fast memory sitting at the center of the CCD. Rather than
               storing long-term data, the cache acts as the processor's working
               memory, keeping frequently used instructions and information close
@@ -213,7 +217,7 @@
           <div class="journey__step journey__step--cores">
             <h2 class="journey__subhead">Next stop: the cores</h2>
             <p>
-              Surrounding the cache are the Zen 5 cores themselves — the parts of
+              Surrounding the cache are the <strong>Zen 5 cores</strong> themselves — the parts of
               the processor responsible for executing instructions and doing the
               actual work of computation. Whether rendering graphics, compiling
               code, simulating physics, or running a game, nearly every task
@@ -229,93 +233,32 @@
               with every day.
             </p>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- ============================== THE CHIP =========================== -->
-    <!-- Phase 3: a photoreal CPU in a normal-flow canvas that animates with a
-         subtle, scroll-driven arc (gentle zoom + a few degrees of rotation,
-         peaking when the section is centred). No pinning, no scroll-jacking —
-         the page scrolls straight through. If the 3D can't run (no WebGL /
-         reduced motion / CDN blocked), the static emblem stands in. Filled +
-         animated by scripts/cpu-hero.js. -->
-    <section class="cpu-stage" id="chip" aria-labelledby="chip-title">
-      <div class="container cpu-stage__layout" data-cpu-layout>
-        <div class="cpu-stage__text">
-          <p class="kicker">The chip</p>
-          <h2 id="chip-title">This is what you're building toward.</h2>
-          <p class="cpu-stage__lead">
-            Every project here is a step toward the silicon below — a complete
-            processor, the kind that runs the device you're reading this on.
-          </p>
-        </div>
-
-        <!-- Reserved-height stage on the right. A single transparent canvas is
-             injected into the layout above and spans the whole row, so both
-             chips share one context (no clip seam between them) and can overlap
-             the text. This box reserves the height so there's no layout shift;
-             its emblem is the loading state and the no-WebGL / reduced-motion
-             fallback. -->
-        <div class="cpu-stage__stage">
-          <div class="cpu-stage__fallback" data-cpu-fallback>
-            <svg viewBox="0 0 120 120" role="img"
-                 aria-label="Stylized processor chip" focusable="false">
-              <g fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round">
-                <g opacity="0.55">
-                  <path d="M38 18v-9 M52 18v-9 M66 18v-9 M82 18v-9" />
-                  <path d="M38 111v-9 M52 111v-9 M66 111v-9 M82 111v-9" />
-                  <path d="M18 38h-9 M18 52h-9 M18 66h-9 M18 82h-9" />
-                  <path d="M111 38h9 M111 52h9 M111 66h9 M111 82h9" />
-                </g>
-                <rect x="22" y="22" width="76" height="76" rx="8" />
-                <rect x="42" y="42" width="36" height="36" rx="4" opacity="0.8" />
-                <circle cx="60" cy="60" r="5" fill="currentColor" stroke="none" />
-              </g>
-            </svg>
+          <!-- The IFOP PHY: reveals together with the two IFOP PHY highlights. -->
+          <div class="journey__step journey__step--ifop">
+            <h2 class="journey__subhead">AMD's special sauce</h2>
+            <p>
+              Situated along the edge of the CCD is the IFOP PHY, short for
+              <strong>Infinity Fabric On-Package Physical Layer</strong>. This
+              high-speed interface links the compute die to the rest of the
+              processor, carrying requests for memory, data destined for the
+              graphics card, and information traveling to and from the I/O die.
+            </p>
+            <p>
+              On the die photograph, the IFOP PHY appears as a collection of
+              tightly packed circuitry dedicated not to computation, but
+              communication. While the cores perform calculations and the cache
+              keeps data nearby, the IFOP PHY serves as the CCD's gateway,
+              ensuring information can move quickly and reliably between the
+              processor's many pieces.
+            </p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- =============================== THE IDEA ========================== -->
-    <section class="section idea" aria-labelledby="idea-title">
-      <div class="container">
-        <div class="section__head">
-          <p class="kicker">The idea</p>
-          <h2 id="idea-title">Dive in.</h2>
-        </div>
-        <div class="prose">
-          <p>
-            The whole approach is built around one idea. You don't need a degree,
-            an expensive software license, or anyone's permission to get started.
-            Start with a single logic block, watch it come alive in a waveform,
-            then climb your way up to a complete CPU.
-          </p>
-          <p>
-            This is for students, hobbyists, career-switchers, tinkerers, and the
-            merely curious — young or old. If you've ever wondered how a sliver of
-            sand ends up running your code, this is for you.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- =============================== EPIGRAPH ========================== -->
-    <section class="epigraph" aria-label="Pull quote">
-      <div class="container">
-        <blockquote>
-          You don't learn to ride a bike by reading about it; you strap on your
-          helmet and push off, finding your balance as you go, with hope that your
-          leap into the unknown will take you to somewhere you couldn't have
-          reached standing still.
-        </blockquote>
-      </div>
-    </section>
-
     <!-- ================================ LEARN =========================== -->
-    <section class="section learn" id="learn" aria-labelledby="learn-title">
+    <section class="section learn" id="learn" data-menu="Start Here" aria-labelledby="learn-title">
       <div class="container">
         <div class="section__head">
           <p class="kicker">Start here</p>
@@ -365,7 +308,7 @@
     </section>
 
     <!-- ========================== WHAT YOU'LL FIND ====================== -->
-    <section class="section findings-section" id="inside" aria-labelledby="inside-title">
+    <section class="section findings-section" id="inside" data-menu="What You'll Find" aria-labelledby="inside-title">
       <div class="container">
         <div class="section__head">
           <p class="kicker">What you'll find</p>
@@ -409,7 +352,7 @@
     </section>
 
     <!-- ================================ TOOLS =========================== -->
-    <section class="section tools" id="tools" aria-labelledby="tools-title">
+    <section class="section tools" id="tools" data-menu="Tools" aria-labelledby="tools-title">
       <div class="container">
         <div class="section__head">
           <p class="kicker">Tools</p>
@@ -451,14 +394,6 @@
       <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
          target="_blank" rel="noopener">GitHub Repository</a>
     </div>
-    <p class="container footer__credit">
-      <a href="https://sketchfab.com/3d-models/amd-ryzen-5-7600x-high-poly-b803c0ecc3b4441d991e676cf1df62b4"
-         target="_blank" rel="noopener">"AMD Ryzen 5 7600X - HIGH POLY"</a>
-      by <a href="https://sketchfab.com/PolyDavid"
-         target="_blank" rel="noopener">PolyDavid</a>, licensed under
-      <a href="https://creativecommons.org/licenses/by/4.0/"
-         target="_blank" rel="noopener">CC BY 4.0</a>. Modified for web use.
-    </p>
   </footer>
 
   <!-- Minimal vanilla JS (mobile nav toggle) -->
@@ -470,19 +405,5 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
   <!-- Scroll-driven motion (Phase 2). Relative path — domain-ready. -->
   <script src="scripts/scroll.js" defer></script>
-
-  <!-- Phase 3: rotating CPU hero (three.js as ES modules via importmap). The
-       external CDN is fine here — only internal links must stay relative for
-       custom-domain readiness. Module scripts are deferred by default, and if
-       the browser ignores them the static fallback in #chip simply remains. -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-    }
-  }
-  </script>
-  <script type="module" src="scripts/cpu-hero.js"></script>
 </body>
 </html>

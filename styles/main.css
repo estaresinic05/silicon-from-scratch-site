@@ -400,48 +400,51 @@ body::before {
   background: transparent;
   border: 1px solid var(--hairline);
   border-radius: var(--radius-sm);
-  cursor: pointer;
+  /* hover-activated, not a click target — keep the default arrow cursor */
+  cursor: default;
   /* push the icon out near the right screen edge (on the button only, so the
      fixed dropdown's position isn't affected). max() keeps it from sliding off
      on narrower desktops where the container isn't centred. */
   transform: translateX(max(0px, calc((100vw - var(--maxw)) / 2 - 1.2rem)));
 }
-/* Dropdown styled as a seamless extension of the top bar: it hangs flush from
-   the bar's bottom edge (no gap, no top border) with the same translucent,
-   blurred background, so the two read as one continuous sheet. */
+/* Panel that slides in from the right edge of the screen (a full-height drawer).
+   It's moved to <body> in JS so it fills the viewport height regardless of the
+   top bar's transform. Toggled open by the ☰ via the .is-open class. */
 .toc__menu {
-  /* Fixed so the right edge meets the screen edge (the top bar spans full
-     width), rather than aligning to the button inside the padded container. */
   position: fixed;
+  top: 0;
   right: 0;
-  /* overlap the bar by 1px so its bottom hairline is fully covered — no seam */
-  top: calc(4rem - 1px);
-  width: min(34vw, 460px);
-  min-width: 320px;
-  min-height: 320px;
-  max-height: 80vh;
+  height: 100vh;
+  height: 100dvh;
+  width: min(360px, 86vw);
   overflow: auto;
   margin: 0;
-  padding: var(--space-4);
+  /* clear the top bar at the top of the panel */
+  padding: calc(4rem + var(--space-3)) var(--space-4) var(--space-4);
   list-style: none;
-  /* opaque so the bar's bottom border can't bleed through the seam */
   background: var(--bg);
-  border: 1px solid var(--hairline);
-  border-top: 0; /* the sheet is one surface with the bar above it */
-  border-radius: 0 0 0 var(--radius-sm); /* only the bottom-left corner curves */
-  box-shadow: var(--shadow-soft);
-  opacity: 0;
+  border-left: 1px solid var(--hairline);
+  box-shadow: var(--shadow-lift);
   visibility: hidden;
-  transform: translateY(-6px);
-  transition: opacity 0.18s var(--ease), transform 0.18s var(--ease), visibility 0.18s;
+  transform: translateX(100%);
+  transition: transform 0.28s var(--ease), visibility 0.28s var(--ease);
   z-index: 60;
 }
-.toc:hover .toc__menu,
-.toc:focus-within .toc__menu {
-  opacity: 1;
+.toc__menu.is-open {
   visibility: visible;
-  transform: translateY(0);
+  transform: translateX(0);
 }
+/* Dim the page behind the open drawer. */
+.toc-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.28s var(--ease), visibility 0.28s var(--ease);
+  z-index: 55;
+}
+.toc-backdrop.is-open { opacity: 1; visibility: visible; }
 .toc__menu li { margin: 0; }
 .toc__menu a {
   display: block;
@@ -590,12 +593,24 @@ main section[id] { scroll-margin-top: 5rem; }
    class sets the horizontal band, row class the vertical band (image-space %s).
    A translucent teal sets them apart from the purple cache highlight. */
 .journey__hl--core { background: rgba(86, 220, 210, 0.45); }
-.journey__hl--core.is-left  { left: 1.5%;  width: 34%; }   /* mirror of is-right across centre */
-.journey__hl--core.is-right { left: 64.5%; width: 34%; }
+.journey__hl--core.is-left  { left: 0.5%;  width: 35%; }   /* outer (left) edge a fraction wider */
+.journey__hl--core.is-right { left: 64.5%; width: 35%; }   /* outer (right) edge a fraction wider */
 .journey__hl--core.is-row-1 { top: 18.25%; height: 19.5%; }
 .journey__hl--core.is-row-2 { top: 38.25%; height: 19.5%; }
 .journey__hl--core.is-row-3 { top: 58.25%; height: 19.5%; }
 .journey__hl--core.is-row-4 { top: 78.25%; height: 19.5%; }
+
+/* A shorter rectangle above the top-left core: same width + left edge, top just
+   shy of the image's top edge. */
+.journey__hl--north {
+  left: 0.5%;            /* in line with the top-left core's (new) left edge */
+  width: 34.2%;          /* a tiny tiny less on the right */
+  top: 1.8%;             /* a tincy bit more on top */
+  height: 10.9%;         /* a little less on the bottom */
+  background: rgba(245, 190, 90, 0.5);   /* amber — distinct from cache + cores */
+}
+/* Duplicate placed directly to the right of the first. */
+.journey__hl--north2 { left: 34.7%; }
 
 /* Centred label sitting at the top of the highlight rectangle. Inherits the
    rectangle's scroll fade, so it appears with it. */
@@ -639,7 +654,7 @@ main section[id] { scroll-margin-top: 5rem; }
   justify-content: center;
 }
 .journey__step + .journey__step { margin-top: var(--space-4); }
-.journey__step--gallery { min-height: 84vh; }
+.journey__step--gallery { min-height: 56vh; }   /* match the other steps' spacing */
 .journey__step .kicker { margin-bottom: var(--space-3); }
 /* Each word is its own box so the line-by-line reveal can fade/translate it. */
 .journey__step .jw { display: inline-block; }
@@ -648,7 +663,6 @@ main section[id] { scroll-margin-top: 5rem; }
   font-size: clamp(1.15rem, 1.6vw, 1.35rem);
   line-height: 1.65;
 }
-.journey__step:first-child p { color: var(--ink); }   /* opening chunk leads in ink */
 .journey__step strong { color: var(--ink); font-weight: 600; }
 
 /* Headings: the title and "Under the covers" share the same display size. */
@@ -1112,6 +1126,7 @@ html.js .ladder .step { --node-scale: 0; }
 @media (max-width: 768px) {
   .nav-toggle { display: inline-flex; }
   .toc { display: none; } /* section index is desktop-only */
+  .toc__menu, .toc-backdrop { display: none; } /* the drawer lives on <body> now */
 
   .nav {
     position: absolute;
