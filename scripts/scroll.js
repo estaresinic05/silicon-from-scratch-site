@@ -238,7 +238,7 @@
       // chunk approaches and scrolls off the top. (immediateRender:false so it
       // doesn't fight the fade-in at load.)
       var tlOut = gsap.timeline({
-        scrollTrigger: { trigger: step, start: "top 18%", end: "top -42%", scrub: true }
+        scrollTrigger: { trigger: step, start: "top 6%", end: "top -54%", scrub: true }
       });
       lines.forEach(function (line, i) {
         tlOut.fromTo(
@@ -265,11 +265,42 @@
         }
       );
     }
-    crossfade(journey.querySelector(".journey__img--dies"), steps[1]);
-    // Start the greyscale later so the colour delid shot lingers a bit longer.
-    crossfade(journey.querySelector(".journey__img--gray"), journey.querySelector(".journey__roles"), "top 55%", "top 20%");
-    // Start the die map later so the greyscale internals linger a bit longer.
-    crossfade(journey.querySelector(".journey__detail"), steps[2], "top 45%", "top 12%");
+    // Cycle the two delid shots (colour then greyscale) as one scrubbed
+    // timeline, split evenly. It doesn't start until "Under the covers"
+    // (steps[1]) is well into view, so the IHS top face stays in full while
+    // "Where our journey begins" (steps[0]) sits centred. It ends before the
+    // "Where the beauty lies" heading (steps[2]) reveals at "top 85%", so both
+    // shots have cycled before those words appear. Two equal-length tweens on
+    // one scrub keep the halves even regardless of copy height.
+    var diesImg = journey.querySelector(".journey__img--dies");
+    var grayImg = journey.querySelector(".journey__img--gray");
+    if (diesImg && grayImg && steps[1] && steps[2]) {
+      gsap.set([diesImg, grayImg], { opacity: 0 });
+      gsap
+        .timeline({
+          scrollTrigger: {
+            trigger: steps[1],
+            start: "top 65%",      // hold the IHS while steps[0] is centred
+            endTrigger: steps[2],
+            end: "top 92%",        // both done before steps[2]'s words reveal
+            scrub: true
+          }
+        })
+        // Colour delid fades in, then HOLDS fully on screen before the
+        // greyscale takes over, so it gets the lion's share of the cycle; the
+        // greyscale gets a shorter fade right at the end.
+        .fromTo(diesImg, { opacity: 0 }, { opacity: 1, ease: "none", duration: 1.6 }, 0)
+        .fromTo(grayImg, { opacity: 0 }, { opacity: 1, ease: "none", duration: 0.9 }, 2.5);
+    }
+    // Bring the die-map detail in a little sooner and faster: it starts as
+    // "Where the beauty lies" is a quarter up the screen ("top 75%") and is
+    // fully present by "top 45%".
+    crossfade(journey.querySelector(".journey__detail"), steps[2], "top 75%", "top 45%");
+
+    // The centre-spine highlight fades in together with the L3-cache copy: same
+    // trigger and range as that step's line-by-line reveal.
+    crossfade(journey.querySelector(".journey__hl--spine"),
+              journey.querySelector(".journey__step--cache"), "top 85%", "top 45%");
 
     /* The die shots beneath the final chunk fade in (staggered) as it arrives.
        Their wrapper is hidden by the reveal CSS, so make it visible and fade

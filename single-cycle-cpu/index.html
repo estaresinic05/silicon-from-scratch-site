@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. -->
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>Single Cycle CPU — Silicon From Scratch</title>
+  <meta name="description"
+        content="A single-cycle CPU built from scratch — coming soon to Silicon From Scratch." />
+
+  <link rel="icon" href="../assets/logo.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles (this page lives at /single-cycle-cpu/, one level down). -->
+  <link rel="stylesheet" href="../styles/main.css" />
+
+  <!-- Center the placeholder content vertically so it sits mid-screen. -->
+  <style>
+    .coming-soon {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: safe center;
+      align-items: center;
+      text-align: center;
+      border-top: 0;
+      padding-block: var(--space-4);
+    }
+    .coming-soon h1 { margin: var(--space-2) 0 var(--space-3); }
+    .coming-soon p { max-width: 42ch; margin-inline: auto; color: var(--soft-ink); }
+  </style>
+</head>
+<body class="theme-dark">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../" aria-label="Silicon From Scratch — home">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="../">Home</a>
+        <a href="../alu/">ALU</a>
+        <a href="#top">Single Cycle CPU</a>
+        <a href="../about/">About</a>
+        <span class="nav__pending" aria-disabled="true" title="Coming soon">Help</span>
+      </nav>
+
+      <div class="topbar__right">
+        <!-- Section index (desktop only): hover the ☰ to jump to a section on this page -->
+        <div class="toc" id="page-toc">
+          <button class="toc__btn" type="button" aria-haspopup="true"
+                  aria-expanded="false" aria-label="Jump to a section on this page">
+            <span class="nav-toggle__bars" aria-hidden="true"></span>
+          </button>
+          <ul class="toc__menu" aria-label="Sections on this page"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================= COMING SOON ========================= -->
+    <section class="section coming-soon" aria-labelledby="scc-title">
+      <div class="container">
+        <h1 id="scc-title">Coming Soon</h1>
+        <p>
+          This project is on its way. Check back soon — or start with the ALU in
+          the meantime.
+        </p>
+        <div class="about__actions">
+          <a class="btn btn--primary" href="../alu/">Start with the ALU</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+  </footer>
+
+  <script src="../scripts/main.js" defer></script>
+</body>
+</html>

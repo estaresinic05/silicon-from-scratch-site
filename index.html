@@ -39,6 +39,7 @@
       <nav class="nav" id="primary-nav" aria-label="Primary">
         <a href="#top">Home</a>
         <a href="alu/">ALU</a>
+        <a href="single-cycle-cpu/">Single Cycle CPU</a>
         <a href="about/">About</a>
         <span class="nav__pending" aria-disabled="true" title="Coming soon">Help</span>
       </nav>
@@ -114,6 +115,13 @@
             <img class="journey__img journey__img--detail"
                  src="assets/ccd-dieshot-detail-web.jpg"
                  alt="" decoding="async" />
+            <!-- Scroll-revealed highlight(s) over the die map. A plain
+                 translucent-purple rectangle (same fill as the ALU overview
+                 band) running down the centre spine, flush with the bottom edge
+                 and stopping at the visible cutoff near the top. -->
+            <div class="journey__hl journey__hl--spine">
+              <span class="journey__hl-label">L3 Cache</span>
+            </div>
           </div>
         </div>
 
@@ -167,6 +175,29 @@
               <img class="journey__accent" aria-hidden="true"
                    src="assets/ccd-dieshot2-web.jpg" alt="" decoding="async" loading="lazy" />
             </div>
+          </div>
+
+          <!-- L3 cache: reveals together with the centre-spine highlight on the
+               pinned die map. -->
+          <div class="journey__step journey__step--cache">
+            <h2 class="journey__subhead">First stop: the L3 Cache</h2>
+            <p>
+              The image you're looking at now is the CCD. The first major
+              structure that stands out is the L3 cache, a shared pool of 32MB of
+              ultra-fast memory sitting at the center of the CCD. Rather than
+              storing long-term data, the cache acts as the processor's working
+              memory, keeping frequently used instructions and information close
+              at hand so the cores don't have to wait for data to arrive from
+              elsewhere in the system.
+            </p>
+            <p>
+              On the die photograph, the L3 cache appears as large, orderly
+              blocks of repeating patterns — dense arrays of tiny memory cells
+              packed together with incredible precision. While the cores do the
+              thinking, the cache keeps the information flowing, quietly feeding
+              data to the processor fast enough to keep billions of operations
+              moving every second.
+            </p>
           </div>
         </div>
       </div>

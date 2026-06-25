@@ -568,6 +568,41 @@ main section[id] { scroll-margin-top: 5rem; }
    the whole image shows with no crop. The .journey__detail wrapper carries the
    fade, so the image itself stays fully opaque. */
 .journey__img--detail { transform: none; }
+/* Scroll-revealed highlight rectangle over the die map. Same translucent
+   light-purple fill as the ALU overview band. Positioned in % of the detail
+   frame (which shares the image's aspect ratio, so %s map straight onto the
+   image). A perfect rectangle down the centre spine: flush with the bottom edge
+   and rising only to the visible cutoff near the top of the die. */
+.journey__hl {
+  position: absolute;
+  background: rgba(205, 180, 242, 0.55);
+  opacity: 0;            /* faded in on scroll */
+  pointer-events: none;
+  will-change: opacity;
+}
+.journey__hl--spine {
+  left: 36%;
+  width: 28%;            /* centred: 36% + 28% = 64% */
+  bottom: 1.5%;          /* a tad further down toward the bottom edge */
+  top: 17.75%;           /* nudged a sliver up (half that tad) */
+}
+/* Centred label sitting at the top of the highlight rectangle. Inherits the
+   rectangle's scroll fade, so it appears with it. */
+.journey__hl-label {
+  position: absolute;
+  top: 33.3%;            /* ~2/3 up the rectangle */
+  transform: translateY(-50%);
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: clamp(0.85rem, 1.1vw, 1.05rem);
+  letter-spacing: 0.04em;
+  color: #fdfdfb;
+  text-shadow: 0 1px 6px rgba(20, 20, 26, 0.85);
+  pointer-events: none;
+}
 /* The dies/internals states start hidden and are revealed on scroll. */
 .journey__img--dies,
 .journey__img--gray { opacity: 0; }
@@ -577,7 +612,9 @@ main section[id] { scroll-margin-top: 5rem; }
    is grouped tightly — the empty space sits between chunks, not between lines. */
 /* Don't grow — stay at the 60rem measure — so the layout's justify-content
    can centre the image + copy pair instead of the copy filling to the edge. */
-.journey__copy { flex: 0 1 auto; min-width: 0; max-width: 60rem; padding-block: 12vh; }
+/* Extra bottom runway keeps the sticky media pinned past the final copy so the
+   die map holds in place while its highlight(s) reveal. */
+.journey__copy { flex: 0 1 auto; min-width: 0; max-width: 60rem; padding-block: 12vh 30vh; }
 .journey__step {
   min-height: 56vh;
   display: flex;
@@ -607,6 +644,7 @@ main section[id] { scroll-margin-top: 5rem; }
 .journey__gallery {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;   /* centre the pair under the paragraph */
   gap: var(--space-3);
   margin-top: var(--space-5);
 }
