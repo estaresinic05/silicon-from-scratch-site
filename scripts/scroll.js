@@ -302,6 +302,16 @@
     crossfade(journey.querySelector(".journey__hl--spine"),
               journey.querySelector(".journey__step--cache"), "top 85%", "top 45%");
 
+    // The eight Zen 5 core highlights fade in together with the cores copy.
+    var coreHls = journey.querySelectorAll(".journey__hl--core");
+    var coresStep = journey.querySelector(".journey__step--cores");
+    if (coreHls.length && coresStep) {
+      gsap.fromTo(coreHls, { opacity: 0 }, {
+        opacity: 1, ease: "none",
+        scrollTrigger: { trigger: coresStep, start: "top 72%", end: "top 40%", scrub: true }
+      });
+    }
+
     /* The die shots beneath the final chunk fade in (staggered) as it arrives.
        Their wrapper is hidden by the reveal CSS, so make it visible and fade
        the images themselves. */
