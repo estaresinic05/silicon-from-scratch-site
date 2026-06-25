@@ -1215,3 +1215,4 @@ html.js .ladder .step { --node-scale: 0; }
 
 /* Drop the engineering-grid texture on the dark theme — just the smooth glow. */
 .theme-dark.theme-dark::before { display: none; }
+

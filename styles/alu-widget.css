@@ -157,7 +157,7 @@
   background: var(--paper);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
-  padding: var(--space-3);
+  padding: 0.75rem;          /* tighter padding so the datapath fills more of the card */
   overflow: hidden;
   /* hug the height-filled diagram and centre it */
   display: grid;
@@ -369,15 +369,13 @@
 }
 
 /* =======================================================================
-   EXPERIMENT — a matte graphite band for the interactive section only.
-   Replaces the page's white graph-paper backdrop with a flat dark surface
-   for #explore; the control panel + diagram float on it as light cards.
-   Fully scoped to #explore, so the rest of the site is untouched. Delete
-   this whole block (and restore the inline padding) to revert.
+   The interactive section shares the page's continuous dark background (no
+   band of its own); the control panel + diagram float on it as light cards.
+   Fully scoped to #explore, so the rest of the site is untouched.
    ===================================================================== */
 #explore {
-  background: #2f2f36;                  /* flat matte graphite — no gradient/texture */
-  margin-block: 0;                      /* a clean, full-width stripe between sections */
+  background: transparent;              /* let the page's continuous glow show through */
+  margin-block: 0;
   /* One self-contained viewport-height panel: compact heading on top, then the
      widget fills the rest so the diagram is fully visible without scrolling. */
   min-height: 100vh;
@@ -413,6 +411,29 @@
   color: #ececf0;
   background: rgba(255, 255, 255, 0.09);
   border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* The two cards stay white even though the page is on the dark theme: give the
+   panel and the diagram stage the light design tokens so they render as white
+   surfaces with dark content (the heading/intro outside them stay light on the
+   dark band). */
+#explore .alu-panel,
+#explore .alu-widget__stage {
+  --paper:       #FCFCF9;
+  --ink:         #23232A;
+  --soft-ink:    #56565F;
+  --accent:      #6B2FC9;
+  --accent-deep: #4F1F9E;
+  --hairline:    rgba(35, 35, 42, 0.12);
+}
+/* Recompute the diagram's idle/active colour knobs against the light tokens so
+   they read correctly on the white stage (they're declared on .alu-widget, which
+   stays on the dark theme). */
+#explore .alu-widget__stage {
+  --alu-active:   var(--accent);
+  --alu-active-2: var(--accent-deep);
+  --alu-invert:   var(--accent);
+  --alu-idle-ink: var(--soft-ink);
 }
 
 /* lift the two light cards off the dark surface with a soft drop shadow */

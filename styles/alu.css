@@ -10,7 +10,10 @@
    DOC HERO — a calmer, left-aligned hero for a content page
  * ------------------------------------------------------------------ */
 .doc-hero {
-  padding-block: clamp(var(--space-5), 7vw, var(--space-6));
+  /* Extra top padding nudges the whole hero (diagram + text together) down a
+     little so it clears the top bar with more breathing room. */
+  padding-block: clamp(var(--space-6), 10vw, var(--space-7))
+                 clamp(var(--space-5), 7vw, var(--space-6));
   /* A touch wider than the standard 72rem container so the diagram has room to
      grow once the text column is pinned to the title's width. */
   max-width: 80rem;
@@ -170,13 +173,10 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   min-height: 100vh;
-  border-top: 1px solid var(--hairline);
-  /* Shared dark backdrop with a soft accent glow — spans the whole band so
-     the panel and the image area read as one continuous surface. */
-  background:
-    radial-gradient(80% 70% at 15% 20%,
-                    rgba(107, 47, 201, 0.28), transparent 60%),
-    #1b1b22;
+  /* No border or own background: the page's continuous theme-dark glow shows
+     through the left panel so this band reads as part of one unbroken surface
+     (the die shot still covers the right half edge-to-edge). */
+  background: transparent;
 }
 
 /* Left half — text sits directly on the shared band background. */
@@ -458,8 +458,9 @@
    NEXT STEP — a gently tinted closing band
  * ------------------------------------------------------------------ */
 .nextstep {
-  background:
-    linear-gradient(to bottom, rgba(107, 47, 201, 0.03), transparent);
+  /* Kept transparent so the continuous page background carries through to the
+     closing band with no visible seam. */
+  background: none;
 }
 
 /* ------------------------------------------------------------------ *
