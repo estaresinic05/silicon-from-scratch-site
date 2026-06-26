@@ -1206,11 +1206,11 @@ html.js .tools .prose > *,
 html.js .journey__step > *,
 html.js .epigraph blockquote,
 html.js .ladder .step,
-html.js .findings .finding,
-html.js .aboutme__photo,
-html.js .aboutme__body > * {
+html.js .findings .finding {
   opacity: 0;
 }
+/* (.aboutme content is revealed by a CSS animation on the About page itself, so
+   it doesn't wait on the deferred GSAP CDN — see about/index.html.) */
 
 /* Learn path: the connector line is "drawn" downward (scaleY from the top)
    and the node dots "pop" in — both driven by GSAP via CSS variables.

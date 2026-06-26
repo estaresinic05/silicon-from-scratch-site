@@ -32,6 +32,33 @@
       border-top: 0;
       padding-block: var(--space-4);
     }
+
+    /* Reveal the portrait + intro on load via CSS (no dependency on the deferred
+       GSAP CDN, so there's no blank-then-pop lag). This mirrors the home hero's
+       settling-in: a gentle scale-in on the portrait (like the logo), then the
+       text rises in overlapping ~0.2s steps, all on an ease-out-cubic curve (the
+       CSS equivalent of GSAP's power2.out). `both` fill holds the hidden start
+       state before each animation runs, so there's no flash. */
+    @media (prefers-reduced-motion: no-preference) {
+      .aboutme__photo {
+        animation: aboutmePhotoIn 0.9s cubic-bezier(0.215, 0.61, 0.355, 1) both;
+      }
+      .aboutme__body > * {
+        animation: aboutmeTextIn 0.7s cubic-bezier(0.215, 0.61, 0.355, 1) both;
+      }
+      .aboutme__body > *:nth-child(1) { animation-delay: 0.40s; }
+      .aboutme__body > *:nth-child(2) { animation-delay: 0.60s; }
+      .aboutme__body > *:nth-child(3) { animation-delay: 0.80s; }
+      .aboutme__body > *:nth-child(4) { animation-delay: 1.00s; }
+    }
+    @keyframes aboutmePhotoIn {
+      from { opacity: 0; transform: scale(0.94); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes aboutmeTextIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: none; }
+    }
   </style>
 </head>
 <body class="theme-dark">

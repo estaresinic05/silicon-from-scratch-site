@@ -419,15 +419,9 @@
     reveal(".epigraph blockquote", ".epigraph", { duration: 0.9, start: "top 80%" });
   }
 
-  /* ---- About: portrait, then the introduction text ---- */
-  var aboutGrid = document.querySelector(".aboutme__grid");
-  if (aboutGrid) {
-    reveal(".aboutme__photo", aboutGrid, { start: "top 80%" });
-    reveal(aboutGrid.querySelectorAll(".aboutme__body > *"), aboutGrid, {
-      stagger: 0.1,
-      start: "top 78%"
-    });
-  }
+  /* ---- About: portrait + intro text are revealed by a CSS animation on the
+         About page (about/index.html) so they appear immediately on load,
+         without waiting for the deferred GSAP CDN. ---- */
 
   /* ---- Learn path: the connector line "draws" downward as you scroll,
          and each step's node dot + card reveal in sequence ---- */
