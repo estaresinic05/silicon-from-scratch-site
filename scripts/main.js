@@ -114,8 +114,9 @@
     backdrop.className = "toc-backdrop";
     document.body.appendChild(backdrop);
 
-    // Prefer sections that opt in with data-menu; otherwise list them all.
-    var labeled = scope.querySelectorAll("section[data-menu]");
+    // Prefer elements that opt in with data-menu (sections, or in-page chunks
+    // like the journey's "Going Deeper" step); otherwise list every section.
+    var labeled = scope.querySelectorAll("[data-menu]");
     var sections = labeled.length ? labeled : scope.querySelectorAll("section");
 
     Array.prototype.forEach.call(sections, function (sec) {

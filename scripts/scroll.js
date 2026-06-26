@@ -322,6 +322,82 @@
       });
     }
 
+    // The Test/Debug highlight fades in together with the Test/Debug copy.
+    var testHl = journey.querySelector(".journey__hl--testdebug");
+    var testStep = journey.querySelector(".journey__step--testdebug");
+    if (testHl && testStep) {
+      gsap.fromTo(testHl, { opacity: 0 }, {
+        opacity: 1, ease: "none",
+        scrollTrigger: { trigger: testStep, start: "top 72%", end: "top 40%", scrub: true }
+      });
+    }
+
+    // The SMU / I/O interconnect band fades in together with its copy.
+    var smuHl = journey.querySelector(".journey__hl--smu");
+    var smuStep = journey.querySelector(".journey__step--smu");
+    if (smuHl && smuStep) {
+      gsap.fromTo(smuHl, { opacity: 0 }, {
+        opacity: 1, ease: "none",
+        scrollTrigger: { trigger: smuStep, start: "top 72%", end: "top 40%", scrub: true }
+      });
+    }
+
+    /* After the reader finishes "A balancing act" (the SMU step) and keeps
+       scrolling, zoom + pan the pinned die map to focus on a single Zen 5 core
+       — the same scrubbed scale/transform-origin move as the ALU overview band.
+       The .journey__zoom layer (absolute, inset:0, transform-origin in CSS)
+       holds the image AND its highlight rectangles, so they scale/pan together
+       WITHOUT touching .journey__detail's centring transform — the frame stays
+       pinned exactly where it is. The extra bottom runway on .journey__copy
+       (see CSS) keeps the map pinned through the zoom. */
+    var dieZoom = journey.querySelector(".journey__zoom");
+    if (dieZoom && smuStep) {
+      // Exact match of the ALU overview-band move: a paused timeline that plays
+      // through once when triggered — scale 1 -> 2.6 over the whole timeline with
+      // the rightward pan (xPercent 0 -> 5) easing in later. Triggered once the
+      // SMU copy is read and the reader scrolls a little further.
+      var zoomTl = gsap.timeline({
+        paused: true,
+        scrollTrigger: {
+          trigger: smuStep,
+          start: "bottom 30%",         // after "A balancing act" has scrolled past
+          // play forward on the way down, and reverse it exactly on the way up
+          toggleActions: "play none none reverse"
+        }
+      });
+      // A spotlight mask that crops the image to the upper-left core: it has a
+      // hole over that core and a huge box-shadow of the page bg covering the
+      // rest, so fading it in hides ("fades out") the image under the other,
+      // now-faded rectangles. It rides inside .journey__zoom, so the hole tracks
+      // the core through the zoom/pan.
+      var spotlight = journey.querySelector(".journey__spotlight");
+      var dieDetail = journey.querySelector(".journey__detail");
+      var dieCrop = journey.querySelector(".journey__crop");
+
+      zoomTl
+        // zoom in + pan to the upper-left core. The pan starts sooner and runs
+        // longer so it flows continuously with the zoom (more fluid motion).
+        .fromTo(dieZoom, { scale: 1 }, { scale: 2.9, ease: "power1.inOut", duration: 4 }, 0)
+        .fromTo(dieZoom, { xPercent: 0, yPercent: 0 },
+                { xPercent: 31, yPercent: 16, ease: "power1.inOut", duration: 3 }, 1)
+        // fade the background die image (.journey__crop) out early — once the
+        // frame crops down it would otherwise show through behind the core. By
+        // position 3 (when the crop happens) it's gone; reverses back in on up.
+        .to(dieCrop, { opacity: 0, ease: "power1.inOut", duration: 1.5 }, 1)
+        // towards the very end, fade the spotlight mask in to crop the image
+        // down to the focal core. The mask (opaque, on top of every rectangle)
+        // hides the other highlights on its own, so we DON'T also animate their
+        // opacity here — that previously fought each rectangle's own scrubbed
+        // reveal trigger and glitched on fast scroll-up.
+        .to(spotlight, { opacity: 1, ease: "power1.inOut", duration: 1 }, 3)
+        // crop the square frame down so it bounds just the leftover core
+        // rectangle (insets match where the zoomed/panned core lands); reverses
+        // back to the full square on scroll-up as the rest fades back in
+        .fromTo(dieDetail,
+          { clipPath: "inset(0% 0% 0% 0% round 14px)" },
+          { clipPath: "inset(16% 0% 28% 0% round 14px)", ease: "power1.inOut", duration: 1 }, 3);
+    }
+
     /* The die shots beneath the final chunk fade in (staggered) as it arrives.
        Their wrapper is hidden by the reveal CSS, so make it visible and fade
        the images themselves. */

@@ -157,7 +157,7 @@
   background: var(--paper);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
-  padding: 0.75rem;          /* tighter padding so the datapath fills more of the card */
+  padding: 0.4rem;           /* tight padding so the datapath fills more of the card */
   overflow: hidden;
   /* hug the height-filled diagram and centre it */
   display: grid;

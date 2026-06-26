@@ -112,8 +112,12 @@
                one. Web-sized 1400px version (~0.6 MB) so it decodes fast for the
                cross-fade; the raw die map is ~88 MB / 3200px. -->
           <div class="journey__detail" aria-hidden="true">
+            <!-- Zoom layer: holds the image + all highlight rectangles so the
+                 focus-on-a-core zoom scales/pans them together without touching
+                 the frame's centring transform (mirrors .overview-band__zoom). -->
+            <div class="journey__zoom">
             <img class="journey__img journey__img--detail"
-                 src="assets/ccd-dieshot-detail-web.jpg"
+                 src="assets/ccd-dieshot-detail-opt.jpg"
                  alt="" decoding="async" />
             <!-- Scroll-revealed highlight(s) over the die map. A plain
                  translucent-purple rectangle (same fill as the ALU overview
@@ -135,6 +139,15 @@
                  edge, top just shy of the image top. -->
             <div class="journey__hl journey__hl--north"><span class="journey__hl-label journey__hl-label--core">IFOP PHY</span></div>
             <div class="journey__hl journey__hl--north journey__hl--north2"><span class="journey__hl-label journey__hl-label--core">IFOP PHY</span></div>
+            <!-- Test/Debug block to the right of the rightmost IFOP PHY. -->
+            <div class="journey__hl journey__hl--testdebug"><span class="journey__hl-label journey__hl-label--core">Test/Debug</span></div>
+            <!-- Wide skinny band in the gap below the IFOP / Test/Debug row. -->
+            <div class="journey__hl journey__hl--smu"><span class="journey__hl-label">SMU / Power Management and I/O Interconnect</span></div>
+            <!-- Spotlight mask: a hole over the upper-left core with a huge
+                 box-shadow of the page bg covering the rest. Faded in at the end
+                 of the core-focus zoom to crop the image to that one core. -->
+            <div class="journey__spotlight" aria-hidden="true"></div>
+            </div>
           </div>
         </div>
 
@@ -251,6 +264,73 @@
               keeps data nearby, the IFOP PHY serves as the CCD's gateway,
               ensuring information can move quickly and reliably between the
               processor's many pieces.
+            </p>
+          </div>
+
+          <!-- Test/Debug: reveals together with the Test/Debug highlight. -->
+          <div class="journey__step journey__step--testdebug">
+            <h2 class="journey__subhead">Built to be tested</h2>
+            <p>
+              Tucked away among the larger functional blocks of the CCD is the
+              <strong>Test/Debug</strong> circuitry, a collection of specialized
+              hardware used during the processor's development and manufacturing
+              rather than during everyday operation. Before a processor ever runs an
+              operating system or launches an application, engineers rely on
+              these interfaces to verify that billions of transistors are
+              functioning exactly as intended.
+            </p>
+            <p>
+              The Test/Debug logic provides a window into the processor's inner
+              workings, allowing engineers to inspect signals, validate designs,
+              and diagnose problems that would otherwise be impossible to observe
+              once the chip is sealed beneath its heat spreader. For example, if
+              a newly manufactured processor fails to boot or produces an
+              unexpected result during testing, engineers can use this circuitry
+              to observe how instructions move through the cores, verify that
+              data is reaching the cache, or confirm that communication between
+              the CCD and I/O die is operating correctly.
+            </p>
+          </div>
+
+          <!-- SMU / I/O interconnect: reveals together with the SMU band. -->
+          <div class="journey__step journey__step--smu">
+            <h2 class="journey__subhead">A balancing act</h2>
+            <p>
+              Sandwiched in the middle is the SMU, or
+              <strong>System Management Unit</strong>, the part of the processor
+              responsible for power management and overall coordination of how
+              the chip behaves. The SMU is constantly monitoring temperature,
+              power draw, and workload, making real-time decisions about how fast
+              the processor should run and which parts should be active at any
+              given moment. This continuous balancing act helps the processor
+              stay efficient while still delivering performance when it is needed.
+            </p>
+            <p>
+              The <strong>I/O interconnect</strong> is the internal communication
+              network that ties the major functional blocks of the processor
+              together. It
+              moves data between the cores, cache, memory controllers, and other
+              on-die components, allowing them to operate as a single coordinated
+              system. This is different from the IFOP PHY, which specifically
+              handles high-speed communication between the CCD and the separate
+              I/O die outside of it, while the I/O interconnect focuses on traffic
+              within the die itself.
+            </p>
+          </div>
+
+          <!-- Going Deeper: lead-in to exploring a single core, in the same
+               kicker + title format as the opening "Meet the processor" chunk. -->
+          <div class="journey__step journey__step--deeper" id="going-deeper" data-menu="Going Deeper">
+            <p class="kicker">Going Deeper</p>
+            <h2 class="journey__title">Inside a single core</h2>
+            <p>
+              We will now begin to explore a single core in detail, zooming into
+              the smallest and most complex part of the CCD. Each core is
+              incredibly rich with dense circuitry, made up of many separate
+              functional blocks that all work together in unison to execute
+              instructions at high speed. What looks like a single unit on a block
+              diagram is, in reality, a tightly packed system of specialized
+              hardware, each part designed for a specific stage of computation.
             </p>
           </div>
         </div>
