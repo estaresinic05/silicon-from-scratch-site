@@ -181,7 +181,27 @@
 
     backdrop.addEventListener("click", closeToc);
     tocMenu.addEventListener("click", function (e) {
-      if (e.target.closest("a")) closeToc();
+      var a = e.target.closest("a");
+      if (!a) return;
+      closeToc();
+      // The journey's "Meet the Processor" (the section, whose first chunk we
+      // centre) and "Going Deeper" (a journey chunk) should land centred in the
+      // viewport, not jumped to the top like a normal anchor. Other entries keep
+      // the default top-anchor behaviour.
+      var id = (a.getAttribute("href") || "").replace(/^#/, "");
+      var el = id && document.getElementById(id);
+      if (!el) return;
+      var centerEl = el.classList.contains("journey")
+        ? el.querySelector(".journey__step")
+        : (el.classList.contains("journey__step") ? el : null);
+      if (!centerEl) return;
+      e.preventDefault();
+      var mid = centerEl.getBoundingClientRect().top + window.pageYOffset +
+                centerEl.offsetHeight / 2;
+      window.scrollTo({
+        top: Math.max(0, mid - window.innerHeight / 2),
+        behavior: "smooth"
+      });
     });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") closeToc();
