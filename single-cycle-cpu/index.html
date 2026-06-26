@@ -36,6 +36,9 @@
     }
     .coming-soon h1 { margin: var(--space-2) 0 var(--space-3); }
     .coming-soon p { max-width: 42ch; margin-inline: auto; color: var(--soft-ink); }
+    /* The shared .about__actions is a left-aligned flex row; centre it here so the
+       button sits under the centred "Coming Soon" text. */
+    .coming-soon .about__actions { justify-content: center; }
   </style>
 </head>
 <body class="theme-dark">
