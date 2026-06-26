@@ -723,6 +723,15 @@ main section[id] { scroll-margin-top: 5rem; }
 .journey__step + .journey__step--smu { margin-top: var(--space-6); }
 /* Start the "Going Deeper" chunk lower so it lands after the core-focus zoom. */
 .journey__step + .journey__step--deeper { margin-top: 30vh; }
+/* "Coming soon" — the final beat below "Inside a single core". */
+.journey__soon {
+  margin: var(--space-6) 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: clamp(1.3rem, 3vw, 1.9rem);
+  letter-spacing: 0.08em;
+  color: var(--soft-ink);
+}
 /* Lower the copy from "First stop" through the SMU section a little. Applied as
    a transform on the inner content (not the step box), so it's purely visual and
    the step elements keep their layout positions — the die-shot highlight fade-in
@@ -811,9 +820,18 @@ main section[id] { scroll-margin-top: 5rem; }
   .journey__copy > .journey__step:first-child {
     transform: translateY(9vh);
   }
-  /* Extra bottom runway so the die map stays pinned long enough to play the
-     focus-on-a-core zoom (scroll.js) after the SMU copy is read. */
-  .journey__copy { padding-bottom: 130vh; }
+  /* Runway that keeps the die map pinned through the focus-on-a-core zoom and
+     the "Inside a single core" copy. The "Coming soon" beat sits low enough that
+     the map unpins right around it, so the two scroll up together as the section
+     ends (instead of the map holding pinned past it). */
+  .journey__soon { margin-top: 22vh; }
+  /* ~50vh of space after "Coming soon" so the map unpins exactly when that text
+     reaches the viewport's vertical centre — i.e. when it lines up top-to-bottom
+     with the centred die image — and the two then scroll up together. */
+  .journey__copy { padding-bottom: 50vh; }
+  /* Pull the next section up into that empty runway tail (after the image has
+     scrolled off) to close the gap a little, without changing the unpin point. */
+  .learn { margin-top: -22vh; }
 }
 
 /* ------------------------------------------------------------------ *
@@ -1026,36 +1044,49 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
 /* ------------------------------------------------------------------ *
    12. WHAT YOU'LL FIND
  * ------------------------------------------------------------------ */
+/* An editorial index rather than a 2x2 grid of cards: full-width rows split
+   into a mono label column and the content, divided by hairlines. */
 .findings {
   list-style: none;
   margin: var(--space-5) 0 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-3);
+  border-top: 1px solid var(--hairline);
 }
 .finding {
-  background: var(--paper);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius);
-  padding: var(--space-4);
-  box-shadow: var(--shadow-soft);
-  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+  display: grid;
+  grid-template-columns: minmax(7rem, 13rem) 1fr;
+  column-gap: clamp(var(--space-3), 5vw, var(--space-6));
+  row-gap: 0.35rem;
+  padding: var(--space-4) var(--space-2);
+  border-bottom: 1px solid var(--hairline);
+  transition: background 0.18s var(--ease);
 }
-.finding:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lift);
-}
+.finding:hover { background: rgba(253, 253, 251, 0.035); }
 .finding__num {
+  grid-column: 1;
+  grid-row: 1 / -1;            /* label spans the whole row, content beside it */
+  align-self: start;
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   letter-spacing: 0.1em;
   color: var(--accent);
-  display: block;
-  margin-bottom: var(--space-2);
+  margin: 0;
 }
-.finding h3 { margin-bottom: 0.5rem; }
-.finding p { color: var(--soft-ink); margin: 0; }
+.finding h3 { grid-column: 2; margin: 0 0 0.1rem; }
+.finding p { grid-column: 2; color: var(--soft-ink); margin: 0; }
+
+/* The interactive-tools call to action: a faint accent wash and a link heading
+   that stays white (a "white heading") with an accent arrow that nudges. */
+.finding--cta { background: rgba(183, 148, 246, 0.06); }
+.finding--cta:hover { background: rgba(183, 148, 246, 0.11); }
+.finding__link { color: var(--ink); text-decoration: none; }
+.finding__link span {
+  display: inline-block;
+  margin-left: 0.35rem;
+  color: var(--accent);
+  transition: transform 0.18s var(--ease);
+}
+.finding__link:hover span { transform: translateX(4px); }
 
 /* ------------------------------------------------------------------ *
    13. TOOLS
@@ -1278,7 +1309,8 @@ html.js .ladder .step { --node-scale: 0; }
   /* Tighter vertical rhythm on smaller screens */
   :root { --space-7: 5rem; --space-6: 3.5rem; }
 
-  .findings { grid-template-columns: 1fr; }
+  .finding { grid-template-columns: 1fr; row-gap: 0.5rem; }
+  .finding__num { grid-row: auto; }
 }
 
 /* Phones */

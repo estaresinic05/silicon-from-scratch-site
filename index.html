@@ -333,16 +333,20 @@
               hardware, each part designed for a specific stage of computation.
             </p>
           </div>
+
+          <!-- Coming soon: the last beat. Sits below "Inside a single core" and
+               scrolls up with the (now unpinning) die image as the section ends. -->
+          <p class="journey__soon">Coming soon&hellip;</p>
         </div>
       </div>
     </section>
 
     <!-- ================================ LEARN =========================== -->
-    <section class="section learn" id="learn" data-menu="Start Here" aria-labelledby="learn-title">
+    <section class="section learn" id="learn" data-menu="Your learning path" aria-labelledby="learn-title">
       <div class="container">
         <div class="section__head">
-          <p class="kicker">Start here</p>
-          <h2 id="learn-title">A path from one logic block to a working CPU.</h2>
+          <p class="kicker">Your learning path</p>
+          <h2 id="learn-title" class="journey__title">One step at a time</h2>
           <p class="section__note">Each project assumes only what came before it.</p>
         </div>
 
@@ -425,6 +429,15 @@
             <p>
               RISC-V machine-code test programs exercising arithmetic, logic,
               memory, and control flow.
+            </p>
+          </li>
+          <li class="finding finding--cta">
+            <span class="finding__num">05 / Interactive Tools</span>
+            <h3><a class="finding__link" href="alu/">Try it <span aria-hidden="true">&rarr;</span></a></h3>
+            <p>
+              Live, in-browser explorers &mdash; like the ALU datapath
+              visualizer &mdash; that let you pick an operation and watch the
+              active hardware light up as you go.
             </p>
           </li>
         </ul>
