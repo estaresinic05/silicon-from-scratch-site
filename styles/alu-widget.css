@@ -360,8 +360,10 @@
   .alu-widget { grid-template-columns: 1fr; gap: var(--space-3); align-items: start; }
   .alu-panel { position: static; top: auto; }
   .alu-readout__name { font-size: 1.6rem; }
-  /* stacked view scrolls normally — drop the viewport-fill, size to width */
-  #explore { display: block; min-height: 0; padding-top: var(--space-5); }
+  /* stacked view scrolls normally — drop the viewport-fill, size to width.
+     var(--space-5) = 3 rem = 48 px barely clears the ~42 px fixed topbar when
+     a user deep-links directly to #explore; raise it to 4.5 rem for comfort. */
+  #explore { display: block; min-height: 0; padding-top: 4.5rem; }
   #explore > .container { display: block; }
   #explore .alu-widget { display: grid; }
   .alu-widget__stage { width: auto; }

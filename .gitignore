@@ -11,6 +11,9 @@ desktop.ini
 # Claude Code local settings
 .claude/
 
+# Throwaway mobile-layout screenshots from the mobile-guardian agent
+.mobile-audit/
+
 # Oversized source die-shot (84 MB) — the optimized -opt.jpg is used on the site
 assets/ccd-dieshot-detail.jpg
 # Scratch reference screenshot used while positioning the highlight

@@ -467,8 +467,17 @@
    RESPONSIVE
  * ------------------------------------------------------------------ */
 @media (max-width: 768px) {
-  /* Stack the hero: text first, then the ALU block diagram below it. */
-  .doc-hero { grid-template-columns: 1fr; gap: var(--space-4); }
+  /* Stack the hero: text first, then the ALU block diagram below it.
+     The clamp minimum for padding-block-start depends on --space-6, which the
+     mobile variable override shrinks to 3.5 rem — leaving only ~14 px of
+     breathing room above the fixed 42 px topbar.  Pin it to 4.5 rem (72 px)
+     so there's a comfortable ~30 px gap, matching the home-page hero's
+     clearance intent (calc(4rem + var(--space-4))). */
+  .doc-hero {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    padding-block-start: 4.5rem;
+  }
   .doc-hero__text { max-width: none; }
   .doc-hero__art { max-width: 340px; margin-inline: auto; }
   .doc-hero__lead { font-size: 1.1rem; }
