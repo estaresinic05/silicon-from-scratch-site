@@ -342,6 +342,22 @@
       });
     }
 
+    // The "Going Deeper" sub-block rectangles cross-fade in as the reader
+    // scrolls PAST "Inside a single core": the teal core highlight over the
+    // cropped core fades out at the same time the two purple sub-block
+    // rectangles fade in. Anchored to the step's bottom so it kicks in once the
+    // copy has been read and scrolled up past centre. immediateRender:false on
+    // the core fade-out so it doesn't clobber the cores-step fade-in at load.
+    var deeperHls = journey.querySelectorAll(".journey__hl--deeper");
+    var deeperStep = journey.querySelector(".journey__step--deeper");
+    if (deeperHls.length && deeperStep) {
+      gsap.timeline({
+        scrollTrigger: { trigger: deeperStep, start: "bottom 75%", end: "bottom 35%", scrub: true }
+      })
+        .fromTo(coreHls, { opacity: 1 }, { opacity: 0, ease: "none", immediateRender: false }, 0)
+        .fromTo(deeperHls, { opacity: 0 }, { opacity: 1, ease: "none" }, 0);
+    }
+
     /* After the reader finishes "A balancing act" (the SMU step) and keeps
        scrolling, zoom + pan the pinned die map to focus on a single Zen 5 core
        — the same scrubbed scale/transform-origin move as the ALU overview band.

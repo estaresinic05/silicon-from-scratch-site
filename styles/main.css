@@ -669,6 +669,19 @@ main section[id] { scroll-margin-top: 5rem; }
   font-size: clamp(0.6rem, 0.78vw, 0.82rem);
 }
 
+/* "Going Deeper" sub-block overlays: two rectangles sitting on the right side
+   of the upper-left (cropped) Zen 5 core. Image-space %s, so they ride the zoom
+   with the core. Same translucent purple as the L3 cache (the .journey__hl
+   default fill). Right edge just shy of the crop's right edge (35.5%); the two
+   stacked with about a rectangle's height of gap between them. */
+.journey__hl--deeper {
+  left: 28%;
+  width: 7.05%;         /* trimmed in from the left; right edge pulled back a sliver */
+  height: 5%;           /* bottoms extended ~3/7 taller (3.5% -> 5%) */
+}
+.journey__hl--deeper-1 { top: 22.3125%; }  /* down a sliver (1/4 of prior nudge) */
+.journey__hl--deeper-2 { top: 32.45%; }    /* down the sliverest of slivers */
+
 /* Centred label sitting at the top of the highlight rectangle. Inherits the
    rectangle's scroll fade, so it appears with it. */
 .journey__hl-label {
@@ -691,6 +704,22 @@ main section[id] { scroll-margin-top: 5rem; }
   top: 50%;
   font-size: clamp(0.6rem, 0.85vw, 0.78rem);
   line-height: 1.15;
+}
+/* Deeper sub-block labels: the rectangles are tiny, so shrink to fit. They
+   scale with the zoom (the rectangles ride .journey__zoom), so this is the
+   pre-zoom size. */
+.journey__hl-label--deeper {
+  top: 50%;
+  font-size: clamp(0.26rem, 0.34vw, 0.34rem);
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+/* Render the fraction as real "1/2" text, bumped up and letter-spaced so the
+   digits sit a touch left/right of the slash instead of jammed against it. */
+.journey__hl-label--deeper .frac {
+  font-size: 1.05em;
+  letter-spacing: 0.08em;
 }
 /* The dies/internals states start hidden and are revealed on scroll. */
 .journey__img--dies,
