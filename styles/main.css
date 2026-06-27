@@ -1181,6 +1181,10 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
   color: var(--soft-ink);
   opacity: 0.85;
 }
+.footer__credit + .footer__credit {
+  margin-top: 0;                       /* sit directly under the line above */
+  line-height: 1.3;                    /* tighter leading between the two credit lines */
+}
 .footer__credit a {
   font-size: inherit;                  /* sit inline with the sentence, not the 0.8rem links */
   letter-spacing: inherit;
