@@ -185,6 +185,24 @@
                  ~1/4 of that width; bottom flush with the L1's top; placed just
                  right of the L1 top surface's centre. -->
             <div class="journey__hl journey__hl--deeper journey__hl--deeper-l1tab"></div>
+            <!-- Small teal square (same fill as the L1 Data cache) near the top
+                 right of the cropped core, sitting just to the LEFT of the purple
+                 riser. About the size of the L2 Cache Tags block but a hair
+                 smaller on every side. -->
+            <div class="journey__hl journey__hl--deeper journey__hl--deeper-ne"><span class="journey__hl-label journey__hl-label--deeper journey__hl-label--deeper-l1i">L1 Instruction<br>Cache</span></div>
+            <!-- Instruction Fetch and Decode: sits to the LEFT of the L1i, right
+                 edge flush with the L1i's left edge. ~2x the L1i's width, ~1/5
+                 taller, top flush with the L1i's top. Its own (orange) colour. -->
+            <div class="journey__hl journey__hl--deeper journey__hl--deeper-fetch"><span class="journey__hl-label journey__hl-label--deeper journey__hl-label--deeper-fetch">Instruction Fetch<br>and Decode</span></div>
+            <!-- Thin extension off the fetch block's bottom-right, running toward
+                 the dark purple riser. Same orange; no label. -->
+            <div class="journey__hl journey__hl--deeper journey__hl--deeper-fetch-ext"></div>
+            <!-- Thin riser up from the extension's right end to the L1i's top. -->
+            <div class="journey__hl journey__hl--deeper journey__hl--deeper-fetch-up"></div>
+            <!-- Short piece off the riser's top, back to the L1i's right edge. -->
+            <div class="journey__hl journey__hl--deeper journey__hl--deeper-fetch-top"></div>
+            <!-- Small block hanging off the fetch block's bottom-left. -->
+            <div class="journey__hl journey__hl--deeper journey__hl--deeper-fetch-sub"></div>
             <!-- Spotlight mask: a hole over the upper-left core with a huge
                  box-shadow of the page bg covering the rest. Faded in at the end
                  of the core-focus zoom to crop the image to that one core. -->
@@ -410,6 +428,90 @@
               the wiring inside each half, so accesses are quicker and draw less
               power than one large block would.
             </p>
+          </div>
+
+          <!-- Built for speed: explains the split L1 caches once the reader has
+               scrolled past "A cache of one's own" and the two teal L1
+               rectangles (Instruction + Data) have faded in. -->
+          <div class="journey__step journey__step--l1">
+            <h2 class="journey__title">Small but speedy</h2>
+            <p>
+              The <strong>L1 cache</strong> is the smallest and fastest memory on
+              the core, and the first place the core looks for any instruction or
+              piece of data. Unlike the L2 and L3, it isn't a single pool — it's
+              split into an instruction cache (L1i) holding the code the core is
+              about to run, and a data cache (L1d) holding the values that code
+              operates on. That split exists because the core does both at once:
+              while the front of the core pulls in the next instructions, other
+              parts are busy reading and writing data. Giving each stream its own
+              cache lets the core fetch and move data in parallel instead of
+              competing for the same access. (Why each sits where it does on the
+              die is something we'll return to later.)
+            </p>
+            <a class="step__more journey__more" href="#pipelining">Learn more about pipelining
+              <span aria-hidden="true">&rarr;</span></a>
+            <p>
+              The L1i holds 32&nbsp;KB of ultra-fast memory, while the L1d holds
+              48&nbsp;KB — both tiny compared to the L2, which is more than ten
+              times larger. But what L1 gives up in capacity it makes up in speed,
+              running roughly three times faster than the L2 below it. That's the
+              bargain of the whole hierarchy: the closer a cache sits to the core,
+              the smaller and faster it gets.
+            </p>
+
+            <!-- Cache-hierarchy comparison (Ryzen 5 9600X / Zen 5). On desktop
+                 scroll.js relocates this into .journey__media so it pins below the
+                 raised die image; on mobile it stays here in flow and collapses to
+                 cards. The two L1 rows are grouped with an amber accent matching
+                 the L1 rectangles on the die. Figures are approximate. -->
+            <figure class="cache-table" aria-labelledby="cache-table-cap">
+              <table>
+                <caption id="cache-table-cap" class="cache-table__cap">
+                  Cache hierarchy of a Ryzen&nbsp;5 9600X (Zen&nbsp;5). Speeds are
+                  approximate, relative to L1.
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Cache Level</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Scope</th>
+                    <th scope="col">Relative Speed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="cache-table__l1 cache-table__l1--first">
+                    <th scope="row" data-label="Cache Level">L1i</th>
+                    <td data-label="Size">32&nbsp;KB</td>
+                    <td data-label="Scope">Private per core</td>
+                    <td data-label="Relative Speed">Fastest (baseline)</td>
+                  </tr>
+                  <tr class="cache-table__l1">
+                    <th scope="row" data-label="Cache Level">L1d</th>
+                    <td data-label="Size">48&nbsp;KB</td>
+                    <td data-label="Scope">Private per core</td>
+                    <td data-label="Relative Speed">Fastest (baseline)</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" data-label="Cache Level">L2</th>
+                    <td data-label="Size">1&nbsp;MB</td>
+                    <td data-label="Scope">Private per core</td>
+                    <td data-label="Relative Speed">~3&times; slower than L1</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" data-label="Cache Level">L3</th>
+                    <td data-label="Size">32&nbsp;MB</td>
+                    <td data-label="Scope">Shared across the CCD</td>
+                    <td data-label="Relative Speed">~10&times; slower than L1</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" data-label="Cache Level">DRAM</th>
+                    <td data-label="Size">Many&nbsp;GB</td>
+                    <td data-label="Scope">System-wide</td>
+                    <td data-label="Relative Speed">~50&times;+ slower than L1</td>
+                  </tr>
+                </tbody>
+              </table>
+            </figure>
           </div>
 
           <!-- Coming soon: the last beat. Sits below "Inside a single core" and

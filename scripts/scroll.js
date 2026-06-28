@@ -214,7 +214,7 @@
     }
 
     steps.forEach(function (step) {
-      var els = step.querySelectorAll(".kicker, h2, p");
+      var els = step.querySelectorAll(".kicker, h2, p, .journey__more");
       var words = [];
       Array.prototype.forEach.call(els, function (el) { wrapWords(el, words); });
       gsap.set(els, { opacity: 1 }); // containers visible; the words carry the fade
@@ -348,7 +348,22 @@
     // rectangles fade in. Anchored to the step's bottom so it kicks in once the
     // copy has been read and scrolled up past centre. immediateRender:false on
     // the core fade-out so it doesn't clobber the cores-step fade-in at load.
-    var deeperHls = journey.querySelectorAll(".journey__hl--deeper");
+    // The two L1 cache rectangles (Instruction + Data, plus the Data cache's
+    // little extension tab) are held back from this first reveal — they fade in
+    // later, once "A cache of one's own" has been read (see below).
+    var l1Hls = gsap.utils.toArray(
+      ".journey__hl--deeper-ne, .journey__hl--deeper-west, .journey__hl--deeper-l1tab"
+    );
+    // Instruction Fetch + Decode (and its extension) are also held back — they
+    // fade in just after the L1 caches, once "Small but speedy" is read.
+    var fetchHls = gsap.utils.toArray(
+      ".journey__hl--deeper-fetch, .journey__hl--deeper-fetch-ext, " +
+      ".journey__hl--deeper-fetch-up, .journey__hl--deeper-fetch-top, " +
+      ".journey__hl--deeper-fetch-sub"
+    );
+    var deeperHls = gsap.utils.toArray(".journey__hl--deeper").filter(function (el) {
+      return l1Hls.indexOf(el) === -1 && fetchHls.indexOf(el) === -1;
+    });
     var deeperStep = journey.querySelector(".journey__step--deeper");
     if (deeperHls.length && deeperStep) {
       gsap.timeline({
@@ -356,6 +371,78 @@
       })
         .fromTo(coreHls, { opacity: 1 }, { opacity: 0, ease: "none", immediateRender: false }, 0)
         .fromTo(deeperHls, { opacity: 0 }, { opacity: 1, ease: "none" }, 0);
+    }
+
+    // The L1 Instruction + Data cache rectangles fade in once the reader has
+    // scrolled past "A cache of one's own" and reached "Small but speedy" (the L1
+    // step). Anchored to that step's top so they arrive as its copy comes in.
+    var l1Step = journey.querySelector(".journey__step--l1");
+    if (l1Hls.length && l1Step) {
+      gsap.fromTo(l1Hls, { opacity: 0 }, {
+        opacity: 1, ease: "none",
+        scrollTrigger: { trigger: l1Step, start: "top 78%", end: "top 42%", scrub: true }
+      });
+    }
+
+    // Instruction Fetch + Decode fades in only once the reader has scrolled PAST
+    // "Small but speedy" — after the pinned table has faded back out. Anchored to
+    // the step's bottom so it lands well after the table clears.
+    if (fetchHls.length && l1Step) {
+      gsap.fromTo(fetchHls, { opacity: 0 }, {
+        opacity: 1, ease: "none",
+        scrollTrigger: { trigger: l1Step, start: "bottom 40%", end: "bottom 15%", scrub: true }
+      });
+    }
+
+    // Cache-comparison table choreography (desktop only). As the reader arrives
+    // at "Small but speedy", the pinned die image slides up to open room and the
+    // table fades in pinned beneath it; it holds while the section is read, then
+    // — as the section scrolls past — the table fades out and the image glides
+    // back to centre. The table lives in the copy in markup (so it's in-context
+    // and collapses to cards on mobile); here we relocate it into the sticky
+    // media so it pins below the image. Only animate `top` (not transforms) so
+    // we never fight the image's centring transform or the table's own.
+    var l1Table = journey.querySelector(".cache-table");
+    var mediaEl = journey.querySelector(".journey__media");
+    var detailEl = journey.querySelector(".journey__detail");
+    var deskMedia = window.matchMedia("(min-width: 769px)").matches;
+    // Flipped true once the focus-zoom has finished cropping to the single core
+    // (set from the zoom timeline below). BOTH the image raise and the table are
+    // gated on it: until the crop is done the image stays centred (covering the
+    // crop frame) so the grayscale delid never peeks out beneath the raised
+    // image, and a fast scroll can't reveal the table over the full die map.
+    var coreCropped = false;
+    var applyGate = function () {};        // reassigned when the pinned table is set up
+    if (l1Table && mediaEl && detailEl && l1Step && deskMedia) {
+      mediaEl.appendChild(l1Table);          // pin it with the image
+      gsap.set(l1Table, { opacity: 0 });
+      var RAISE_TOP = 40;                     // image centre rides up to here, % (tune to taste)
+      var tableFade = { o: 0 };               // scrubbed proxy; real opacity is gated
+      var raise = { t: 50 };                  // scrubbed proxy; real `top` is gated
+      // Drive internal values with the scroll, but clamp the actual image lift
+      // and table opacity to their resting state until the crop is done.
+      applyGate = function () {
+        detailEl.style.top = (coreCropped ? raise.t : 50) + "%";
+        l1Table.style.opacity = coreCropped ? tableFade.o : 0;
+      };
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: l1Step, start: "top 88%", end: "bottom 12%", scrub: true,
+          onUpdate: applyGate, onRefresh: applyGate
+        }
+      })
+        // The image lifts (0-1), holds (1-3), then lowers (3-4) across the section.
+        .fromTo(raise, { t: 50 }, { t: RAISE_TOP, ease: "none", duration: 1 }, 0)
+        .to(raise, { t: RAISE_TOP, duration: 2 }, ">")
+        .to(raise, { t: 50, ease: "none", duration: 1 }, ">")
+        // The table fades in a beat AFTER the lift (0.9-1.7) and out a beat
+        // BEFORE the image settles (2.4-3.2); it holds at full in between.
+        .fromTo(tableFade, { o: 0 }, { o: 1, ease: "none", duration: 0.8 }, 0.9)
+        .to(tableFade, { o: 0, ease: "none", duration: 0.8 }, 2.4);
+    } else if (l1Table) {
+      // In-flow (mobile / no pin): the step-child hide rule keeps it at opacity 0,
+      // so just give it the standard scroll reveal where it sits in the copy.
+      reveal(l1Table, l1Table, { y: 20, start: "top 88%", duration: 0.7 });
     }
 
     /* After the reader finishes "A balancing act" (the SMU step) and keeps
@@ -374,6 +461,11 @@
       // SMU copy is read and the reader scrolls a little further.
       var zoomTl = gsap.timeline({
         paused: true,
+        // Gate the image raise + cache table on the crop: they may only engage
+        // once this zoom has fully cropped to the core, and must reset if we
+        // reverse out of it (which also fades the crop/grayscale back in).
+        onComplete: function () { coreCropped = true; applyGate(); },
+        onReverseComplete: function () { coreCropped = false; applyGate(); },
         scrollTrigger: {
           trigger: smuStep,
           start: "bottom 30%",         // after "A balancing act" has scrolled past

@@ -703,7 +703,7 @@ main section[id] { scroll-margin-top: 5rem; }
   width: 12.275%;       /* right edge held at ~22.6% */
   top: 33.3%;           /* top shrunk down by the tiny bit (0.6%) */
   height: 4.15%;        /* bottom held flush at 37.45% */
-  background: rgba(45, 212, 191, 0.5);    /* teal — distinct from the purples */
+  background: rgba(34, 211, 238, 0.5);    /* cyan — distinct from the purples/cores */
 }
 /* Small tab on top of the L1 Data cache, same teal, reading as a short
    extension. Width ≈ 3/5 of the L1's height (0.6 × 4.15% ≈ 2.49%); its height
@@ -714,7 +714,7 @@ main section[id] { scroll-margin-top: 5rem; }
   width: 2.19%;         /* right side pulled in another smidge */
   top: 32.48%;          /* bottom 33.3% − height 0.82% */
   height: 0.82%;        /* taller — grown upward, bottom stays flush */
-  background: rgba(45, 212, 191, 0.5);    /* same teal as the L1 Data cache */
+  background: rgba(34, 211, 238, 0.5);    /* same cyan as the L1 Data cache */
 }
 /* Third rectangle nestled in the gap between the two. Right edge just shy of
    the others' (34.8% vs 35.05%); top/bottom just shy of touching deeper-1's
@@ -741,6 +741,68 @@ main section[id] { scroll-margin-top: 5rem; }
   width: 4.38%;         /* left +0.2%, right +0.1% — right edge now ~34.9% */
   top: 27.75%;          /* shortened top by half the sliver (0.2%) */
   height: 4.45%;        /* a hair more on the bottom — bottom ~32.2% */
+}
+/* Small cyan square near the top right of the cropped core, just left of the
+   purple riser (left edge 28%). Sized a touch smaller on each side than the L2
+   Cache Tags block (4.38% × 4.45% -> 3.8% × 3.9%). Top sits just below the
+   cropped image's top edge (~18.34%); right edge a sliver shy of the riser. */
+.journey__hl--deeper-ne {
+  left: 23%;
+  width: 3.3%;          /* right edge ~26.3% — pulled in a tiny bit more */
+  top: 18.45%;          /* top flush with the riser's top */
+  height: 2.65%;        /* bottom brought up a very tad more */
+  background: rgba(34, 211, 238, 0.5);    /* same cyan as the L1 Data cache */
+}
+/* Instruction Fetch and Decode: to the LEFT of the L1i, right edge flush with
+   the L1i's left edge (23%). ~2x the L1i width (3.3% -> 6.6%), ~1/5 taller
+   (2.65% -> 3.18%), top flush with the L1i (18.45%). Distinct orange. */
+.journey__hl--deeper-fetch {
+  left: 17.15%;         /* left side shortened in a sliver more */
+  width: 5.85%;         /* right edge still at 23% */
+  top: 18.45%;          /* top flush with the L1i */
+  height: 3.18%;        /* ~1/5 taller than the L1i */
+  background: rgba(251, 146, 60, 0.5);    /* orange — distinct from cyan/purple/teal */
+}
+/* Small block hanging off the fetch block's bottom-left: top flush with the
+   fetch's bottom (21.63%), left aligned with the fetch's left. Height ~1/3 of the
+   fetch's height; width ~1/5 of the fetch's bottom width. Same orange. */
+.journey__hl--deeper-fetch-sub {
+  left: 17.15%;         /* aligned with the fetch block's left edge */
+  width: 2.42%;         /* extended right a sliver */
+  top: 21.47%;          /* tucked up into the fetch's bottom (21.63%) so the
+                           junction reads as solidly flush, no hairline gap */
+  height: 1.01%;        /* bottom stays at ~22.48% (1/5 trimmed off earlier) */
+  background: rgba(251, 146, 60, 0.5);    /* same orange as the fetch block */
+}
+/* Thin extension off the fetch block's bottom-right: left edge at the fetch's
+   right edge (23%), top flush with the L1i's bottom (21.1%), bottom flush with
+   the fetch block's bottom (21.63%). Runs right to just shy of the dark purple
+   riser (28%). Same orange as the fetch block. */
+.journey__hl--deeper-fetch-ext {
+  left: 23%;            /* fetch's right edge */
+  width: 4.92%;         /* right edge ~27.92% — a sliver closer to the riser (28%) */
+  top: 21.1%;           /* flush with the L1i's bottom */
+  height: 0.53%;        /* down to the fetch block's bottom (21.63%) */
+  background: rgba(251, 146, 60, 0.5);    /* same orange as the fetch block */
+}
+/* Thin vertical riser off the extension's right end, ~3 slivers wide, rising up
+   to be flush with the L1i's top (18.45%). Its bottom meets the extension's TOP
+   (21.1%) so the two read as one continuous extension, not an overlap. Orange. */
+.journey__hl--deeper-fetch-up {
+  left: 27.71%;         /* right edge (27.92%) aligned with the extension's */
+  width: 0.21%;         /* ~3 slivers */
+  top: 18.45%;          /* flush with the L1i's top */
+  height: 2.65%;        /* down to the extension's top (21.1%) — no overlap */
+  background: rgba(251, 146, 60, 0.5);    /* same orange as the fetch block */
+}
+/* Short horizontal piece off the TOP of the riser, running left to be flush with
+   the L1i's right edge (26.3%). Same height as the first (lower) extension. */
+.journey__hl--deeper-fetch-top {
+  left: 26.3%;          /* flush with the L1 Instruction Cache's right edge */
+  width: 1.41%;         /* right edge (27.71%) meets the riser's left edge */
+  top: 18.45%;          /* flush with the riser's / L1i's top */
+  height: 0.53%;        /* same as the lower extension */
+  background: rgba(251, 146, 60, 0.5);    /* same orange as the fetch block */
 }
 
 /* Centred label sitting at the top of the highlight rectangle. Inherits the
@@ -788,6 +850,18 @@ main section[id] { scroll-margin-top: 5rem; }
   font-size: clamp(0.2rem, 0.26vw, 0.26rem);
   line-height: 1.05;     /* tight stacking of the two lines */
 }
+/* "L1 Instruction cache" sits in the small teal square (deeper-ne). Two stacked
+   lines, both centred; sized down so the longer top line fits inside the box. */
+.journey__hl-label--deeper-l1i {
+  font-size: clamp(0.115rem, 0.153vw, 0.153rem);
+  line-height: 1.1;      /* tight stacking of the two lines */
+}
+/* "Instruction Fetch and Decode" sits in the wider orange block; a touch larger
+   than the L1i label since it has more room. */
+.journey__hl-label--deeper-fetch {
+  font-size: clamp(0.17rem, 0.225vw, 0.225rem);
+  line-height: 1.1;
+}
 /* "L2$ Control and Interconnect" runs vertically up the left strip of the fill
    frame (the band to the left of the Tags hole). Rotated 90° CCW so it reads
    bottom-to-top; centred in that strip. */
@@ -834,6 +908,9 @@ main section[id] { scroll-margin-top: 5rem; }
 /* Push "A cache of one's own" further below "Inside a single core" so it lands
    well after the L2 rectangles have faded in. */
 .journey__step + .journey__step--l2 { margin-top: 26vh; }
+/* Push "Built for speed" well below "A cache of one's own" so the L1 rectangles
+   have room to fade in after that section has been read. */
+.journey__step + .journey__step--l1 { margin-top: 34vh; }
 /* "Coming soon" — the final beat below "Inside a single core". */
 .journey__soon {
   margin: var(--space-6) 0 0;
@@ -863,6 +940,104 @@ main section[id] { scroll-margin-top: 5rem; }
   line-height: 1.65;
 }
 .journey__step strong { color: var(--ink); font-weight: 600; }
+/* "Learn more about pipelining" link: pulled up snug under the paragraph it
+   follows, with a normal gap restored before the next paragraph. Scoped under
+   .journey__step so it beats .step__more's later margin-top. */
+.journey__step .journey__more { margin-top: -1.4rem; margin-bottom: 2.3rem; }
+
+/* ---- Cache-hierarchy comparison table -----------------------------------
+   Lives in the L1 ("Small but speedy") step. In normal flow (and on mobile)
+   it's a tidy block that collapses to cards; on desktop scroll.js relocates it
+   into the sticky .journey__media so it pins below the raised die image. */
+.cache-table {
+  --cache-accent: #22d3ee;   /* cyan — matches the L1 cache rectangles on the die */
+  margin: var(--space-4) 0 0;
+  max-width: 42rem;
+}
+.cache-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+}
+.cache-table__cap {
+  caption-side: top;
+  text-align: left;
+  margin-bottom: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  color: var(--soft-ink);
+}
+.cache-table th,
+.cache-table td {
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 0.82rem;
+  vertical-align: baseline;
+}
+/* Cyan column headers + underline match the L1 cache rectangles on the die. */
+.cache-table thead th {
+  color: var(--cache-accent);
+  font-weight: 600;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1.5px solid var(--cache-accent);
+}
+.cache-table tbody th {
+  color: var(--ink);
+  font-weight: 600;
+}
+.cache-table td { color: var(--soft-ink); }
+/* Group the two L1 rows: a cyan accent (matching the L1 die rectangles) down the
+   left edge plus a faint tint, and no divider between them so they read as one. */
+.cache-table__l1 th,
+.cache-table__l1 td { background: rgba(34, 211, 238, 0.1); }
+.cache-table__l1 th:first-child {
+  box-shadow: inset 3px 0 0 var(--cache-accent);
+}
+.cache-table__l1:not(.cache-table__l1--first) th,
+.cache-table__l1:not(.cache-table__l1--first) td { border-top: 0; }
+.cache-table__l1--first th,
+.cache-table__l1--first td { border-bottom: 0; }
+
+/* Pinned variant: when scroll.js moves the figure into the sticky media, it sits
+   centred below the (raised) die image. --cache-table-top sets how far below the
+   viewport centre it rides; tweak alongside the JS raise amount. */
+.journey__media .cache-table {
+  --cache-table-top: calc(50% + 3.5rem);   /* how far below centre it rides */
+  position: absolute;
+  left: 50%;
+  top: var(--cache-table-top);
+  transform: translateX(-50%);
+  width: clamp(380px, 50vw, 680px);        /* match the die frame so edges line up */
+  max-width: none;
+  margin: 0;
+  padding: 0.85rem 1.2rem 1rem;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-top: 2px solid var(--cache-accent);   /* cyan accent edge, matching the L1 die blocks */
+  border-radius: var(--radius);            /* match the image frame's corners */
+  box-shadow: var(--shadow-soft);
+  opacity: 0;                 /* GSAP fades it in with the raise */
+  z-index: 2;                 /* above the spotlight mask */
+}
+.journey__media .cache-table table { table-layout: fixed; }
+/* Give the wider text columns room so nothing wraps at the pinned size. */
+.journey__media .cache-table th:nth-child(1),
+.journey__media .cache-table td:nth-child(1) { width: 15%; }
+.journey__media .cache-table th:nth-child(2),
+.journey__media .cache-table td:nth-child(2) { width: 13%; }
+.journey__media .cache-table th:nth-child(3),
+.journey__media .cache-table td:nth-child(3) { width: 34%; }
+.journey__media .cache-table th:nth-child(4),
+.journey__media .cache-table td:nth-child(4) { width: 38%; }
+.journey__media .cache-table th,
+.journey__media .cache-table td { padding: 0.46rem 0.65rem; font-size: 0.78rem; white-space: nowrap; }
+.journey__media .cache-table thead th { font-size: 0.62rem; }
+.journey__media .cache-table__cap { font-size: 0.7rem; margin-bottom: 0.7rem; }
 
 /* Headings: the title and "Under the covers" share the same display size. */
 .journey__title,
@@ -911,6 +1086,55 @@ main section[id] { scroll-margin-top: 5rem; }
   /* Without the pin, show the dies/internals states stacked below the face. */
   .journey__img--dies,
   .journey__img--gray { position: static; opacity: 1; }
+
+  /* Cache table collapses to a stack of cards: hide the head row and turn each
+     row into a labelled card (the data-label on each cell supplies the field
+     name). The L1 pair keeps its cyan accent so the grouping still reads. */
+  .cache-table table,
+  .cache-table tbody,
+  .cache-table tr,
+  .cache-table th,
+  .cache-table td { display: block; width: auto; }
+  .cache-table thead {
+    position: absolute; width: 1px; height: 1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  .cache-table tr {
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    padding: 0.6rem 0.9rem;
+    margin-top: var(--space-2);
+  }
+  .cache-table tbody th {
+    font-size: 1.05rem;
+    padding: 0 0 0.4rem;
+    margin-bottom: 0.4rem;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .cache-table td {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.3rem 0;
+    border-bottom: 0;
+    font-size: 0.9rem;
+  }
+  .cache-table td::before {
+    content: attr(data-label);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 0.66rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    align-self: center;
+  }
+  /* Re-apply the L1 grouping accent to the (now block) L1 cards. Each L1 is its
+     own card; the shared cyan edge keeps them reading as a pair. */
+  .cache-table__l1 th,
+  .cache-table__l1 td { background: none; box-shadow: none; }
+  .cache-table__l1 { box-shadow: inset 3px 0 0 var(--cache-accent); }
+  .cache-table__l1--first th { border-bottom: 1px solid var(--hairline); }
 }
 
 /* Desktop only: let the hero own the entire first screen so none of the
