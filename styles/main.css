@@ -680,7 +680,68 @@ main section[id] { scroll-margin-top: 5rem; }
   height: 5%;           /* bottoms extended ~3/7 taller (3.5% -> 5%) */
 }
 .journey__hl--deeper-1 { top: 22.3125%; }  /* down a sliver (1/4 of prior nudge) */
+/* Thin vertical riser above the upper L2 cache: left flush with it (28%), width
+   ~1/4 of the L2 cache (7.05% / 4 ≈ 1.76%), bottom flush with the L2's top
+   (22.3125%). Its top sits just shy of the CROPPED image's top edge — after the
+   core-focus zoom that edge maps to ~18.34% image-space, so 18.6% sits a sliver
+   below it. Same dark purple as the fill. */
+.journey__hl--deeper-riser {
+  left: 28%;
+  width: 1.76%;
+  top: 18.45%;          /* the smallest hair shy of the cropped top (~18.34%) */
+  height: 3.8625%;      /* up to the upper L2 cache's top edge (22.3125%) */
+  background: rgba(124, 58, 237, 0.5);    /* dark violet — matches the fill region */
+}
 .journey__hl--deeper-2 { top: 32.45%; }    /* down the sliverest of slivers */
+/* Wide block to the LEFT of the bottom L2 cache, in a distinct teal. Bottom
+   flush with that L2 cache (37.45%); height just shy of the L2's (5% -> 4.75%).
+   A ~3/4-L2-width gap sits between them (0.75 × 7.05% ≈ 5.29%), so the block's
+   right edge is at 28% − 5.29% = 22.71%; it extends left ~2 × the L2 width
+   (14.1%), putting its left edge at ~8.61%. */
+.journey__hl--deeper-west {
+  left: 10.325%;        /* extended the tiniest hair more left */
+  width: 12.275%;       /* right edge held at ~22.6% */
+  top: 33.3%;           /* top shrunk down by the tiny bit (0.6%) */
+  height: 4.15%;        /* bottom held flush at 37.45% */
+  background: rgba(45, 212, 191, 0.5);    /* teal — distinct from the purples */
+}
+/* Small tab on top of the L1 Data cache, same teal, reading as a short
+   extension. Width ≈ 3/5 of the L1's height (0.6 × 4.15% ≈ 2.49%); its height
+   ≈ 1/4 of that width (≈ 0.62%); bottom flush with the L1's top (33.3%); placed
+   just right of the L1 top surface's centre (L1 centre ≈ 16.46%). */
+.journey__hl--deeper-l1tab {
+  left: 15.915%;
+  width: 2.19%;         /* right side pulled in another smidge */
+  top: 32.48%;          /* bottom 33.3% − height 0.82% */
+  height: 0.82%;        /* taller — grown upward, bottom stays flush */
+  background: rgba(45, 212, 191, 0.5);    /* same teal as the L1 Data cache */
+}
+/* Third rectangle nestled in the gap between the two. Right edge just shy of
+   the others' (34.8% vs 35.05%); top/bottom just shy of touching deeper-1's
+   bottom (27.31%) and deeper-2's top (32.45%). */
+/* Fill region between the two L2 caches: left/width match the L2 caches (28% /
+   7.05%), top flush with deeper-1's bottom (27.3125%) and bottom flush with
+   deeper-2's top (32.45%). A deeper purple — same family as the L2s but clearly
+   distinct. A clip-path cuts a rectangular hole exactly where the Tags block
+   sits, so the fill wraps AROUND it instead of overlapping it. Hole coords are
+   the Tags rect expressed as %s of this element's own box. */
+.journey__hl--deeper-fill {
+  left: 28%;
+  width: 7.05%;
+  top: 27.3125%;
+  height: 5.1375%;      /* down to deeper-2's top edge (32.45%) */
+  background: rgba(124, 58, 237, 0.5);    /* deeper violet — distinct from the light-lavender L2s */
+  clip-path: polygon(
+    0% 0%, 0% 100%, 100% 100%, 100% 0%, 0% 0%,
+    35.74% 8.52%, 97.87% 8.52%, 97.87% 95.13%, 35.74% 95.13%, 35.74% 8.52%
+  );
+}
+.journey__hl--deeper-3 {
+  left: 30.52%;         /* widened left by half a sliver (0.2%) */
+  width: 4.38%;         /* left +0.2%, right +0.1% — right edge now ~34.9% */
+  top: 27.75%;          /* shortened top by half the sliver (0.2%) */
+  height: 4.45%;        /* a hair more on the bottom — bottom ~32.2% */
+}
 
 /* Centred label sitting at the top of the highlight rectangle. Inherits the
    rectangle's scroll fade, so it appears with it. */
@@ -721,6 +782,24 @@ main section[id] { scroll-margin-top: 5rem; }
   font-size: 1.05em;
   letter-spacing: 0.08em;
 }
+/* "L2 Cache Tags" sits in the narrower middle rectangle, so it needs a smaller
+   font than the other two deeper labels to fit. */
+.journey__hl-label--deeper-tags {
+  font-size: clamp(0.2rem, 0.26vw, 0.26rem);
+  line-height: 1.05;     /* tight stacking of the two lines */
+}
+/* "L2$ Control and Interconnect" runs vertically up the left strip of the fill
+   frame (the band to the left of the Tags hole). Rotated 90° CCW so it reads
+   bottom-to-top; centred in that strip. */
+.journey__hl-label--ctrl {
+  left: 17.9%;           /* centre of the left strip (x 0–35.74% of the box) */
+  right: auto;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  white-space: nowrap;
+  font-size: clamp(0.14rem, 0.19vw, 0.19rem);
+  letter-spacing: 0.02em;
+}
 /* The dies/internals states start hidden and are revealed on scroll. */
 .journey__img--dies,
 .journey__img--gray { opacity: 0; }
@@ -752,6 +831,9 @@ main section[id] { scroll-margin-top: 5rem; }
 .journey__step + .journey__step--smu { margin-top: var(--space-6); }
 /* Start the "Going Deeper" chunk lower so it lands after the core-focus zoom. */
 .journey__step + .journey__step--deeper { margin-top: 30vh; }
+/* Push "A cache of one's own" further below "Inside a single core" so it lands
+   well after the L2 rectangles have faded in. */
+.journey__step + .journey__step--l2 { margin-top: 26vh; }
 /* "Coming soon" — the final beat below "Inside a single core". */
 .journey__soon {
   margin: var(--space-6) 0 0;

@@ -59,6 +59,9 @@
       if (document.body.classList.contains("nav-open")) return;
       /* keep the bar up while the pointer is over it */
       if (topbar.matches(":hover")) return;
+      /* keep the bar up while the side (☰) drawer is open — the pointer may be
+         anywhere inside that panel, well below the bar's own bounding box */
+      if (document.querySelector(".toc__menu.is-open")) return;
       /* always visible at the top of the page */
       if (atTop()) return;
       topbar.classList.add("is-hidden");

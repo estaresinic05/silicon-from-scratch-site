@@ -352,7 +352,7 @@
     var deeperStep = journey.querySelector(".journey__step--deeper");
     if (deeperHls.length && deeperStep) {
       gsap.timeline({
-        scrollTrigger: { trigger: deeperStep, start: "bottom 75%", end: "bottom 35%", scrub: true }
+        scrollTrigger: { trigger: deeperStep, start: "bottom 48%", end: "bottom 8%", scrub: true }
       })
         .fromTo(coreHls, { opacity: 1 }, { opacity: 0, ease: "none", immediateRender: false }, 0)
         .fromTo(deeperHls, { opacity: 0 }, { opacity: 1, ease: "none" }, 0);
