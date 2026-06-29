@@ -721,7 +721,11 @@ main section[id] { scroll-margin-top: 5rem; }
 /* The die map fills its own frame exactly (frame shares its aspect ratio), so
    the whole image shows with no crop. The .journey__detail wrapper carries the
    fade, so the image itself stays fully opaque. */
-.journey__img--detail { transform: none; }
+/* Nudge ONLY the die image down a hair (it rides inside .journey__zoom, the
+   highlight rectangles are siblings) so the die features sit slightly lower —
+   aligning them under the L2/L1/fetch rectangles without moving the rectangles.
+   The 1px is in image space, so the zoom scales it up to a small on-screen shift. */
+.journey__img--detail { transform: translateY(1px); }
 /* Scroll-revealed highlight rectangle over the die map. Same translucent
    light-purple fill as the ALU overview band. Positioned in % of the detail
    frame (which shares the image's aspect ratio, so %s map straight onto the

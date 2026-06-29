@@ -4,19 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
-       styles only apply when scroll.js can reveal them again. -->
+  <!-- Progressive enhancement: mark that JS is available BEFORE first paint, so the
+       "hidden-before-reveal" styles only apply when JS can reveal them again.
+       Without JS this never runs and the full page stays visible. -->
   <script>document.documentElement.classList.add("js");</script>
 
-  <title>Meet the Processor — Silicon From Scratch</title>
+  <title>Silicon From Scratch</title>
   <meta name="description"
-        content="Meet the processor: a guided tour from a chip's heat spreader down into a single Zen 5 core — cache, cores, interconnect and more." />
+        content="A learning hub for anyone curious about how the processors inside modern devices are designed and built — start with a single logic block and climb to a working CPU." />
 
-  <!-- Social link previews: shared logo + "Silicon From Scratch" card. -->
+  <!-- Social link previews (Open Graph + Twitter Card). Every page shares one
+       card: the logo image and the title "Silicon From Scratch", with no
+       description so only that text shows. Scrapers need absolute URLs. -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Silicon From Scratch" />
   <meta property="og:title" content="Silicon From Scratch" />
-  <meta property="og:url" content="https://siliconfromscratch.com/meet-the-processor/" />
+  <meta property="og:url" content="https://siliconfromscratch.com/" />
   <meta property="og:image" content="https://siliconfromscratch.com/assets/logo.jpg" />
   <meta property="og:image:width" content="1408" />
   <meta property="og:image:height" content="768" />
@@ -25,14 +28,16 @@
   <meta name="twitter:title" content="Silicon From Scratch" />
   <meta name="twitter:image" content="https://siliconfromscratch.com/assets/logo.jpg" />
 
+  <!-- Favicon uses the logo (relative path — domain-ready) -->
   <link rel="icon" href="../assets/logo.jpg" />
 
+  <!-- Google Fonts: Bricolage Grotesque (display), Newsreader (body), JetBrains Mono (labels/code) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
         rel="stylesheet" />
 
-  <!-- Shared site styles (this page lives at /meet-the-processor/, one level down). -->
+  <!-- Site styles (relative path — domain-ready) -->
   <link rel="stylesheet" href="../styles/main.css" />
 </head>
 <body class="theme-dark">
@@ -41,22 +46,27 @@
   <!-- ============================== TOP BAR ============================== -->
   <header class="topbar">
     <div class="container topbar__inner">
-      <a class="wordmark" href="../" aria-label="Silicon From Scratch — home">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — home">
         <span class="wordmark__dot" aria-hidden="true"></span>
         Silicon From Scratch
       </a>
 
-      <!-- main.js rebuilds this nav into the inline quick links. -->
-      <nav class="nav" id="primary-nav" aria-label="Primary"></nav>
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="#top">Home</a>
+        <a href="../alu/">ALU</a>
+        <a href="../single-cycle-cpu/">Single Cycle CPU</a>
+        <a href="../about/">About</a>
+        <span class="nav__pending" aria-disabled="true" title="Coming soon">Help</span>
+      </nav>
 
       <div class="topbar__right">
-        <!-- The hamburger / ☰ opens the project menu (built by main.js). -->
+        <!-- Section index (desktop only): hover the ☰ to jump to a section on this page -->
         <div class="toc" id="page-toc">
           <button class="toc__btn" type="button" aria-haspopup="true"
-                  aria-expanded="false" aria-label="Open the project menu">
+                  aria-expanded="false" aria-label="Jump to a section on this page">
             <span class="nav-toggle__bars" aria-hidden="true"></span>
           </button>
-          <ul class="toc__menu" aria-label="Project menu"></ul>
+          <ul class="toc__menu" aria-label="Sections on this page"></ul>
         </div>
 
         <button class="nav-toggle" id="nav-toggle"
@@ -71,6 +81,12 @@
   <main id="main">
     <span id="top"></span>
 
+    <!-- ===================== THE JOURNEY (pinned media) ================= -->
+    <!-- One pinned image, centred in the viewport, that cross-fades through
+         three states as the copy scrolls past: the chip's top face (IHS) ->
+         the delidded dies -> their greyscale internals. Each text chunk fades
+         in as the reader approaches it. All three images are cropped (zoom +
+         rounded frame) so only the chip shows. -->
     <section class="journey" id="journey" data-menu="Meet the Processor" aria-label="Introducing the processor">
       <div class="journey__layout">
         <div class="journey__media">
@@ -514,9 +530,11 @@
     </p>
   </footer>
 
-  <!-- Minimal vanilla JS (menu + nav) -->
+  <!-- Minimal vanilla JS (mobile nav toggle) -->
   <script src="../scripts/main.js" defer></script>
 
+  <!-- GSAP + ScrollTrigger from CDN (free, no build step). External URLs are fine
+       here — only internal links must stay relative for custom-domain readiness. -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
   <!-- Scroll-driven motion (Phase 2). Relative path — domain-ready. -->

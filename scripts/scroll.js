@@ -468,7 +468,9 @@
         onReverseComplete: function () { coreCropped = false; applyGate(); },
         scrollTrigger: {
           trigger: smuStep,
-          start: "bottom 30%",         // after "A balancing act" has scrolled past
+          start: "bottom 45%",         // begins a touch earlier so the play-through
+                                       // completes before the reader scrolls into
+                                       // the "Going Deeper" copy below
           // play forward on the way down, and reverse it exactly on the way up
           toggleActions: "play none none reverse"
         }
@@ -504,6 +506,9 @@
         .fromTo(dieDetail,
           { clipPath: "inset(0% 0% 0% 0% round 14px)" },
           { clipPath: "inset(16% 0% 28% 0% round 14px)", ease: "power1.inOut", duration: 1 }, 3);
+      // Let the whole play-through run a hair slower so the zoom lands a fraction
+      // later (the motion is unchanged, just stretched slightly in time).
+      zoomTl.timeScale(0.92);
     }
 
     /* The die shots beneath the final chunk fade in (staggered) as it arrives.
