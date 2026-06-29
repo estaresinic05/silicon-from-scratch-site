@@ -467,6 +467,128 @@ body::before {
   color: var(--soft-ink);
 }
 
+/* ---- Project menu inside the drawer ---------------------------------------
+   Three levels stepping from the drawer's own dark tone, through a grey, to a
+   white leaf. Rows go edge-to-edge, so the panel drops its side padding. */
+.toc__menu--proj {
+  padding: calc(4rem + var(--space-2)) 0 var(--space-3);
+}
+
+/* "Projects" heading at the top of the drawer's project list. */
+.toc__heading {
+  margin: 0;
+  list-style: none;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  padding: 0.3rem var(--space-4) 0.7rem;
+}
+
+/* Quick links (Home / About / …) ride the top of the drawer on mobile only;
+   on desktop they are the inline top-bar nav instead. */
+.toc__quick > a,
+.toc__quick > .nav__pending {
+  display: block;
+  padding: 0.7rem var(--space-4);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--soft-ink);
+  border-bottom: 1px solid var(--hairline);
+}
+.toc__quick > a:hover,
+.toc__quick > a:focus-visible { color: var(--accent-deep); }
+@media (min-width: 769px) { .toc__quick { display: none; } }
+@media (max-width: 768px) {
+  .toc__heading {
+    border-top: 1px solid var(--hairline);
+    margin-top: var(--space-1);
+    padding-top: var(--space-2);
+  }
+}
+
+.toc__menu .menu__sub { list-style: none; margin: 0; padding: 0; }
+
+/* The toggle row: label on the left, flipping chevron on the right. */
+.toc__menu .menu__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-display);
+  letter-spacing: 0;
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+.toc__menu .menu__label { display: block; }
+
+/* The chevron: two strokes meeting at a point; flips up when its branch opens. */
+.toc__menu .menu__chev {
+  width: 0.95em;
+  height: 0.95em;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.25s var(--ease);
+}
+.toc__menu .menu__item.is-open > .menu__toggle .menu__chev { transform: rotate(180deg); }
+
+/* Level 1 — difficulty: matches the drawer's own dark theme. */
+.toc__menu .menu__item--l1 > .menu__toggle {
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.98rem;
+  font-weight: 600;
+  padding: 0.8rem var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+}
+.toc__menu .menu__item--l1 > .menu__toggle:hover { color: var(--accent-deep); }
+
+/* Level 2 — project: a grey step toward the white leaf. */
+.toc__menu .menu__item--l2 > .menu__toggle {
+  background: #4a4a55;
+  color: #f3f3f6;
+  font-size: 0.92rem;
+  padding: 0.68rem var(--space-4) 0.68rem calc(var(--space-4) + 0.9rem);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.toc__menu .menu__item--l2:first-child > .menu__toggle { border-top: 0; }
+.toc__menu .menu__item--l2 > .menu__toggle:hover { background: #565662; }
+
+/* Level 3 — the project's contents: white. */
+.toc__menu .menu__leaf > a {
+  display: block;
+  background: #fff;
+  color: #23232A;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  letter-spacing: 0;
+  line-height: 1.3;
+  padding: 0.6rem var(--space-4) 0.6rem calc(var(--space-4) + 1.8rem);
+  border: 0;
+  border-top: 1px solid rgba(35, 35, 42, 0.08);
+}
+.toc__menu .menu__leaf:first-child > a { border-top: 0; }
+.toc__menu .menu__leaf > a:hover,
+.toc__menu .menu__leaf > a:focus-visible { background: #4f1f9e; color: #fff; }
+
+/* Collapsible panel: animate the grid row 0fr -> 1fr so it slides open without
+   needing a fixed height; the single child clips its overflow. */
+.toc__menu .menu__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s var(--ease);
+}
+.toc__menu .menu__item.is-open > .menu__panel { grid-template-rows: 1fr; }
+.toc__menu .menu__panel > .menu__sub { overflow: hidden; min-height: 0; }
+
 /* anchored sections clear the (overlay) top bar when jumped to */
 main section[id] { scroll-margin-top: 5rem; }
 
@@ -1599,47 +1721,14 @@ html.js .ladder .step { --node-scale: 0; }
    17. RESPONSIVE
  * ------------------------------------------------------------------ */
 
-/* Tablet and below: collapse nav into a toggle menu */
+/* Tablet and below: the hamburger replaces the inline links and opens the
+   project drawer (which is shared with the desktop ☰). */
 @media (max-width: 768px) {
-  .nav-toggle { display: inline-flex; }
-  .toc { display: none; } /* section index is desktop-only */
-  .toc__menu, .toc-backdrop { display: none; } /* the drawer lives on <body> now */
+  .nav-toggle { display: inline-flex; }   /* hamburger appears */
+  .toc { display: none; }                 /* ☰ button is desktop-only */
+  .nav { display: none; }                 /* inline links collapse into the drawer */
 
-  .nav {
-    position: absolute;
-    top: 4rem;
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    background: var(--bg);
-    border-bottom: 1px solid var(--hairline);
-    padding: var(--space-2) var(--space-3) var(--space-3);
-    box-shadow: var(--shadow-soft);
-
-    /* Hidden by default; revealed via .is-open (JS toggle) */
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-8px);
-    transition: opacity 0.2s var(--ease),
-                transform 0.2s var(--ease),
-                visibility 0.2s var(--ease);
-  }
-  .nav.is-open {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-  }
-  .nav a {
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--hairline);
-  }
-  .nav a:last-child { border-bottom: 0; }
-  .nav a::after { display: none; }
-  .nav .nav__pending { padding: 0.75rem 0; }
-
-  /* Active toggle becomes an X */
+  /* Active hamburger becomes an X */
   .nav-toggle[aria-expanded="true"] .nav-toggle__bars {
     background: transparent;
   }

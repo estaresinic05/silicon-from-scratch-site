@@ -95,19 +95,173 @@
     }
   }
 
-  /* ---- 1.6 Page section index (desktop ☰) ------------------------------
-     Build a jump list of this page's sections. Sections carrying a data-menu
-     attribute set their own label (and, if present, take priority); otherwise
-     we fall back to each section's heading. Clicking the ☰ slides a panel in
-     from the right edge of the screen; clicking an entry, the backdrop, or
-     pressing Escape closes it. Desktop only (the .toc button is hidden on
-     mobile via CSS). */
+  /* ---- 1.55 Menu data ---------------------------------------------------
+     The same dark right-side drawer (formerly the page-section index) now
+     holds the project menu: difficulty -> project -> the project's contents.
+     Built from data so it is identical on every page. */
+  // The stylesheet link encodes how far this page sits from the site root
+  // ("styles/main.css", "../styles/main.css", ...). Reuse that prefix so menu
+  // links resolve from any depth, locally or deployed.
+  var cssLink = document.querySelector('link[rel="stylesheet"][href*="main.css"]');
+  var PREFIX = cssLink ? cssLink.getAttribute("href").replace(/styles\/main\.css.*$/, "") : "";
+  var SOON = PREFIX + "coming-soon/";
+
+  // Top-bar quick links (desktop inline nav, and the top of the mobile drawer).
+  // A null href renders as the inert "Help" placeholder.
+  var QUICK = [
+    ["Home", "#top"],
+    ["About", "about/"],
+    ["Meet the Processor", "meet-the-processor/"],
+    ["Tools", "#tools"],
+    ["Help", null]
+  ];
+
+  var MENU = [
+    ["Beginner", [
+      ["ALU", [
+        "Logic Gates and Simple 1-bit ALU",
+        "Full Adder",
+        "Ripple Carry Adder",
+        "32-bit ALU Slice",
+        "Complete 32-bit ALU",
+        "Testing",
+        "Bonus: Carry Lookahead"
+      ]],
+      ["Multiplier", ["Coming Soon"]],
+      ["Divider", ["Coming Soon"]]
+    ]],
+    ["Intermediate", [
+      ["Single Cycle CPU", [
+        "Basics of Instructions",
+        "Fetch, Decode, Execute",
+        "Constructing a Datapath",
+        "Immediate Generation Unit and ALU Control",
+        "Main Control Unit and Branch Logic",
+        "Testing"
+      ]],
+      ["Floating Point Adder", ["Coming Soon"]]
+    ]],
+    ["Advanced", [
+      ["Pipelined CPU", [
+        "What is Pipelining",
+        "Constructing a Datapath",
+        "Control Unit",
+        "Data Hazards",
+        "Control Hazards"
+      ]],
+      ["ALU Physical Design", ["Coming Soon"]]
+    ]],
+    ["Very Advanced", [
+      ["Pipelined CPU Physical Design", ["Coming Soon"]]
+    ]]
+  ];
+
+  // The chevron is two strokes converging to a point (a down-chevron); CSS
+  // flips it to point up when its branch is open.
+  var CHEVRON =
+    '<svg class="menu__chev" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M5 9l7 7 7-7" /></svg>';
+
+  // One quick link: an <a>, or the inert "Help" placeholder when href is null.
+  function quickNode(label, path) {
+    if (path === null) {
+      var span = document.createElement("span");
+      span.className = "nav__pending";
+      span.setAttribute("aria-disabled", "true");
+      span.title = "Coming soon";
+      span.textContent = label;
+      return span;
+    }
+    var a = document.createElement("a");
+    a.href = PREFIX + path;
+    a.textContent = label;
+    return a;
+  }
+
+  // One expandable branch: a toggle button (label + chevron) and a panel that
+  // `fill` populates with the next level. `level` drives the grey shading.
+  function makeBranch(label, level, fill) {
+    var li = document.createElement("li");
+    li.className = "menu__item menu__item--l" + level;
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "menu__toggle";
+    btn.setAttribute("aria-expanded", "false");
+    var name = document.createElement("span");
+    name.className = "menu__label";
+    name.textContent = label;
+    btn.appendChild(name);
+    btn.insertAdjacentHTML("beforeend", CHEVRON);
+
+    var panel = document.createElement("div");
+    panel.className = "menu__panel";
+    var ul = document.createElement("ul");
+    ul.className = "menu__sub";
+    fill(ul);
+    panel.appendChild(ul);
+
+    btn.addEventListener("click", function () {
+      var open = li.classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+
+    li.appendChild(btn);
+    li.appendChild(panel);
+    return li;
+  }
+
+  // Build the project menu (and the mobile quick links) into the drawer <ul>.
+  function buildDrawer(tocMenu) {
+    tocMenu.innerHTML = "";
+    tocMenu.classList.add("toc__menu--proj");
+
+    // Quick links live at the top of the drawer, shown only on mobile (on
+    // desktop they are the inline top-bar nav instead).
+    QUICK.forEach(function (q) {
+      var li = document.createElement("li");
+      li.className = "toc__quick";
+      li.appendChild(quickNode(q[0], q[1]));
+      tocMenu.appendChild(li);
+    });
+
+    // Heading for the project section.
+    var heading = document.createElement("li");
+    heading.className = "toc__heading";
+    heading.textContent = "Projects";
+    tocMenu.appendChild(heading);
+
+    MENU.forEach(function (cat) {
+      tocMenu.appendChild(makeBranch(cat[0], 1, function (catUl) {
+        cat[1].forEach(function (proj) {
+          catUl.appendChild(makeBranch(proj[0], 2, function (projUl) {
+            proj[1].forEach(function (sub) {
+              var leaf = document.createElement("li");
+              leaf.className = "menu__leaf";
+              var a = document.createElement("a");
+              // A literal "Coming Soon" leaf names its parent project on the
+              // placeholder page; named topics pass through as themselves.
+              var topic = sub === "Coming Soon" ? proj[0] : sub;
+              a.href = SOON + "?topic=" + encodeURIComponent(topic);
+              a.textContent = sub;
+              leaf.appendChild(a);
+              projUl.appendChild(leaf);
+            });
+          }));
+        });
+      }));
+    });
+  }
+
+  /* ---- 1.6 Project menu drawer (☰ on desktop, hamburger on mobile) ------
+     Reuses the dark slide-in panel. The ☰ opens it on hover (desktop); the
+     hamburger opens it on click (mobile). Clicking a link, the backdrop, or
+     pressing Escape closes it. */
   var toc = document.getElementById("page-toc");
+  var navToggle = document.getElementById("nav-toggle");
   if (toc) {
     var tocBtn = toc.querySelector(".toc__btn");
     var tocMenu = toc.querySelector(".toc__menu");
-    var scope = document.getElementById("main") || document.body;
-    var seen = {};
 
     // Move the panel to <body>: the top bar uses transform/will-change, which
     // would otherwise trap a position:fixed child and stop it filling the
@@ -117,49 +271,21 @@
     backdrop.className = "toc-backdrop";
     document.body.appendChild(backdrop);
 
-    // Prefer elements that opt in with data-menu (sections, or in-page chunks
-    // like the journey's "Going Deeper" step); otherwise list every section.
-    var labeled = scope.querySelectorAll("[data-menu]");
-    var sections = labeled.length ? labeled : scope.querySelectorAll("section");
-
-    Array.prototype.forEach.call(sections, function (sec) {
-      var label = (sec.getAttribute("data-menu") || "").trim();
-      if (!label) {
-        var h = sec.querySelector("h1, h2");
-        label = h ? (h.textContent || "").replace(/\s+/g, " ").trim() : "";
-      }
-      if (!label) return;
-      var target = sec.id;
-      if (!target) {
-        target = "sec-" + label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-        sec.id = target;
-      }
-      if (seen[target]) return;
-      seen[target] = 1;
-      var li = document.createElement("li");
-      var a = document.createElement("a");
-      a.href = "#" + target;
-      a.textContent = label;
-      li.appendChild(a);
-      tocMenu.appendChild(li);
-    });
-
-    if (!tocMenu.children.length) {
-      var empty = document.createElement("li");
-      empty.className = "toc__empty";
-      empty.textContent = "No sections on this page";
-      tocMenu.appendChild(empty);
-    }
+    buildDrawer(tocMenu);
 
     function openToc() {
       tocMenu.classList.add("is-open");
       backdrop.classList.add("is-open");
       tocBtn.setAttribute("aria-expanded", "true");
+      if (navToggle) navToggle.setAttribute("aria-expanded", "true");
+      document.body.classList.add("nav-open");
     }
     function closeToc() {
       tocMenu.classList.remove("is-open");
       backdrop.classList.remove("is-open");
       tocBtn.setAttribute("aria-expanded", "false");
+      if (navToggle) navToggle.setAttribute("aria-expanded", "false");
+      document.body.classList.remove("nav-open");
     }
     // Hover to open: opens when the pointer is over the ☰ or the drawer, and
     // closes shortly after it leaves both (a small delay bridges the gap as the
@@ -209,31 +335,23 @@
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") closeToc();
     });
+
+    // Mobile: the hamburger opens/closes this same drawer (the ☰ is hidden on
+    // mobile; on desktop the hamburger is hidden and the ☰ hover-opens).
+    if (navToggle) {
+      navToggle.addEventListener("click", function () {
+        if (tocMenu.classList.contains("is-open")) closeToc();
+        else openToc();
+      });
+    }
   }
 
-  /* ---- 2. Mobile navigation toggle -------------------------------------- */
-  var toggle = document.getElementById("nav-toggle");
+  /* ---- 2. Top-bar quick links (desktop inline nav) ----------------------
+     Home / About / Meet the Processor / Tools / Help. Inline on desktop;
+     hidden on mobile, where they ride at the top of the drawer instead. */
   var nav = document.getElementById("primary-nav");
-  if (!toggle || !nav) return;
-
-  function closeNav() {
-    nav.classList.remove("is-open");
-    toggle.setAttribute("aria-expanded", "false");
-    document.body.classList.remove("nav-open");
+  if (nav) {
+    nav.innerHTML = "";
+    QUICK.forEach(function (q) { nav.appendChild(quickNode(q[0], q[1])); });
   }
-
-  toggle.addEventListener("click", function () {
-    var isOpen = nav.classList.toggle("is-open");
-    toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
-    document.body.classList.toggle("nav-open", isOpen);
-  });
-
-  /* Close the menu after tapping a link, and on Escape. */
-  nav.addEventListener("click", function (e) {
-    if (e.target.closest("a")) closeNav();
-  });
-
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") closeNav();
-  });
 })();

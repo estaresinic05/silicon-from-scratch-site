@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. -->
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>Coming Soon — Silicon From Scratch</title>
+  <meta name="description"
+        content="This part of Silicon From Scratch is on its way." />
+
+  <!-- Social link previews: shared logo + "Silicon From Scratch" card. -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Silicon From Scratch" />
+  <meta property="og:title" content="Silicon From Scratch" />
+  <meta property="og:url" content="https://siliconfromscratch.com/coming-soon/" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/logo.jpg" />
+  <meta property="og:image:width" content="1408" />
+  <meta property="og:image:height" content="768" />
+  <meta property="og:image:alt" content="Silicon From Scratch logo" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Silicon From Scratch" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/logo.jpg" />
+
+  <link rel="icon" href="../assets/logo.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles (this page lives at /coming-soon/, one level down). -->
+  <link rel="stylesheet" href="../styles/main.css" />
+
+  <!-- Center the placeholder content vertically so it sits mid-screen. -->
+  <style>
+    .coming-soon {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: safe center;
+      align-items: center;
+      text-align: center;
+      border-top: 0;
+      padding-block: var(--space-4);
+    }
+    .coming-soon h1 { margin: var(--space-2) 0 var(--space-3); }
+    .coming-soon .kicker { margin-bottom: 0; }
+    .coming-soon p { max-width: 42ch; margin-inline: auto; color: var(--soft-ink); }
+    /* The shared .about__actions is a left-aligned flex row; centre it here so the
+       button sits under the centred "Coming Soon" text. */
+    .coming-soon .about__actions { justify-content: center; }
+  </style>
+</head>
+<body class="theme-dark">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../" aria-label="Silicon From Scratch — home">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+
+      <!-- main.js rebuilds this nav into the nested project menu. -->
+      <nav class="nav" id="primary-nav" aria-label="Primary"></nav>
+
+      <div class="topbar__right">
+        <!-- Section index (desktop only): hover the ☰ to jump to a section on this page -->
+        <div class="toc" id="page-toc">
+          <button class="toc__btn" type="button" aria-haspopup="true"
+                  aria-expanded="false" aria-label="Jump to a section on this page">
+            <span class="nav-toggle__bars" aria-hidden="true"></span>
+          </button>
+          <ul class="toc__menu" aria-label="Sections on this page"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================= COMING SOON ========================= -->
+    <section class="section coming-soon" aria-labelledby="soon-title">
+      <div class="container">
+        <p class="kicker" id="soon-topic" hidden></p>
+        <h1 id="soon-title">Coming Soon</h1>
+        <p>
+          This part of the path is on its way. Check back soon — or start with
+          the ALU in the meantime.
+        </p>
+        <div class="about__actions">
+          <a class="btn btn--primary" href="../alu/">Start with the ALU</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+  </footer>
+
+  <!-- Name the requested topic above the heading, if one was passed. -->
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var topic = (params.get("topic") || "").trim();
+      if (!topic) return;
+      var el = document.getElementById("soon-topic");
+      el.textContent = topic;
+      el.hidden = false;
+      document.title = topic + " — Coming Soon — Silicon From Scratch";
+    })();
+  </script>
+
+  <script src="../scripts/main.js" defer></script>
+</body>
+</html>
