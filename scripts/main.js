@@ -211,24 +211,17 @@
     return li;
   }
 
-  // Build the project menu (and the mobile quick links) into the drawer <ul>.
+  // Build the project menu into the drawer <ul>. The right-side drawer is the
+  // project directory only — the Home/About/Tools quick links live solely in the
+  // top-bar inline nav (desktop), not in this menu.
   function buildDrawer(tocMenu) {
     tocMenu.innerHTML = "";
     tocMenu.classList.add("toc__menu--proj");
 
-    // Quick links live at the top of the drawer, shown only on mobile (on
-    // desktop they are the inline top-bar nav instead).
-    QUICK.forEach(function (q) {
-      var li = document.createElement("li");
-      li.className = "toc__quick";
-      li.appendChild(quickNode(q[0], q[1]));
-      tocMenu.appendChild(li);
-    });
-
     // Heading for the project section.
     var heading = document.createElement("li");
     heading.className = "toc__heading";
-    heading.textContent = "Projects";
+    heading.textContent = "Project Directory";
     tocMenu.appendChild(heading);
 
     MENU.forEach(function (cat) {
@@ -287,26 +280,12 @@
       if (navToggle) navToggle.setAttribute("aria-expanded", "false");
       document.body.classList.remove("nav-open");
     }
-    // Hover to open: opens when the pointer is over the ☰ or the drawer, and
-    // closes shortly after it leaves both (a small delay bridges the gap as the
-    // pointer travels from the button onto the panel).
-    var hideTimer;
-    function scheduleClose() {
-      clearTimeout(hideTimer);
-      hideTimer = setTimeout(function () {
-        // Bind to the button (not the .toc container): the button is shoved
-        // right with a transform, so the container's hit-box sits to its left
-        // and would otherwise open the menu before the cursor reaches the ☰.
-        if (!tocBtn.matches(":hover") && !tocMenu.matches(":hover")) closeToc();
-      }, 140);
-    }
-    function cancelClose() { clearTimeout(hideTimer); }
-    tocBtn.addEventListener("mouseenter", function () { cancelClose(); openToc(); });
-    tocBtn.addEventListener("mouseleave", scheduleClose);
-    tocMenu.addEventListener("mouseenter", cancelClose);
-    tocMenu.addEventListener("mouseleave", scheduleClose);
-    // Also open on keyboard focus of the button, for keyboard users.
-    tocBtn.addEventListener("focus", openToc);
+    // Click the ☰ to toggle the drawer (it flips to an X while open) — same
+    // click behaviour as the mobile hamburger.
+    tocBtn.addEventListener("click", function () {
+      if (tocMenu.classList.contains("is-open")) closeToc();
+      else openToc();
+    });
 
     backdrop.addEventListener("click", closeToc);
     tocMenu.addEventListener("click", function (e) {

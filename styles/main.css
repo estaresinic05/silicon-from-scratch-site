@@ -272,7 +272,9 @@ body::before {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 50;
+  /* Above the drawer (60) + backdrop (55) so the hamburger stays visible while
+     the menu is open — it flips to an X and doubles as a tap-to-close. */
+  z-index: 70;
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: saturate(1.2) blur(8px);
   border-bottom: 1px solid var(--hairline);
@@ -400,13 +402,17 @@ body::before {
   background: transparent;
   border: 1px solid var(--hairline);
   border-radius: var(--radius-sm);
-  /* hover-activated, not a click target — keep the default arrow cursor */
-  cursor: default;
+  /* click target — opens/closes the drawer and flips to an X */
+  cursor: pointer;
   /* push the icon out near the right screen edge (on the button only, so the
      fixed dropdown's position isn't affected). max() keeps it from sliding off
      on narrower desktops where the container isn't centred. */
   transform: translateX(max(0px, calc((100vw - var(--maxw)) / 2 - 1.2rem)));
 }
+/* The ☰ flips to an X while the drawer is open (same as the mobile hamburger). */
+.toc__btn[aria-expanded="true"] .nav-toggle__bars { background: transparent; }
+.toc__btn[aria-expanded="true"] .nav-toggle__bars::before { transform: translateY(0) rotate(45deg); }
+.toc__btn[aria-expanded="true"] .nav-toggle__bars::after  { transform: translateY(-2px) rotate(-45deg); }
 /* Panel that slides in from the right edge of the screen (a full-height drawer).
    It's moved to <body> in JS so it fills the viewport height regardless of the
    top bar's transform. Toggled open by the ☰ via the .is-open class. */
@@ -486,28 +492,6 @@ body::before {
   padding: 0.3rem var(--space-4) 0.7rem;
 }
 
-/* Quick links (Home / About / …) ride the top of the drawer on mobile only;
-   on desktop they are the inline top-bar nav instead. */
-.toc__quick > a,
-.toc__quick > .nav__pending {
-  display: block;
-  padding: 0.7rem var(--space-4);
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  color: var(--soft-ink);
-  border-bottom: 1px solid var(--hairline);
-}
-.toc__quick > a:hover,
-.toc__quick > a:focus-visible { color: var(--accent-deep); }
-@media (min-width: 769px) { .toc__quick { display: none; } }
-@media (max-width: 768px) {
-  .toc__heading {
-    border-top: 1px solid var(--hairline);
-    margin-top: var(--space-1);
-    padding-top: var(--space-2);
-  }
-}
-
 .toc__menu .menu__sub { list-style: none; margin: 0; padding: 0; }
 
 /* The toggle row: label on the left, flipping chevron on the right. */
@@ -540,13 +524,15 @@ body::before {
 }
 .toc__menu .menu__item.is-open > .menu__toggle .menu__chev { transform: rotate(180deg); }
 
-/* Level 1 — difficulty: matches the drawer's own dark theme. */
+/* Level 1 — difficulty: flat quick-link style (font-display, soft-gray text on
+   the drawer's dark bg, hairline divider) so the outermost level matches the
+   top-bar links. The inner two levels keep the stepped grey -> white treatment. */
 .toc__menu .menu__item--l1 > .menu__toggle {
   background: transparent;
-  color: var(--ink);
-  font-size: 0.98rem;
-  font-weight: 600;
-  padding: 0.8rem var(--space-4);
+  color: var(--soft-ink);
+  font-size: 0.95rem;
+  font-weight: 400;
+  padding: 0.7rem var(--space-4);
   border-bottom: 1px solid var(--hairline);
 }
 .toc__menu .menu__item--l1 > .menu__toggle:hover { color: var(--accent-deep); }
@@ -562,7 +548,7 @@ body::before {
 .toc__menu .menu__item--l2:first-child > .menu__toggle { border-top: 0; }
 .toc__menu .menu__item--l2 > .menu__toggle:hover { background: #565662; }
 
-/* Level 3 — the project's contents: white. */
+/* Level 3 — the project's contents: white, with the dark-purple hover. */
 .toc__menu .menu__leaf > a {
   display: block;
   background: #fff;
