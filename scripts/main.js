@@ -147,7 +147,8 @@
         "Constructing a Datapath",
         "Control Unit",
         "Data Hazards",
-        "Control Hazards"
+        "Control Hazards",
+        "Testing"
       ]],
       ["ALU Physical Design", ["Coming Soon"]]
     ]],
