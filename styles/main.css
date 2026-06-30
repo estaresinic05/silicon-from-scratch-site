@@ -1642,13 +1642,14 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
 .step__link:hover { color: var(--accent-deep); }
 .step__more {
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 0.9em;                /* a touch smaller than the body copy it follows */
   letter-spacing: 0.04em;
   color: var(--accent);
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   margin-top: var(--space-2);
+  margin-left: 0.5rem;             /* nudge it a little to the right */
 }
 .step__more span { transition: transform 0.18s var(--ease); }
 .step__more:hover { color: var(--accent-deep); }
