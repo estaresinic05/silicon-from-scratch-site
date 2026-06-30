@@ -628,11 +628,17 @@ main section[id] { scroll-margin-top: 5rem; }
   gap: clamp(0.75rem, 2.5vw, 1.6rem);
   --bp-icon: clamp(190px, 36vw, 400px);   /* shared so arrows line up under icons */
 }
-/* Section title atop the path — same display style as the "Meet the processor"
-   / "Going Deeper" headings, aligned to the path's left edge. */
+/* Section eyebrow atop the path — mimics "MEET THE PROCESSOR" on the Meet the
+   Processor page. That label is a .kicker inside .journey__step, so it inherits
+   the mono/uppercase/tracked kicker base but with the larger size and soft-ink
+   colour that .journey__step p applies. We reproduce those two overrides here. */
 .buildpath__title {
   max-width: 980px;
-  margin: 0 auto var(--space-3);
+  margin: 0 auto var(--space-2);
+  padding-inline: var(--space-4);   /* match the path's <ol> padding so the label's
+                                        left edge lines up with the first icon */
+  font-size: clamp(1.15rem, 1.6vw, 1.35rem);
+  color: var(--soft-ink);
 }
 /* "Start Here" purple eyebrow + lead line atop the path (same .kicker treatment),
    aligned to the path's left edge. */
