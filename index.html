@@ -34,6 +34,11 @@
   <!-- Google Fonts: Bricolage Grotesque (display), Newsreader (body), JetBrains Mono (labels/code) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Preload the Bricolage Grotesque Latin subset (the display face used by every
+       heading) so titles paint in the right font on first load instead of flashing
+       the system fallback while the webfont downloads. -->
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+        href="https://fonts.gstatic.com/s/bricolagegrotesque/v9/3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2" />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
         rel="stylesheet" />
 
@@ -53,10 +58,11 @@
 
       <nav class="nav" id="primary-nav" aria-label="Primary">
         <a href="#top">Home</a>
-        <a href="alu/">ALU</a>
-        <a href="single-cycle-cpu/">Single Cycle CPU</a>
+        <a href="meet-the-processor/">Meet the Processor</a>
+        <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+           target="_blank" rel="noopener">GitHub</a>
         <a href="about/">About</a>
-        <span class="nav__pending" aria-disabled="true" title="Coming soon">Help</span>
+        <a href="#tools">Tools</a>
       </nav>
 
       <div class="topbar__right">
@@ -99,6 +105,176 @@
            href="https://github.com/estaresinic05/Silicon-From-Scratch"
            target="_blank" rel="noopener">View on GitHub</a>
       </div>
+    </section>
+
+    <!-- ===================== THE BUILD PATH ============================= -->
+    <!-- Gate -> chip as a vertical sequence: a large line-art icon on the left,
+         copy on the right, downward arrows between. Each step fades in as it
+         scrolls into view. Icons are inline SVG (stroke = currentColor). -->
+    <section class="buildpath-section" aria-labelledby="path-title">
+      <h2 class="journey__title buildpath__title" id="path-title">Your Path</h2>
+      <p class="kicker buildpath__kicker">Beginner</p>
+      <ol class="buildpath">
+        <li class="bp-step">
+          <span class="bp-frame" aria-hidden="true">
+            <svg class="bp-svg" viewBox="0 0 100 64">
+              <!-- a cluster of three gates, each with input/output wires -->
+              <!-- NOT (top-left) -->
+              <path d="M16 10 L16 28 L32 19 Z"/>
+              <circle cx="35" cy="19" r="2.3"/>
+              <path d="M9 19 H16 M37.3 19 H44"/>
+              <!-- OR (top-right, nudged right): concave back, edges meeting at a point -->
+              <path d="M56 9 Q66 19 56 29 Q74 27 84 19 Q74 11 56 9 Z"/>
+              <path d="M50 14 H57 M50 24 H57 M84 19 H92"/>
+              <!-- NAND (bottom-centre) -->
+              <path d="M34 38 L42 38 A11 11 0 0 1 42 60 L34 60 Z"/>
+              <circle cx="55.5" cy="49" r="2.3"/>
+              <path d="M27 43 H34 M27 55 H34 M57.8 49 H66"/>
+            </svg>
+          </span>
+          <div class="bp-copy">
+            <h3 class="bp-title"><a href="coming-soon/?topic=Logic%20Gates">Logic gates</a></h3>
+            <p class="bp-desc">The building blocks behind even the most complex
+              computing systems. Learn the basics.</p>
+          </div>
+        </li>
+
+        <li class="bp-arrow" aria-hidden="true">&darr;</li>
+
+        <li class="bp-step">
+          <span class="bp-frame" aria-hidden="true">
+            <svg class="bp-svg" viewBox="0 0 100 64">
+              <rect x="30" y="14" width="40" height="36" rx="3"/>
+              <text class="bp-txt" x="50" y="36">FA</text>
+              <path d="M18 24 H30 M18 40 H30"/>   <!-- a, b -->
+              <path d="M50 4 V14"/>               <!-- carry in -->
+              <path d="M70 32 H84"/>              <!-- sum -->
+              <path d="M50 50 V60"/>              <!-- carry out -->
+            </svg>
+          </span>
+          <div class="bp-copy">
+            <h3 class="bp-title"><a href="coming-soon/?topic=Full%20Adder">Full adder</a></h3>
+            <p class="bp-desc">Chain a few gates together and you can add two bits and
+              carry the result — the first real arithmetic in hardware.</p>
+          </div>
+        </li>
+
+        <li class="bp-arrow" aria-hidden="true">&darr;</li>
+
+        <li class="bp-step">
+          <span class="bp-frame" aria-hidden="true">
+            <svg class="bp-svg" viewBox="0 0 100 64">
+              <!-- classic notched ALU trapezoid (narrower, no top control line) -->
+              <path d="M34 10 L66 22 L66 42 L34 54 L34 38 L44 32 L34 26 Z"/>
+              <text class="bp-txt bp-txt--xs" x="54" y="37">ALU</text>
+              <path d="M20 22 H34 M20 50 H34"/>   <!-- a, b -->
+              <path d="M66 32 H82"/>              <!-- result -->
+            </svg>
+          </span>
+          <div class="bp-copy">
+            <h3 class="bp-title"><a href="coming-soon/?topic=ALU">Arithmetic Logic Unit</a></h3>
+            <p class="bp-desc">The engine of the CPU, executing billions of instructions
+              per second. Adders and logic combined into one.</p>
+          </div>
+        </li>
+
+        <li class="bp-tag">
+          <span class="bp-tag__arrow" aria-hidden="true">&darr;</span>
+          <p class="kicker">Intermediate</p>
+        </li>
+
+        <li class="bp-step">
+          <span class="bp-frame" aria-hidden="true">
+            <svg class="bp-svg" viewBox="0 0 100 64">
+              <!-- square CPU die with 3 pins on each side (12 total) -->
+              <rect x="30" y="12" width="40" height="40" rx="4"/>
+              <path d="M40 7 V12 M50 7 V12 M60 7 V12"/>      <!-- top pins -->
+              <path d="M40 52 V57 M50 52 V57 M60 52 V57"/>   <!-- bottom pins -->
+              <path d="M25 24 H30 M25 32 H30 M25 40 H30"/>   <!-- left pins -->
+              <path d="M70 24 H75 M70 32 H75 M70 40 H75"/>   <!-- right pins -->
+              <!-- single cycle: loop, arrowhead vertex on the arc end, pointing up-right -->
+              <path d="M53 24 A8 8 0 1 1 47 24"/>
+              <path d="M47 24 L43 24 M47 24 L47 28"/>
+              <text class="bp-txt bp-txt--xxs" x="50" y="34">1</text>
+            </svg>
+          </span>
+          <div class="bp-copy">
+            <h3 class="bp-title"><a href="coming-soon/?topic=Single%20Cycle%20CPU">Single Cycle CPU</a></h3>
+            <p class="bp-desc">The first step in understanding how a processor works.
+              One instruction; one clock cycle.</p>
+          </div>
+        </li>
+
+        <li class="bp-arrow" aria-hidden="true">&darr;</li>
+
+        <li class="bp-step">
+          <span class="bp-frame" aria-hidden="true">
+            <svg class="bp-svg" viewBox="0 0 100 64">
+              <!-- IEEE-754 fields: sign | exponent | mantissa -->
+              <rect x="6"  y="22" width="12" height="16"/>
+              <rect x="18" y="22" width="24" height="16"/>
+              <rect x="42" y="22" width="52" height="16"/>
+              <text class="bp-txt bp-txt--sm" x="12" y="34">&#177;</text>
+              <text class="bp-lbl" x="30" y="50">exp</text>
+              <text class="bp-lbl" x="68" y="50">mantissa</text>
+            </svg>
+          </span>
+          <div class="bp-copy">
+            <h3 class="bp-title"><a href="coming-soon/?topic=Floating%20Point%20Adder">Floating Point Adder</a></h3>
+            <p class="bp-desc">Learn the basics of floating point numbers, how they're
+              stored, and how they're added together.</p>
+          </div>
+        </li>
+
+        <li class="bp-tag">
+          <span class="bp-tag__arrow" aria-hidden="true">&darr;</span>
+          <p class="kicker">Advanced</p>
+        </li>
+
+        <li class="bp-step">
+          <span class="bp-frame" aria-hidden="true">
+            <svg class="bp-svg" viewBox="0 0 100 64">
+              <!-- pipeline: five staggered stage bars (staircase), labelled -->
+              <rect x="4"  y="6"  width="58" height="8" rx="2"/>
+              <text class="bp-stage" x="33" y="12">Fetch</text>
+              <rect x="12" y="17" width="58" height="8" rx="2"/>
+              <text class="bp-stage" x="41" y="23">Decode</text>
+              <rect x="20" y="28" width="58" height="8" rx="2"/>
+              <text class="bp-stage" x="49" y="34">Execute</text>
+              <rect x="28" y="39" width="58" height="8" rx="2"/>
+              <text class="bp-stage" x="57" y="45">Memory</text>
+              <rect x="36" y="50" width="58" height="8" rx="2"/>
+              <text class="bp-stage" x="65" y="56">Write Back</text>
+            </svg>
+          </span>
+          <div class="bp-copy">
+            <h3 class="bp-title"><a href="coming-soon/?topic=Pipelined%20CPU">Pipelined CPU</a></h3>
+            <p class="bp-desc">Learn about pipelining and improve the throughput of your
+              single cycle design.</p>
+          </div>
+        </li>
+
+        <li class="bp-arrow" aria-hidden="true">&darr;</li>
+
+        <li class="bp-step">
+          <span class="bp-frame" aria-hidden="true">
+            <svg class="bp-svg" viewBox="0 0 100 64">
+              <!-- die floorplan: outline + packed blocks + edge pins -->
+              <rect x="22" y="8" width="56" height="48" rx="2"/>
+              <rect x="28" y="14" width="20" height="13"/>
+              <rect x="52" y="14" width="20" height="20"/>
+              <rect x="28" y="31" width="14" height="19"/>
+              <rect x="46" y="38" width="26" height="12"/>
+              <path d="M22 18 H15 M22 32 H15 M22 46 H15 M78 18 H85 M78 32 H85 M78 46 H85"/>
+            </svg>
+          </span>
+          <div class="bp-copy">
+            <h3 class="bp-title"><a href="coming-soon/?topic=Physical%20Design">Physical design</a></h3>
+            <p class="bp-desc">Place and route every transistor into a real silicon
+              layout — the floor plan that actually gets fabricated.</p>
+          </div>
+        </li>
+      </ol>
     </section>
 
     <!-- ========================== WHAT YOU'LL FIND ====================== -->

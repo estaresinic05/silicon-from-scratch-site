@@ -107,13 +107,14 @@
   var SOON = PREFIX + "coming-soon/";
 
   // Top-bar quick links (desktop inline nav, and the top of the mobile drawer).
-  // A null href renders as the inert "Help" placeholder.
+  // An absolute http(s) href opens in a new tab; a null href renders as an inert
+  // "Coming soon" placeholder.
   var QUICK = [
     ["Home", "#top"],
-    ["About", "about/"],
     ["Meet the Processor", "meet-the-processor/"],
-    ["Tools", "#tools"],
-    ["Help", null]
+    ["GitHub", "https://github.com/estaresinic05/Silicon-From-Scratch"],
+    ["About", "about/"],
+    ["Tools", "#tools"]
   ];
 
   var MENU = [
@@ -174,7 +175,13 @@
       return span;
     }
     var a = document.createElement("a");
-    a.href = PREFIX + path;
+    if (/^https?:\/\//.test(path)) {
+      a.href = path;                 // external link: leave as-is, open in a new tab
+      a.target = "_blank";
+      a.rel = "noopener";
+    } else {
+      a.href = PREFIX + path;        // internal: resolve from the site root
+    }
     a.textContent = label;
     return a;
   }

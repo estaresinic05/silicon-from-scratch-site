@@ -73,6 +73,24 @@
     });
   }
 
+  /* ---- Build path: the "Start Here" kicker, each step (large icon + copy), and
+         the arrow between them fade in as they scroll into view. ---- */
+  if (document.querySelector(".buildpath__title")) {
+    reveal(".buildpath__title", ".buildpath__title", { y: 16, start: "top 88%", duration: 0.6 });
+  }
+  if (document.querySelector(".buildpath__kicker")) {
+    reveal(".buildpath__kicker", ".buildpath__kicker", { y: 16, start: "top 88%", duration: 0.6 });
+  }
+  gsap.utils.toArray(".bp-step").forEach(function (step) {
+    reveal(step, step, { y: 28, start: "top 82%", duration: 0.7 });
+  });
+  gsap.utils.toArray(".bp-arrow").forEach(function (arr) {
+    reveal(arr, arr, { y: 8, start: "top 88%", duration: 0.5 });
+  });
+  gsap.utils.toArray(".bp-tag").forEach(function (tag) {
+    reveal(tag, tag, { y: 12, start: "top 86%", duration: 0.6 });
+  });
+
   /* ---- Doc hero (e.g. the ALU page): on load, settle the text up in sequence,
          then fade + gently scale the diagram in — mirrors the home hero feel. */
   if (document.querySelector(".doc-hero")) {

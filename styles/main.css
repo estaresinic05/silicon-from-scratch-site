@@ -285,13 +285,21 @@ body::before {
 .topbar.is-hidden {
   transform: translateY(-100%);
 }
+/* Three-column bar: wordmark hard left, nav centred in the viewport, the index +
+   toggle group hard right. Spans the full width (overriding .container's max-width)
+   so the wordmark hugs the left edge rather than the centred content column. */
 .topbar__inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-3);
   height: 4rem;
+  max-width: none;
+  padding-inline: clamp(var(--space-3), 4vw, var(--space-5));
 }
+.topbar__inner .wordmark { justify-self: start; }
+.topbar__inner .nav { justify-self: center; }
+.topbar__inner .topbar__right { justify-self: end; }
 
 .wordmark {
   font-family: var(--font-mono);
@@ -404,10 +412,9 @@ body::before {
   border-radius: var(--radius-sm);
   /* click target — opens/closes the drawer and flips to an X */
   cursor: pointer;
-  /* push the icon out near the right screen edge (on the button only, so the
-     fixed dropdown's position isn't affected). max() keeps it from sliding off
-     on narrower desktops where the container isn't centred. */
-  transform: translateX(max(0px, calc((100vw - var(--maxw)) / 2 - 1.2rem)));
+  /* The bar is now full-width and this button already rides at the right edge via
+     the grid (.topbar__right is justify-self:end), so no extra offset is needed —
+     the old translateX hack would shove it off-screen. */
 }
 /* The ☰ flips to an X while the drawer is open (same as the mobile hamburger). */
 .toc__btn[aria-expanded="true"] .nav-toggle__bars { background: transparent; }
@@ -606,6 +613,159 @@ main section[id] { scroll-margin-top: 5rem; }
   flex-wrap: wrap;
   gap: var(--space-2);
   justify-content: center;
+}
+
+/* The build path: a vertical sequence of large line-art icons (left) paired with
+   copy (right), joined by downward arrows. Each step fades in on scroll. */
+.buildpath-section { padding-block: clamp(var(--space-5), 9vw, var(--space-7)); }
+.buildpath {
+  list-style: none;
+  margin: 0 auto;
+  max-width: 980px;
+  padding: 0 var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 2.5vw, 1.6rem);
+  --bp-icon: clamp(190px, 36vw, 400px);   /* shared so arrows line up under icons */
+}
+/* Section title atop the path — same display style as the "Meet the processor"
+   / "Going Deeper" headings, aligned to the path's left edge. */
+.buildpath__title {
+  max-width: 980px;
+  margin: 0 auto var(--space-3);
+}
+/* "Start Here" purple eyebrow + lead line atop the path (same .kicker treatment),
+   aligned to the path's left edge. */
+.buildpath__kicker {
+  max-width: 980px;
+  margin: 0 auto var(--space-4);
+  padding-inline: 0;                 /* flush to the content-box left edge */
+  font-size: 0.8rem;
+}
+/* Difficulty tier tags (Intermediate / Advanced) sit in the gap between two
+   icons. Each carries the same downward arrow as the other transitions —
+   centred under the icon column — with the tier label hung out into the left
+   margin so it stays clear of the arrow and reaches toward the screen edge. */
+.bp-tag {
+  position: relative;
+  align-self: flex-start;            /* shrink to the arrow; don't stretch wide */
+}
+.bp-tag__arrow {
+  display: block;
+  width: var(--bp-icon);             /* match the icon column so the ↓ centres under it */
+  text-align: center;
+  color: var(--accent);
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  line-height: 1;
+}
+.bp-tag .kicker {
+  position: absolute;
+  top: 50%;
+  left: calc(-1 * var(--space-4));   /* flush to the section's left edge */
+  transform: translateY(-50%);       /* centre on the arrow (no layout effect) */
+  margin: 0;
+  padding-inline: 0;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+/* On desktop there's free margin to the left of the 980px path — hang the tier
+   tags (and the "Beginner" lead) out into it, growing with the viewport but
+   capped so the labels never run off the left edge. */
+@media (min-width: 769px) {
+  .buildpath__kicker {
+    position: relative;
+    left: calc(-1 * clamp(2rem, (100vw - 980px) / 2 + 2rem, 13rem));
+  }
+  .bp-tag .kicker {
+    left: calc(-1 * clamp(2rem, (100vw - 980px) / 2 + 2rem, 13rem));
+  }
+}
+.bp-step {
+  display: grid;
+  grid-template-columns: var(--bp-icon) 1fr;
+  gap: clamp(1.5rem, 5vw, 3.5rem);
+  align-items: center;
+}
+.bp-frame {
+  width: 100%;
+  aspect-ratio: 100 / 64;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--ink);            /* fully opaque, crisp icon lines */
+}
+.bp-svg {
+  width: 80%;
+  height: 80%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.bp-svg .bp-txt {
+  fill: currentColor;
+  stroke: none;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-anchor: middle;
+}
+.bp-svg .bp-txt--sm { font-size: 11px; }
+.bp-svg .bp-txt--xs { font-size: 9px; }
+.bp-svg .bp-txt--xxs { font-size: 6.5px; }
+.bp-svg .bp-lbl {
+  fill: currentColor;
+  stroke: none;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  text-anchor: middle;
+}
+.bp-svg .bp-stage {
+  fill: currentColor;
+  stroke: none;
+  font-family: var(--font-mono);
+  font-size: 6px;
+  text-anchor: middle;
+}
+.bp-title {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  letter-spacing: -0.01em;
+}
+/* The title links to its Coming Soon page; it tints + grows slightly on hover. */
+.bp-title a {
+  display: inline-block;             /* so transform applies (inline can't scale) */
+  color: inherit;
+  text-decoration: none;
+  transform-origin: left center;     /* grow from the left so it stays aligned */
+  transition: color 0.18s var(--ease), transform 0.18s var(--ease);
+}
+.bp-title a:hover,
+.bp-title a:focus-visible { color: var(--accent); transform: scale(1.05); }
+.bp-title a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.bp-desc {
+  margin: 0;
+  max-width: 48ch;
+  color: var(--soft-ink);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+.bp-arrow {
+  align-self: flex-start;            /* don't stretch full width */
+  width: var(--bp-icon);             /* match the icon column so the ↓ centres under it */
+  text-align: center;
+  color: var(--accent);
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  line-height: 1;
+}
+@media (max-width: 560px) {
+  /* stack icon over copy; arrow stays under the (left-aligned) icon */
+  .bp-step { grid-template-columns: 1fr; gap: 1rem; }
+  .bp-frame { width: var(--bp-icon); }
 }
 
 /* ------------------------------------------------------------------ *
@@ -1656,6 +1816,11 @@ html.js .idea .prose > *,
 html.js .tools .prose > *,
 html.js .journey__step > *,
 html.js .journey__media,
+html.js .buildpath__title,
+html.js .buildpath__kicker,
+html.js .bp-tag,
+html.js .bp-step,
+html.js .bp-arrow,
 html.js .epigraph blockquote,
 html.js .ladder .step,
 html.js .findings .finding {
@@ -1718,6 +1883,9 @@ html.js .ladder .step { --node-scale: 0; }
   .nav-toggle { display: inline-flex; }   /* hamburger appears */
   .toc { display: none; }                 /* ☰ button is desktop-only */
   .nav { display: none; }                 /* inline links collapse into the drawer */
+  /* With the centre nav gone, drop back to a simple two-end layout so the toggle
+     group doesn't slide into the middle grid track. */
+  .topbar__inner { display: flex; justify-content: space-between; }
 
   /* Active hamburger becomes an X */
   .nav-toggle[aria-expanded="true"] .nav-toggle__bars {
