@@ -1655,6 +1655,7 @@ html.js .section__head > *,
 html.js .idea .prose > *,
 html.js .tools .prose > *,
 html.js .journey__step > *,
+html.js .journey__media,
 html.js .epigraph blockquote,
 html.js .ladder .step,
 html.js .findings .finding {

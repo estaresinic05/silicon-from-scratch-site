@@ -213,7 +213,11 @@
       return lines;
     }
 
-    steps.forEach(function (step) {
+    // This page opens straight on the journey (no hero), so the first chunk is
+    // the landing view: play its reveal once on load instead of scrubbing it.
+    var landingFirst = !document.querySelector(".hero") && (window.pageYOffset || 0) < 4;
+
+    steps.forEach(function (step, idx) {
       var els = step.querySelectorAll(".kicker, h2, p, .journey__more");
       var words = [];
       Array.prototype.forEach.call(els, function (el) { wrapWords(el, words); });
@@ -221,18 +225,31 @@
 
       var lines = toLines(words);
 
-      // Fade in, line by line, as the chunk approaches.
-      var tl = gsap.timeline({
-        scrollTrigger: { trigger: step, start: "top 85%", end: "top 38%", scrub: true }
-      });
-      lines.forEach(function (line, i) {
-        tl.fromTo(
-          line,
-          { opacity: 0, y: 14 },
-          { opacity: 1, y: 0, ease: "none", duration: 1 },
-          i // one step per line → they reveal in reading order
-        );
-      });
+      // Fade in, line by line. The landing chunk plays once on load (a gentle
+      // line-by-line settle-in like the home hero); the rest scrub to scroll.
+      if (idx === 0 && landingFirst) {
+        var introCopy = gsap.timeline({ delay: 0.15 });
+        lines.forEach(function (line, i) {
+          introCopy.fromTo(
+            line,
+            { opacity: 0, y: 14 },
+            { opacity: 1, y: 0, ease: EASE, duration: 0.6 },
+            i * 0.12 // staggered in reading order
+          );
+        });
+      } else {
+        var tl = gsap.timeline({
+          scrollTrigger: { trigger: step, start: "top 85%", end: "top 38%", scrub: true }
+        });
+        lines.forEach(function (line, i) {
+          tl.fromTo(
+            line,
+            { opacity: 0, y: 14 },
+            { opacity: 1, y: 0, ease: "none", duration: 1 },
+            i // one step per line → they reveal in reading order
+          );
+        });
+      }
 
       // Fade out, line by line — the same staggered animation reversed — as the
       // chunk approaches and scrolls off the top. (immediateRender:false so it
@@ -249,6 +266,22 @@
         );
       });
     });
+
+    /* Landing fade-in for the pinned image (the opening copy fades in line by
+       line via its played timeline above). It's pre-hidden under html.js to
+       avoid a flash; on a deep-link landing partway down, just show it. */
+    var introMedia = journey.querySelector(".journey__media");
+    if (introMedia) {
+      if (landingFirst) {
+        // Fade + a gentle scale-up so the image visibly settles in (mirrors the
+        // home hero logo). clearProps so no leftover transform fights the zoom.
+        gsap.fromTo(introMedia,
+          { opacity: 0, scale: 0.94 },
+          { opacity: 1, scale: 1, duration: 1.2, ease: EASE, clearProps: "transform" });
+      } else {
+        gsap.set(introMedia, { opacity: 1 });
+      }
+    }
 
     /* Cross-fade the stacked images in step with the copy. Each later state
        reveals over the previous one as its matching copy arrives:
