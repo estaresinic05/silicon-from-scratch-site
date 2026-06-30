@@ -15,18 +15,18 @@ desktop.ini
 .mobile-audit/
 
 # Oversized source die-shot (84 MB) — the optimized -opt.jpg is used on the site
-assets/ccd-dieshot-detail.jpg
+assets/Meet-The-Processor/ccd-dieshot-detail.jpg
 # Scratch reference screenshot used while positioning the highlight
 assets/reference.png
 
 # Oversized source images — only the web-sized (*-web) versions are committed.
 # Originals are kept locally as the source for re-exporting.
-assets/iod-dieshot.jpg
-assets/pads-underside_9600x.jpg
-assets/ccd-dieshot.jpg
-assets/ccd-dieshot2.jpg
-assets/ccd-dieshot3.jpg
-assets/ccd-dieshot4.jpg
-assets/ihs-top_9600x.jpg
-assets/delid-color_dies-on-substrate.jpg
-assets/delid-grayscaled_dies-on-substrate.jpg
+assets/Meet-The-Processor/iod-dieshot.jpg
+assets/Meet-The-Processor/pads-underside_9600x.jpg
+assets/Meet-The-Processor/ccd-dieshot.jpg
+assets/Meet-The-Processor/ccd-dieshot2.jpg
+assets/Meet-The-Processor/ccd-dieshot3.jpg
+assets/Meet-The-Processor/ccd-dieshot4.jpg
+assets/Meet-The-Processor/ihs-top_9600x.jpg
+assets/Meet-The-Processor/delid-color_dies-on-substrate.jpg
+assets/Meet-The-Processor/delid-grayscaled_dies-on-substrate.jpg

@@ -18,15 +18,15 @@
   <meta property="og:site_name" content="Silicon From Scratch" />
   <meta property="og:title" content="Silicon From Scratch" />
   <meta property="og:url" content="https://siliconfromscratch.com/alu/" />
-  <meta property="og:image" content="https://siliconfromscratch.com/assets/logo.jpg" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
   <meta property="og:image:width" content="1408" />
   <meta property="og:image:height" content="768" />
   <meta property="og:image:alt" content="Silicon From Scratch logo" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Silicon From Scratch" />
-  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/logo.jpg" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
 
-  <link rel="icon" href="../assets/logo.jpg" />
+  <link rel="icon" href="../assets/home/logo.jpg" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -106,7 +106,7 @@
       </div>
 
       <figure class="doc-hero__art">
-        <img src="../assets/alu-block.jpg"
+        <img src="../assets/ALU/alu-block.jpg"
              alt="The ALU as a single block: a notched trapezoid labeled ALU, with operands a and b entering on the left and a control signal on top, and zero, result, and overflow leaving on the right."
              decoding="async" />
       </figure>
@@ -146,7 +146,7 @@
           <!-- Image + highlight share one transformed layer so the highlight
                stays locked to the silicon as scroll.js zooms/pans. -->
           <div class="overview-band__zoom">
-            <img src="../assets/ccd-dieshot-detail-opt.jpg"
+            <img src="../assets/Meet-The-Processor/ccd-dieshot-detail-opt.jpg"
                  alt="A high-resolution die shot of a CCD processor, showing the silicon detail of the chip."
                  decoding="async" />
             <!-- Revealed after the zoom lands: the integer-execution block of
@@ -272,7 +272,7 @@
         </div>
 
         <figure class="figure figure--wide">
-          <img src="../assets/slice-architecture.jpg"
+          <img src="../assets/single-cycle-cpu/slice-architecture.jpg"
                alt="Two side-by-side schematics of a 1-bit ALU slice. Each shows operand a and b entering 2:1 inverting multiplexers controlled by Ainvert and Binvert, feeding an AND gate, an OR gate, and a full adder, whose outputs enter a 4:1 result multiplexer selected by the operation control. The left schematic outputs a carry-out. The right schematic adds an overflow-detection block and a set output."
                loading="lazy" decoding="async" />
           <figcaption>
@@ -320,7 +320,7 @@
         </div>
 
         <figure class="figure figure--tall">
-          <img src="../assets/architecture.jpg"
+          <img src="../assets/ALU/architecture.jpg"
                alt="A vertical chain of 32 one-bit ALU blocks, ALU0 at the top through ALU31 at the bottom. Each block's carry-out feeds downward into the next block's carry-in. The Ainvert, Bnegate, and operation control lines run down the left and feed every block. Every block's result bit feeds a large NOR gate on the right that outputs zero, and the bottom block (ALU31) outputs set and overflow."
                loading="lazy" decoding="async" />
           <figcaption>
