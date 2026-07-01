@@ -582,6 +582,55 @@ body::before {
 .toc__menu .menu__item.is-open > .menu__panel { grid-template-rows: 1fr; }
 .toc__menu .menu__panel > .menu__sub { overflow: hidden; min-height: 0; }
 
+/* ---- Mobile drawer extras -------------------------------------------------
+   On narrow screens the top-bar links collapse into this drawer. Two things
+   only appear there: the quick links (Home / Meet the Processor / GitHub /
+   About / Tools) and a collapsible "Project Directory" that nests the tree one
+   level deeper. Both are hidden on desktop, where the ☰ drawer stays flat and
+   the links ride in the top bar. */
+
+/* Quick links: mirror the flat level-1 rows so they sit uniformly above the
+   "Project Directory" toggle, in the drawer's display font. */
+.toc__menu .menu__quick > a {
+  display: block;
+  width: 100%;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--soft-ink);
+  padding: 0.7rem var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+}
+.toc__menu .menu__quick > a:hover,
+.toc__menu .menu__quick > a:focus-visible { color: var(--accent-deep); }
+
+/* Level 3 — the mobile-only project level. With the extra "Project Directory"
+   parent, two greys step down to the white leaf: the difficulty parent (l2)
+   darker, this project child (l3) lighter. */
+.toc__menu .menu__item--l3 > .menu__toggle {
+  background: #5e5e6a;
+  color: #f3f3f6;
+  font-size: 0.9rem;
+  padding: 0.66rem var(--space-4) 0.66rem calc(var(--space-4) + 1.8rem);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.toc__menu .menu__item--l3 > .menu__toggle:hover { background: #6a6a76; }
+
+/* White leaves sit one level deeper in the mobile tree, so indent them a step
+   further than the desktop drawer's leaves. */
+.toc__menu .is-mobile-only .menu__leaf > a {
+  padding-left: calc(var(--space-4) + 2.7rem);
+}
+
+/* Reveal the matching arrangement per width. */
+@media (min-width: 769px) {
+  .toc__menu .is-mobile-only { display: none; }
+}
+@media (max-width: 768px) {
+  .toc__menu .is-desktop-only { display: none; }
+}
+
 /* anchored sections clear the (overlay) top bar when jumped to */
 main section[id] { scroll-margin-top: 5rem; }
 

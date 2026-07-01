@@ -219,23 +219,17 @@
     return li;
   }
 
-  // Build the project menu into the drawer <ul>. The right-side drawer is the
-  // project directory only — the Home/About/Tools quick links live solely in the
-  // top-bar inline nav (desktop), not in this menu.
-  function buildDrawer(tocMenu) {
-    tocMenu.innerHTML = "";
-    tocMenu.classList.add("toc__menu--proj");
-
-    // Heading for the project section.
-    var heading = document.createElement("li");
-    heading.className = "toc__heading";
-    heading.textContent = "Project Directory";
-    tocMenu.appendChild(heading);
-
+  // Build the difficulty -> project -> contents tree into `parent` (a <ul> or
+  // the drawer itself), with the difficulty branches starting at `baseLevel`.
+  // The desktop drawer lists them at level 1; the mobile drawer nests the whole
+  // tree one level deeper (baseLevel 2) under a collapsible "Project Directory"
+  // parent. An optional `topClass` tags each top-level branch (used to hide the
+  // desktop arrangement on mobile).
+  function buildProjectTree(parent, baseLevel, topClass) {
     MENU.forEach(function (cat) {
-      tocMenu.appendChild(makeBranch(cat[0], 1, function (catUl) {
+      var branch = makeBranch(cat[0], baseLevel, function (catUl) {
         cat[1].forEach(function (proj) {
-          catUl.appendChild(makeBranch(proj[0], 2, function (projUl) {
+          catUl.appendChild(makeBranch(proj[0], baseLevel + 1, function (projUl) {
             proj[1].forEach(function (sub) {
               var leaf = document.createElement("li");
               leaf.className = "menu__leaf";
@@ -250,8 +244,47 @@
             });
           }));
         });
-      }));
+      });
+      if (topClass) branch.classList.add(topClass);
+      parent.appendChild(branch);
     });
+  }
+
+  // Build the drawer. One panel is shared by the desktop ☰ and the mobile
+  // hamburger, so it holds both arrangements and CSS reveals the right one per
+  // width:
+  //   - Desktop (>=769px): a flat "Project Directory" heading with the tree at
+  //     level 1 (unchanged). Home/About/Tools stay in the top-bar inline nav.
+  //   - Mobile (<=768px): the top-bar quick links (which the inline nav hides at
+  //     this width) ride at the top, then a collapsible "Project Directory"
+  //     dropdown nests the same tree one level deeper.
+  function buildDrawer(tocMenu) {
+    tocMenu.innerHTML = "";
+    tocMenu.classList.add("toc__menu--proj");
+
+    // Mobile-only: the top-bar quick links (Home / Meet the Processor / GitHub /
+    // About / Tools), styled to match the drawer's flat rows.
+    QUICK.forEach(function (q) {
+      var li = document.createElement("li");
+      li.className = "menu__quick is-mobile-only";
+      li.appendChild(quickNode(q[0], q[1]));
+      tocMenu.appendChild(li);
+    });
+
+    // Desktop-only: flat heading + the directory tree at level 1.
+    var heading = document.createElement("li");
+    heading.className = "toc__heading is-desktop-only";
+    heading.textContent = "Project Directory";
+    tocMenu.appendChild(heading);
+    buildProjectTree(tocMenu, 1, "is-desktop-only");
+
+    // Mobile-only: a collapsible "Project Directory" parent nesting the same
+    // tree one level deeper (difficulty -> project -> contents).
+    var projDir = makeBranch("Project Directory", 1, function (ul) {
+      buildProjectTree(ul, 2);
+    });
+    projDir.classList.add("is-mobile-only");
+    tocMenu.appendChild(projDir);
   }
 
   /* ---- 1.6 Project menu drawer (☰ on desktop, hamburger on mobile) ------
