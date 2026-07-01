@@ -609,13 +609,13 @@ body::before {
    parent, two greys step down to the white leaf: the difficulty parent (l2)
    darker, this project child (l3) lighter. */
 .toc__menu .menu__item--l3 > .menu__toggle {
-  background: #5e5e6a;
-  color: #f3f3f6;
+  background: #70707d;
+  color: #f6f6f8;
   font-size: 0.9rem;
   padding: 0.66rem var(--space-4) 0.66rem calc(var(--space-4) + 1.8rem);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
-.toc__menu .menu__item--l3 > .menu__toggle:hover { background: #6a6a76; }
+.toc__menu .menu__item--l3 > .menu__toggle:hover { background: #7c7c89; }
 
 /* White leaves sit one level deeper in the mobile tree, so indent them a step
    further than the desktop drawer's leaves. */
