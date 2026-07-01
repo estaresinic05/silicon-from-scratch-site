@@ -120,7 +120,7 @@
   var MENU = [
     ["Beginner", [
       ["ALU", [
-        "Logic Gates and Simple 1-bit ALU",
+        ["Logic Gates and Simple 1-bit ALU", "alu/logic-gates/"],
         "Full Adder",
         "Ripple Carry Adder",
         "32-bit ALU Slice",
@@ -234,11 +234,18 @@
               var leaf = document.createElement("li");
               leaf.className = "menu__leaf";
               var a = document.createElement("a");
-              // A literal "Coming Soon" leaf names its parent project on the
-              // placeholder page; named topics pass through as themselves.
-              var topic = sub === "Coming Soon" ? proj[0] : sub;
-              a.href = SOON + "?topic=" + encodeURIComponent(topic);
-              a.textContent = sub;
+              if (Array.isArray(sub)) {
+                // A [label, path] leaf is a published lesson: link straight to
+                // it (path is relative to the site root, like the menu links).
+                a.href = PREFIX + sub[1];
+                a.textContent = sub[0];
+              } else {
+                // A literal "Coming Soon" leaf names its parent project on the
+                // placeholder page; named topics pass through as themselves.
+                var topic = sub === "Coming Soon" ? proj[0] : sub;
+                a.href = SOON + "?topic=" + encodeURIComponent(topic);
+                a.textContent = sub;
+              }
               leaf.appendChild(a);
               projUl.appendChild(leaf);
             });
