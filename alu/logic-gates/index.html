@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. Without JS this
+       never runs and the full page stays visible. -->
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>Logic Gates &amp; the 1-bit ALU — Silicon From Scratch</title>
+  <meta name="description"
+        content="Meet the handful of logic gates every processor is built from — AND, OR, NOT, XOR, NAND, NOR — then wire two of them together into your very first 1-bit ALU." />
+
+  <!-- Social link previews: shared logo + "Silicon From Scratch" card (see index.html). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Silicon From Scratch" />
+  <meta property="og:title" content="Silicon From Scratch" />
+  <meta property="og:url" content="https://siliconfromscratch.com/alu/logic-gates/" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+  <meta property="og:image:width" content="1408" />
+  <meta property="og:image:height" content="768" />
+  <meta property="og:image:alt" content="Silicon From Scratch logo" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Silicon From Scratch" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+
+  <link rel="icon" href="../../assets/home/logo.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles, then the ALU project components (this page lives at
+       /alu/logic-gates/, two levels down). -->
+  <link rel="stylesheet" href="../../styles/main.css" />
+  <link rel="stylesheet" href="../../styles/alu.css" />
+</head>
+<body class="theme-dark">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../../" aria-label="Silicon From Scratch — home">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="../../">Home</a>
+        <a href="../../meet-the-processor/">Meet the Processor</a>
+        <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+           target="_blank" rel="noopener">GitHub</a>
+        <a href="../../about/">About</a>
+        <a href="../../#tools">Tools</a>
+      </nav>
+
+      <div class="topbar__right">
+        <!-- Section index (desktop only): hover the ☰ to open the project directory -->
+        <div class="toc" id="page-toc">
+          <button class="toc__btn" type="button" aria-haspopup="true"
+                  aria-expanded="false" aria-label="Open the project directory">
+            <span class="nav-toggle__bars" aria-hidden="true"></span>
+          </button>
+          <ul class="toc__menu" aria-label="Project directory"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================== DOC HERO ============================ -->
+    <section class="doc-hero doc-hero--balanced container" aria-labelledby="lg-title">
+      <div class="doc-hero__text">
+        <h1 id="lg-title" class="title-eyebrow">Logic Gates &amp; the 1-bit ALU</h1>
+        <p class="doc-hero__lead">
+          Before a processor can add, compare, or decide anything, it has to
+          make choices one bit at a time. Those choices are made by
+          <strong>logic gates</strong> — the smallest building blocks in all of
+          digital hardware. We'll meet the handful you need, then wire two of
+          them together into your very first ALU.
+        </p>
+        <div class="doc-hero__actions">
+          <a class="btn btn--primary" href="#the-alu">Skip to the 1-bit ALU</a>
+          <a class="btn btn--ghost"
+             href="https://github.com/estaresinic05/Silicon-From-Scratch"
+             target="_blank" rel="noopener">View the code on GitHub</a>
+        </div>
+      </div>
+
+      <figure class="doc-hero__art">
+        <img src="../../assets/ALU/title-image.jpg"
+             alt="A hand-drawn collection of logic gates labelled Logic Gates: AND, NAND, OR, NOR, and NOT."
+             decoding="async" />
+      </figure>
+    </section>
+
+    <!-- ============================ A BIT, A GATE ======================== -->
+    <section class="section" id="basics" aria-labelledby="basics-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="basics-title">1's and 0's</h2>
+        </div>
+        <div class="split">
+          <div class="prose">
+          <p>
+            Quite a few people know that their phone, laptop, or even microwave
+            run on a bunch of 1's and 0's, but what are these 1's and 0's exactly?
+            Well&hellip; it depends!
+          </p>
+          <p>
+            The 0's are easy — they are 0&nbsp;Volts (V) or ground in a circuit.
+            The 1's however could be a couple different values depending on the
+            power supply used in the circuit. Often called
+            <strong>V<sub>DD</sub></strong> or <strong>V<sub>CC</sub></strong>,
+            the power supply sets what voltage is read as a '1'. In some
+            applications this '1' or 'high' voltage can be 5V, 3.3V or even 1.8V
+            as technology advances.
+          </p>
+          <p>
+            We care about these 1's and 0's because they drive the fundamental
+            building blocks of our digital circuits — gates. Gates are driven by
+            wires, each of which carrying a 1 or 0 (most of the
+            time). Depending on the combination of 1's and 0's the
+            gate will send a new signal through the circuit.
+          </p>
+          </div>
+
+          <figure class="figure figure--photo">
+            <img src="../../assets/ALU/1n0-jpg.jpg"
+                 alt="A field of 1s and 0s — streams of binary code." decoding="async" />
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== THE GATES ========================== -->
+    <section class="section section--tight" id="gates" aria-labelledby="gates-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="gates-title">Meet the gates</h2>
+        </div>
+        <div class="prose">
+          <p>
+            There are only a few gates you need to know, and most of them are
+            named after the everyday word that describes their rule. We'll start
+            with the simplest and build up.
+          </p>
+        </div>
+
+        <div class="gate-grid">
+          <figure class="figure">
+            <img src="../../assets/ALU/not-gate.jpg"
+                 alt="A NOT gate: a single input of 0 produces an output of 1." decoding="async" />
+            <figcaption>
+              <span class="gate-name">NOT · inverter</span>
+              <strong>Flips its single input</strong> — a <code>0</code> becomes a
+              <code>1</code>, and a <code>1</code> becomes a <code>0</code>.
+            </figcaption>
+          </figure>
+
+          <figure class="figure">
+            <img src="../../assets/ALU/and-gate.jpg"
+                 alt="An AND gate: inputs 1 and 1 produce an output of 1." decoding="async" />
+            <figcaption>
+              <span class="gate-name">AND · both</span>
+              <strong>Outputs 1 only when both inputs are 1</strong> — like two
+              switches wired in a row.
+            </figcaption>
+          </figure>
+
+          <figure class="figure">
+            <img src="../../assets/ALU/or-gate.jpg"
+                 alt="An OR gate: inputs 1 and 0 produce an output of 1." decoding="async" />
+            <figcaption>
+              <span class="gate-name">OR · either</span>
+              <strong>Outputs 1 when at least one input is 1</strong> — only
+              <code>0</code> and <code>0</code> give a <code>0</code>.
+            </figcaption>
+          </figure>
+
+          <figure class="figure">
+            <img src="../../assets/ALU/xor-gate.jpg"
+                 alt="An XOR gate: inputs 1 and 1 produce an output of 0." decoding="async" />
+            <figcaption>
+              <span class="gate-name">XOR · difference</span>
+              <strong>Outputs 1 only when the two inputs differ</strong> —
+              matching bits cancel to <code>0</code>.
+            </figcaption>
+          </figure>
+
+          <figure class="figure">
+            <img src="../../assets/ALU/nand-gate.jpg"
+                 alt="A NAND gate: inputs 0 and 0 produce an output of 1." decoding="async" />
+            <figcaption>
+              <span class="gate-name">NAND · not-and</span>
+              <strong>An AND with its answer flipped</strong> — it gives
+              <code>0</code> only when both inputs are <code>1</code>.
+            </figcaption>
+          </figure>
+
+          <figure class="figure">
+            <img src="../../assets/ALU/nor-gate.jpg"
+                 alt="A NOR gate: inputs 0 and 1 produce an output of 0." decoding="async" />
+            <figcaption>
+              <span class="gate-name">NOR · not-or</span>
+              <strong>An OR with its answer flipped</strong> — it gives
+              <code>1</code> only when both inputs are <code>0</code>.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================== TRUTH TABLES =========================== -->
+    <section class="section" id="truth" aria-labelledby="truth-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 id="truth-title">All of them, side by side</h2>
+        </div>
+        <div class="prose">
+          <p>
+            A gate only has a few possible inputs, so we can just list every one
+            of them. A table like this is called a <strong>truth table</strong> —
+            it's the complete, no-surprises definition of what a gate does. Read
+            down any column to see that gate's personality.
+          </p>
+        </div>
+
+        <figure class="figure">
+          <img src="../../assets/ALU/gate-truth-table.jpg"
+               alt="A truth table for the two-input gates. The a and b columns list all four input combinations; the AND, OR, NAND, NOR, and XOR columns give each gate's output, with every 1 highlighted." decoding="async" />
+          <figcaption>
+            Every two-input gate at a glance. The double line after <code>b</code>
+            marks the split between the two inputs and the gate outputs; each
+            highlighted cell is a <code>1</code>.
+          </figcaption>
+        </figure>
+
+        <div class="prose">
+          <p class="prose--note">
+            NOT is the odd one out — with a single input, its whole table is just
+            <code>0 → 1</code> and <code>1 → 0</code>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================== THE MULTIPLEXER ======================= -->
+    <section class="section" id="mux" aria-labelledby="mux-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 id="mux-title">Choosing between answers</h2>
+        </div>
+        <div class="split split--media-left">
+          <figure class="figure figure--mux">
+            <img src="../../assets/ALU/mux.jpg"
+                 alt="Two multiplexers drawn as trapezoids. A 2-by-1 mux picks between inputs a and b with a single select bit. A 4-by-1 mux picks among a, b, c, and d with a 2-bit select. Each passes the chosen input straight through to Result." decoding="async" />
+            <figcaption>
+              A 2&times;1 mux and a 4&times;1 mux. Either way, the selected input
+              passes straight through to <code>Result</code>.
+            </figcaption>
+          </figure>
+
+          <div class="prose">
+            <p>
+              Gates compute answers — but a processor also needs to
+              <em>choose</em> between answers. That job belongs to a
+              <strong>multiplexer</strong>, or <strong>mux</strong>: a switch
+              that takes several inputs and a small <strong>control
+              signal</strong>, and passes exactly one of those inputs through to
+              its output.
+            </p>
+            <p>
+              A two-way mux is the simplest kind. It has two data inputs,
+              labelled <code>0</code> and <code>1</code>, and a single control
+              wire. When the control is <code>0</code> it forwards the first
+              input; when it's <code>1</code> it forwards the second. Nothing is
+              computed here — the mux just decides which existing signal gets to
+              be the answer. That single idea is what turns a pile of gates into
+              something that can perform <em>different</em> operations on command.
+            </p>
+            <p>
+              Muxes come in bigger sizes, too. A <strong>4&times;1</strong> mux
+              chooses among four inputs, using a 2-bit select to name which one
+              wins. The wider the mux, the more operations our ALU will
+              eventually be able to offer.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= THE 1-BIT ALU ======================= -->
+    <section class="section" id="the-alu" aria-labelledby="alu-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 id="alu-title">Your first ALU</h2>
+        </div>
+        <div class="prose">
+          <p>
+            Here it is — a complete, if tiny, <strong>Arithmetic Logic
+            Unit</strong>. It works on just a single bit, and it can do exactly
+            two things: AND its inputs, or OR them. Simple as it looks, this
+            little circuit already has the shape of every ALU ever built.
+          </p>
+        </div>
+
+        <figure class="figure figure--tall">
+          <img src="../../assets/ALU/1-bit-alu.jpg"
+               alt="A 1-bit ALU: inputs a and b each feed both an AND gate and an OR gate. Both gate outputs feed a two-way multiplexer whose select line is labelled Operation. The mux output is labelled Result." decoding="async" />
+          <figcaption>
+            A 1-bit ALU. The inputs <code>a</code> and <code>b</code> fan out to
+            both gates at once; the <code>Operation</code> bit selects which
+            gate's answer leaves as <code>Result</code>.
+          </figcaption>
+        </figure>
+
+        <div class="prose">
+          <h3 class="subhead">How it works, wire by wire</h3>
+          <p>
+            Follow the two inputs, <code>a</code> and <code>b</code>, in from the
+            left. Notice that each one <strong>splits</strong> and feeds
+            <em>both</em> gates simultaneously: the AND gate and the OR gate are
+            always running, both computing their answer at the same time on every
+            pair of inputs.
+          </p>
+          <p>
+            Both answers then arrive at the multiplexer on the right. The
+            <code>Operation</code> control bit at the top decides which one
+            actually comes out as <code>Result</code>:
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table data-table--compact">
+            <caption class="visually-hidden">How the Operation control bit selects the ALU's result.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Operation</th>
+                <th scope="col">Mux passes</th>
+                <th scope="col">Result is</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>0</code></td><td>the AND gate's output</td><td><code>a AND b</code></td></tr>
+              <tr><td><code>1</code></td><td>the OR gate's output</td><td><code>a OR b</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="prose">
+          <p>
+            That's the whole trick, and it's worth pausing on: with a single
+            control wire, the <em>same</em> hardware performs two different
+            operations. The gates do the work; the mux, steered by
+            <code>Operation</code>, chooses which work counts. Scale that idea up
+            and you have the defining feature of an ALU — one block that carries
+            out whichever operation the processor asks for, moment to moment.
+          </p>
+
+          <h3 class="subhead">How we'll build on this</h3>
+          <p>
+            This one-bit, two-operation ALU is the seed for everything that
+            follows in the project. Each of the next lessons grows it in one
+            direction:
+          </p>
+        </div>
+
+        <ul class="checklist checklist--quiet">
+          <li>
+            <strong>More operations.</strong> Widen the multiplexer and hang more
+            circuits off it — XOR, and above all <em>addition</em>, which needs a
+            new building block called a full adder.
+          </li>
+          <li>
+            <strong>More bits.</strong> Real processors work on 32 or 64 bits, not
+            one. We'll line up copies of this slice side by side and pass a carry
+            between them so they can add large numbers together.
+          </li>
+          <li>
+            <strong>Status flags.</strong> A full ALU also reports <em>about</em>
+            its answer — whether the result was zero, or whether an addition
+            overflowed — so the processor can make decisions based on what just
+            happened.
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================== CHECK YOURSELF ===================== -->
+    <section class="section section--tight" id="check" aria-labelledby="check-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="check-title">Check yourself</h2>
+        </div>
+
+        <div class="quiz" id="quiz">
+          <p class="quiz__q">What are the values of x and y in this circuit?</p>
+
+          <figure class="figure figure--photo quiz__figure">
+            <img src="../../assets/ALU/check-yourself.jpg"
+                 alt="A logic circuit: an AND gate (inputs 0 and 1) and a value of 1 feed an OR gate; a NOT gate (input 1) and a NOR gate (inputs 1 and 0) feed the two data inputs of a 2-to-1 multiplexer whose select comes from the OR gate; the mux output x feeds a NAND gate together with a 0, producing y."
+                 decoding="async" />
+          </figure>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button">x = 0 &amp; y = 0</button>
+            <button class="quiz__opt" type="button" data-correct="true">x = 0 &amp; y = 1</button>
+            <button class="quiz__opt" type="button">x = 1 &amp; y = 0</button>
+            <button class="quiz__opt" type="button">x = 1 &amp; y = 1</button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <div class="quiz__next">
+            <a class="btn btn--primary" href="../../coming-soon/?topic=Full%20Adder">
+              Continue to the Full Adder <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+    <p class="container footer__credit">
+      Binary imagery in the &ldquo;1's and 0's&rdquo; section via
+      <a href="https://www.istockphoto.com/photos/1s-and-0s"
+         target="_blank" rel="noopener">iStock</a>.
+    </p>
+  </footer>
+
+  <!-- Mobile nav toggle + project directory drawer -->
+  <script src="../../scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger from CDN for the same scroll-reveal feel as the rest
+       of the site. If they fail to load, scroll.js removes the `js` class and
+       the page is simply fully visible. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
+  <script src="../../scripts/scroll.js" defer></script>
+
+  <!-- "Check yourself" quiz: colour the chosen answer, show feedback, and reveal
+       the continue button once the correct answer (x = 0 & y = 1) is picked. -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+        } else {
+          btn.classList.add("is-wrong");
+          feedback.textContent = "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

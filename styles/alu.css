@@ -35,6 +35,22 @@
   .doc-hero { transform: translateX(-2rem); }
 }
 
+/* Balanced variant: the standard side-by-side hero (text + diagram), sized so
+   the pair sits as a tight unit centred in the middle of the screen. Unlike the
+   ALU overview hero it tightens the image column and centres the two columns as
+   a group, and drops the wide-screen leftward nudge. Used on the Logic Gates
+   lesson. */
+.doc-hero--balanced { margin-inline: auto; max-width: 88rem; }
+@media (min-width: 769px) {
+  .doc-hero--balanced {
+    grid-template-columns: minmax(0, 40rem) minmax(0, 44rem);
+    justify-content: center;
+  }
+}
+@media (min-width: 1344px) {
+  .doc-hero--balanced { transform: none; }
+}
+
 /* The ALU block symbol sits beside the intro, on a paper card so the white
    drawing reads as a deliberate panel (matching the diagram figures below). */
 .doc-hero__art {
@@ -136,6 +152,29 @@
   margin: 0 0 var(--space-2);
 }
 .doc-hero h1 { margin-bottom: var(--space-3); }
+/* Eyebrow-style page title — matches the "MEET THE PROCESSOR" / "YOUR PATH"
+   section labels: a short purple tick followed by soft-grey, tracked, uppercase
+   mono text (see main.css .kicker + .buildpath__title). Scoped to the class so
+   other doc-hero titles keep the big display face. */
+.doc-hero h1.title-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: clamp(1.15rem, 1.6vw, 1.35rem);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--soft-ink);
+  line-height: 1.35;
+}
+.doc-hero h1.title-eyebrow::before {
+  content: "";
+  flex: none;
+  width: 1.5rem;
+  height: 1px;
+  background: var(--accent);
+}
 .doc-hero__lead {
   font-size: 1.22rem;
   color: var(--soft-ink);
@@ -335,6 +374,163 @@
   line-height: 1.6;
   color: var(--soft-ink);
   text-align: left;
+}
+
+/* Wider content container — lets a section reach further toward the screen
+   edges than the default 72rem measure. */
+.container--wide { max-width: 88rem; }
+
+/* Body text beside a small figure: text on the left, a compact image on the
+   right, vertically centred. Stacks on narrow screens. */
+.split {
+  margin-top: var(--space-4);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(var(--space-3), 4vw, var(--space-5));
+  align-items: center;
+}
+.split .prose { margin: 0; }
+.split .figure { margin: 0; }
+/* Media-left variant: figure on the left, text on the right. */
+.split--media-left { grid-template-columns: auto minmax(0, 1fr); }
+/* The mux figure — a comfortably large diagram beside its explanation. */
+.figure--mux { width: 100%; max-width: 26rem; margin-inline: auto; }
+/* Quieter checklist: bold lead-ins use the muted prose colour (matches
+   .prose strong) rather than the brighter site default. */
+.checklist--quiet strong { color: var(--soft-ink); }
+/* Photographic figure: the image fills the card edge-to-edge (no sketch
+   padding), with the caption/credit on its own strip below. */
+.figure--photo {
+  width: 100%;
+  max-width: 38rem;                /* ~its native 612px — the section's focal image */
+  margin-inline: auto;
+  padding: 0;
+  overflow: hidden;
+}
+.figure--photo img { border-radius: 0; display: block; }
+@media (max-width: 768px) {
+  .split,
+  .split--media-left { grid-template-columns: 1fr; }
+  .figure--mux { max-width: 300px; }
+}
+
+/* ------------------------------------------------------------------ *
+   GATE GALLERY — the hand-drawn gates laid out as a responsive grid of
+   paper-card figures (Logic Gates lesson). Each sketch already carries a
+   worked example in blue, so captions stay to a one-line rule.
+ * ------------------------------------------------------------------ */
+.gate-grid {
+  margin-top: var(--space-4);
+  display: grid;
+  /* Two cards per row on phones; three across from tablet up, filling the
+     (wider) section so all six sit larger and fit on one screen. */
+  grid-template-columns: repeat(2, minmax(0, 15rem));
+  justify-content: center;
+  gap: var(--space-3);
+}
+@media (min-width: 769px) {
+  .gate-grid {
+    grid-template-columns: repeat(3, 1fr);
+    justify-content: stretch;
+  }
+  /* Larger sketch tiles on the roomier desktop cards — kept short enough that
+     both rows fit on one screen. */
+  .gate-grid .figure img { height: 9rem; }
+}
+
+/* Tighter vertical rhythm so a two-row card grid clears one screen. */
+.section--tight { padding-block: var(--space-5); }
+.section--tight .section__head { margin-bottom: var(--space-3); }
+.gate-grid .figure { margin: 0; text-align: center; }
+/* Every sketch sits on a uniform white tile of the same height, centred, so the
+   gates line up regardless of their individual shapes and the caption's faint
+   divider falls at exactly the same level on every card. */
+.gate-grid .figure img {
+  display: block;
+  width: 100%;
+  height: 8.5rem;
+  object-fit: contain;
+  background: #fff;
+  border-radius: var(--radius-sm);
+}
+/* Captions are centred (symmetrical about the card's centre line) and kept to a
+   similar length so the cards balance. Bold terms keep the muted prose colour so
+   emphasis reads the same as body paragraphs (see .prose strong). */
+.gate-grid figcaption { text-align: center; }
+/* Mono eyebrow naming the gate at the top of each caption. */
+.gate-name {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+}
+
+/* ------------------------------------------------------------------ *
+   CHECK-YOURSELF QUIZ — a multiple-choice widget: a diagram, four answer
+   buttons that turn green (correct) or red (wrong) on click, a status line,
+   and a "continue" button revealed once the right answer is picked.
+ * ------------------------------------------------------------------ */
+.quiz { max-width: 52rem; margin-inline: auto; }
+.quiz__q {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-align: center;
+  margin: 0 0 var(--space-3);
+}
+.quiz__figure { max-width: 48rem; margin: 0 auto var(--space-4); }
+.quiz__options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.quiz__opt {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  padding: 1rem 1.1rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease),
+              border-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+.quiz__opt:hover { border-color: var(--accent); }
+.quiz__opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Correct pick — light green fill. */
+.quiz__opt.is-correct { background: #86efac; border-color: #86efac; color: #052e16; }
+/* Wrong pick — reddish fill, kept filled after the click. */
+.quiz__opt.is-wrong { background: #e57373; border-color: #e57373; color: #3d0a0a; }
+/* Once solved, lock the buttons so the answered state stays put. */
+.quiz.is-solved .quiz__opt { pointer-events: none; }
+
+.quiz__feedback {
+  min-height: 1.5em;
+  margin: var(--space-3) 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+.quiz__feedback.is-correct { color: #4ade80; }
+.quiz__feedback.is-wrong { color: #f87171; }
+
+/* Revealed only after the correct answer is chosen (toggled by the class). */
+.quiz__next {
+  display: none;
+  margin-top: var(--space-4);
+  justify-content: center;
+}
+.quiz__next.is-shown { display: flex; }
+
+@media (max-width: 560px) {
+  .quiz__options { grid-template-columns: 1fr; }
 }
 
 /* ------------------------------------------------------------------ *
