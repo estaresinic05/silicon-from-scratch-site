@@ -45,6 +45,9 @@
       border-top: 0;
       padding-block: var(--space-4);
     }
+    /* The site container widened to 88rem site-wide, which spread this centred
+       layout too far. Pin the About content back to its original measure. */
+    .aboutme .container { max-width: 72rem; }
 
     /* Reveal the portrait + intro on load via CSS (no dependency on the deferred
        GSAP CDN, so there's no blank-then-pop lag). This mirrors the home hero's

@@ -1747,7 +1747,7 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
   margin: 0;
 }
 .finding h3 { grid-column: 2; margin: 0 0 0.1rem; }
-.finding p { grid-column: 2; color: var(--soft-ink); margin: 0; }
+.finding p { grid-column: 2; color: var(--soft-ink); margin: 0; font-size: 1.0625rem; }
 
 /* The interactive-tools call to action: a faint accent wash and a link heading
    that stays white (a "white heading") with an accent arrow that nudges. */
@@ -1806,9 +1806,9 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
   box-shadow: 0 0 0 4px var(--bg);
 }
 
-.aboutme__body p { color: var(--soft-ink); }
+.aboutme__body p { color: var(--soft-ink); font-size: 1.0625rem; }
 .aboutme__body p:first-child {        /* the greeting reads as a lead-in */
-  font-size: 1.25rem;
+  font-size: 1.18rem;
   color: var(--ink);
 }
 .about__actions {
