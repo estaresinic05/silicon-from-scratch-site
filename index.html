@@ -31,6 +31,19 @@
   <!-- Favicon uses the logo (relative path — domain-ready) -->
   <link rel="icon" href="assets/home/logo.jpg" />
 
+  <!-- Site name for search engines. Google/Bing derive the "site name" shown in
+       results from WebSite structured data on the homepage; without it they fall
+       back to the bare domain. This pins it to "Silicon From Scratch". -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Silicon From Scratch",
+    "alternateName": "siliconfromscratch.com",
+    "url": "https://siliconfromscratch.com/"
+  }
+  </script>
+
   <!-- Google Fonts: Bricolage Grotesque (display), Newsreader (body), JetBrains Mono (labels/code) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
