@@ -193,6 +193,11 @@
 }
 /* Lead-in text sitting beside a hero button. */
 .doc-hero__prompt { color: var(--soft-ink); }
+/* On the balanced (Logic Gates) hero, centre the title (tick + text), the lead
+   paragraph's text within its box, and the prompt + skip button under it. */
+.doc-hero--balanced h1.title-eyebrow { justify-content: center; }
+.doc-hero--balanced .doc-hero__lead { text-align: center; }
+.doc-hero--balanced .doc-hero__actions { justify-content: center; }
 
 /* Sub-headings inside long sections (e.g. "The control vector") */
 .subhead {
@@ -423,7 +428,7 @@
   justify-content: center;
   width: 1.55em;
   height: 1.55em;
-  vertical-align: -0.42em;
+  vertical-align: -0.32em;
   border: 1px solid var(--hairline);
   border-radius: var(--radius-sm);
   background: var(--paper);
@@ -808,11 +813,17 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-2);
+  counter-reset: quizopt;
 }
 .quiz__opt {
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  padding: 1rem 1.1rem;
+  counter-increment: quizopt;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  padding: 0.9rem 1.1rem;
   background: var(--paper);
   color: var(--ink);
   border: 1px solid var(--hairline);
@@ -820,6 +831,14 @@
   cursor: pointer;
   transition: background-color 0.15s var(--ease),
               border-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+/* Numbered prefix before each choice: 1) 2) 3) 4) */
+.quiz__opt::before {
+  content: counter(quizopt) ")";
+  flex: none;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 600;
 }
 .quiz__opt:hover { border-color: var(--accent); }
 .quiz__opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

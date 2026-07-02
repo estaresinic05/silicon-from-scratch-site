@@ -93,7 +93,7 @@
         </p>
         <div class="doc-hero__actions">
           <span class="doc-hero__prompt">Think you got this already?</span>
-          <a class="btn btn--primary" href="#check">Skip to the Check Yourself</a>
+          <a class="btn btn--primary" href="#check">Skip to Check Yourself</a>
         </div>
       </div>
 
@@ -147,11 +147,11 @@
     <section class="section section--tight" id="gates" aria-labelledby="gates-title">
       <div class="container container--wide">
         <div class="section__head">
-          <h2 id="gates-title">Meet the Gates and the Verilog</h2>
+          <h2 id="gates-title">Meet the Gates and their Verilog</h2>
         </div>
         <div class="prose prose--center">
           <p>
-            There are only a few gates you need to know. Click the <span class="inline-flip" role="img" aria-label="flip arrow"><svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg></span> on each card to flip them and see the Verilog that makes them work!
+            There are only a few gates you need to know. Click on each card to flip them and see the Verilog that makes them work!
           </p>
         </div>
 
@@ -507,8 +507,7 @@ assign y = ~(a | b);   // OR, then NOT</textarea>
                 <img src="../../assets/ALU/mux.jpg"
                      alt="Two multiplexers drawn as trapezoids. A 2-by-1 mux picks between inputs a and b with a single select bit. A 4-by-1 mux picks among a, b, c, and d with a 2-bit select. Each passes the chosen input straight through to Result." decoding="async" />
                 <figcaption>
-                  A 2&times;1 mux and a 4&times;1 mux. Either way, the selected input
-                  passes straight through to <code>Result</code>.
+                  A 2&times;1 mux and a 4&times;1 mux.
                 </figcaption>
                 <span class="gate-card__flip" aria-hidden="true">
                   <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
@@ -561,8 +560,8 @@ endmodule</textarea>
               Gates compute answers — but a processor also needs to
               <em>choose</em> between answers. That job belongs to a
               <strong>multiplexer</strong>, or <strong>mux</strong>: a switch
-              that takes several inputs and a small <strong>control
-              signal</strong>, and passes exactly one of those inputs through to
+              that takes several inputs and a small control
+              signal, and passes exactly one of those inputs through to
               its output.
             </p>
             <p>
@@ -577,7 +576,7 @@ endmodule</textarea>
             <p>
               Muxes come in bigger sizes, too. A <strong>4&times;1</strong> mux
               chooses among four inputs, and hence uses a 2-bit control
-              signal to enumerate all four possibilities. In general, a
+              signal to encode all four possibilities. In general, a
               <strong>2<sup>n</sup>&times;1</strong> mux requires an
               <em>n</em>-bit control signal. The wider the mux, the more
               operations our ALU will eventually be able to offer.
@@ -736,6 +735,12 @@ endmodule</textarea>
       <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
          target="_blank" rel="noopener">GitHub Repository</a>
     </div>
+    <p class="container footer__credit">
+      Adapted from: David A. Patterson and John L. Hennessy,
+      <em>Computer Organization and Design: The Hardware/Software Interface,
+      RISC-V Edition</em>, Appendix A.5, &ldquo;Constructing a Basic Arithmetic
+      Logic Unit&rdquo; (Morgan Kaufmann, 2021).
+    </p>
     <p class="container footer__credit">
       Binary imagery in the &ldquo;1's and 0's&rdquo; section via
       <a href="https://www.istockphoto.com/photos/1s-and-0s"
