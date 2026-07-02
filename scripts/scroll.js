@@ -143,9 +143,15 @@
     }
   }
 
+  /* The first content section ("1's and 0's") usually sits within the initial
+     viewport, so its scroll reveals would fire on load. We exclude it from the
+     generic reveals below and instead reveal it on the user's first scroll. */
+  var basics = document.getElementById("basics");
+  function inBasics(el) { return basics && basics.contains(el); }
+
   /* ---- Diagram figures: fade + gently scale in as they scroll into view, the
          same reveal as the hero diagram above. ---- */
-  gsap.utils.toArray(".figure").forEach(function (fig) {
+  function revealFigure(fig, start) {
     gsap.fromTo(
       fig,
       { opacity: 0, scale: 0.96 },
@@ -155,13 +161,18 @@
         duration: 0.9,
         ease: EASE,
         clearProps: "transform",
-        scrollTrigger: { trigger: fig, start: "top 85%" }
+        scrollTrigger: { trigger: fig, start: start || "top 85%" }
       }
     );
+  }
+  gsap.utils.toArray(".figure").forEach(function (fig) {
+    if (inBasics(fig)) return;
+    revealFigure(fig);
   });
 
   /* ---- Section headings: kicker -> heading -> note, staggered ---- */
   gsap.utils.toArray(".section__head").forEach(function (head) {
+    if (inBasics(head)) return;
     reveal(head.querySelectorAll(".kicker, h2, .section__note"), head, {
       y: 20,
       stagger: 0.12,
@@ -173,6 +184,37 @@
   gsap.utils.toArray(".idea .prose, .tools .prose").forEach(function (p) {
     reveal(p.children, p, { stagger: 0.12, start: "top 85%" });
   });
+
+  /* ---- Logic Gates lesson: body copy, lists, and the truth-table fade in as
+         each block scrolls into view (figures + headings are handled above). ---- */
+  if (document.querySelector(".page-logic")) {
+    gsap.utils.toArray(".page-logic .prose, .page-logic .checklist").forEach(function (block) {
+      if (inBasics(block)) return;
+      reveal(block.children, block, { stagger: 0.1, start: "top 85%" });
+    });
+    gsap.utils.toArray(".page-logic .table-wrap").forEach(function (t) {
+      reveal(t, t, { start: "top 85%" });
+    });
+  }
+
+  /* ---- "1's and 0's": held hidden until the first scroll, then faded in (so it
+         never animates in on page load). ---- */
+  if (basics) {
+    window.addEventListener("scroll", function revealBasics() {
+      var head = basics.querySelector(".section__head");
+      if (head) {
+        reveal(head.querySelectorAll(".kicker, h2, .section__note"), head,
+               { y: 20, stagger: 0.12, start: "top 92%" });
+      }
+      gsap.utils.toArray(basics.querySelectorAll(".prose")).forEach(function (p) {
+        reveal(p.children, p, { stagger: 0.1, start: "top 92%" });
+      });
+      gsap.utils.toArray(basics.querySelectorAll(".figure")).forEach(function (fig) {
+        revealFigure(fig, "top 92%");
+      });
+      ScrollTrigger.refresh();
+    }, { passive: true, once: true });
+  }
 
   /* ---- The journey: the pinned image cross-fades through three states (face
          -> dies -> internals) while the copy reveals line by line as it

@@ -52,7 +52,7 @@
   --space-7: 8rem;
 
   /* Layout */
-  --maxw:        72rem;   /* outer content width */
+  --maxw:        88rem;   /* outer content width — wide, uses more of the screen */
   --maxw-prose:  44rem;   /* comfortable measure for body prose */
   --radius:      14px;
   --radius-sm:   10px;
@@ -654,7 +654,7 @@ main section[id] { scroll-margin-top: 5rem; }
 .hero__intro {
   max-width: 46ch;
   margin: 0 auto var(--space-4);
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   color: var(--soft-ink);
 }
 .hero__actions {
@@ -791,22 +791,27 @@ main section[id] { scroll-margin-top: 5rem; }
   font-size: clamp(1.3rem, 3vw, 2rem);
   letter-spacing: -0.01em;
 }
-/* The title links to its Coming Soon page; it tints + grows slightly on hover. */
+/* The title links to its lesson; a soft accent underline signals it's clickable,
+   and it tints + grows + thickens the underline on hover. */
 .bp-title a {
   display: inline-block;             /* so transform applies (inline can't scale) */
   color: inherit;
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 5px;
   transform-origin: left center;     /* grow from the left so it stays aligned */
-  transition: color 0.18s var(--ease), transform 0.18s var(--ease);
+  transition: color 0.18s var(--ease), transform 0.18s var(--ease),
+              text-decoration-thickness 0.18s var(--ease);
 }
 .bp-title a:hover,
-.bp-title a:focus-visible { color: var(--accent); transform: scale(1.05); }
+.bp-title a:focus-visible { color: var(--accent); transform: scale(1.05); text-decoration-thickness: 3px; }
 .bp-title a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .bp-desc {
   margin: 0;
   max-width: 48ch;
   color: var(--soft-ink);
-  font-size: 1.05rem;
+  font-size: 1.25rem;
   line-height: 1.6;
 }
 .bp-arrow {
@@ -1518,7 +1523,7 @@ main section[id] { scroll-margin-top: 5rem; }
 .cpu-stage h2 { margin-bottom: var(--space-2); }
 .cpu-stage__lead {
   color: var(--soft-ink);
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   max-width: 42ch;
   margin: var(--space-2) 0 0;
 }
@@ -1598,10 +1603,10 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
    9. THE IDEA
  * ------------------------------------------------------------------ */
 .idea .prose p {
-  font-size: 1.18rem;
+  font-size: 1.25rem;
   color: var(--ink);
 }
-.idea .prose p + p { color: var(--soft-ink); font-size: 1.0625rem; }
+.idea .prose p + p { color: var(--soft-ink); font-size: 1.25rem; }
 
 /* ------------------------------------------------------------------ *
    10. EPIGRAPH — centered italic pull-quote
@@ -1760,7 +1765,7 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
 /* ------------------------------------------------------------------ *
    13. TOOLS
  * ------------------------------------------------------------------ */
-.tools .prose p { font-size: 1.12rem; }
+.tools .prose p { font-size: 1.25rem; }
 .tools__actions { margin-top: var(--space-4); }
 
 /* ------------------------------------------------------------------ *
@@ -1803,7 +1808,7 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
 
 .aboutme__body p { color: var(--soft-ink); }
 .aboutme__body p:first-child {        /* the greeting reads as a lead-in */
-  font-size: 1.18rem;
+  font-size: 1.25rem;
   color: var(--ink);
 }
 .about__actions {
@@ -1885,7 +1890,10 @@ html.js .bp-step,
 html.js .bp-arrow,
 html.js .epigraph blockquote,
 html.js .ladder .step,
-html.js .findings .finding {
+html.js .findings .finding,
+html.js .page-logic .prose > *,
+html.js .page-logic .checklist > *,
+html.js .page-logic .table-wrap {
   opacity: 0;
 }
 /* (.aboutme content is revealed by a CSS animation on the About page itself, so
@@ -1925,6 +1933,9 @@ html.js .ladder .step { --node-scale: 0; }
   html.js .epigraph blockquote,
   html.js .ladder .step,
   html.js .findings .finding,
+  html.js .page-logic .prose > *,
+  html.js .page-logic .checklist > *,
+  html.js .page-logic .table-wrap,
   html.js .aboutme__photo,
   html.js .aboutme__body > * {
     opacity: 1 !important;
