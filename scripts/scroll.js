@@ -91,6 +91,27 @@
     reveal(tag, tag, { y: 12, start: "top 86%", duration: 0.6 });
   });
 
+  /* ---- Build-path intro rail: the vertical trace "draws" downward as the
+         reader scrolls the path, and the two intro lines fade in — the lead near
+         the top, the sub as the middle of the path arrives. On wide screens only;
+         narrower layouts just fade the lines in above the path. ---- */
+  var bpIntro = document.querySelector(".buildpath-intro");
+  var bpSection = document.querySelector(".buildpath-section");
+  if (bpIntro) {
+    if (bpSection && window.matchMedia("(min-width: 1080px)").matches) {
+      gsap.fromTo(bpIntro, { "--rail-progress": 0 }, {
+        "--rail-progress": 1,
+        ease: "none",
+        scrollTrigger: { trigger: bpSection, start: "top 72%", end: "bottom 62%", scrub: 0.5 }
+      });
+    }
+    gsap.utils.toArray(bpIntro.querySelectorAll(
+      ".buildpath-intro__lead, .buildpath-intro__sub, .buildpath-intro__note, .buildpath-intro__code"
+    )).forEach(function (line) {
+      reveal(line, line, { y: 18, start: "top 88%", duration: 0.7 });
+    });
+  }
+
   /* ---- Doc hero (e.g. the ALU page): on load, settle the text up in sequence,
          then fade + gently scale the diagram in — mirrors the home hero feel. */
   if (document.querySelector(".doc-hero")) {
@@ -197,23 +218,44 @@
     });
   }
 
-  /* ---- "1's and 0's": held hidden until the first scroll, then faded in (so it
-         never animates in on page load). ---- */
+  /* ---- "1's and 0's" ----
+     On desktop the top of this section sits in the initial viewport, so we fade
+     it in shortly after the hero settles — it gives the landing page substance
+     instead of a blank band below the hero. On phones it sits well below the
+     fold, so we keep it hidden until the first scroll (it never animates in on
+     load there). ---- */
   if (basics) {
-    window.addEventListener("scroll", function revealBasics() {
-      var head = basics.querySelector(".section__head");
-      if (head) {
-        reveal(head.querySelectorAll(".kicker, h2, .section__note"), head,
-               { y: 20, stagger: 0.12, start: "top 92%" });
+    var basicsHead = basics.querySelector(".section__head");
+    var basicsOnDesktop = window.matchMedia("(min-width: 769px)").matches;
+
+    if (basicsOnDesktop) {
+      var landIn = gsap.timeline({ delay: 0.5, defaults: { ease: EASE } });
+      if (basicsHead) {
+        landIn.fromTo(basicsHead.querySelectorAll(".kicker, h2, .section__note"),
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.7, stagger: 0.12, clearProps: "transform" });
       }
-      gsap.utils.toArray(basics.querySelectorAll(".prose")).forEach(function (p) {
-        reveal(p.children, p, { stagger: 0.1, start: "top 92%" });
-      });
-      gsap.utils.toArray(basics.querySelectorAll(".figure")).forEach(function (fig) {
-        revealFigure(fig, "top 92%");
-      });
-      ScrollTrigger.refresh();
-    }, { passive: true, once: true });
+      landIn.fromTo(basics.querySelectorAll(".prose > *"),
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.7, stagger: 0.1, clearProps: "transform" }, "-=0.35");
+      landIn.fromTo(basics.querySelectorAll(".figure"),
+        { opacity: 0, scale: 0.96 },
+        { opacity: 1, scale: 1, duration: 0.9, clearProps: "transform" }, "-=0.6");
+    } else {
+      window.addEventListener("scroll", function revealBasics() {
+        if (basicsHead) {
+          reveal(basicsHead.querySelectorAll(".kicker, h2, .section__note"), basicsHead,
+                 { y: 20, stagger: 0.12, start: "top 92%" });
+        }
+        gsap.utils.toArray(basics.querySelectorAll(".prose")).forEach(function (p) {
+          reveal(p.children, p, { stagger: 0.1, start: "top 92%" });
+        });
+        gsap.utils.toArray(basics.querySelectorAll(".figure")).forEach(function (fig) {
+          revealFigure(fig, "top 92%");
+        });
+        ScrollTrigger.refresh();
+      }, { passive: true, once: true });
+    }
   }
 
   /* ---- The journey: the pinned image cross-fades through three states (face

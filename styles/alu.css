@@ -177,6 +177,12 @@
   height: 1px;
   background: var(--accent);
 }
+/* The title text lives in a wrapper so it can wrap independently of the tick.
+   It's split into two "keep-together" groups; each never breaks internally, so
+   the title either sits on one line or breaks cleanly between the groups
+   ("Logic Gates &" / "the 1-bit ALU") — never mid-phrase. */
+.title-eyebrow__group { white-space: nowrap; }
+.title-eyebrow__text { min-width: 0; text-align: center; }
 .doc-hero__lead {
   font-size: 1.25rem;
   color: var(--soft-ink);
@@ -403,21 +409,10 @@
 }
 .split .prose { margin: 0; }
 .split .figure { margin: 0; }
-/* Stacked variant (Your First ALU): read top-to-bottom on every width — the
-   diagram sits centred right under the section title, with the explanation and
-   checklist flowing beneath it. `order` puts the card first without moving the
-   long card markup ahead of the prose in the DOM. */
-.split--stack {
-  display: flex;
-  flex-direction: column;
-  margin-top: var(--space-4);
-}
-.split--stack .gate-card--solo { order: 1; }
-.split--stack .prose {
-  order: 2;
-  max-width: 44rem;
-  margin: var(--space-4) auto 0;
-}
+/* "Your First ALU": on desktop the diagram sits beside the explanation (via the
+   base .split grid — prose left, card right). On phones it stacks, with the
+   diagram first (see it, then read about it). */
+.split--stack .prose { max-width: none; }
 /* Media-left variant: figure on the left, text on the right. */
 .split--media-left { grid-template-columns: auto minmax(0, 1fr); }
 /* In the wider mux section, let the explanation fill its column rather than
@@ -474,6 +469,11 @@
   .split,
   .split--media-left { grid-template-columns: 1fr; }
   .figure--mux { max-width: 340px; margin-inline: auto; }   /* re-centre on mobile */
+  /* First-ALU section: stack with the diagram above its explanation. `order`
+     puts the card first without moving its long markup ahead of the prose. */
+  .split--stack { display: flex; flex-direction: column; }
+  .split--stack .gate-card--solo { order: 1; }
+  .split--stack .prose { order: 2; margin-top: var(--space-4); }
 }
 
 /* ------------------------------------------------------------------ *
@@ -484,18 +484,21 @@
 .gate-grid {
   margin-top: var(--space-4);
   display: grid;
-  /* One card per row: the gates stack into a single column the reader scrolls
-     through, so each sketch and caption gets full width and reads large. */
+  /* On phones the gates stack into a single column the reader scrolls through,
+     so each sketch and caption gets full width and reads large. */
   grid-template-columns: minmax(0, 26rem);
   justify-content: center;
   gap: var(--space-4);
 }
 @media (min-width: 769px) {
+  /* Back to three across on desktop, filling the section so all six sit larger
+     and fit on one screen. */
   .gate-grid {
-    grid-template-columns: minmax(0, 32rem);
+    grid-template-columns: repeat(3, 1fr);
+    justify-content: stretch;
+    gap: var(--space-3);
   }
-  /* Roomier sketch tiles now that each card owns a full-width row. */
-  .gate-grid .figure img { height: 11rem; }
+  .gate-grid .figure img { height: 9rem; }
 }
 
 /* Tighter vertical rhythm so a two-row card grid clears one screen. */
@@ -1038,16 +1041,9 @@
      gap alone drives the rhythm. */
   .doc-hero--balanced .doc-hero__text { display: contents; }
   .doc-hero--balanced .title-eyebrow { order: 1; margin-bottom: 0; }
-  /* Keep the full title on a single line on phones: shrink the mono face and
-     tighten the tracking + tick so "LOGIC GATES & THE 1-BIT ALU" never wraps,
-     scaling down with the viewport on the narrowest devices. */
-  .doc-hero--balanced .title-eyebrow {
-    white-space: nowrap;
-    font-size: clamp(0.7rem, 3vw, 1.15rem);
-    letter-spacing: 0.1em;
-    gap: 0.45rem;
-  }
-  .doc-hero--balanced .title-eyebrow::before { width: 1rem; }
+  /* Drop the accent tick on phones so the (possibly two-line) title sits truly
+     centred rather than nudged right by the tick. */
+  .doc-hero--balanced h1.title-eyebrow::before { display: none; }
   .doc-hero--balanced .doc-hero__art { order: 2; }
   .doc-hero--balanced .doc-hero__lead { order: 3; margin-bottom: 0; }
   .doc-hero--balanced .doc-hero__actions { order: 4; }

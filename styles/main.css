@@ -677,6 +677,106 @@ main section[id] { scroll-margin-top: 5rem; }
   gap: clamp(0.75rem, 2.5vw, 1.6rem);
   --bp-icon: clamp(190px, 36vw, 400px);   /* shared so arrows line up under icons */
 }
+
+/* ---- Build-path intro ("descending circuit rail") ----
+   Below the desktop breakpoint this is just two intro lines stacked above the
+   path. On wide screens (see the media query further down) it becomes a left
+   column: a vertical accent trace that "draws" downward as the reader scrolls
+   the path, with the two lines hung off it. It tells the reader what the site is
+   without competing with the path — quieter weight/colour, and it only occupies
+   otherwise-empty left margin. */
+/* Every line on the rail shares one type treatment. */
+.buildpath-intro__lead,
+.buildpath-intro__sub,
+.buildpath-intro__note,
+.buildpath-intro__code {
+  margin: var(--space-4) auto 0;
+  max-width: 980px;
+  padding-inline: var(--space-4);
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 1.5vw, 1.4rem);
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+.buildpath-intro__lead { margin-top: 0; }   /* first line flush to the top */
+.buildpath-intro strong { color: var(--accent); font-weight: inherit; }
+.buildpath-rail { display: none; }
+
+@media (min-width: 1080px) {
+  /* Two columns: the intro rail on the left, the path on the right, centred as a
+     pair. The path keeps its own max width; the intro fills the freed-up left
+     margin. */
+  .buildpath-layout {
+    display: grid;
+    grid-template-columns: minmax(15rem, 23rem) minmax(0, 980px);
+    justify-content: center;
+    gap: clamp(2.5rem, 5vw, 5.5rem);
+    padding-inline: var(--space-4);
+  }
+  .buildpath-main { min-width: 0; }
+  /* Path + its title sit flush inside their column (the grid handles centring). */
+  .buildpath-main .buildpath,
+  .buildpath-main .buildpath__title { margin-inline: 0; max-width: none; padding-inline: 0; }
+
+  /* The intro becomes a full-height rail: the lead at the top, the sub pushed
+     down so it lands beside the middle of the path. */
+  .buildpath-intro {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;   /* spread the 3 lines down the full path */
+    padding-left: 2.4rem;             /* room for the trace + its nodes */
+    padding-block: 0.2rem 2rem;
+  }
+  .buildpath-intro__lead,
+  .buildpath-intro__sub,
+  .buildpath-intro__note,
+  .buildpath-intro__code {
+    position: relative;
+    max-width: none;
+    margin: 0;
+    padding-inline: 0;
+  }
+
+  /* Accent nodes where each line taps into the trace. */
+  .buildpath-intro__lead::before,
+  .buildpath-intro__sub::before,
+  .buildpath-intro__note::before,
+  .buildpath-intro__code::before {
+    content: "";
+    position: absolute;
+    left: -2.4rem;                     /* back out to the rail's column... */
+    margin-left: 2px;                  /* ...then centre the 10px dot on the 2px rail */
+    top: 0.5em;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(107, 47, 201, 0.12);
+  }
+
+  /* The vertical trace. Fades at both ends and is "drawn" from the top via
+     scaleY, driven by --rail-progress from scroll.js (default 1 = fully drawn,
+     so it looks right with JS off). */
+  .buildpath-rail {
+    display: block;
+    position: absolute;
+    left: 6px;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    width: 2px;
+    background: linear-gradient(
+      to bottom,
+      transparent 0,
+      var(--accent) 2.5rem,
+      var(--accent) calc(100% - 2.5rem),
+      transparent 100%);
+    opacity: 0.5;
+    transform: scaleY(var(--rail-progress, 1));
+    transform-origin: top center;
+  }
+}
 /* Section eyebrow atop the path — mimics "MEET THE PROCESSOR" on the Meet the
    Processor page. That label is a .kicker inside .journey__step, so it inherits
    the mono/uppercase/tracked kicker base but with the larger size and soft-ink
@@ -791,21 +891,16 @@ main section[id] { scroll-margin-top: 5rem; }
   font-size: clamp(1.3rem, 3vw, 2rem);
   letter-spacing: -0.01em;
 }
-/* The title links to its lesson; a soft accent underline signals it's clickable,
-   and it tints + grows + thickens the underline on hover. */
+/* The title links to its lesson; it tints + grows on hover to signal it's clickable. */
 .bp-title a {
   display: inline-block;             /* so transform applies (inline can't scale) */
   color: inherit;
-  text-decoration: underline;
-  text-decoration-color: var(--accent);
-  text-decoration-thickness: 1.5px;
-  text-underline-offset: 5px;
+  text-decoration: none;
   transform-origin: left center;     /* grow from the left so it stays aligned */
-  transition: color 0.18s var(--ease), transform 0.18s var(--ease),
-              text-decoration-thickness 0.18s var(--ease);
+  transition: color 0.18s var(--ease), transform 0.18s var(--ease);
 }
 .bp-title a:hover,
-.bp-title a:focus-visible { color: var(--accent); transform: scale(1.05); text-decoration-thickness: 3px; }
+.bp-title a:focus-visible { color: var(--accent); transform: scale(1.05); }
 .bp-title a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .bp-desc {
   margin: 0;
@@ -1885,6 +1980,10 @@ html.js .journey__step > *,
 html.js .journey__media,
 html.js .buildpath__title,
 html.js .buildpath__kicker,
+html.js .buildpath-intro__lead,
+html.js .buildpath-intro__sub,
+html.js .buildpath-intro__note,
+html.js .buildpath-intro__code,
 html.js .bp-tag,
 html.js .bp-step,
 html.js .bp-arrow,
@@ -1911,6 +2010,9 @@ html.js .page-logic .table-wrap {
 }
 html.js .ladder { --line-progress: 0; }
 html.js .ladder .step { --node-scale: 0; }
+/* Build-path trace starts undrawn under JS; scroll.js draws it as the reader
+   scrolls. Default (1) keeps it fully drawn with JS off. */
+html.js .buildpath-intro { --rail-progress: 0; }
 
 /* Reduced motion: never hide, never move — show the final state instantly.
    (scripts/scroll.js also disables all animation in this case.) */
@@ -1932,6 +2034,10 @@ html.js .ladder .step { --node-scale: 0; }
   html.js .tools .prose > *,
   html.js .epigraph blockquote,
   html.js .ladder .step,
+  html.js .buildpath-intro__lead,
+  html.js .buildpath-intro__sub,
+  html.js .buildpath-intro__note,
+  html.js .buildpath-intro__code,
   html.js .findings .finding,
   html.js .page-logic .prose > *,
   html.js .page-logic .checklist > *,
@@ -1944,6 +2050,8 @@ html.js .ladder .step { --node-scale: 0; }
   /* Show the Learn path fully, undrawn-state disabled. */
   html.js .ladder { --line-progress: 1 !important; }
   html.js .ladder .step { --node-scale: 1 !important; }
+  /* Build-path trace fully drawn, no scrub. */
+  html.js .buildpath-intro { --rail-progress: 1 !important; }
 }
 
 /* ------------------------------------------------------------------ *
