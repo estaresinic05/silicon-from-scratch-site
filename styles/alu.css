@@ -403,6 +403,21 @@
 }
 .split .prose { margin: 0; }
 .split .figure { margin: 0; }
+/* Stacked variant (Your First ALU): read top-to-bottom on every width — the
+   diagram sits centred right under the section title, with the explanation and
+   checklist flowing beneath it. `order` puts the card first without moving the
+   long card markup ahead of the prose in the DOM. */
+.split--stack {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--space-4);
+}
+.split--stack .gate-card--solo { order: 1; }
+.split--stack .prose {
+  order: 2;
+  max-width: 44rem;
+  margin: var(--space-4) auto 0;
+}
 /* Media-left variant: figure on the left, text on the right. */
 .split--media-left { grid-template-columns: auto minmax(0, 1fr); }
 /* In the wider mux section, let the explanation fill its column rather than
@@ -469,20 +484,18 @@
 .gate-grid {
   margin-top: var(--space-4);
   display: grid;
-  /* Two cards per row on phones; three across from tablet up, filling the
-     (wider) section so all six sit larger and fit on one screen. */
-  grid-template-columns: repeat(2, minmax(0, 15rem));
+  /* One card per row: the gates stack into a single column the reader scrolls
+     through, so each sketch and caption gets full width and reads large. */
+  grid-template-columns: minmax(0, 26rem);
   justify-content: center;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 @media (min-width: 769px) {
   .gate-grid {
-    grid-template-columns: repeat(3, 1fr);
-    justify-content: stretch;
+    grid-template-columns: minmax(0, 32rem);
   }
-  /* Larger sketch tiles on the roomier desktop cards — kept short enough that
-     both rows fit on one screen. */
-  .gate-grid .figure img { height: 9rem; }
+  /* Roomier sketch tiles now that each card owns a full-width row. */
+  .gate-grid .figure img { height: 11rem; }
 }
 
 /* Tighter vertical rhythm so a two-row card grid clears one screen. */
@@ -1025,6 +1038,16 @@
      gap alone drives the rhythm. */
   .doc-hero--balanced .doc-hero__text { display: contents; }
   .doc-hero--balanced .title-eyebrow { order: 1; margin-bottom: 0; }
+  /* Keep the full title on a single line on phones: shrink the mono face and
+     tighten the tracking + tick so "LOGIC GATES & THE 1-BIT ALU" never wraps,
+     scaling down with the viewport on the narrowest devices. */
+  .doc-hero--balanced .title-eyebrow {
+    white-space: nowrap;
+    font-size: clamp(0.7rem, 3vw, 1.15rem);
+    letter-spacing: 0.1em;
+    gap: 0.45rem;
+  }
+  .doc-hero--balanced .title-eyebrow::before { width: 1rem; }
   .doc-hero--balanced .doc-hero__art { order: 2; }
   .doc-hero--balanced .doc-hero__lead { order: 3; margin-bottom: 0; }
   .doc-hero--balanced .doc-hero__actions { order: 4; }
