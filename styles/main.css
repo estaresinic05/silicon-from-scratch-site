@@ -818,9 +818,15 @@ main section[id] { scroll-margin-top: 5rem; }
   line-height: 1;
 }
 @media (max-width: 560px) {
-  /* stack icon over copy; arrow stays under the (left-aligned) icon */
-  .bp-step { grid-template-columns: 1fr; gap: 1rem; }
+  /* stack icon over copy, both centred on screen; name sits on its own line
+     right above the (also centred) explanation */
+  .bp-step { grid-template-columns: 1fr; gap: 1rem; justify-items: center; }
   .bp-frame { width: var(--bp-icon); }
+  .bp-copy { text-align: center; }
+  .bp-title a { transform-origin: center; }   /* grow from the centre when centred */
+  .bp-desc { max-width: 48ch; margin-inline: auto; }
+  /* keep the transition arrow centred under the now-centred icon */
+  .bp-arrow { align-self: center; }
 }
 
 /* ------------------------------------------------------------------ *

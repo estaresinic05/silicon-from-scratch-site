@@ -269,13 +269,23 @@
     tocMenu.innerHTML = "";
     tocMenu.classList.add("toc__menu--proj");
 
+    // Mobile-only: a collapsible "Project Directory" parent nesting the same
+    // tree one level deeper (difficulty -> project -> contents). It rides
+    // between "Home" and "Meet the Processor" in the mobile quick-link list.
+    var projDir = makeBranch("Project Directory", 1, function (ul) {
+      buildProjectTree(ul, 2);
+    });
+    projDir.classList.add("is-mobile-only");
+
     // Mobile-only: the top-bar quick links (Home / Meet the Processor / GitHub /
-    // About / Tools), styled to match the drawer's flat rows.
-    QUICK.forEach(function (q) {
+    // About / Tools), styled to match the drawer's flat rows, with the
+    // "Project Directory" dropdown inserted right after "Home".
+    QUICK.forEach(function (q, i) {
       var li = document.createElement("li");
       li.className = "menu__quick is-mobile-only";
       li.appendChild(quickNode(q[0], q[1]));
       tocMenu.appendChild(li);
+      if (i === 0) tocMenu.appendChild(projDir);
     });
 
     // Desktop-only: flat heading + the directory tree at level 1.
@@ -284,14 +294,6 @@
     heading.textContent = "Project Directory";
     tocMenu.appendChild(heading);
     buildProjectTree(tocMenu, 1, "is-desktop-only");
-
-    // Mobile-only: a collapsible "Project Directory" parent nesting the same
-    // tree one level deeper (difficulty -> project -> contents).
-    var projDir = makeBranch("Project Directory", 1, function (ul) {
-      buildProjectTree(ul, 2);
-    });
-    projDir.classList.add("is-mobile-only");
-    tocMenu.appendChild(projDir);
   }
 
   /* ---- 1.6 Project menu drawer (☰ on desktop, hamburger on mobile) ------
