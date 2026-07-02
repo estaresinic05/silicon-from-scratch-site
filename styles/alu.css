@@ -180,7 +180,9 @@
   color: var(--soft-ink);
   margin-bottom: var(--space-4);
 }
-.doc-hero__lead strong { color: var(--ink); font-weight: 600; }
+/* Bold terms keep the muted prose colour so emphasis reads the same greyish
+   bold as the rest of the page (see .prose strong / .checklist--quiet strong). */
+.doc-hero__lead strong { color: var(--soft-ink); }
 .doc-hero__actions {
   display: flex;
   flex-wrap: wrap;
@@ -393,11 +395,16 @@
 .split .figure { margin: 0; }
 /* Media-left variant: figure on the left, text on the right. */
 .split--media-left { grid-template-columns: auto minmax(0, 1fr); }
-/* The mux figure — a comfortably large diagram beside its explanation. */
-.figure--mux { width: 100%; max-width: 26rem; margin-inline: auto; }
+/* In the wider mux section, let the explanation fill its column rather than
+   staying pinned to the default prose measure. */
+.split--media-left .prose { max-width: none; }
+/* The mux figure — a large diagram hung to the left of its explanation. */
+.figure--mux { width: 100%; max-width: 34rem; margin-inline: 0 auto; }
 /* Quieter checklist: bold lead-ins use the muted prose colour (matches
    .prose strong) rather than the brighter site default. */
 .checklist--quiet strong { color: var(--soft-ink); }
+/* Centre a prose block and its text (used above the truth table). */
+.prose--center { text-align: center; margin-inline: auto; }
 /* Photographic figure: the image fills the card edge-to-edge (no sketch
    padding), with the caption/credit on its own strip below. */
 .figure--photo {
@@ -409,9 +416,11 @@
 }
 .figure--photo img { border-radius: 0; display: block; }
 @media (max-width: 768px) {
+  /* Stack to one column; the figure comes first in the DOM, so the mux image
+     sits above its explanation. */
   .split,
   .split--media-left { grid-template-columns: 1fr; }
-  .figure--mux { max-width: 300px; }
+  .figure--mux { max-width: 340px; margin-inline: auto; }   /* re-centre on mobile */
 }
 
 /* ------------------------------------------------------------------ *
@@ -467,6 +476,276 @@
   letter-spacing: 0.14em;
   color: var(--accent);
   margin-bottom: 0.35rem;
+}
+
+/* ------------------------------------------------------------------ *
+   FLIP CARDS — front shows the gate sketch; click it to flip to an editable
+   Verilog playground on the back (a mini VS Code editor + a live y readout).
+   The two faces share one grid cell so they keep the same footprint; only the
+   FRONT keeps the .figure class, so scroll.js's `.figure` reveal never touches
+   the back face (animating its transform would break the 3D flip).
+ * ------------------------------------------------------------------ */
+.gate-card { position: relative; perspective: 1200px; }
+/* A standalone flip card (mux / 1-bit ALU) sitting outside the gate grid —
+   capped and centred so its editor back isn't overly wide. */
+.gate-card--solo { max-width: 30rem; margin-inline: auto; }
+.gate-card__inner {
+  display: grid;                    /* stack both faces → identical footprint */
+  transform-style: preserve-3d;
+  transition: transform 0.6s var(--ease);
+}
+.gate-card.is-flipped .gate-card__inner { transform: rotateY(180deg); }
+.gate-card__face {
+  grid-area: 1 / 1;                 /* overlap the faces in one cell */
+  position: relative;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+/* Only the face currently showing is interactive (the hidden one can't be
+   clicked or tabbed into). */
+.gate-card:not(.is-flipped) .gate-card__face--back { pointer-events: none; }
+.gate-card.is-flipped .gate-card__face--front { pointer-events: none; }
+
+/* Front: the clickable sketch. Enlarges slightly on hover/focus so it reads as
+   interactive — only while the front is showing. */
+.gate-card__face--front {
+  cursor: pointer;
+  padding-bottom: 2.1rem;           /* room for the flip arrow */
+  transition: transform 0.2s var(--ease);
+}
+.gate-card:not(.is-flipped) .gate-card__face--front:hover,
+.gate-card__face--front:focus-visible { transform: scale(1.045); }
+.gate-card__face--front:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+/* Back: a column that fills the card — editor on top, output box below. */
+.gate-card__face--back {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  padding: clamp(var(--space-2), 2.5vw, var(--space-3));
+}
+
+/* A miniature VS Code editor filling the card: titlebar (<> glyph + "Verilog
+   HDL" + a return-to-front button) over an editable body. */
+.code-editor {
+  margin: 0;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #333;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #1e1e1e;
+  font-family: Consolas, "Courier New", ui-monospace, monospace;
+  text-align: left;
+}
+.code-editor__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.35rem 0.3rem 0.6rem;
+  background: #252526;                   /* VS Code titlebar grey */
+  border-bottom: 1px solid #333;
+  color: #cccccc;
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+}
+.code-editor__glyph {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: none;
+  color: #569cd6;                        /* the <> in VS Code keyword-blue */
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.code-editor__lang { margin-right: auto; }
+/* Reset action in the titlebar — reverts the editor to its original code. */
+.code-editor__reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.12rem 0.4rem;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  background: none;
+  color: #cccccc;
+  font-family: inherit;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.code-editor__reset:hover { background: #37373d; color: #fff; border-color: #4a4a4a; }
+.code-editor__reset svg {
+  width: 0.8rem;
+  height: 0.8rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Editable body: a highlighted <pre> underlay with a transparent-text
+   <textarea> layered on top, sharing identical metrics so the caret lines up
+   over the coloured tokens. */
+.code-editor__body { position: relative; flex: 1; min-height: 5.5rem; overflow: hidden; }
+.code-editor__hl,
+.code-editor__ta {
+  margin: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 0.55rem 0.7rem;
+  font-family: inherit;
+  font-size: 0.7rem;
+  line-height: 1.55;
+  letter-spacing: 0;
+  tab-size: 2;
+  white-space: pre;
+}
+.code-editor__hl {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;                      /* scroll is synced from the textarea */
+  color: #d4d4d4;                        /* default editor text */
+  background: #1e1e1e;
+  pointer-events: none;
+}
+.code-editor__hl code {
+  font: inherit;
+  background: none;
+  color: inherit;
+  padding: 0;
+  white-space: inherit;
+}
+.code-editor__ta {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  resize: none;
+  overflow: auto;
+  color: transparent;                    /* real glyphs come from the underlay */
+  background: transparent;
+  caret-color: #d4d4d4;
+}
+.code-editor__ta:focus { outline: none; }
+.code-editor__ta::selection { background: rgba(38, 79, 120, 0.75); color: transparent; }
+/* VS Code Dark+ Verilog token colours. */
+.tok-kw { color: #569cd6; }              /* keywords: input / output / wire / assign */
+.tok-cm { color: #6a9955; }              /* comments */
+.tok-op { color: #d4d4d4; }              /* operators */
+
+/* Bottom row of the back: the output box + the return button at bottom-right.
+   The output box flexes but leaves room for the button. */
+.gate-card__backrow {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+.gate-card__backrow .gate-sim { flex: 1; min-width: 0; }
+.gate-card__return {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.3rem;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  color: var(--accent);
+  cursor: pointer;
+}
+.gate-card__return:hover { border-color: var(--accent); background: rgba(107, 47, 201, 0.06); }
+.gate-card__return svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Output box: a toggle chip per input wire + the live value of y. */
+.gate-sim {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.02);
+  font-family: var(--font-mono);
+}
+.gate-sim__inputs { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.gate-sim__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.12rem 0.45rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--soft-ink);
+  font: inherit;
+  font-size: 0.68rem;
+  cursor: pointer;
+}
+/* Data inputs (a, b …) and the output value keep the purple accent. Control
+   signals (sel, op) wear the light blue used for the hand-drawn example
+   inputs/outputs on the gate images. */
+.gate-sim__chip b { color: var(--accent); font-weight: 600; }
+.gate-sim__chip[data-val="1"] {
+  border-color: var(--accent);
+  color: var(--accent-deep);
+  background: rgba(107, 47, 201, 0.06);
+}
+.gate-sim__chip--control b { color: #4a90d9; }
+.gate-sim__chip--control[data-val="1"] {
+  border-color: #4a90d9;
+  color: #2f6fb0;
+  background: rgba(74, 144, 217, 0.08);
+}
+.gate-sim__out { font-size: 0.82rem; color: var(--soft-ink); white-space: nowrap; }
+.gate-sim__val {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--accent-deep);
+}
+.gate-sim__val[data-bad="1"] { color: var(--soft-ink); }   /* couldn't parse */
+
+/* Flip arrow on the front — a horizontal arrow in the bottom-right corner. */
+.gate-card__flip {
+  position: absolute;
+  right: 0.7rem;
+  bottom: 0.55rem;
+  display: inline-flex;
+  color: var(--accent);
+  pointer-events: none;                  /* clicks fall through to the card */
+}
+.gate-card__flip svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gate-card__inner,
+  .gate-card__face--front { transition: none; }
 }
 
 /* ------------------------------------------------------------------ *
@@ -674,8 +953,21 @@
     gap: var(--space-4);
     padding-block-start: 4.5rem;
   }
+  /* Logic Gates lesson (the balanced hero): nudge the image + title a touch
+     lower still, for a little more clearance below the top bar. */
+  .doc-hero--balanced { padding-block-start: 5.5rem; }
   .doc-hero__text { max-width: none; }
   .doc-hero__art { max-width: 340px; margin-inline: auto; }
+  /* Logic Gates lesson: stack the hero in reading order — title, image,
+     paragraph, buttons. Promoting the text block to display:contents lets the
+     image (a sibling of .doc-hero__text) slot between the title and the lead via
+     `order`, while the grid gap keeps the spacing even. Margins are zeroed so the
+     gap alone drives the rhythm. */
+  .doc-hero--balanced .doc-hero__text { display: contents; }
+  .doc-hero--balanced .title-eyebrow { order: 1; margin-bottom: 0; }
+  .doc-hero--balanced .doc-hero__art { order: 2; }
+  .doc-hero--balanced .doc-hero__lead { order: 3; margin-bottom: 0; }
+  .doc-hero--balanced .doc-hero__actions { order: 4; }
   .doc-hero__lead { font-size: 1.1rem; }
   .doc-hero__actions .btn,
   .nextstep .doc-hero__actions .btn { flex: 1 1 auto; justify-content: center; }

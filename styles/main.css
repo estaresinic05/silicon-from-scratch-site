@@ -79,7 +79,7 @@ html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 body {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 1.0625rem;          /* ~17px */
+  font-size: 1.25rem;            /* ~20px */
   line-height: 1.65;
   color: var(--ink);
   background-color: var(--bg);
