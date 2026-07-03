@@ -41,6 +41,8 @@ function buildBpTrace(managed) {
   if (!window.matchMedia("(min-width: 1080px)").matches) {
     snake.removeAttribute("d");
     branchPaths.forEach(function (p) { p.removeAttribute("d"); });
+    Array.prototype.slice.call(svg.querySelectorAll(".bp-trace__seg"))
+      .forEach(function (p) { p.removeAttribute("d"); });
     return null;
   }
 
@@ -49,31 +51,99 @@ function buildBpTrace(managed) {
   var f = function (n) { return n.toFixed(1); };
   var frames = Array.prototype.slice.call(layout.querySelectorAll(".bp-frame"));
   if (!frames.length) return null;
-  var pts = frames.map(function (el) {
+
+  /* Each node: its centre (for branch targets + reveal timing) plus its left /
+     right side mid-points. The snake now flows IN one side of each graphic and
+     OUT the other, alternating side to side down the column. */
+  var nodes = frames.map(function (el) {
     var r = el.getBoundingClientRect();
-    return { x: r.left - lr.left + r.width / 2, y: r.top - lr.top + r.height / 2 };
+    var cy = r.top - lr.top + r.height / 2;
+    return {
+      cx: r.left - lr.left + r.width / 2,
+      cy: cy,
+      left:  { x: r.left  - lr.left, y: cy },
+      right: { x: r.right - lr.left, y: cy }
+    };
+  });
+  var pts = nodes.map(function (n) { return { x: n.cx, y: n.cy }; });
+
+  /* Entry/exit sides for node i: even nodes flow in-left / out-right, odd nodes
+     in-right / out-left (LEFT->right, RIGHT->left, ...). */
+  function side(n, i) {
+    return (i % 2 === 0)
+      ? { inn: n.left,  out: n.right, inDir: -1, outDir:  1 }
+      : { inn: n.right, out: n.left,  inDir:  1, outDir: -1 };
+  }
+
+  /* Serpentine line. Through each graphic we run a level segment (hidden behind
+     the opaque frame). Between graphics a deep cubic bows sideways — its control
+     points push out well past the node lane (alternating right, then left) so
+     each turn eats up the page width, then curls back to meet the next node's
+     entry side dead level. */
+  var H = Math.max(90, lr.width * 0.21);    // how far each connector bows sideways
+  /* One <path> PER connector (the gap between two graphics). The segment THROUGH
+     each graphic stays snipped out. We use a separate element per connector
+     rather than one path with pen-lifts, because a browser restarts the dash
+     pattern at every subpath — which would reveal every segment at once instead
+     of drawing them in sequence. */
+  var nConn = nodes.length - 1;
+  var segPaths = Array.prototype.slice.call(svg.querySelectorAll(".bp-trace__seg"));
+  while (segPaths.length < nConn) {
+    var sg = document.createElementNS(NS, "path");
+    sg.setAttribute("class", "bp-trace__seg");
+    sg.setAttribute("fill", "none");
+    svg.insertBefore(sg, snake);            // sits above the branches, like the old snake
+    segPaths.push(sg);
+  }
+  while (segPaths.length > nConn) { segPaths.pop().remove(); }
+  snake.removeAttribute("d");               // the single snake path is unused now
+
+  var segLens = [], total = 0;
+  for (var i = 1; i < nodes.length; i++) {
+    var prev = side(nodes[i - 1], i - 1);
+    var cur  = side(nodes[i], i);
+    var ex = prev.out.x, ey = prev.out.y;               // left the previous node here
+    var nx = cur.inn.x,  ny = cur.inn.y;                // enter this node here
+    var c1x = ex + prev.outDir * H;                     // exit tangent, level & bowing out
+    var c2x = nx + cur.inDir  * H;                      // entry tangent, level & bowing out
+    var seg = segPaths[i - 1];
+    seg.setAttribute("d", "M " + f(ex) + " " + f(ey) +
+      " C " + f(c1x) + " " + f(ey) + ", " + f(c2x) + " " + f(ny) +
+      ", " + f(nx) + " " + f(ny));                       // connector: exit(prev) -> entry(cur)
+    var sl = seg.getTotalLength ? seg.getTotalLength() : 0;
+    segLens.push(sl);
+    total += sl;
+  }
+  /* Each segment's start/end fraction along the whole line, so the timeline can
+     draw them back-to-back and they read as one continuous line. */
+  var acc = 0;
+  var segs = segPaths.map(function (seg, k) {
+    var startFrac = total ? acc / total : 0;
+    acc += segLens[k];
+    var endFrac = total ? acc / total : 0;
+    if (segLens[k]) {
+      /* One dash the length of the segment + an oversized gap so the pattern
+         never repeats — lets us offset PAST the length (to hide the round cap)
+         without a second dash creeping onto the tail. */
+      seg.style.strokeDasharray = segLens[k] + " " + (segLens[k] + 1000);
+      if (!managed) seg.style.strokeDashoffset = "0";   // static default; GSAP owns it when managed
+    }
+    return { path: seg, len: segLens[k], startFrac: startFrac, endFrac: endFrac };
   });
 
-  /* Snaking line: a smooth S-curve through each node centre. */
-  var d = "M " + f(pts[0].x) + " " + f(pts[0].y);
-  for (var i = 1; i < pts.length; i++) {
-    var a = pts[i - 1], b = pts[i], my = (a.y + b.y) / 2;
-    d += " C " + f(a.x) + " " + f(my) + ", " + f(b.x) + " " + f(my) +
-         ", " + f(b.x) + " " + f(b.y);
-  }
-  snake.setAttribute("d", d);
-  var total = snake.getTotalLength ? snake.getTotalLength() : 0;
-  if (total) {
-    snake.style.strokeDasharray = total;
-    if (!managed) snake.style.strokeDashoffset = "0";   // static default; GSAP owns it when managed
-  }
+  /* Fraction of the whole line at which it reaches each node (node 0 at the very
+     start), used to time each node's reveal + its branch. */
+  var nodeReach = nodes.map(function (n, i) { return i === 0 ? 0 : segs[i - 1].endFrac; });
 
-  /* Each node's progress fraction down the line — used to time its reveal (and
-     its branch) to the moment the growing line reaches it. */
-  var y0 = pts[0].y, ySpan = (pts[pts.length - 1].y - y0) || 1;
-  var nodeFracs = pts.map(function (pt) { return (pt.y - y0) / ySpan; });
-
-  /* Branches: from each explainer line's right edge out to the nearest node. */
+  /* Branches connect each explainer line to a node on the main path. By default
+     the path is defined starting AT the node, so the scroll "draw" (dashoffset
+     len -> 0) grows from the main path outward toward the text. Two exceptions:
+       - Branch 0 (the opening line) is defined starting at the text, so it draws
+         the other way: paragraph -> main path.
+       - Branch 1 ("Whether you're...") would otherwise reach across to a
+         right-lane node and slice through the serpentine. Route it to the
+         left-lane node just below and bow it out to the left, so it meets that
+         node (behind its frame) without ever crossing the main path. */
   var branches = lines.map(function (p, idx) {
     var r = p.getBoundingClientRect();
     var ax = r.right - lr.left, ay = r.top - lr.top + r.height / 2;
@@ -81,20 +151,46 @@ function buildBpTrace(managed) {
     for (var j = 1; j < pts.length; j++) {
       if (Math.abs(pts[j].y - ay) < Math.abs(pts[ni].y - ay)) ni = j;
     }
-    var n = pts[ni], mx = (ax + n.x) / 2;
-    var bp = branchPaths[idx];
-    bp.setAttribute("d", "M " + f(ax) + " " + f(ay) +
-      " C " + f(mx) + " " + f(ay) + ", " + f(mx) + " " + f(n.y) +
-      ", " + f(n.x) + " " + f(n.y));
+    /* Branches attach at a node's LEFT edge (the side facing the text), so they
+       start on the card's edge rather than under it. */
+    var bp = branchPaths[idx], d;
+    if (idx === 1) {
+      /* nearest LEFT-lane (even) node — the ALU. A plain curve to it would slice
+         the serpentine, so bow out to the left of the snake's reach: leave the
+         card edge, swing into the corridor left of the main path, then up to the
+         text — never crossing the main path. */
+      var best = 0;
+      for (var k = 2; k < pts.length; k += 2) {
+        if (Math.abs(pts[k].y - ay) < Math.abs(pts[best].y - ay)) best = k;
+      }
+      ni = best;
+      var e1 = nodes[ni].left;
+      var bow = ax - Math.max(70, (e1.x - ax) * 0.6);
+      d = "M " + f(e1.x) + " " + f(e1.y) +
+          " C " + f(bow) + " " + f(e1.y) + ", " + f(bow) + " " + f(ay) +
+          ", " + f(ax) + " " + f(ay);
+    } else if (idx === 0) {
+      /* draw paragraph -> main path (reverse of the others), landing on the edge */
+      var e0 = nodes[ni].left, mx0 = (ax + e0.x) / 2;
+      d = "M " + f(ax) + " " + f(ay) +
+          " C " + f(mx0) + " " + f(ay) + ", " + f(mx0) + " " + f(e0.y) +
+          ", " + f(e0.x) + " " + f(e0.y);
+    } else {
+      var e = nodes[ni].left, mx = (ax + e.x) / 2;
+      d = "M " + f(e.x) + " " + f(e.y) +
+          " C " + f(mx) + " " + f(e.y) + ", " + f(mx) + " " + f(ay) +
+          ", " + f(ax) + " " + f(ay);
+    }
+    bp.setAttribute("d", d);
     var blen = bp.getTotalLength ? bp.getTotalLength() : 0;
     if (blen) {
-      bp.style.strokeDasharray = blen;
+      bp.style.strokeDasharray = blen + " " + (blen + 1000);   // non-repeating (see segs)
       if (!managed) bp.style.strokeDashoffset = "0";
     }
-    return { path: bp, text: p, frac: nodeFracs[ni], len: blen };
+    return { path: bp, text: p, frac: nodeReach[ni], len: blen };
   });
 
-  return { snake: snake, snakeLen: total, nodeFracs: nodeFracs, branches: branches };
+  return { segs: segs, snakeLen: total, nodeReach: nodeReach, branches: branches };
 }
 
 (function () {
@@ -199,25 +295,58 @@ function buildBpTrace(managed) {
         if (bpTL.scrollTrigger) bpTL.scrollTrigger.kill();
         bpTL.kill();
       }
+      /* Widened scrub range so the whole sequence is spread over much more scroll
+         — the main line is visibly drawing as you move, rather than finishing
+         before you reach it. */
       bpTL = gsap.timeline({
-        scrollTrigger: { trigger: bpSectionEl, start: "top 72%", end: "bottom 66%", scrub: 0.6 }
+        scrollTrigger: { trigger: bpSectionEl, start: "top 82%", end: "bottom 48%", scrub: 0.6 }
       });
-      /* The line itself, drawn top -> bottom across the whole timeline. */
-      bpTL.fromTo(info.snake, { strokeDashoffset: info.snakeLen },
-        { strokeDashoffset: 0, ease: "none", duration: 1 }, 0);
-      /* Each node pops in just as the line arrives at it. */
+
+      /* The opening branch draws FIRST — paragraph out to the first graphic — and
+         the main line is HELD until it lands there. */
+      var SNAKE_START = 0.10;                 // main path waits here (branch reaches graphic 1)
+      var SNAKE_DUR   = 1 - SNAKE_START;
+      var reach = function (frac) { return SNAKE_START + (frac || 0) * SNAKE_DUR; };
+      /* Hide each line by offsetting a hair PAST its length, so its round end-cap
+         sits off the path start and no stray dot shows before it animates. */
+      var CAP_PAD = 5;
+      var b0 = info.branches[0];
+      if (b0) {
+        bpTL.fromTo(b0.path, { strokeDashoffset: b0.len + CAP_PAD },
+          { strokeDashoffset: 0, ease: "none", duration: SNAKE_START }, 0);
+        if (b0.text) {
+          bpTL.fromTo(b0.text, { opacity: 0, x: 12 },
+            { opacity: 1, x: 0, ease: "power2.out", duration: SNAKE_START }, 0);
+        }
+      }
+
+      /* The main line, held until SNAKE_START: each connector segment is drawn
+         back-to-back across [SNAKE_START, 1] so, though the segments are
+         physically discontinuous (snipped at every graphic), they animate as one
+         continuous line that finishes only when you reach the bottom. */
+      info.segs.forEach(function (s) {
+        var t0 = reach(s.startFrac), t1 = reach(s.endFrac);
+        bpTL.fromTo(s.path, { strokeDashoffset: s.len + CAP_PAD },
+          { strokeDashoffset: 0, ease: "none", duration: Math.max(0.0001, t1 - t0) }, t0);
+      });
+
+      /* Each node pops in just as the (now slower) line reaches it. */
       bpSteps.forEach(function (step, i) {
-        var at = Math.max(0, (info.nodeFracs[i] || 0) - 0.03);
+        var at = Math.max(0, reach(info.nodeReach[i]) - 0.09);
         bpTL.fromTo(step, { opacity: 0, y: 26 },
-          { opacity: 1, y: 0, ease: "power2.out", duration: 0.16 }, at);
+          { opacity: 1, y: 0, ease: "power2.out", duration: 0.09 }, at);
       });
-      /* Each branch draws out + its explainer line fades in at the same point. */
-      info.branches.forEach(function (b) {
-        bpTL.fromTo(b.path, { strokeDashoffset: b.len },
-          { strokeDashoffset: 0, ease: "none", duration: 0.14 }, b.frac);
+
+      /* Each remaining branch draws + its paragraph fades as the line reaches its
+         node (branch 0 was handled above). */
+      info.branches.forEach(function (b, i) {
+        if (i === 0) return;
+        var at = reach(b.frac);
+        bpTL.fromTo(b.path, { strokeDashoffset: b.len + CAP_PAD },
+          { strokeDashoffset: 0, ease: "none", duration: 0.12 }, Math.max(0, at - 0.12));
         if (b.text) {
           bpTL.fromTo(b.text, { opacity: 0, x: 12 },
-            { opacity: 1, x: 0, ease: "power2.out", duration: 0.18 }, b.frac);
+            { opacity: 1, x: 0, ease: "power2.out", duration: 0.16 }, Math.max(0, at - 0.16));
         }
       });
       ScrollTrigger.refresh();

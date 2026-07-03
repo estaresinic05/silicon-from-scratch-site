@@ -694,13 +694,13 @@ main section[id] { scroll-margin-top: 5rem; }
   margin: var(--space-4) auto 0;
   max-width: 980px;
   padding-inline: var(--space-4);
-  font-family: var(--font-display);
-  font-size: clamp(1.2rem, 1.5vw, 1.4rem);
-  line-height: 1.4;
-  letter-spacing: -0.005em;
+  font-family: var(--font-body);
+  font-size: clamp(1.1rem, 1.35vw, 1.3rem);
+  line-height: 1.62;
+  letter-spacing: 0;
   color: var(--ink);
 }
-.buildpath-intro__lead { margin-top: 0; }   /* first line flush to the top */
+.buildpath-intro__lead { margin-top: 0; }   /* opener: flush to the top */
 .buildpath-intro strong { color: var(--accent); font-weight: inherit; }
 .buildpath-rail { display: none; }
 
@@ -712,11 +712,16 @@ main section[id] { scroll-margin-top: 5rem; }
   .buildpath-layout {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(15rem, 23rem) minmax(0, 1fr);
+    grid-template-columns: minmax(18rem, 30rem) minmax(0, 1fr);
     gap: clamp(2.5rem, 5vw, 5.5rem);
-    max-width: 1180px;
+    max-width: min(1460px, 93vw);      /* widen on big screens, ease back on narrow ones */
     margin-inline: auto;
     padding-inline: var(--space-4);
+    /* The serpentine's bulges reach further right than the text reaches left, so
+       the centred grid reads right-biased by an amount that grows with the bulge
+       size (which scales with width). Nudge left by a width-scaled amount so the
+       path + paragraphs stay visually centred across desktop widths. */
+    transform: translateX(clamp(-3.75rem, 6.5vw - 124px, -0.5rem));
   }
   .buildpath-main { min-width: 0; }
   /* Path + its title sit flush inside their column (the grid handles centring). */
@@ -733,8 +738,9 @@ main section[id] { scroll-margin-top: 5rem; }
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    align-items: flex-start;           /* paragraphs sit against the column's left edge */
     padding-block: 0.2rem 2rem;
-    text-align: right;                 /* text hugs the path; branches leave its right edge */
+    text-align: center;                /* centred within each block */
   }
   .buildpath-intro__lead,
   .buildpath-intro__sub,
@@ -742,9 +748,11 @@ main section[id] { scroll-margin-top: 5rem; }
   .buildpath-intro__code,
   .buildpath-intro__end {
     position: relative;
-    max-width: none;
+    width: fit-content;                /* box hugs its text so branches meet the words */
+    max-width: 42ch;                   /* wide enough that no line is left with 1-2 words */
     margin: 0;
     padding-inline: 0;
+    text-wrap: balance;                /* even the line lengths — no short orphan lines */
   }
   .buildpath-intro__lead::before,
   .buildpath-intro__sub::before,
@@ -913,13 +921,15 @@ main section[id] { scroll-margin-top: 5rem; }
   pointer-events: none;
 }
 .bp-trace__snake,
+.bp-trace__seg,
 .bp-trace__branch {
   fill: none;
   stroke: var(--accent);
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.bp-trace__snake  { stroke-width: 2.5; }
+.bp-trace__snake,
+.bp-trace__seg    { stroke-width: 2.5; }
 .bp-trace__branch { stroke-width: 1.5; opacity: 0.55; }
 
 /* ---- Serpentine path nodes + connectors (desktop) --------------------- *
@@ -934,7 +944,9 @@ main section[id] { scroll-margin-top: 5rem; }
     display: block;
     margin: 0;
     max-width: none;
-    padding: 0;
+    /* Inset the two node lanes from the column edges so the serpentine's
+       sideways bulges have room to swing without running off the screen. */
+    padding: 0 clamp(40px, 6vw, 104px);
   }
   .bp-step {
     display: flex;
