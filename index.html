@@ -126,6 +126,10 @@
          scrolls into view. Icons are inline SVG (stroke = currentColor). -->
     <section class="buildpath-section" aria-labelledby="path-title">
      <div class="buildpath-layout">
+      <svg class="bp-trace" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <path class="bp-trace__branch" fill="none"/>
+        <path class="bp-trace__snake" fill="none"/>
+      </svg>
       <aside class="buildpath-intro">
         <span class="buildpath-rail" aria-hidden="true"></span>
         <p class="buildpath-intro__lead">
@@ -141,14 +145,18 @@
           requires what came before it.
         </p>
         <p class="buildpath-intro__code">
-          The lessons to get you started are kept on <strong>this website</strong>.
-          The code to get you to apply what you learn is on <strong>GitHub</strong>.
+          Start with the lessons on <strong>this website</strong>. Then put what
+          you've learned into practice with the code on <strong>GitHub</strong>.
+        </p>
+        <p class="buildpath-intro__end">
+          No expensive tools, no dense theory, just interactive learning right
+          at your fingertips.
         </p>
       </aside>
       <div class="buildpath-main">
       <p class="kicker buildpath__title" id="path-title">Your Path</p>
       <ol class="buildpath">
-        <li class="bp-step">
+        <li class="bp-step bp-step--left">
           <span class="bp-frame" aria-hidden="true">
             <svg class="bp-svg" viewBox="0 0 100 64">
               <!-- a cluster of three gates, each with input/output wires -->
@@ -172,9 +180,11 @@
           </div>
         </li>
 
-        <li class="bp-arrow" aria-hidden="true">&darr;</li>
+        <li class="bp-arrow" aria-hidden="true">
+          <span class="bp-arrow__glyph">&darr;</span>
+        </li>
 
-        <li class="bp-step">
+        <li class="bp-step bp-step--right">
           <span class="bp-frame" aria-hidden="true">
             <svg class="bp-svg" viewBox="0 0 100 64">
               <rect x="30" y="14" width="40" height="36" rx="3"/>
@@ -192,9 +202,11 @@
           </div>
         </li>
 
-        <li class="bp-arrow" aria-hidden="true">&darr;</li>
+        <li class="bp-arrow" aria-hidden="true">
+          <span class="bp-arrow__glyph">&darr;</span>
+        </li>
 
-        <li class="bp-step">
+        <li class="bp-step bp-step--left">
           <span class="bp-frame" aria-hidden="true">
             <svg class="bp-svg" viewBox="0 0 100 64">
               <!-- classic notched ALU trapezoid (narrower, no top control line) -->
@@ -211,9 +223,11 @@
           </div>
         </li>
 
-        <li class="bp-arrow" aria-hidden="true">&darr;</li>
+        <li class="bp-arrow" aria-hidden="true">
+          <span class="bp-arrow__glyph">&darr;</span>
+        </li>
 
-        <li class="bp-step">
+        <li class="bp-step bp-step--right">
           <span class="bp-frame" aria-hidden="true">
             <svg class="bp-svg" viewBox="0 0 100 64">
               <!-- square CPU die with 3 pins on each side (12 total) -->
@@ -235,9 +249,11 @@
           </div>
         </li>
 
-        <li class="bp-arrow" aria-hidden="true">&darr;</li>
+        <li class="bp-arrow" aria-hidden="true">
+          <span class="bp-arrow__glyph">&darr;</span>
+        </li>
 
-        <li class="bp-step">
+        <li class="bp-step bp-step--left">
           <span class="bp-frame" aria-hidden="true">
             <svg class="bp-svg" viewBox="0 0 100 64">
               <!-- IEEE-754 fields: sign | exponent | mantissa -->
@@ -256,9 +272,11 @@
           </div>
         </li>
 
-        <li class="bp-arrow" aria-hidden="true">&darr;</li>
+        <li class="bp-arrow" aria-hidden="true">
+          <span class="bp-arrow__glyph">&darr;</span>
+        </li>
 
-        <li class="bp-step">
+        <li class="bp-step bp-step--right">
           <span class="bp-frame" aria-hidden="true">
             <svg class="bp-svg" viewBox="0 0 100 64">
               <!-- pipeline: five staggered stage bars (staircase), labelled -->
@@ -281,9 +299,11 @@
           </div>
         </li>
 
-        <li class="bp-arrow" aria-hidden="true">&darr;</li>
+        <li class="bp-arrow" aria-hidden="true">
+          <span class="bp-arrow__glyph">&darr;</span>
+        </li>
 
-        <li class="bp-step">
+        <li class="bp-step bp-step--left">
           <span class="bp-frame" aria-hidden="true">
             <svg class="bp-svg" viewBox="0 0 100 64">
               <!-- die floorplan: outline + packed blocks + edge pins -->

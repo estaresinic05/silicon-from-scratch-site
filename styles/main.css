@@ -675,7 +675,7 @@ main section[id] { scroll-margin-top: 5rem; }
   display: flex;
   flex-direction: column;
   gap: clamp(0.75rem, 2.5vw, 1.6rem);
-  --bp-icon: clamp(190px, 36vw, 400px);   /* shared so arrows line up under icons */
+  --bp-icon: clamp(150px, 20vw, 260px);   /* shared so arrows line up under icons */
 }
 
 /* ---- Build-path intro ("descending circuit rail") ----
@@ -689,7 +689,8 @@ main section[id] { scroll-margin-top: 5rem; }
 .buildpath-intro__lead,
 .buildpath-intro__sub,
 .buildpath-intro__note,
-.buildpath-intro__code {
+.buildpath-intro__code,
+.buildpath-intro__end {
   margin: var(--space-4) auto 0;
   max-width: 980px;
   padding-inline: var(--space-4);
@@ -704,78 +705,53 @@ main section[id] { scroll-margin-top: 5rem; }
 .buildpath-rail { display: none; }
 
 @media (min-width: 1080px) {
-  /* Two columns: the intro rail on the left, the path on the right, centred as a
-     pair. The path keeps its own max width; the intro fills the freed-up left
-     margin. */
+  /* Two columns: the explainer text on the left, the serpentine path on the
+     right. The path column is a flexible 1fr so its nodes can swing between a
+     left lane and a right lane; the pair is capped and centred on the page.
+     position:relative anchors the full-layout .bp-trace overlay. */
   .buildpath-layout {
+    position: relative;
     display: grid;
-    grid-template-columns: minmax(15rem, 23rem) minmax(0, 980px);
-    justify-content: center;
+    grid-template-columns: minmax(15rem, 23rem) minmax(0, 1fr);
     gap: clamp(2.5rem, 5vw, 5.5rem);
+    max-width: 1180px;
+    margin-inline: auto;
     padding-inline: var(--space-4);
   }
   .buildpath-main { min-width: 0; }
   /* Path + its title sit flush inside their column (the grid handles centring). */
   .buildpath-main .buildpath,
   .buildpath-main .buildpath__title { margin-inline: 0; max-width: none; padding-inline: 0; }
+  /* Centre the "YOUR PATH" eyebrow over the serpentine column. */
+  .buildpath-main .buildpath__title { justify-content: center; }
 
-  /* The intro becomes a full-height rail: the lead at the top, the sub pushed
-     down so it lands beside the middle of the path. */
+  /* The explainer lines sit as a left column, spread down the full height so
+     each lands beside the point on the path its branch taps into. The old
+     vertical rail + node dots are gone — the .bp-trace branches connect them. */
   .buildpath-intro {
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;   /* spread the 3 lines down the full path */
-    padding-left: 2.4rem;             /* room for the trace + its nodes */
+    justify-content: space-between;
     padding-block: 0.2rem 2rem;
+    text-align: right;                 /* text hugs the path; branches leave its right edge */
   }
   .buildpath-intro__lead,
   .buildpath-intro__sub,
   .buildpath-intro__note,
-  .buildpath-intro__code {
+  .buildpath-intro__code,
+  .buildpath-intro__end {
     position: relative;
     max-width: none;
     margin: 0;
     padding-inline: 0;
   }
-
-  /* Accent nodes where each line taps into the trace. */
   .buildpath-intro__lead::before,
   .buildpath-intro__sub::before,
   .buildpath-intro__note::before,
-  .buildpath-intro__code::before {
-    content: "";
-    position: absolute;
-    left: -2.4rem;                     /* back out to the rail's column... */
-    margin-left: 2px;                  /* ...then centre the 10px dot on the 2px rail */
-    top: 0.5em;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 4px rgba(107, 47, 201, 0.12);
-  }
-
-  /* The vertical trace. Fades at both ends and is "drawn" from the top via
-     scaleY, driven by --rail-progress from scroll.js (default 1 = fully drawn,
-     so it looks right with JS off). */
-  .buildpath-rail {
-    display: block;
-    position: absolute;
-    left: 6px;
-    top: 0.4rem;
-    bottom: 0.4rem;
-    width: 2px;
-    background: linear-gradient(
-      to bottom,
-      transparent 0,
-      var(--accent) 2.5rem,
-      var(--accent) calc(100% - 2.5rem),
-      transparent 100%);
-    opacity: 0.5;
-    transform: scaleY(var(--rail-progress, 1));
-    transform-origin: top center;
-  }
+  .buildpath-intro__code::before,
+  .buildpath-intro__end::before { content: none; }   /* rail dots removed */
+  .buildpath-rail { display: none; }                  /* vertical rail removed */
 }
 /* Section eyebrow atop the path — mimics "MEET THE PROCESSOR" on the Meet the
    Processor page. That label is a .kicker inside .journey__step, so it inherits
@@ -910,12 +886,80 @@ main section[id] { scroll-margin-top: 5rem; }
   line-height: 1.6;
 }
 .bp-arrow {
-  align-self: flex-start;            /* don't stretch full width */
+  align-self: flex-start;            /* keep the glyph under the left icon column */
+  margin: 0;
+}
+/* The ↓ glyph (mobile / no-desktop view) — styled exactly as the old .bp-arrow. */
+.bp-arrow__glyph {
+  display: block;
   width: var(--bp-icon);             /* match the icon column so the ↓ centres under it */
   text-align: center;
   color: var(--accent);
   font-size: clamp(1.5rem, 3.5vw, 2.2rem);
   line-height: 1;
+}
+/* The single serpentine "trace": one SVG overlaying the whole build-path layout.
+   scroll.js measures the node icons + the explainer lines and draws the snaking
+   line (through the nodes) plus the branches (out to the explainer text) into it.
+   Desktop-only; below the breakpoint the ↓ glyphs handle the connections. */
+.bp-trace {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;                        /* behind the nodes (which get z-index:1) */
+  overflow: visible;
+  pointer-events: none;
+}
+.bp-trace__snake,
+.bp-trace__branch {
+  fill: none;
+  stroke: var(--accent);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.bp-trace__snake  { stroke-width: 2.5; }
+.bp-trace__branch { stroke-width: 1.5; opacity: 0.55; }
+
+/* ---- Serpentine path nodes + connectors (desktop) --------------------- *
+   Placed AFTER the base .bp-step / .bp-frame / .bp-arrow / .bp-connector rules
+   so these desktop overrides win on source order (media queries add no
+   specificity). Each node is a half-width column hugging one lane, so its icon
+   sits at 25% (left) or 75% (right) of the path column; the full-width connector
+   SVGs curve between those two lane centres. */
+@media (min-width: 1080px) {
+  .buildpath {
+    position: relative;
+    display: block;
+    margin: 0;
+    max-width: none;
+    padding: 0;
+  }
+  .bp-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 50%;
+    gap: 0.75rem;
+  }
+  .bp-step--left  { margin-right: auto; }   /* hug the left lane  -> icon centre at 25% */
+  .bp-step--right { margin-left: auto; }     /* hug the right lane -> icon centre at 75% */
+  /* Fixed node size (override the base 100%); opaque surface so the snaking
+     trace passes cleanly BEHIND each node instead of through the icon. */
+  .bp-frame { width: var(--bp-icon); background: var(--paper); }
+  .bp-copy  { max-width: 32ch; }
+  .bp-title { font-size: clamp(1.1rem, 2vw, 1.5rem); }
+  .bp-desc  { font-size: 1rem; line-height: 1.5; max-width: 32ch; }   /* compact caption */
+  /* The single snaking line + branches; nodes ride above it (z-index below). */
+  .bp-trace { display: block; }
+  .buildpath > li { position: relative; z-index: 1; }
+
+  /* The arrows are now just vertical spacers between nodes; the connecting
+     line is the single scroll-drawn .bp-trace SVG. Glyph stays hidden. */
+  .bp-arrow { width: 100%; height: clamp(3rem, 7vw, 5rem); margin: 0; padding: 0; }
+  .bp-arrow__glyph { display: none; }
 }
 @media (max-width: 560px) {
   /* stack icon over copy, both centred on screen; name sits on its own line
@@ -1984,9 +2028,9 @@ html.js .buildpath-intro__lead,
 html.js .buildpath-intro__sub,
 html.js .buildpath-intro__note,
 html.js .buildpath-intro__code,
+html.js .buildpath-intro__end,
 html.js .bp-tag,
 html.js .bp-step,
-html.js .bp-arrow,
 html.js .epigraph blockquote,
 html.js .ladder .step,
 html.js .findings .finding,
@@ -2038,6 +2082,7 @@ html.js .buildpath-intro { --rail-progress: 0; }
   html.js .buildpath-intro__sub,
   html.js .buildpath-intro__note,
   html.js .buildpath-intro__code,
+  html.js .buildpath-intro__end,
   html.js .findings .finding,
   html.js .page-logic .prose > *,
   html.js .page-logic .checklist > *,

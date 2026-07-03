@@ -10,6 +10,93 @@
    - We animate only opacity/transform, and clearProps "transform" after
      each reveal so existing CSS hover lifts keep working.
    ========================================================================= */
+
+/* Build-path "trace": measure the node icons and the explainer lines, then draw
+   ONE snaking line through the nodes plus a branch out to each explainer line,
+   into the .bp-trace overlay SVG. Desktop-only; runs whenever JS is present (so
+   a static, fully-drawn trace shows even under reduced-motion / no-GSAP), while
+   the scroll "draw" is layered on top by the main module below. Idempotent. */
+function buildBpTrace(managed) {
+  var layout = document.querySelector(".buildpath-layout");
+  var svg = layout && layout.querySelector(".bp-trace");
+  if (!svg) return null;
+  var NS = "http://www.w3.org/2000/svg";
+  var snake = svg.querySelector(".bp-trace__snake");
+  var lines = Array.prototype.slice.call(layout.querySelectorAll(
+    ".buildpath-intro__lead, .buildpath-intro__sub, .buildpath-intro__note," +
+    " .buildpath-intro__code, .buildpath-intro__end"));
+
+  /* One reusable branch <path> per explainer line — kept stable across rebuilds
+     so the scroll timeline can keep referencing the same elements. */
+  var branchPaths = Array.prototype.slice.call(svg.querySelectorAll(".bp-trace__branch"));
+  while (branchPaths.length < lines.length) {
+    var np = document.createElementNS(NS, "path");
+    np.setAttribute("class", "bp-trace__branch");
+    np.setAttribute("fill", "none");
+    svg.insertBefore(np, snake);          // branches sit under the snake line
+    branchPaths.push(np);
+  }
+  while (branchPaths.length > lines.length) { branchPaths.pop().remove(); }
+
+  if (!window.matchMedia("(min-width: 1080px)").matches) {
+    snake.removeAttribute("d");
+    branchPaths.forEach(function (p) { p.removeAttribute("d"); });
+    return null;
+  }
+
+  var lr = layout.getBoundingClientRect();
+  svg.setAttribute("viewBox", "0 0 " + lr.width + " " + lr.height);
+  var f = function (n) { return n.toFixed(1); };
+  var frames = Array.prototype.slice.call(layout.querySelectorAll(".bp-frame"));
+  if (!frames.length) return null;
+  var pts = frames.map(function (el) {
+    var r = el.getBoundingClientRect();
+    return { x: r.left - lr.left + r.width / 2, y: r.top - lr.top + r.height / 2 };
+  });
+
+  /* Snaking line: a smooth S-curve through each node centre. */
+  var d = "M " + f(pts[0].x) + " " + f(pts[0].y);
+  for (var i = 1; i < pts.length; i++) {
+    var a = pts[i - 1], b = pts[i], my = (a.y + b.y) / 2;
+    d += " C " + f(a.x) + " " + f(my) + ", " + f(b.x) + " " + f(my) +
+         ", " + f(b.x) + " " + f(b.y);
+  }
+  snake.setAttribute("d", d);
+  var total = snake.getTotalLength ? snake.getTotalLength() : 0;
+  if (total) {
+    snake.style.strokeDasharray = total;
+    if (!managed) snake.style.strokeDashoffset = "0";   // static default; GSAP owns it when managed
+  }
+
+  /* Each node's progress fraction down the line — used to time its reveal (and
+     its branch) to the moment the growing line reaches it. */
+  var y0 = pts[0].y, ySpan = (pts[pts.length - 1].y - y0) || 1;
+  var nodeFracs = pts.map(function (pt) { return (pt.y - y0) / ySpan; });
+
+  /* Branches: from each explainer line's right edge out to the nearest node. */
+  var branches = lines.map(function (p, idx) {
+    var r = p.getBoundingClientRect();
+    var ax = r.right - lr.left, ay = r.top - lr.top + r.height / 2;
+    var ni = 0;
+    for (var j = 1; j < pts.length; j++) {
+      if (Math.abs(pts[j].y - ay) < Math.abs(pts[ni].y - ay)) ni = j;
+    }
+    var n = pts[ni], mx = (ax + n.x) / 2;
+    var bp = branchPaths[idx];
+    bp.setAttribute("d", "M " + f(ax) + " " + f(ay) +
+      " C " + f(mx) + " " + f(ay) + ", " + f(mx) + " " + f(n.y) +
+      ", " + f(n.x) + " " + f(n.y));
+    var blen = bp.getTotalLength ? bp.getTotalLength() : 0;
+    if (blen) {
+      bp.style.strokeDasharray = blen;
+      if (!managed) bp.style.strokeDashoffset = "0";
+    }
+    return { path: bp, text: p, frac: nodeFracs[ni], len: blen };
+  });
+
+  return { snake: snake, snakeLen: total, nodeFracs: nodeFracs, branches: branches };
+}
+
 (function () {
   "use strict";
 
@@ -81,32 +168,77 @@
   if (document.querySelector(".buildpath__kicker")) {
     reveal(".buildpath__kicker", ".buildpath__kicker", { y: 16, start: "top 88%", duration: 0.6 });
   }
+  var bpDesktop = window.matchMedia("(min-width: 1080px)").matches;
   gsap.utils.toArray(".bp-step").forEach(function (step) {
-    reveal(step, step, { y: 28, start: "top 82%", duration: 0.7 });
+    /* On desktop each node is revealed by the trace timeline below, timed to the
+       moment the growing line reaches it; narrower widths fade in on scroll. */
+    if (!bpDesktop) reveal(step, step, { y: 28, start: "top 82%", duration: 0.7 });
   });
   gsap.utils.toArray(".bp-arrow").forEach(function (arr) {
-    reveal(arr, arr, { y: 8, start: "top 88%", duration: 0.5 });
+    /* On desktop the arrows are invisible spacers (the .bp-trace line connects
+       the nodes); on narrower widths, fade the ↓ glyph in as before. */
+    if (!bpDesktop) reveal(arr, arr, { y: 8, start: "top 88%", duration: 0.5 });
   });
   gsap.utils.toArray(".bp-tag").forEach(function (tag) {
     reveal(tag, tag, { y: 12, start: "top 86%", duration: 0.6 });
   });
 
-  /* ---- Build-path intro rail: the vertical trace "draws" downward as the
-         reader scrolls the path, and the two intro lines fade in — the lead near
-         the top, the sub as the middle of the path arrives. On wide screens only;
-         narrower layouts just fade the lines in above the path. ---- */
-  var bpIntro = document.querySelector(".buildpath-intro");
-  var bpSection = document.querySelector(".buildpath-section");
-  if (bpIntro) {
-    if (bpSection && window.matchMedia("(min-width: 1080px)").matches) {
-      gsap.fromTo(bpIntro, { "--rail-progress": 0 }, {
-        "--rail-progress": 1,
-        ease: "none",
-        scrollTrigger: { trigger: bpSection, start: "top 72%", end: "bottom 62%", scrub: 0.5 }
+  /* ---- The single snaking trace (desktop): the line grows down as the section
+         scrolls, and everything is timed TO it — each node fades in and each
+         branch draws out (with its explainer line) exactly as the line reaches
+         that point. One scrubbed timeline drives it all. ---- */
+  if (bpDesktop) {
+    var bpSectionEl = document.querySelector(".buildpath-section");
+    var bpSteps = gsap.utils.toArray(".bp-step");
+    var bpTL = null;
+
+    var setupBpTL = function () {
+      var info = buildBpTrace(true);          // managed: leave the dash offsets to GSAP
+      if (!info || !info.snakeLen || !bpSectionEl) return;
+      if (bpTL) {                             // rebuild cleanly (fonts settled / resized)
+        if (bpTL.scrollTrigger) bpTL.scrollTrigger.kill();
+        bpTL.kill();
+      }
+      bpTL = gsap.timeline({
+        scrollTrigger: { trigger: bpSectionEl, start: "top 72%", end: "bottom 66%", scrub: 0.6 }
       });
-    }
+      /* The line itself, drawn top -> bottom across the whole timeline. */
+      bpTL.fromTo(info.snake, { strokeDashoffset: info.snakeLen },
+        { strokeDashoffset: 0, ease: "none", duration: 1 }, 0);
+      /* Each node pops in just as the line arrives at it. */
+      bpSteps.forEach(function (step, i) {
+        var at = Math.max(0, (info.nodeFracs[i] || 0) - 0.03);
+        bpTL.fromTo(step, { opacity: 0, y: 26 },
+          { opacity: 1, y: 0, ease: "power2.out", duration: 0.16 }, at);
+      });
+      /* Each branch draws out + its explainer line fades in at the same point. */
+      info.branches.forEach(function (b) {
+        bpTL.fromTo(b.path, { strokeDashoffset: b.len },
+          { strokeDashoffset: 0, ease: "none", duration: 0.14 }, b.frac);
+        if (b.text) {
+          bpTL.fromTo(b.text, { opacity: 0, x: 12 },
+            { opacity: 1, x: 0, ease: "power2.out", duration: 0.18 }, b.frac);
+        }
+      });
+      ScrollTrigger.refresh();
+    };
+
+    setupBpTL();                              // build now...
+    window.addEventListener("load", setupBpTL); // ...and rebuild once fonts settle
+    var bpResizeT;
+    window.addEventListener("resize", function () {
+      clearTimeout(bpResizeT);
+      bpResizeT = setTimeout(setupBpTL, 150);
+    });
+  }
+
+  /* ---- Build-path explainer lines (narrow screens only): fade each in on
+         scroll. On desktop they're revealed by the trace timeline above, timed
+         to the branch that reaches out to them. ---- */
+  var bpIntro = document.querySelector(".buildpath-intro");
+  if (bpIntro && !bpDesktop) {
     gsap.utils.toArray(bpIntro.querySelectorAll(
-      ".buildpath-intro__lead, .buildpath-intro__sub, .buildpath-intro__note, .buildpath-intro__code"
+      ".buildpath-intro__lead, .buildpath-intro__sub, .buildpath-intro__note, .buildpath-intro__code, .buildpath-intro__end"
     )).forEach(function (line) {
       reveal(line, line, { y: 18, start: "top 88%", duration: 0.7 });
     });
@@ -707,4 +839,20 @@
   window.addEventListener("load", function () {
     ScrollTrigger.refresh();
   });
+})();
+
+/* Static build-path trace fallback: when the main module above bails out (GSAP
+   failed to load OR reduced-motion), it does no scroll animation — so draw the
+   snaking line + branches once, fully, so the path still reads. When GSAP is
+   active this block is a no-op (the main module owns the trace). */
+(function () {
+  var reduced = window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var ready = window.gsap && window.ScrollTrigger;
+  if (ready && !reduced) return;
+  function draw() { buildBpTrace(); }
+  if (document.readyState !== "loading") draw();
+  else document.addEventListener("DOMContentLoaded", draw);
+  window.addEventListener("load", draw);
+  window.addEventListener("resize", draw);
 })();
