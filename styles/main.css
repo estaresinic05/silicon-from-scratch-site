@@ -157,6 +157,14 @@ p { margin: 0 0 var(--space-3); }
   display: inline-block;
 }
 
+/* Standard section header: the "Your Path" treatment, made reusable. Apply
+   alongside .kicker (so it keeps the mono uppercase + purple tick), bumping the
+   size up and the text to soft-ink. This is THE section-header font style. */
+.section-title {
+  font-size: clamp(1.15rem, 1.6vw, 1.35rem);
+  color: var(--soft-ink);
+}
+
 /* Inline code / tool names */
 code {
   font-family: var(--font-mono);
@@ -767,7 +775,7 @@ main section[id] { scroll-margin-top: 5rem; }
    colour that .journey__step p applies. We reproduce those two overrides here. */
 .buildpath__title {
   max-width: 980px;
-  margin: 0 auto var(--space-2);
+  margin: -1.25rem auto var(--space-2);   /* nudged up a little */
   padding-inline: var(--space-4);   /* match the path's <ol> padding so the label's
                                         left edge lines up with the first icon */
   font-size: clamp(1.15rem, 1.6vw, 1.35rem);
@@ -2212,3 +2220,392 @@ html.js .buildpath-intro { --rail-progress: 0; }
 /* Drop the engineering-grid texture on the dark theme — just the smooth glow. */
 .theme-dark.theme-dark::before { display: none; }
 
+
+/* ------------------------------------------------------------------ *
+   CHECK-YOURSELF QUIZ — a multiple-choice widget (mirrors the ALU /
+   Logic Gates quiz format): a diagram, answer buttons that turn green
+   (correct) or red (wrong) on click, and a status line.
+ * ------------------------------------------------------------------ */
+.quiz { max-width: 52rem; margin-inline: auto; }
+.quiz__q {
+  font-family: var(--font-body);
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+  font-weight: 400;
+  font-style: italic;
+  text-align: center;
+  margin: 0 0 var(--space-3);
+}
+.quiz__figure { max-width: 48rem; margin: 0 auto var(--space-4); }
+.quiz__options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  counter-reset: quizopt;
+}
+.quiz__opt {
+  counter-increment: quizopt;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  padding: 0.9rem 1.1rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease),
+              border-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+/* Numbered prefix before each choice: 1) 2) 3) 4) */
+.quiz__opt::before {
+  content: counter(quizopt) ")";
+  flex: none;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.quiz__opt:hover { border-color: var(--accent); }
+.quiz__opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Correct pick — light green fill. */
+.quiz__opt.is-correct { background: #86efac; border-color: #86efac; color: #052e16; }
+/* Wrong pick — reddish fill, kept filled after the click. */
+.quiz__opt.is-wrong { background: #e57373; border-color: #e57373; color: #3d0a0a; }
+/* Once solved, lock the buttons so the answered state stays put. */
+.quiz.is-solved .quiz__opt { pointer-events: none; }
+
+.quiz__feedback {
+  min-height: 1.5em;
+  margin: var(--space-3) 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+.quiz__feedback.is-correct { color: #4ade80; }
+.quiz__feedback.is-wrong { color: #f87171; }
+
+/* Revealed only after the correct answer is chosen (toggled by the class). */
+.quiz__next {
+  display: none;
+  margin-top: var(--space-4);
+  justify-content: center;
+}
+.quiz__next.is-shown { display: flex; }
+
+@media (max-width: 560px) {
+  .quiz__options { grid-template-columns: 1fr; }
+}
+
+/* ------------------------------------------------------------------ *
+   FLIP CARD + VERILOG EDITOR — a card whose front sketch flips to an
+   editable Verilog playground on the back. Mirrors the Logic Gates /
+   1-bit ALU flip cards (styles/alu.css); duplicated here because the
+   homepage loads only main.css. Used by the Hands On gated-D-latch card.
+ * ------------------------------------------------------------------ */
+.gate-card { position: relative; perspective: 1200px; }
+/* A standalone flip card (not in a grid) — capped + centred. */
+.gate-card--solo { max-width: 30rem; margin-inline: auto; }
+.gate-card__inner {
+  display: grid;                    /* stack both faces → identical footprint */
+  transform-style: preserve-3d;
+  transition: transform 0.6s var(--ease);
+}
+.gate-card.is-flipped .gate-card__inner { transform: rotateY(180deg); }
+.gate-card__face {
+  grid-area: 1 / 1;                 /* overlap the faces in one cell */
+  position: relative;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.gate-card:not(.is-flipped) .gate-card__face--back { pointer-events: none; }
+.gate-card.is-flipped .gate-card__face--front { pointer-events: none; }
+
+/* Front: the clickable sketch on a paper card (frame = the site's .figure look:
+   paper bg, hairline border, soft shadow), enlarging slightly on hover/focus. */
+.gate-card__face--front {
+  cursor: pointer;
+  margin: 0;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  padding: clamp(var(--space-2), 3vw, var(--space-4));
+  padding-bottom: 2.1rem;           /* room for the flip arrow */
+  transition: transform 0.2s var(--ease);
+  text-align: center;
+}
+.gate-card:not(.is-flipped) .gate-card__face--front:hover,
+.gate-card__face--front:focus-visible { transform: scale(1.045); }
+.gate-card__face--front:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+/* Caption sits below the image, split off by a faint top rule (matches .figure). */
+.gate-card__face--front figcaption {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--hairline);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--soft-ink);
+  text-align: center;
+}
+
+/* Mono eyebrow naming the part at the top of the caption. */
+.gate-name {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+}
+
+/* Two stacked front sketches on a fixed-height white tile that cross-fade on a
+   timer (fixed height so the card never resizes as the image swaps). */
+.latch-swap {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: clamp(12rem, 42vw, 18rem);
+  margin-bottom: var(--space-2);
+  background: #fff;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.latch-swap__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.8s var(--ease);
+}
+.latch-swap__img.is-active { opacity: 1; }
+
+/* Back: a column that fills the card — editor on top, controls below. */
+.gate-card__face--back {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  padding: clamp(var(--space-2), 2.5vw, var(--space-3));
+}
+
+/* A miniature VS Code editor filling the card. */
+.code-editor {
+  margin: 0;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #333;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #1e1e1e;
+  font-family: Consolas, "Courier New", ui-monospace, monospace;
+  text-align: left;
+}
+.code-editor__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.35rem 0.3rem 0.6rem;
+  background: #252526;
+  border-bottom: 1px solid #333;
+  color: #cccccc;
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+}
+.code-editor__glyph {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: none;
+  color: #569cd6;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.code-editor__lang { margin-right: auto; }
+.code-editor__reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.12rem 0.4rem;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  background: none;
+  color: #cccccc;
+  font-family: inherit;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.code-editor__reset:hover { background: #37373d; color: #fff; border-color: #4a4a4a; }
+.code-editor__reset svg {
+  width: 0.8rem;
+  height: 0.8rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.code-editor__body { position: relative; flex: 1; min-height: 5.5rem; overflow: hidden; }
+.code-editor__hl,
+.code-editor__ta {
+  margin: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 0.55rem 0.7rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  letter-spacing: 0;
+  tab-size: 2;
+  white-space: pre;
+}
+.code-editor__hl {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: #d4d4d4;
+  background: #1e1e1e;
+  pointer-events: none;
+}
+.code-editor__hl code { font: inherit; background: none; color: inherit; padding: 0; white-space: inherit; }
+.code-editor__ta {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  resize: none;
+  overflow: auto;
+  color: transparent;
+  background: transparent;
+  caret-color: #d4d4d4;
+}
+.code-editor__ta:focus { outline: none; }
+.code-editor__ta::selection { background: rgba(38, 79, 120, 0.75); color: transparent; }
+/* VS Code Dark+ Verilog token colours. */
+.tok-kw { color: #569cd6; }
+.tok-cm { color: #6a9955; }
+.tok-op { color: #d4d4d4; }
+/* Syntax error — red wavy underline under the offending code (VS Code style). */
+.tok-err {
+  text-decoration: underline wavy #f14c4c;
+  text-decoration-skip-ink: none;
+  text-underline-offset: 2px;
+}
+
+/* Bottom row of the back: the live output box + the return button bottom-right. */
+.gate-card__backrow { display: flex; align-items: stretch; gap: 0.5rem; }
+.gate-card__backrow .gate-sim { flex: 1; min-width: 0; }
+
+/* Output box: a toggle chip per input wire + the live value of the output. */
+.gate-sim {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.02);
+  font-family: var(--font-mono);
+}
+.gate-sim__inputs { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.gate-sim__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.12rem 0.45rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--soft-ink);
+  font: inherit;
+  font-size: 0.68rem;
+  cursor: pointer;
+}
+/* Data inputs (d) keep the purple accent; the control signal (clk) wears the
+   light blue used for the hand-drawn example signals on the diagrams. */
+.gate-sim__chip b { color: var(--accent); font-weight: 600; }
+.gate-sim__chip[data-val="1"] {
+  border-color: var(--accent);
+  color: var(--accent-deep);
+  background: rgba(107, 47, 201, 0.06);
+}
+.gate-sim__chip--control b { color: #4a90d9; }
+.gate-sim__chip--control[data-val="1"] {
+  border-color: #4a90d9;
+  color: #2f6fb0;
+  background: rgba(74, 144, 217, 0.08);
+}
+.gate-sim__out { font-size: 0.82rem; color: var(--soft-ink); white-space: nowrap; }
+.gate-sim__val { font-weight: 600; font-size: 1rem; color: var(--accent-deep); }
+.gate-sim__val[data-bad="1"] { color: var(--soft-ink); }
+.gate-card__return {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.3rem;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  color: var(--accent);
+  cursor: pointer;
+}
+.gate-card__return:hover { border-color: var(--accent); background: rgba(107, 47, 201, 0.06); }
+.gate-card__return svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Flip arrow on the front — bottom-right square box. */
+.gate-card__flip {
+  position: absolute;
+  right: 0.7rem;
+  bottom: 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  color: var(--accent);
+  pointer-events: none;
+}
+.gate-card__flip svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gate-card__inner,
+  .gate-card__face--front,
+  .latch-swap__img { transition: none; }
+}

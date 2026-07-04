@@ -327,86 +327,99 @@
      </div>
     </section>
 
-    <!-- ========================== WHAT YOU'LL FIND ====================== -->
-    <section class="section findings-section" id="inside" data-menu="What You'll Find" aria-labelledby="inside-title">
+    <!-- ============================= HANDS ON =========================== -->
+    <section class="section findings-section" id="inside" data-menu="Hands On" aria-labelledby="inside-title">
       <div class="container">
         <div class="section__head">
-          <p class="kicker">What you'll find</p>
-          <h2 id="inside-title">Every design is built to be opened up.</h2>
+          <p class="kicker section-title" id="inside-title">Hands on</p>
         </div>
 
-        <ul class="findings">
-          <li class="finding">
-            <span class="finding__num">01 / RTL</span>
-            <h3>The design itself</h3>
-            <p>
-              Synthesizable Verilog/SystemVerilog for the datapath, control unit,
-              register file, ALU, and memory.
-            </p>
-          </li>
-          <li class="finding">
-            <span class="finding__num">02 / Testbenches</span>
-            <h3>Proof it's correct</h3>
-            <p>
-              Self-checking verification, including lockstep comparison against an
-              independent golden model.
-            </p>
-          </li>
-          <li class="finding">
-            <span class="finding__num">03 / Waveforms</span>
-            <h3>See it happen</h3>
-            <p>
-              VCD traces that let you watch behavior cycle by cycle.
-            </p>
-          </li>
-          <li class="finding">
-            <span class="finding__num">04 / Programs</span>
-            <h3>What it runs</h3>
-            <p>
-              RISC-V machine-code test programs exercising arithmetic, logic,
-              memory, and control flow.
-            </p>
-          </li>
-          <li class="finding finding--cta">
-            <span class="finding__num">05 / Interactive Tools</span>
-            <h3><a class="finding__link" href="alu/">Try it <span aria-hidden="true">&rarr;</span></a></h3>
-            <p>
-              Live, in-browser explorers &mdash; like the ALU datapath
-              visualizer &mdash; that let you pick an operation and watch the
-              active hardware light up as you go.
-            </p>
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- ================================ TOOLS =========================== -->
-    <section class="section tools" id="tools" data-menu="Tools" aria-labelledby="tools-title">
-      <div class="container">
-        <div class="section__head">
-          <p class="kicker">Tools</p>
-          <h2 id="tools-title">You can start for free.</h2>
-        </div>
-        <div class="prose">
-          <p>
-            The core projects run on free, open-source tools — no licenses, no
-            cost: <code>Icarus Verilog</code> for simulation and
-            <code>GTKWave</code> / <code>EPWave</code> for inspecting waveforms.
-            The advanced physical-design track uses the professional
-            <code>Cadence</code> suite — useful to know it exists, but you don't
-            need it to learn the fundamentals or to get started.
-          </p>
-          <p>
-            Getting set up is essentially one download: the Icarus Verilog
-            installer bundles <code>GTKWave</code> too, so you can simulate and
-            inspect waveforms right away.
-          </p>
-          <div class="tools__actions">
-            <a class="btn btn--ghost" href="setuphelp/">
-              How to install Icarus Verilog
-              <span aria-hidden="true">&rarr;</span>
-            </a>
+        <!-- Flip card: the front sketch cross-fades between two gated-D-latch
+             images every 7s; click it to flip to an editable Verilog editor. -->
+        <div class="gate-card gate-card--solo" id="latch-card" data-control="clk">
+          <div class="gate-card__inner">
+            <figure class="figure gate-card__face gate-card__face--front" role="button" tabindex="0"
+                    aria-label="Gated D-latch diagram. Activate to open an editable Verilog module.">
+              <span class="latch-swap">
+                <img class="latch-swap__img is-active" src="assets/home/gated-d-latch-cover.jpg"
+                     alt="Cover illustration of a gated D-latch." decoding="async" />
+                <img class="latch-swap__img" src="assets/home/gated-d-latch.jpg"
+                     alt="Logic schematic of a gated D-latch." decoding="async" />
+              </span>
+              <figcaption>
+                <span class="gate-name">Gated D-latch</span>
+                <strong>Stores a single bit</strong> — while <code>clk</code> is high the
+                output follows <code>d</code>; when it drops low, it holds the last value.
+              </figcaption>
+              <span class="gate-card__flip" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
+              </span>
+            </figure>
+            <div class="gate-card__face gate-card__face--back">
+              <figure class="code-editor">
+                <figcaption class="code-editor__bar">
+                  <svg class="code-editor__glyph" viewBox="0 0 24 24"><path d="m9 8-4 4 4 4"/><path d="m15 8 4 4-4 4"/></svg>
+                  <span class="code-editor__lang">Verilog HDL</span>
+                  <button class="code-editor__reset" type="button" aria-label="Reset the code to the original">
+                    <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/></svg>
+                    Reset
+                  </button>
+                </figcaption>
+                <div class="code-editor__body">
+                  <pre class="code-editor__hl" aria-hidden="true"><code><span class="tok-kw">module</span> gated_d_latch (
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> d,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> clk,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>  q
+);
+    <span class="tok-cm">// transparent while clk is high; holds when low</span>
+    <span class="tok-kw">always</span> @(*)
+        if (clk)
+            q = d;
+<span class="tok-kw">endmodule</span></code></pre>
+                  <textarea class="code-editor__ta" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-label="Editable Verilog module for a gated D-latch">module gated_d_latch (
+    input  wire d,
+    input  wire clk,
+    output reg  q
+);
+    // transparent while clk is high; holds when low
+    always @(*)
+        if (clk)
+            q = d;
+endmodule</textarea>
+                </div>
+              </figure>
+              <div class="gate-card__backrow">
+                <div class="gate-sim">
+                  <div class="gate-sim__inputs"></div>
+                  <div class="gate-sim__out"><span class="gate-sim__lhs">q</span> = <span class="gate-sim__val">0</span></div>
+                </div>
+                <button class="gate-card__return" type="button" aria-label="Back to the gated D-latch diagram">
+                  <svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/></svg>
+                </button>
+              </div>
+            </div>
           </div>
+        </div>
+
+        <div class="quiz" id="quiz">
+          <p class="quiz__q">For each sequence below, state whether it must stall,
+            can avoid stalls using only forwarding, or can execute without
+            stalling or forwarding.</p>
+
+          <figure class="figure figure--photo quiz__figure">
+            <img src="assets/home/check-yourself.jpg"
+                 alt="Three short RISC-V instruction sequences (A, B, and C) that each set up a data hazard between successive instructions in the pipeline."
+                 decoding="async" />
+          </figure>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button" data-correct="true">A: must stall<br>B: avoid stalls using forwarding<br>C: no stalls even without forwarding</button>
+            <button class="quiz__opt" type="button">A: avoid stalls using forwarding<br>B: must stall<br>C: no stalls even without forwarding</button>
+            <button class="quiz__opt" type="button">A: no stalls even without forwarding<br>B: avoid stalls using forwarding<br>C: must stall</button>
+            <button class="quiz__opt" type="button">A: avoid stalls using forwarding<br>B: must stall<br>C: no stalls even without forwarding</button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
         </div>
       </div>
     </section>
@@ -434,5 +447,40 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
   <!-- Scroll-driven motion (Phase 2). Relative path — domain-ready. -->
   <script src="scripts/scroll.js" defer></script>
+
+  <!-- Editable Verilog flip cards: parse + evaluate the code live (chips,
+       output value, output-name label, and a red squiggle on syntax errors),
+       and cross-fade the gated-D-latch front images. -->
+  <script src="scripts/verilog-mini.js" defer></script>
+  <script src="scripts/gate-card.js" defer></script>
+
+  <!-- "Check yourself" quiz: colour the chosen answer and show feedback; the
+       first option is the correct one (data-correct). -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          if (next) next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+        } else {
+          btn.classList.add("is-wrong");
+          feedback.textContent = "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>

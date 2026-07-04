@@ -697,6 +697,12 @@
 .tok-kw { color: #569cd6; }              /* keywords: input / output / wire / assign */
 .tok-cm { color: #6a9955; }              /* comments */
 .tok-op { color: #d4d4d4; }              /* operators */
+/* Syntax error — red wavy underline under the offending code (VS Code style). */
+.tok-err {
+  text-decoration: underline wavy #f14c4c;
+  text-decoration-skip-ink: none;
+  text-underline-offset: 2px;
+}
 
 /* Bottom row of the back: the output box + the return button at bottom-right.
    The output box flexes but leaves room for the button. */
