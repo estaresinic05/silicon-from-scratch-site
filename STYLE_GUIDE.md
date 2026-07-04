@@ -15,18 +15,23 @@ Base design tokens (`--accent`, `--soft-ink`, `--paper`, `--ink`, `--hairline`,
 **The site is a single layout that scales fluidly with the viewport — the same
 structure at *every* screen size, just larger or smaller.** It does **not** reflow
 into a different mobile layout, and it does **not** hide anything on small screens.
-Small screens show a shrunken version of the desktop design; large screens show an
-enlarged version. This is deliberate — inconsistent per-breakpoint reflowing was
-causing rendering bugs, so we removed it.
+Small screens show a shrunken version of the desktop design. This is deliberate —
+inconsistent per-breakpoint reflowing was causing rendering bugs, so we removed it.
+
+**Large-screen enlarging is deferred.** The root font is currently capped at the
+normal 16px baseline, so big monitors render at their standard size (no growing) —
+we only scale *down* for now. Turning enlarging back on later is a one-line change
+(raise the `clamp()` ceiling below).
 
 ### How the scaling works
 
 - **One knob: a fluid root font-size.** `html { font-size: clamp(12px, 6.5px +
-  0.66vw, 20px); }` — ~16px around a 1440px screen, shrinking toward a 12px floor
-  on phones and up to 20px on very large screens. **Because the whole design is
+  0.66vw, 16px); }` — 16px at ~1440px and above, shrinking toward a 12px floor on
+  phones. (The `16px` ceiling is the temporary "don't enlarge yet" cap; it was
+  `20px` when large-screen enlarging is enabled.) **Because the whole design is
   sized in `rem`** (the `--space-*` scale, `--maxw`/`--maxw-prose`, and type),
-  scaling this one value **scales the entire layout up and down together.** That's
-  what "same layout, just resized" means here.
+  scaling this one value **scales the entire layout together.** That's what "same
+  layout, just resized" means here.
 - So: **size everything in `rem`** (or `em`), and widths in `%` / `fr` / `rem`.
   This is what lets a component grow on a 4K monitor and shrink on a phone without
   any new media query. Fixed `px` is only for things that should NOT scale —
@@ -58,8 +63,12 @@ causing rendering bugs, so we removed it.
   horizontal nav can't fit) — this is chrome, not content.
 - **Editable code textareas** go read-only on touch (poor phone UX) — the widget
   stays fully *viewable*, nothing is removed.
-- **The "Your Path" serpentine** is a JS-drawn trace currently tuned for wide
-  layouts; treat any change to its small-screen behaviour as dedicated work.
+- **The "Your Path" serpentine's left explainer paragraphs** are hidden below the
+  two-column breakpoint (`max-width: 1079px`). The serpentine trace + its nodes
+  themselves show at **every** width (full-width on phones); only the side prose
+  column drops, because two columns of prose + path can't both fit narrow. The
+  JS trace (`buildBpTrace` in `scroll.js`) now draws at all widths and simply
+  omits the branch lines when the paragraphs are hidden.
 
 Add a new exception here **only** with a clear reason — the default is always
 "same layout, just resized."

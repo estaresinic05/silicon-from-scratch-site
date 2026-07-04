@@ -22,9 +22,14 @@ function buildBpTrace(managed) {
   if (!svg) return null;
   var NS = "http://www.w3.org/2000/svg";
   var snake = svg.querySelector(".bp-trace__snake");
-  var lines = Array.prototype.slice.call(layout.querySelectorAll(
+  /* The explainer paragraphs feed the branch lines — but they're hidden below
+     the two-column breakpoint (phones/tablets), where the serpentine stands on
+     its own. When they're hidden, use no lines so no branches get drawn. */
+  var introEl = layout.querySelector(".buildpath-intro");
+  var introShown = introEl && getComputedStyle(introEl).display !== "none";
+  var lines = introShown ? Array.prototype.slice.call(layout.querySelectorAll(
     ".buildpath-intro__lead, .buildpath-intro__sub, .buildpath-intro__note," +
-    " .buildpath-intro__code, .buildpath-intro__end"));
+    " .buildpath-intro__code, .buildpath-intro__end")) : [];
 
   /* One reusable branch <path> per explainer line — kept stable across rebuilds
      so the scroll timeline can keep referencing the same elements. */
@@ -38,15 +43,16 @@ function buildBpTrace(managed) {
   }
   while (branchPaths.length > lines.length) { branchPaths.pop().remove(); }
 
-  if (!window.matchMedia("(min-width: 1080px)").matches) {
+  /* The serpentine now draws at EVERY width (phones included). Bail only if the
+     layout hasn't been laid out yet — nothing to measure. */
+  var lr = layout.getBoundingClientRect();
+  if (lr.width < 1) {
     snake.removeAttribute("d");
     branchPaths.forEach(function (p) { p.removeAttribute("d"); });
     Array.prototype.slice.call(svg.querySelectorAll(".bp-trace__seg"))
       .forEach(function (p) { p.removeAttribute("d"); });
     return null;
   }
-
-  var lr = layout.getBoundingClientRect();
   svg.setAttribute("viewBox", "0 0 " + lr.width + " " + lr.height);
   var f = function (n) { return n.toFixed(1); };
   var frames = Array.prototype.slice.call(layout.querySelectorAll(".bp-frame"));
@@ -80,9 +86,10 @@ function buildBpTrace(managed) {
      points push out well past the node lane (alternating right, then left) so
      each turn eats up the page width, then curls back to meet the next node's
      entry side dead level. */
-  var H = Math.max(74, lr.width * 0.17);    // how far each connector bows sideways
-                                            // (smaller = a slightly shorter path,
-                                            //  same entry/exit points on each graphic)
+  /* How far each connector bows sideways. On phones/tablets the path is full
+     width, so a big bow would spill off-screen — scale it down there; on wide
+     desktops keep the generous swing. */
+  var H = lr.width < 900 ? lr.width * 0.12 : Math.max(74, lr.width * 0.17);
   /* One <path> PER connector (the gap between two graphics). The segment THROUGH
      each graphic stays snipped out. We use a separate element per connector
      rather than one path with pen-lifts, because a browser restarts the dash
@@ -266,16 +273,9 @@ function buildBpTrace(managed) {
     reveal(".buildpath__kicker", ".buildpath__kicker", { y: 16, start: "top 88%", duration: 0.6 });
   }
   var bpDesktop = window.matchMedia("(min-width: 1080px)").matches;
-  gsap.utils.toArray(".bp-step").forEach(function (step) {
-    /* On desktop each node is revealed by the trace timeline below, timed to the
-       moment the growing line reaches it; narrower widths fade in on scroll. */
-    if (!bpDesktop) reveal(step, step, { y: 28, start: "top 82%", duration: 0.7 });
-  });
-  gsap.utils.toArray(".bp-arrow").forEach(function (arr) {
-    /* On desktop the arrows are invisible spacers (the .bp-trace line connects
-       the nodes); on narrower widths, fade the ↓ glyph in as before. */
-    if (!bpDesktop) reveal(arr, arr, { y: 8, start: "top 88%", duration: 0.5 });
-  });
+  /* The serpentine (nodes fade in on their own scroll triggers; arrows are
+     invisible spacers the trace line bridges) now runs at EVERY width — see the
+     block below — so there's no separate per-step reveal here anymore. */
   gsap.utils.toArray(".bp-tag").forEach(function (tag) {
     reveal(tag, tag, { y: 12, start: "top 86%", duration: 0.6 });
   });
@@ -283,8 +283,10 @@ function buildBpTrace(managed) {
   /* ---- The single snaking trace (desktop): the line grows down as the section
          scrolls, and everything is timed TO it — each node fades in and each
          branch draws out (with its explainer line) exactly as the line reaches
-         that point. One scrubbed timeline drives it all. ---- */
-  if (bpDesktop) {
+         that point. One scrubbed timeline drives it all. Runs at every width now
+         (on phones the branches/paragraphs are absent, so it's just the line +
+         node fades). ---- */
+  if (document.querySelector(".buildpath-section")) {
     var bpSectionEl = document.querySelector(".buildpath-section");
     var bpSteps = gsap.utils.toArray(".bp-step");
     var bpTL = null;
@@ -319,7 +321,7 @@ function buildBpTrace(managed) {
 
       /* The opening branch draws FIRST — paragraph out to the first graphic — and
          the main line is HELD until it lands there. */
-      var SNAKE_START = 0.10;                 // main path waits here (branch reaches graphic 1)
+      var SNAKE_START = info.branches.length ? 0.10 : 0;   // no branches (phones): start the line at 0
       var SNAKE_DUR   = 1 - SNAKE_START;
       var reach = function (frac) { return SNAKE_START + (frac || 0) * SNAKE_DUR; };
       /* Hide each line by offsetting a hair PAST its length, so its round end-cap
@@ -376,7 +378,7 @@ function buildBpTrace(managed) {
          scroll. On desktop they're revealed by the trace timeline above, timed
          to the branch that reaches out to them. ---- */
   var bpIntro = document.querySelector(".buildpath-intro");
-  if (bpIntro && !bpDesktop) {
+  if (bpIntro && !bpDesktop && getComputedStyle(bpIntro).display !== "none") {
     gsap.utils.toArray(bpIntro.querySelectorAll(
       ".buildpath-intro__lead, .buildpath-intro__sub, .buildpath-intro__note, .buildpath-intro__code, .buildpath-intro__end"
     )).forEach(function (line) {

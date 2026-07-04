@@ -115,7 +115,7 @@
         computing.
       </p>
       <div class="hero__actions">
-        <a class="btn btn--primary" href="alu/">Start with the ALU</a>
+        <button class="btn btn--primary js-open-proj-dir" type="button">Open Project Directory</button>
         <a class="btn btn--ghost"
            href="https://github.com/estaresinic05/Silicon-From-Scratch"
            target="_blank" rel="noopener">View on GitHub</a>
@@ -564,8 +564,8 @@ endmodule</textarea>
             reading about it! Get going!
           </p>
           <div class="getstarted__cta">
-            <button class="btn btn--primary" type="button" id="open-proj-dir">
-              Open the Project Directory
+            <button class="btn btn--primary js-open-proj-dir" type="button" id="open-proj-dir">
+              Open Project Directory
             </button>
             <a class="btn btn--ghost" href="setuphelp/#icarus">Tools Setup Help</a>
           </div>
@@ -637,19 +637,48 @@ endmodule</textarea>
   })();
   </script>
 
-  <!-- "How to get started": the button opens the same Project Directory drawer
-       that the ☰ / hamburger opens (main.js owns it) by forwarding the click. -->
+  <!-- "Open Project Directory" buttons (hero CTA + "How to get started"): open
+       the same Project Directory drawer the ☰ / hamburger opens (main.js owns
+       it) by forwarding the click. -->
   <script>
   (function () {
-    var b = document.getElementById("open-proj-dir");
-    if (!b) return;
-    b.addEventListener("click", function () {
-      // Drop the (auto-hidden) top bar back down, then open its drawer.
-      var bar = document.querySelector(".topbar");
-      if (bar) bar.classList.remove("is-hidden");
-      var t = document.querySelector(".toc__btn");
-      if (t) t.click();
-    });
+    // Both the hero CTA and the "How to get started" button open the same
+    // Project Directory drawer that the ☰ / hamburger opens (main.js owns it).
+    var btns = document.querySelectorAll(".js-open-proj-dir");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener("click", function () {
+        // Drop the (auto-hidden) top bar back down, then open its drawer.
+        var bar = document.querySelector(".topbar");
+        if (bar) bar.classList.remove("is-hidden");
+        var t = document.querySelector(".toc__btn");
+        if (t) t.click();
+      });
+    }
+  })();
+  </script>
+
+  <!-- Interactive Waveforms placement: on phones/smaller devices the widget
+       moves out of the right Hands On column to become a full-width row of its
+       own (the wide timing diagram needs the room); on larger screens it lives
+       back in the column. Moving the node keeps its already-built SVG intact. -->
+  <script>
+  (function () {
+    var wave = document.querySelector(".aluwave");
+    var grid = document.querySelector(".handson-grid");
+    if (!wave || !grid) return;
+    var col = wave.parentNode;              // its larger-screen home (right column)
+    var mq = window.matchMedia("(max-width: 820px)");
+    function place() {
+      if (mq.matches) {
+        if (wave.parentNode !== grid) grid.appendChild(wave);   // full-width row
+      } else if (wave.parentNode !== col) {
+        col.appendChild(wave);                                  // back in the column
+      }
+      if (window.ScrollTrigger) window.ScrollTrigger.refresh();
+    }
+    place();
+    if (mq.addEventListener) mq.addEventListener("change", place);
+    else if (mq.addListener) mq.addListener(place);
   })();
   </script>
 </body>
