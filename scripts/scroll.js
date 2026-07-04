@@ -155,19 +155,18 @@ function buildBpTrace(managed) {
        start on the card's edge rather than under it. */
     var bp = branchPaths[idx], d;
     if (idx === 1) {
-      /* nearest LEFT-lane (even) node — the ALU. A plain curve to it would slice
-         the serpentine, so bow out to the left of the snake's reach: leave the
-         card edge, swing into the corridor left of the main path, then up to the
-         text — never crossing the main path. */
+      /* Attach to the nearest LEFT-lane (even) node — the ALU — rather than a
+         right-lane node it would otherwise slice across to reach. Use the SAME
+         smooth curve as the other branches (control points between the node and
+         the text, no leftward overshoot), so the tip lands cleanly with no hook. */
       var best = 0;
       for (var k = 2; k < pts.length; k += 2) {
         if (Math.abs(pts[k].y - ay) < Math.abs(pts[best].y - ay)) best = k;
       }
       ni = best;
-      var e1 = nodes[ni].left;
-      var bow = ax - Math.max(70, (e1.x - ax) * 0.6);
+      var e1 = nodes[ni].left, mx1 = (ax + e1.x) / 2;
       d = "M " + f(e1.x) + " " + f(e1.y) +
-          " C " + f(bow) + " " + f(e1.y) + ", " + f(bow) + " " + f(ay) +
+          " C " + f(mx1) + " " + f(e1.y) + ", " + f(mx1) + " " + f(ay) +
           ", " + f(ax) + " " + f(ay);
     } else if (idx === 0) {
       /* draw paragraph -> main path (reverse of the others), landing on the edge */
@@ -288,6 +287,20 @@ function buildBpTrace(managed) {
     var bpSteps = gsap.utils.toArray(".bp-step");
     var bpTL = null;
 
+    /* Each graphic fades in on its OWN scroll position — consistently, as it
+       enters the lower part of the viewport — rather than being timed to the
+       drawing line (which made them appear at differing screen heights). These
+       triggers are created once and are independent of the scrubbed line
+       timeline (which is rebuilt on resize). */
+    bpSteps.forEach(function (step, i) {
+      /* The Single Cycle CPU graphic onward (index 3+) were reading as too early,
+         so they fade in a touch later than the first three. */
+      var start = i >= 3 ? "top 55%" : "top 80%";
+      gsap.fromTo(step, { opacity: 0, y: 26 },
+        { opacity: 1, y: 0, duration: 0.6, ease: EASE,
+          scrollTrigger: { trigger: step, start: start } });
+    });
+
     var setupBpTL = function () {
       var info = buildBpTrace(true);          // managed: leave the dash offsets to GSAP
       if (!info || !info.snakeLen || !bpSectionEl) return;
@@ -330,12 +343,8 @@ function buildBpTrace(managed) {
           { strokeDashoffset: 0, ease: "none", duration: Math.max(0.0001, t1 - t0) }, t0);
       });
 
-      /* Each node pops in just as the (now slower) line reaches it. */
-      bpSteps.forEach(function (step, i) {
-        var at = Math.max(0, reach(info.nodeReach[i]) - 0.09);
-        bpTL.fromTo(step, { opacity: 0, y: 26 },
-          { opacity: 1, y: 0, ease: "power2.out", duration: 0.09 }, at);
-      });
+      /* (Node graphics fade in on their own scroll triggers — see above — for a
+         consistent reveal height, independent of the line's progress.) */
 
       /* Each remaining branch draws + its paragraph fades as the line reaches its
          node (branch 0 was handled above). */

@@ -732,11 +732,24 @@ main section[id] { scroll-margin-top: 5rem; }
     transform: translateX(clamp(-3.75rem, 6.5vw - 124px, -0.5rem));
   }
   .buildpath-main { min-width: 0; }
-  /* Path + its title sit flush inside their column (the grid handles centring). */
-  .buildpath-main .buildpath,
-  .buildpath-main .buildpath__title { margin-inline: 0; max-width: none; padding-inline: 0; }
-  /* Centre the "YOUR PATH" eyebrow over the serpentine column. */
-  .buildpath-main .buildpath__title { justify-content: center; }
+  /* Path sits flush inside its column (the grid handles centring). */
+  .buildpath-main .buildpath { margin-inline: 0; max-width: none; padding-inline: 0; }
+  /* Centre the "YOUR PATH" eyebrow over the WHOLE layout (≈ the screen middle),
+     not just the serpentine column: lift it out of the right column's flow and
+     stretch it across the full layout width so its tick + text land dead centre.
+     The layout reserves top room for it. */
+  .buildpath-layout { padding-top: clamp(2.4rem, 4vw, 3.4rem); }
+  .buildpath-main .buildpath__title {
+    position: absolute;
+    top: -1.6rem;                    /* nudge the eyebrow up */
+    left: var(--space-4);            /* align with the layout's content left edge */
+    right: 0;
+    z-index: 2;                       /* above the .bp-trace overlay */
+    margin: 0;
+    padding: 0;
+    max-width: none;
+    justify-content: flex-start;      /* left-justified, matching the Hands On eyebrow */
+  }
 
   /* The explainer lines sit as a left column, spread down the full height so
      each lands beside the point on the path its branch taps into. The old
@@ -2219,6 +2232,70 @@ html.js .buildpath-intro { --rail-progress: 0; }
 
 /* Drop the engineering-grid texture on the dark theme — just the smooth glow. */
 .theme-dark.theme-dark::before { display: none; }
+
+
+/* ------------------------------------------------------------------ *
+   HANDS ON — an intro line, then a two-up grid of interactive widgets,
+   slightly staggered up/down for a livelier, non-grid feel. Built to hold
+   more widgets over time (they flow left/right down the grid).
+ * ------------------------------------------------------------------ */
+/* Pull the Hands On section up (less top padding than a stock section). */
+.findings-section { padding-top: var(--space-5); }
+.handson-intro {
+  max-width: 60rem;
+  margin: 0 auto var(--space-5);
+  text-align: center;
+  color: var(--soft-ink);
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+  line-height: 1.6;
+}
+.handson-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+}
+/* Widgets fill their column rather than their own centred max-widths. */
+.handson-grid > * { width: 100%; }
+.handson-grid .quiz { max-width: none; margin-inline: 0; }
+/* The gated D-latch card is kept smaller and centred within its cell. */
+.handson-grid .gate-card--solo { max-width: 23rem; margin-inline: auto; }
+
+/* ALU datapath explorer in the grid: stack it (datapath on top, control panel
+   directly below) and fit the diagram to the cell width. */
+.handson-grid .alu-widget { display: block; margin-top: 0; }
+.handson-grid .alu-widget__stage { width: auto; justify-self: stretch; margin-inline: 0; }
+.handson-grid #alu-diagram { width: 100%; height: auto; }   /* fill width; height follows 685:970 */
+.handson-grid .alu-panel { margin-top: var(--space-3); }
+/* White cards + light diagram colours on the dark home theme (mirrors the ALU
+   page's #explore treatment) so the schematic reads on a white stage. */
+.handson-grid .alu-panel,
+.handson-grid .alu-widget__stage {
+  --paper:       #FCFCF9;
+  --ink:         #23232A;
+  --soft-ink:    #56565F;
+  --accent:      #6B2FC9;
+  --accent-deep: #4F1F9E;
+  --hairline:    rgba(35, 35, 42, 0.12);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.32);
+}
+.handson-grid .alu-widget__stage {
+  --alu-active:   var(--accent);
+  --alu-active-2: var(--accent-deep);
+  --alu-invert:   var(--accent);
+  --alu-idle-ink: var(--soft-ink);
+}
+@media (min-width: 900px) {
+  .handson-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2rem, 4vw, 3.75rem);
+    align-items: start;
+  }
+  /* Stagger the right column down a little. */
+  .handson-grid > :nth-child(even) { margin-top: clamp(2.5rem, 6vw, 4.5rem); }
+  /* In a half-width cell the answer choices read better stacked. */
+  .handson-grid .quiz__options { grid-template-columns: 1fr; }
+}
 
 
 /* ------------------------------------------------------------------ *

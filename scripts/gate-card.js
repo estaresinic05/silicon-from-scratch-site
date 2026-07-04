@@ -32,16 +32,26 @@
 
     function isControl(n) { for (var i = 0; i < controls.length; i++) if (controls[i] === n) return true; return false; }
 
+    /* On phones/tablets the editor is view-only: you can flip the card and read
+       the code + output bar, but not type (a code textarea is poor mobile UX and
+       pops the on-screen keyboard). readOnly blocks edits and suppresses the
+       keyboard while still allowing scroll/selection. */
+    var noType = window.matchMedia ? window.matchMedia("(max-width: 768px)") : null;
+    function applyNoType() { ta.readOnly = !!(noType && noType.matches); }
+    applyNoType();
+    if (noType && noType.addEventListener) noType.addEventListener("change", applyNoType);
+    else if (noType && noType.addListener) noType.addListener(applyNoType);
+
     function flipTo(showBack) {
       card.classList.toggle("is-flipped", showBack);
-      if (showBack) ta.focus(); else front.focus();
+      if (showBack) { if (!ta.readOnly) ta.focus(); } else front.focus();
     }
     front.addEventListener("click", function () { flipTo(true); });
     front.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") { e.preventDefault(); flipTo(true); }
     });
     if (ret) ret.addEventListener("click", function () { flipTo(false); });
-    if (resetBtn) resetBtn.addEventListener("click", function () { ta.value = original; state = {}; refresh(); ta.focus(); });
+    if (resetBtn) resetBtn.addEventListener("click", function () { ta.value = original; state = {}; refresh(); if (!ta.readOnly) ta.focus(); });
 
     // Keep the highlighted underlay scrolled in step with the textarea.
     ta.addEventListener("scroll", function () { hlEl.scrollTop = ta.scrollTop; hlEl.scrollLeft = ta.scrollLeft; });
