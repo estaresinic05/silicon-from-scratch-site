@@ -95,6 +95,13 @@
 
 /* Named-operation presets — a tidy 2-up grid of flat chips */
 .alu-presets { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+/* 7 presets leave the last one (NAND) alone on the bottom row — span both
+   columns and centre it at a single chip's width, below slt / NOR. */
+.alu-presets .alu-preset:last-child {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: calc(50% - 0.2rem);   /* one column: (100% - 0.4rem gap) / 2 */
+}
 .alu-preset {
   font-family: var(--font-mono);
   font-size: 0.74rem;

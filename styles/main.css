@@ -2067,11 +2067,18 @@ html.js .bp-step,
 html.js .epigraph blockquote,
 html.js .ladder .step,
 html.js .findings .finding,
+html.js .handson-col > *,
+html.js .handson-intro,
+html.js .getstarted__lead,
+html.js .getstarted__cta,
 html.js .page-logic .prose > *,
 html.js .page-logic .checklist > *,
 html.js .page-logic .table-wrap {
   opacity: 0;
 }
+/* Figures nested inside a Hands On widget ride their card's own reveal, so they
+   aren't hidden/animated separately (scroll.js skips them). */
+html.js .handson-grid .figure { opacity: 1; }
 /* (.aboutme content is revealed by a CSS animation on the About page itself, so
    it doesn't wait on the deferred GSAP CDN — see about/index.html.) */
 
@@ -2117,6 +2124,10 @@ html.js .buildpath-intro { --rail-progress: 0; }
   html.js .buildpath-intro__code,
   html.js .buildpath-intro__end,
   html.js .findings .finding,
+  html.js .handson-col > *,
+  html.js .handson-intro,
+  html.js .getstarted__lead,
+  html.js .getstarted__cta,
   html.js .page-logic .prose > *,
   html.js .page-logic .checklist > *,
   html.js .page-logic .table-wrap,
@@ -2240,14 +2251,19 @@ html.js .buildpath-intro { --rail-progress: 0; }
    more widgets over time (they flow left/right down the grid).
  * ------------------------------------------------------------------ */
 /* Pull the Hands On section up (less top padding than a stock section). */
-.findings-section { padding-top: var(--space-5); }
+/* Extra breathing room above Hands On so it sits clear of the end of Your Path
+   (roughly the title-to-first-card distance). */
+.findings-section { padding-top: var(--space-5); margin-top: clamp(7rem, 14.5vw, 12rem); }
 .handson-intro {
   max-width: 60rem;
   margin: 0 auto var(--space-5);
   text-align: center;
-  color: var(--soft-ink);
-  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
-  line-height: 1.6;
+  /* Same text style as the "Start with the basics…" line in Your Path. */
+  font-family: var(--font-body);
+  font-size: clamp(1.1rem, 1.35vw, 1.3rem);
+  line-height: 1.62;
+  letter-spacing: 0;
+  color: var(--ink);
 }
 .handson-grid {
   display: grid;
@@ -2256,19 +2272,44 @@ html.js .buildpath-intro { --rail-progress: 0; }
 }
 /* Widgets fill their column rather than their own centred max-widths. */
 .handson-grid > * { width: 100%; }
+/* Each side is its own column that stacks its widgets independently (a masonry
+   layout), so the two columns pack tightly no matter how tall the other is. */
+.handson-col { display: flex; flex-direction: column; gap: clamp(1.75rem, 3vw, 2.75rem); min-width: 0; }
+/* Title in the top-left of each Hands On widget card — the display face used by
+   the section headings (e.g. "Check Yourself" on the Logic Gates page). */
+.hoi-title {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--ink);
+  font-size: clamp(1.15rem, 1.7vw, 1.4rem);
+  text-align: center;
+  margin: 0 0 var(--space-3);
+}
+.aluwave .hoi-title { margin-bottom: 0; }   /* the card's flex gap sets the spacing */
 .handson-grid .quiz { max-width: none; margin-inline: 0; }
 /* The gated D-latch card is kept smaller and centred within its cell. */
-.handson-grid .gate-card--solo { max-width: 23rem; margin-inline: auto; }
+.handson-grid .gate-card--solo { max-width: 29rem; margin-inline: auto; }
 
-/* ALU datapath explorer in the grid: stack it (datapath on top, control panel
-   directly below) and fit the diagram to the cell width. */
-.handson-grid .alu-widget { display: block; margin-top: 0; }
-.handson-grid .alu-widget__stage { width: auto; justify-self: stretch; margin-inline: 0; }
-.handson-grid #alu-diagram { width: 100%; height: auto; }   /* fill width; height follows 685:970 */
-.handson-grid .alu-panel { margin-top: var(--space-3); }
-/* White cards + light diagram colours on the dark home theme (mirrors the ALU
-   page's #explore treatment) so the schematic reads on a white stage. */
-.handson-grid .alu-panel,
+/* ALU datapath explorer in the grid: the datapath + the control panel share ONE
+   card, styled exactly like the Check Yourself card (paper bg, hairline border,
+   soft shadow, rounded). The datapath keeps its own white plate inside so the
+   schematic — drawn with dark ink/idle colours — stays legible on the dark card;
+   the control panel sits straight on the card and reads in the dark theme. */
+.handson-grid .alu-widget {
+  display: block;
+  margin-top: 0;
+  /* Same card as .quiz. */
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: clamp(var(--space-4), 5vw, var(--space-5));
+  box-shadow: var(--shadow-soft);
+}
+/* The datapath's white plate: light tokens so the schematic reads dark-on-white,
+   flush to the top of the card and filling its full width. */
 .handson-grid .alu-widget__stage {
   --paper:       #FCFCF9;
   --ink:         #23232A;
@@ -2276,25 +2317,208 @@ html.js .buildpath-intro { --rail-progress: 0; }
   --accent:      #6B2FC9;
   --accent-deep: #4F1F9E;
   --hairline:    rgba(35, 35, 42, 0.12);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.32);
-}
-.handson-grid .alu-widget__stage {
   --alu-active:   var(--accent);
   --alu-active-2: var(--accent-deep);
   --alu-invert:   var(--accent);
   --alu-idle-ink: var(--soft-ink);
+  width: auto;
+  margin: 0;
+  justify-self: stretch;
+  background: #FCFCF9;
+  border: 1px solid rgba(35, 35, 42, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem;
 }
+.handson-grid #alu-diagram { width: 100%; height: auto; }   /* fill width; height follows 685:970 */
+/* The control panel: transparent on the shared card, offset by a hairline. */
+.handson-grid .alu-panel {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: var(--space-3) 0 0;
+  margin-top: var(--space-3);
+  border-top: 1px solid var(--hairline);
+  gap: var(--space-3);
+}
+/* Trim the control panel down a notch to sit comfortably in the grid cell. */
+.handson-grid .alu-controls__group { gap: 0.45rem; }
+.handson-grid .alu-readout { padding-bottom: var(--space-2); }
+.handson-grid .alu-readout__name { font-size: 1.7rem; }
+.handson-grid .alu-preset { padding: 0.4rem 0.35rem; font-size: 0.7rem; }
+.handson-grid .alu-bit { padding: 0.4rem 0.15rem; }
+.handson-grid .alu-bit__val { font-size: 0.95rem; }
 @media (min-width: 900px) {
+  /* Two independent columns. Left: D-latch + datapath. Right: Check Yourself +
+     the ALU waveform (so the waveform sits directly below Check Yourself, in the
+     region to the right of the datapath). */
   .handson-grid {
     grid-template-columns: 1fr 1fr;
     gap: clamp(2rem, 4vw, 3.75rem);
     align-items: start;
   }
-  /* Stagger the right column down a little. */
-  .handson-grid > :nth-child(even) { margin-top: clamp(2.5rem, 6vw, 4.5rem); }
-  /* In a half-width cell the answer choices read better stacked. */
+  /* In a half-width column the answer choices read better stacked. */
   .handson-grid .quiz__options { grid-template-columns: 1fr; }
+}
+
+
+/* ------------------------------------------------------------------ *
+   ALU WAVEFORM — a static timing diagram of the 1-bit ALU. A signal-name
+   panel on the left, a 10 ns time scale on top, and the traces on the
+   right, colour-coded by role: data inputs (purple), the control line
+   (datapath blue), the output (Meet-the-Processor amber). The ALU sketch
+   sits on top. Everything rides white plates on the usual paper card.
+ * ------------------------------------------------------------------ */
+.aluwave {
+  position: relative;          /* anchors the hover tooltip */
+  margin: 0;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  padding: clamp(var(--space-3), 4vw, var(--space-4));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+/* The 1-bit ALU sketch on top, framed on its own white plate. */
+.aluwave__art {
+  background: #fff;
+  border: 1px solid rgba(35, 35, 42, 0.12);
+  border-radius: var(--radius-sm);
+  padding: clamp(0.5rem, 2vw, 0.9rem);
+  margin: 0;
+  text-align: center;
+}
+.aluwave__art img {
+  max-width: 100%;
+  max-height: 15rem;
+  width: auto;
+  height: auto;
+  display: inline-block;
+  border-radius: 4px;
+}
+/* The scope: transparent on the card with a top hairline — the SAME treatment as
+   the datapath's control panel (not a white plate). Its SVG is coloured for the
+   dark card. Scrolls horizontally on narrow screens rather than squishing. */
+.aluwave__scope {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  padding: var(--space-3) 0 0;
+  overflow-x: auto;
+}
+.awv-svg {
+  display: block;
+  width: 100%;
+  min-width: 32rem;              /* keep it legible; the panel scrolls if narrower */
+  height: auto;
+  font-family: var(--font-mono);
+}
+/* Panel/header dividers, per-row separators, + step gridlines (light on dark). */
+.awv-div    { stroke: var(--hairline); stroke-width: 1; }
+.awv-rowsep { stroke: rgba(253, 253, 251, 0.06); stroke-width: 1; }
+.awv-grid   { stroke: rgba(253, 253, 251, 0.06); stroke-width: 1; }
+/* Header labels ("Signal", "Time (ns)"). */
+.awv-hdr  { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; fill: var(--soft-ink); }
+/* Time-scale numbers — the display face reads friendlier than the mono. */
+.awv-time { font-family: var(--font-display); font-size: 11px; fill: var(--soft-ink); }
+/* Signal names in the left panel, coloured by role (dark-card readable). */
+.awv-name { font-size: 11px; font-weight: 500; }
+.awv-name--in   { fill: #b794f6; }   /* inputs — light purple (the dark-theme accent) */
+.awv-name--ctrl { fill: #60a5fa; }   /* control — light blue */
+.awv-name--out  { fill: #d4bbff; }   /* output — the flip card's output value number */
+.awv-name--muted { font-size: 9px; fill: rgba(253, 253, 251, 0.42); }   /* a hidden signal's strip label */
+/* Traces. */
+.awv-trace { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.awv-trace--in   { stroke: #b794f6; }
+.awv-trace--ctrl { stroke: #60a5fa; }
+.awv-trace--out  { stroke: #d4bbff; stroke-width: 3; }
+/* Colourless show/hide control: an eye (open = shown, slashed = hidden). */
+.awv-toggle { cursor: pointer; }
+.awv-toggle:focus { outline: none; }
+.awv-eye__lid { fill: none; stroke: var(--soft-ink); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.awv-eye__pupil { fill: var(--soft-ink); }
+.awv-eye__slash { stroke: var(--soft-ink); stroke-width: 1.4; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.awv-toggle:hover .awv-eye__lid,
+.awv-toggle:hover .awv-eye__slash { stroke: var(--ink); }
+.awv-toggle:hover .awv-eye__pupil { fill: var(--ink); }
+.awv-toggle--off .awv-eye__lid { stroke: rgba(253, 253, 251, 0.4); }
+.awv-toggle--off .awv-eye__pupil { fill: rgba(253, 253, 251, 0.4); }
+.awv-toggle:focus-visible .awv-eye__lid { stroke: var(--accent); }
+/* Travelling bead — EXACTLY the datapath treatment: a fat, round-capped dash
+   that rides the trace like a bulge, colour set per signal + a soft glow.
+   Hidden at rest; the JS animation reveals it. */
+.awv-bead {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 6.5;
+  stroke-linecap: round;
+  stroke-dasharray: 12 100000;
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 0 3px currentColor);
+}
+
+/* Hover scrubber: a vertical guide through the cursor + a value tooltip. */
+.awv-cursor {
+  stroke: #f5c542;                     /* warm terminal-yellow */
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+  pointer-events: none;
+}
+.awv-cursor.is-on { opacity: 0.92; }
+.awv-tip {
+  position: absolute;
+  left: 0; top: 0;
+  z-index: 5;
+  pointer-events: none;
+  min-width: 6rem;
+  background: rgba(18, 18, 24, 0.96);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  line-height: 1.5;
+  box-shadow: var(--shadow-soft);
+  opacity: 0;
+  transition: opacity 0.08s var(--ease);
+}
+.awv-tip.is-on { opacity: 1; }
+.awv-tip__t { color: var(--soft-ink); font-size: 0.6rem; margin-bottom: 0.2rem; }
+.awv-tip__row { display: flex; justify-content: space-between; gap: 1rem; font-weight: 600; }
+
+/* In the Hands On grid it's a full-width row; cap its width and centre it. */
+.handson-grid .aluwave { max-width: 46rem; margin-inline: auto; width: 100%; }
+/* Push the waveform down so it sits ~centred between the Check Yourself card
+   above and the datapath's bottom below. The needed offset grows with width (the
+   datapath gets taller), so it tracks the viewport. */
+.handson-grid .aluwave { margin-top: clamp(2.25rem, 21vw - 220px, 5.5rem); }
+
+/* ------------------------------------------------------------------ *
+   HOW TO GET STARTED — intro copy + a "Open the Project Directory"
+   button with a nudge alongside it.
+ * ------------------------------------------------------------------ */
+.getstarted { max-width: 62rem; margin-inline: auto; }
+/* The main line — same treatment as the Hands On intro paragraph. */
+.getstarted__lead {
+  max-width: 60rem;
+  margin: 0 auto var(--space-5);
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: clamp(1.1rem, 1.35vw, 1.3rem);
+  line-height: 1.62;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+.getstarted__cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
 }
 
 
@@ -2303,7 +2527,15 @@ html.js .buildpath-intro { --rail-progress: 0; }
    Logic Gates quiz format): a diagram, answer buttons that turn green
    (correct) or red (wrong) on click, and a status line.
  * ------------------------------------------------------------------ */
-.quiz { max-width: 52rem; margin-inline: auto; }
+.quiz {
+  max-width: 52rem;
+  margin-inline: auto;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: clamp(var(--space-4), 5vw, var(--space-5));
+  box-shadow: var(--shadow-soft);
+}
 .quiz__q {
   font-family: var(--font-body);
   font-size: clamp(1.2rem, 2.2vw, 1.5rem);
@@ -2313,6 +2545,8 @@ html.js .buildpath-intro { --rail-progress: 0; }
   margin: 0 0 var(--space-3);
 }
 .quiz__figure { max-width: 48rem; margin: 0 auto var(--space-4); }
+/* Round the diagram image to match the site's other images (paper-card plates). */
+.quiz__figure img { display: block; width: 100%; height: auto; border-radius: var(--radius-sm); }
 .quiz__options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2463,7 +2697,9 @@ html.js .buildpath-intro { --rail-progress: 0; }
 }
 .latch-swap__img.is-active { opacity: 1; }
 
-/* Back: a column that fills the card — editor on top, controls below. */
+/* Back: a column that fills the card — editor on top, controls below. The frame
+   (padding/border around the editor, incl. the space by the return arrow) is a
+   click target that flips back to the front; wired in gate-card.js. */
 .gate-card__face--back {
   transform: rotateY(180deg);
   display: flex;
@@ -2474,7 +2710,18 @@ html.js .buildpath-intro { --rail-progress: 0; }
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
   padding: clamp(var(--space-2), 2.5vw, var(--space-3));
+  cursor: pointer;                       /* the frame flips you back */
+  transition: transform 0.2s var(--ease);
 }
+/* Hovering the frame grows the whole card a touch — the same cue the front gives
+   before its flip — rather than highlighting the return arrow on its own. */
+.gate-card.is-flipped .gate-card__face--back:hover { transform: rotateY(180deg) scale(1.045); }
+/* …but not while the pointer is over the interactive editor or live-sim box:
+   those keep their own cursor and don't trigger the grow. */
+.gate-card.is-flipped .gate-card__face--back:has(.code-editor:hover),
+.gate-card.is-flipped .gate-card__face--back:has(.gate-sim:hover) { transform: rotateY(180deg); }
+.gate-card__face--back .code-editor,
+.gate-card__face--back .gate-sim { cursor: auto; }
 
 /* A miniature VS Code editor filling the card. */
 .code-editor {
@@ -2645,7 +2892,8 @@ html.js .buildpath-intro { --rail-progress: 0; }
   color: var(--accent);
   cursor: pointer;
 }
-.gate-card__return:hover { border-color: var(--accent); background: rgba(107, 47, 201, 0.06); }
+/* The arrow itself doesn't react to hover — the whole card grows instead (see
+   .gate-card__face--back:hover), so the frame reads as one flip-back target. */
 .gate-card__return svg {
   width: 1.15rem;
   height: 1.15rem;
@@ -2684,5 +2932,6 @@ html.js .buildpath-intro { --rail-progress: 0; }
 @media (prefers-reduced-motion: reduce) {
   .gate-card__inner,
   .gate-card__face--front,
+  .gate-card__face--back,
   .latch-swap__img { transition: none; }
 }

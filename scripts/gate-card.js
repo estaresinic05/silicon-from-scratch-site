@@ -14,6 +14,7 @@
 
   function initCard(card) {
     var front = card.querySelector(".gate-card__face--front");
+    var back  = card.querySelector(".gate-card__face--back");
     var ret   = card.querySelector(".gate-card__return");
     var ta    = card.querySelector(".code-editor__ta");
     var hlEl  = card.querySelector(".code-editor__hl");
@@ -50,7 +51,14 @@
     front.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") { e.preventDefault(); flipTo(true); }
     });
-    if (ret) ret.addEventListener("click", function () { flipTo(false); });
+    /* Flip back by clicking the card frame — the border/padding around the
+       editor, including the space by the return arrow. Clicks inside the
+       interactive editor or the live-sim box are left alone. The return button
+       lives outside both, so its clicks (mouse or keyboard) flip back too. */
+    if (back) back.addEventListener("click", function (e) {
+      if (e.target.closest(".code-editor, .gate-sim")) return;
+      flipTo(false);
+    });
     if (resetBtn) resetBtn.addEventListener("click", function () { ta.value = original; state = {}; refresh(); if (!ta.readOnly) ta.focus(); });
 
     // Keep the highlighted underlay scrolled in step with the textarea.

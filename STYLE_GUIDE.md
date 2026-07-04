@@ -10,6 +10,31 @@ Base design tokens (`--accent`, `--soft-ink`, `--paper`, `--ink`, `--hairline`,
 
 ---
 
+## Mobile parity (applies to every widget here)
+
+**Every interactive widget must fit and read the same on phones as on desktop** —
+the same layout intent, fonts, colours, and spacing, just adapted to the narrower
+screen. **Adapt, don't degrade or hide.** Concretely:
+
+- **Reflow, don't drop.** Stack multi-column layouts into a single column in a
+  sensible reading order; keep every element that's present on desktop.
+- **Contain overflow.** A wide diagram/table/editor scrolls **horizontally inside
+  its own panel** (`overflow-x: auto` + a sensible `min-width`) — the *page* must
+  never scroll sideways.
+- **Scale, don't shrink to nothing.** Size type, padding, and gaps with `clamp()`
+  so things get smaller gracefully and stay legible/tappable (mind ~44px touch
+  targets).
+- **Keep it usable.** Every control reachable on desktop stays reachable on
+  mobile. (Editable code textareas may go read-only on touch — that's a
+  usability choice, not a removal; the widget is still fully viewable.)
+
+Nothing visible or usable on desktop should be missing or broken on mobile. After
+touching any widget, verify it at real phone/tablet widths — the `mobile-guardian`
+agent renders each page at those widths, spots narrow-screen breakage, and repairs
+the CSS.
+
+---
+
 ## Section headings
 
 The house section-header look — used by **YOUR PATH** and **HANDS ON**. Mono,
@@ -285,6 +310,30 @@ Not supported (reported as errors): multi-bit arithmetic/buses beyond 1 bit,
 `case`, `for`/`generate`, module instantiation, tasks/functions, `initial`, real
 sequential clocking semantics. Keep card examples inside the subset.
 
+### Flipping back
+Clicking the **front** flips to the editor. To flip **back**, the reader clicks
+anywhere on the back card's **frame** — the padding/border around the editor,
+including the empty space by the return arrow (and the arrow itself). Only the
+interactive `.code-editor` and `.gate-sim` boxes are exempt (a click there edits
+code or toggles a chip; it never flips). This is wired in `gate-card.js` as one
+delegated listener on `.gate-card__face--back`:
+
+```js
+back.addEventListener("click", function (e) {
+  if (e.target.closest(".code-editor, .gate-sim")) return;
+  flipTo(false);
+});
+```
+Because the whole frame is the target, the return `<button>` no longer needs its
+own handler (its mouse/keyboard clicks bubble up and flip back).
+
+Hover feedback mirrors the front: hovering the frame **grows the whole card a
+touch** (`.gate-card__face--back:hover { transform: rotateY(180deg) scale(1.045) }`
+— the same `1.045` the front uses before its flip), *not* a highlight on the
+return arrow. A `:has(.code-editor:hover, .gate-sim:hover)` guard cancels the grow
+while the pointer is over the interactive boxes, which also keep `cursor: auto`.
+The arrow is a static affordance only — it has **no** hover style.
+
 ### Behaviour notes
 - The output **label** (`.gate-sim__lhs`) follows the declared `output` port, so
   renaming the output in the code updates it.
@@ -299,6 +348,192 @@ concatenating the module with a test script and running `cscript //nologo`.
 
 ---
 
+## ALU datapath explorer
+
+An interactive 1-bit ALU schematic: the reader picks a named operation (or flips
+individual `control[3:0]` bits) and the **active datapath lights up** on an inline
+SVG. Reference implementation: the ALU page's `#explore` section
+(`alu/index.html`). It also appears, restyled as a single card, in the home Hands
+On grid (`index.html`).
+
+**Powered by one shared script — never re-implement the schematic or wiring:**
+- `scripts/alu-widget.js` — builds the entire SVG schematic (two ALU slices + the
+  carry/`less` wiring) and wires the control panel. Highlighting is driven by
+  three things in the script, the **only** places to edit behaviour: `NAMED_OPS`
+  (friendly names → 4-bit codes), `deriveActiveIds()` (code → the SVG element ids
+  to light — the single source of truth), and the generated `OPS` table.
+- `styles/alu-widget.css` — all the base `.alu-*` styles.
+
+The script keys off the single id `alu-widget`, so **one widget per page**. Load
+the stylesheet in `<head>` and the script deferred before `</body>`:
+```html
+<link rel="stylesheet" href="styles/alu-widget.css" />
+<script src="scripts/alu-widget.js" defer></script>
+```
+
+### Required hooks
+
+`alu-widget.js` looks these up by id/class — keep them exactly:
+- `#alu-widget` — the container.
+- `#alu-diagram` — an **empty** `<svg viewBox="0 0 685 970">`; the script draws
+  into it (give it `role="img"` + an `aria-label`, and a `<noscript>` fallback).
+- `#alu-op-name` / `#alu-op-bits` — the readout's operation name + bit string.
+- `.alu-widget__live` — an `aria-live="polite"` `<p>` for the screen-reader path
+  description.
+- `.alu-preset[data-code="N"]` — preset buttons; `data-code` is the **decimal**
+  value of `control[3:0]`.
+- `.alu-bit[data-bit="k"]` each wrapping a `.alu-bit__val` — the four control-bit
+  toggles; `data-bit` is the bit position (`3`=Ainvert, `2`=Bnegate, `1:0`=Operation).
+
+### Markup — the control panel (the stable part)
+
+The SVG stage is just the empty `#alu-diagram`; the panel is what you copy:
+
+```html
+<div class="alu-widget" id="alu-widget">
+  <!-- …layout wrapper(s): see the two layouts below… -->
+  <aside class="alu-panel">
+    <div class="alu-readout" aria-hidden="true">
+      <span class="alu-readout__label">Operation</span>
+      <span class="alu-readout__name" id="alu-op-name">add</span>
+      <span class="alu-readout__bits" id="alu-op-bits">0010</span>
+    </div>
+    <div class="alu-controls__group" role="group" aria-label="Named operations">
+      <span class="alu-controls__label">Presets</span>
+      <div class="alu-presets">
+        <button class="alu-preset" type="button" data-code="0"  aria-pressed="false">AND</button>
+        <!-- OR=1, add=2, subtract=6, slt=7, NOR=12, NAND=13 -->
+      </div>
+    </div>
+    <div class="alu-controls__group" role="group" aria-label="Control bits">
+      <span class="alu-controls__label">control[3:0]</span>
+      <div class="alu-bits">
+        <button class="alu-bit" type="button" data-bit="3" aria-pressed="false" aria-label="control bit 3, Ainvert">
+          <span class="alu-bit__name">Ainv</span><span class="alu-bit__val">0</span>
+        </button>
+        <!-- data-bit 2=Bneg, 1=Op1, 0=Op0 -->
+      </div>
+    </div>
+    <p class="alu-widget__live" aria-live="polite"></p>
+  </aside>
+
+  <div class="alu-widget__stage">
+    <svg id="alu-diagram" viewBox="0 0 685 970" role="img"
+         aria-label="ALU datapath schematic. Choose an operation to highlight the active path."></svg>
+    <noscript><p class="alu-noscript">This interactive diagram needs JavaScript.</p></noscript>
+  </div>
+</div>
+```
+
+### The two layouts
+
+- **ALU page (`#explore`) — the default.** `.alu-widget` is a two-column grid: a
+  `.alu-side` column (a `.section__head` + a `.prose` intro + the `.alu-panel`)
+  beside the `.alu-widget__stage`. Pure `styles/alu-widget.css`; no extra rules.
+- **Home Hands On grid — one card.** In `.handson-grid` the datapath and panel
+  share **one paper card styled exactly like the Check Yourself card** (see that
+  entry). Because the schematic is drawn with dark ink/idle colours, the stage
+  keeps its own **white plate** (a light-token override) so it stays legible on
+  the dark theme, while the panel sits transparently on the card and a hairline
+  divides them. All of this lives in `styles/main.css` under
+  `.handson-grid .alu-widget*` — copy that block if you place the widget in
+  another dark-themed card. Note there's no `.alu-side` here (no heading/intro);
+  the stage is the first child, the panel the second.
+
+### Self-contained
+
+To remove the widget, delete its `<section>`/card, the `alu-widget.css` `<link>`,
+and the `alu-widget.js` `<script>` — nothing else depends on it.
+
+---
+
+## Interactive waveforms (timing diagrams)
+
+The house style for **any digital timing-diagram / waveform** widget: a
+signal-name panel on the left, a time scale across the top, and colour-coded step
+traces on the right, all on the standard card. Reference implementation: the
+"Interactive Waveforms" widget in the home Hands On grid (`scripts/aluwave.js` +
+the `.aluwave` / `.awv-*` rules in `styles/main.css`). What follows is the
+reusable *style* — the specific signals/logic of any one diagram are not part of
+the pattern.
+
+### Layout
+
+- **Card.** The whole widget rides the standard paper card (same as Check
+  Yourself / the datapath): `var(--paper)` background, `1px solid var(--hairline)`,
+  `var(--radius)`, `var(--shadow-soft)`, `clamp(var(--space-3), 4vw, var(--space-4))`
+  padding, as a vertical flex stack.
+- **Optional sketch on top.** A hand-drawn schematic or photo sits on its own
+  **white plate** (`background:#fff; border:1px solid rgba(35,35,42,0.12);
+  border-radius:var(--radius-sm)`) — white so dark ink-art stays legible on the
+  card, exactly like the datapath's schematic plate.
+- **Scope panel.** The diagram itself is **transparent on the card with a top
+  hairline divider** (`border-top:1px solid var(--hairline)`), mirroring the
+  datapath's control panel — *not* a white plate. It is one inline `<svg>`
+  (`viewBox`, `width:100%`, uniform scale) holding everything below.
+- Inside the SVG: a **signal-name panel on the left** (a "Signal" header + one row
+  per signal) separated from the traces by a **vertical hairline bar**, a
+  **horizontal hairline under the header**, and **faint horizontal separators
+  between rows** — it reads like a compact scope/GTKWave table.
+
+### Fonts
+
+- **Labels + signal names** (the "Signal" header, the row names): `var(--font-mono)`,
+  ~10–11px; header labels `font-weight:600`, `letter-spacing:~0.06em`.
+- **Time-scale numbers**: `var(--font-display)` (the friendly grotesque, *not*
+  mono) — deliberately less "techy" than the surrounding labels.
+
+### Colours (role-coded, tuned for the dark card)
+
+Every signal is coloured by **role**, in tones that read on the dark panel — the
+signal's name, its trace, and its bead all share the one colour:
+
+- **Data inputs** → light purple `#b794f6` (the dark-theme accent).
+- **Control signals** → light blue `#60a5fa`.
+- **Outputs** → `#d4bbff` (the same lavender as the flip card's output-value
+  number, i.e. `--accent-deep` on dark).
+
+Neutral chrome comes from tokens: dividers `var(--hairline)`; gridlines + row
+separators a faint `rgba(253,253,251,0.06)`; header/label/muted text
+`var(--soft-ink)`.
+
+### Traces + travelling beads
+
+- Traces are SVG **step waveforms** (`<path>`, `stroke-width` ~2.5–3, round
+  joins/caps) that start **on the vertical divider bar** (t=0) and step between a
+  high and a low rail.
+- Motion reuses the **datapath bead treatment exactly**: an overlay `<path>` copy
+  of each trace styled as a fat round-capped dash (`stroke-dasharray: 12 100000`)
+  with a colour **glow** (`filter: drop-shadow(0 0 3px currentColor)`), animated
+  by sliding `strokeDashoffset` along the wire (Web Animations API, constant pixel
+  speed). Use a **long cycle** (~10 s) so a ripple passes only occasionally, not
+  constantly. Bead colour comes from the signal via `currentColor`. No beads
+  under `prefers-reduced-motion`.
+
+### Show / hide control
+
+Each row carries a **colourless eye icon** — open eye = shown, slashed eye =
+hidden — in `var(--soft-ink)` (never a coloured swatch). Hiding a signal collapses
+its lane to a **short strip** whose slashed-eye + muted label is the un-hide
+control; the remaining lanes shift up to fill *some* (not all) of the freed space.
+
+### Hover scrubber
+
+Hovering the traces draws a **vertical guide through the cursor** — a warm yellow
+line (`#f5c542`, `vector-effect: non-scaling-stroke`) from the time axis down to
+the bottom of the traces — plus a **value tooltip that follows the cursor**: a
+small dark box (`background: rgba(18,18,24,0.96)`, hairline border, mono type)
+listing the time and each visible signal's value, with **each value in its own
+signal's colour**.
+
+### Responsiveness
+
+The scope scrolls horizontally (`overflow-x: auto` on the panel) with a
+`min-width` (~32 rem) on the SVG, so on narrow screens the diagram **pans** rather
+than squishing into illegibility.
+
+---
+
 ## Check Yourself (multiple-choice quiz)
 
 A self-contained multiple-choice widget: an italic question, a diagram image,
@@ -306,6 +541,11 @@ answer buttons that turn **green** (correct) or **red** (wrong) on click, and a
 status line. Optionally a "Continue" button revealed once the correct answer is
 picked. Reference implementations: `alu/logic-gates/index.html` (with a Continue
 button) and the homepage Hands On section in `index.html` (without one).
+
+The whole widget sits on a **paper card** — `var(--paper)` background, a hairline
+border, `var(--radius)` corners, and `var(--shadow-soft)` — the same raised-panel
+treatment as `.doc-hero__art`, so it reads as one deliberate block against the
+page. This is part of the base `.quiz` rule, so every Check Yourself gets it.
 
 ### Markup
 
@@ -359,7 +599,16 @@ Check Yourself to a page, make sure whichever stylesheet it loads contains the
 Options sit in a two-column grid.
 
 ```css
-.quiz { max-width: 52rem; margin-inline: auto; }
+/* The widget rides on a paper card — the same raised panel as .doc-hero__art. */
+.quiz {
+  max-width: 52rem;
+  margin-inline: auto;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: clamp(var(--space-4), 5vw, var(--space-5));
+  box-shadow: var(--shadow-soft);
+}
 .quiz__q {
   font-family: var(--font-body);
   font-size: clamp(1.2rem, 2.2vw, 1.5rem);

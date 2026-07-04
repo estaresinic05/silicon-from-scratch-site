@@ -136,15 +136,15 @@
         <span class="buildpath-rail" aria-hidden="true"></span>
         <p class="buildpath-intro__lead">
           Ever wonder how a sliver of sand ends up running the computer you use
-          every day? Each lesson will guide you through the intricacies of one of
-          humanity's most extraordinary inventions.
+          every day? <strong>Each lesson will guide you</strong> through the
+          intricacies of one of humanity's most extraordinary inventions.
         </p>
         <p class="buildpath-intro__sub">
-          Whether you're a total beginner or a seasoned engineer, there's
-          something here for you.
+          Whether you're a total beginner or a seasoned engineer,
+          <strong>there's something here for you</strong>.
         </p>
         <p class="buildpath-intro__note">
-          Start with the basics, and build from there. Each project only
+          Start with the <strong>basics</strong>, and build from there. Each project only
           requires what came before it.
         </p>
         <p class="buildpath-intro__code">
@@ -152,7 +152,7 @@
           you've learned into practice with the code on <strong>GitHub</strong>.
         </p>
         <p class="buildpath-intro__end">
-          No expensive tools, no dense theory, just interactive learning right
+          No expensive tools, no dense theory, just <strong>interactive learning</strong> right
           at your fingertips.
         </p>
       </aside>
@@ -376,19 +376,21 @@
         </div>
 
         <p class="handson-intro">
-          Each lesson comes with a mixture of interactive widgets like the ones
-          below — every one built to get your hands dirty and put what you've just
-          learned to work.
+          Each lesson comes with a variety of interactive widgets &mdash; each of
+          which designed to elevate your learning, get your hands dirty, and put
+          what you've just learned to work.
         </p>
 
         <!-- A staggered two-up grid of interactive widgets (more to come). -->
         <div class="handson-grid">
+        <div class="handson-col">
         <!-- Flip card: the front sketch cross-fades between two gated-D-latch
              images every 7s; click it to flip to an editable Verilog editor. -->
         <div class="gate-card gate-card--solo" id="latch-card" data-control="clk">
           <div class="gate-card__inner">
             <figure class="figure gate-card__face gate-card__face--front" role="button" tabindex="0"
                     aria-label="Gated D-latch diagram. Activate to open an editable Verilog module.">
+              <span class="hoi-title">Flippable Verilog Cards</span>
               <span class="latch-swap">
                 <img class="latch-swap__img is-active" src="assets/home/gated-d-latch-cover.jpg"
                      alt="Cover illustration of a gated D-latch." decoding="async" />
@@ -450,31 +452,11 @@ endmodule</textarea>
           </div>
         </div>
 
-        <div class="quiz" id="quiz">
-          <p class="quiz__q">For each sequence below, state whether it must stall,
-            can avoid stalls using only forwarding, or can execute without
-            stalling or forwarding.</p>
-
-          <figure class="figure figure--photo quiz__figure">
-            <img src="assets/home/check-yourself.jpg"
-                 alt="Three short RISC-V instruction sequences (A, B, and C) that each set up a data hazard between successive instructions in the pipeline."
-                 decoding="async" />
-          </figure>
-
-          <div class="quiz__options" role="group" aria-label="Answer choices">
-            <button class="quiz__opt" type="button" data-correct="true">A: must stall<br>B: avoid stalls using forwarding<br>C: no stalls even without forwarding</button>
-            <button class="quiz__opt" type="button">A: avoid stalls using forwarding<br>B: must stall<br>C: no stalls even without forwarding</button>
-            <button class="quiz__opt" type="button">A: no stalls even without forwarding<br>B: avoid stalls using forwarding<br>C: must stall</button>
-            <button class="quiz__opt" type="button">A: avoid stalls using forwarding<br>B: must stall<br>C: no stalls even without forwarding</button>
-          </div>
-
-          <p class="quiz__feedback" role="status" aria-live="polite"></p>
-        </div>
-
         <!-- Interactive ALU datapath explorer: pick an operation and watch the
              active path light up. Stacked here (datapath on top, control panel
              below) to fit a grid cell. Built by scripts/alu-widget.js. -->
         <div class="alu-widget" id="alu-widget">
+          <p class="hoi-title">Interactive Datapaths</p>
           <div class="alu-widget__stage">
             <svg id="alu-diagram" viewBox="0 0 685 970" role="img"
                  aria-label="ALU datapath schematic. Choose an operation to highlight the active path."></svg>
@@ -523,7 +505,71 @@ endmodule</textarea>
             <p class="alu-widget__live" aria-live="polite"></p>
           </aside>
         </div>
+        </div>
+        <div class="handson-col">
+        <div class="quiz" id="quiz">
+          <p class="hoi-title">Check Yourself</p>
+          <p class="quiz__q">For each sequence below, state whether it must stall,
+            can avoid stalls using only forwarding, or can execute without
+            stalling or forwarding.</p>
+
+          <figure class="figure figure--photo quiz__figure">
+            <img src="assets/home/check-yourself.jpg"
+                 alt="Three short RISC-V instruction sequences (A, B, and C) that each set up a data hazard between successive instructions in the pipeline."
+                 decoding="async" />
+          </figure>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button" data-correct="true">A: must stall<br>B: avoid stalls using forwarding<br>C: no stalls even without forwarding</button>
+            <button class="quiz__opt" type="button">A: avoid stalls using forwarding<br>B: must stall<br>C: no stalls even without forwarding</button>
+            <button class="quiz__opt" type="button">A: no stalls even without forwarding<br>B: avoid stalls using forwarding<br>C: must stall</button>
+            <button class="quiz__opt" type="button">A: avoid stalls using forwarding<br>B: must stall<br>C: no stalls even without forwarding</button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+        </div>
+
+        <!-- Interactive ALU waveform: the 1-bit ALU over 80 ns. The (trimmed)
+             sketch on top, then a signal-name panel + Time (ns) scale + traces,
+             colour-coded by role. Click a signal's swatch to hide/show it; each
+             visible signal has a bead that sweeps 0 -> 80 ns. Built by
+             scripts/aluwave.js; styles .aluwave / .awv-* in main.css. -->
+        <figure class="aluwave">
+          <p class="hoi-title">Interactive Waveforms</p>
+          <div class="aluwave__art">
+            <img src="assets/ALU/1-bit-alu-trim.jpg"
+                 alt="A 1-bit ALU: inputs a and b feed an AND gate and an OR gate, whose outputs feed a 2-to-1 multiplexer selected by operation, producing the result."
+                 decoding="async" />
+          </div>
+          <div class="aluwave__scope" role="group" aria-label="1-bit ALU timing diagram">
+            <noscript><p class="wave-noscript">This interactive timing diagram needs JavaScript.</p></noscript>
+          </div>
+        </figure>
+        </div>
         </div><!-- /.handson-grid -->
+      </div>
+    </section>
+
+    <!-- ========================= HOW TO GET STARTED ===================== -->
+    <section class="section" id="get-started" data-menu="How to Get Started" aria-labelledby="get-started-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="kicker section-title" id="get-started-title">How to get started</p>
+        </div>
+
+        <div class="getstarted">
+          <p class="getstarted__lead">
+            Find the project that's right for you, or begin at the start and work
+            your way through them in order. You don't learn to ride a bike by
+            reading about it! Get going!
+          </p>
+          <div class="getstarted__cta">
+            <button class="btn btn--primary" type="button" id="open-proj-dir">
+              Open the Project Directory
+            </button>
+            <a class="btn btn--ghost" href="setuphelp/#icarus">Tools Setup Help</a>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -559,6 +605,9 @@ endmodule</textarea>
   <!-- Interactive ALU datapath explorer (builds the SVG + lights the path). -->
   <script src="scripts/alu-widget.js" defer></script>
 
+  <!-- 1-bit ALU waveform (Hands On): timing diagram with hide/show + beads. -->
+  <script src="scripts/aluwave.js" defer></script>
+
   <!-- "Check yourself" quiz: colour the chosen answer and show feedback; the
        first option is the correct one (data-correct). -->
   <script>
@@ -584,6 +633,19 @@ endmodule</textarea>
           feedback.classList.add("is-wrong");
         }
       });
+    });
+  })();
+  </script>
+
+  <!-- "How to get started": the button opens the same Project Directory drawer
+       that the ☰ / hamburger opens (main.js owns it) by forwarding the click. -->
+  <script>
+  (function () {
+    var b = document.getElementById("open-proj-dir");
+    if (!b) return;
+    b.addEventListener("click", function () {
+      var t = document.querySelector(".toc__btn");
+      if (t) t.click();
     });
   })();
   </script>

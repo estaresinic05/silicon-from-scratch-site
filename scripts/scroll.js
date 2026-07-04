@@ -80,7 +80,9 @@ function buildBpTrace(managed) {
      points push out well past the node lane (alternating right, then left) so
      each turn eats up the page width, then curls back to meet the next node's
      entry side dead level. */
-  var H = Math.max(90, lr.width * 0.21);    // how far each connector bows sideways
+  var H = Math.max(74, lr.width * 0.17);    // how far each connector bows sideways
+                                            // (smaller = a slightly shorter path,
+                                            //  same entry/exit points on each graphic)
   /* One <path> PER connector (the gap between two graphics). The segment THROUGH
      each graphic stays snipped out. We use a separate element per connector
      rather than one path with pen-lifts, because a browser restarts the dash
@@ -456,9 +458,19 @@ function buildBpTrace(managed) {
       }
     );
   }
+  var handsonGrid = document.querySelector(".handson-grid");
+  function inHandsOn(el) { return handsonGrid && handsonGrid.contains(el); }
   gsap.utils.toArray(".figure").forEach(function (fig) {
     if (inBasics(fig)) return;
+    if (inHandsOn(fig)) return;   // revealed as part of its widget card below
     revealFigure(fig);
+  });
+
+  /* ---- Hands On widgets + the "How to get started" content fade + gently scale
+         in as they scroll into view — the same reveal as the diagram figures. ---- */
+  gsap.utils.toArray(".handson-col > *").forEach(function (w) { revealFigure(w, "top 88%"); });
+  gsap.utils.toArray(".handson-intro, .getstarted__lead, .getstarted__cta").forEach(function (el) {
+    reveal(el, el, { y: 20, start: "top 88%" });
   });
 
   /* ---- Section headings: kicker -> heading -> note, staggered ---- */
