@@ -644,6 +644,9 @@ endmodule</textarea>
     var b = document.getElementById("open-proj-dir");
     if (!b) return;
     b.addEventListener("click", function () {
+      // Drop the (auto-hidden) top bar back down, then open its drawer.
+      var bar = document.querySelector(".topbar");
+      if (bar) bar.classList.remove("is-hidden");
       var t = document.querySelector(".toc__btn");
       if (t) t.click();
     });

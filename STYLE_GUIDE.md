@@ -10,28 +10,59 @@ Base design tokens (`--accent`, `--soft-ink`, `--paper`, `--ink`, `--hairline`,
 
 ---
 
-## Mobile parity (applies to every widget here)
+## Responsive strategy — ONE layout, just resized (read this first)
 
-**Every interactive widget must fit and read the same on phones as on desktop** —
-the same layout intent, fonts, colours, and spacing, just adapted to the narrower
-screen. **Adapt, don't degrade or hide.** Concretely:
+**The site is a single layout that scales fluidly with the viewport — the same
+structure at *every* screen size, just larger or smaller.** It does **not** reflow
+into a different mobile layout, and it does **not** hide anything on small screens.
+Small screens show a shrunken version of the desktop design; large screens show an
+enlarged version. This is deliberate — inconsistent per-breakpoint reflowing was
+causing rendering bugs, so we removed it.
 
-- **Reflow, don't drop.** Stack multi-column layouts into a single column in a
-  sensible reading order; keep every element that's present on desktop.
-- **Contain overflow.** A wide diagram/table/editor scrolls **horizontally inside
-  its own panel** (`overflow-x: auto` + a sensible `min-width`) — the *page* must
-  never scroll sideways.
-- **Scale, don't shrink to nothing.** Size type, padding, and gaps with `clamp()`
-  so things get smaller gracefully and stay legible/tappable (mind ~44px touch
-  targets).
-- **Keep it usable.** Every control reachable on desktop stays reachable on
-  mobile. (Editable code textareas may go read-only on touch — that's a
-  usability choice, not a removal; the widget is still fully viewable.)
+### How the scaling works
 
-Nothing visible or usable on desktop should be missing or broken on mobile. After
-touching any widget, verify it at real phone/tablet widths — the `mobile-guardian`
-agent renders each page at those widths, spots narrow-screen breakage, and repairs
-the CSS.
+- **One knob: a fluid root font-size.** `html { font-size: clamp(12px, 6.5px +
+  0.66vw, 20px); }` — ~16px around a 1440px screen, shrinking toward a 12px floor
+  on phones and up to 20px on very large screens. **Because the whole design is
+  sized in `rem`** (the `--space-*` scale, `--maxw`/`--maxw-prose`, and type),
+  scaling this one value **scales the entire layout up and down together.** That's
+  what "same layout, just resized" means here.
+- So: **size everything in `rem`** (or `em`), and widths in `%` / `fr` / `rem`.
+  This is what lets a component grow on a 4K monitor and shrink on a phone without
+  any new media query. Fixed `px` is only for things that should NOT scale —
+  hairlines (`1px` borders), and the small `--radius` values.
+- **Multi-column layouts stay multi-column at every width.** e.g. Hands On is a
+  two-column masonry (`.handson-grid { grid-template-columns: 1fr 1fr }`) with **no**
+  single-column collapse — it just gets narrower. Don't add a `1fr` / stacked
+  breakpoint to content grids.
+- **Nothing is `display:none` by breakpoint.** Everything on desktop is on mobile.
+
+### Rules for new work
+
+1. **Size in `rem`/`clamp()`/`%`, not `px`.** Reach for `px` only for hairlines and
+   radii. A value in `rem` scales with the root font; a value in `px` won't.
+2. **No content-reflow media queries.** Don't collapse a multi-column grid to one
+   column, and don't hide content, on narrow screens. If a grid feels tight, it
+   should just be *smaller*, not restructured.
+3. **Contain internal overflow, never the page.** A component wider than its column
+   (a wide timing diagram, a code editor) scrolls **inside its own panel**
+   (`overflow-x: auto` + a `rem` `min-width`) — the page itself must never scroll
+   sideways (verify `scrollWidth === clientWidth` at your test widths).
+4. **Verify at the extremes.** Check ~360–500px (phone), ~768px (tablet), ~1280px
+   (laptop), and ~1920px (large). It should be the *same layout* at all four, and
+   the page must not overflow horizontally at any of them.
+
+### The only sanctioned exceptions
+
+- **Top nav** collapses to the hamburger/`☰` drawer on narrow screens (a full
+  horizontal nav can't fit) — this is chrome, not content.
+- **Editable code textareas** go read-only on touch (poor phone UX) — the widget
+  stays fully *viewable*, nothing is removed.
+- **The "Your Path" serpentine** is a JS-drawn trace currently tuned for wide
+  layouts; treat any change to its small-screen behaviour as dedicated work.
+
+Add a new exception here **only** with a clear reason — the default is always
+"same layout, just resized."
 
 ---
 

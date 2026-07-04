@@ -74,7 +74,16 @@
 *::before,
 *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+/* Fluid root font-size — the whole design is sized in rem (spacing, container
+   widths, type), so scaling this one value scales the ENTIRE layout up and down
+   with the viewport: the same layout everywhere, just resized. ~16px around a
+   1440px screen; it shrinks toward a readable floor on phones and enlarges on
+   big screens. See STYLE_GUIDE.md → "Responsive strategy". */
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  font-size: clamp(12px, 6.5px + 0.66vw, 20px);
+}
 
 body {
   margin: 0;
@@ -2265,13 +2274,19 @@ html.js .buildpath-intro { --rail-progress: 0; }
   letter-spacing: 0;
   color: var(--ink);
 }
+/* Two masonry columns at EVERY width (they never collapse to one) — the layout
+   just resizes with the fluid root font-size. Left: D-latch + datapath. Right:
+   Check Yourself + waveform. */
 .handson-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-5);
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.25rem, 4vw, 3.75rem);
+  align-items: start;
 }
 /* Widgets fill their column rather than their own centred max-widths. */
 .handson-grid > * { width: 100%; }
+/* In a half-width column the answer choices read better stacked. */
+.handson-grid .quiz__options { grid-template-columns: 1fr; }
 /* Each side is its own column that stacks its widgets independently (a masonry
    layout), so the two columns pack tightly no matter how tall the other is. */
 .handson-col { display: flex; flex-direction: column; gap: clamp(1.75rem, 3vw, 2.75rem); min-width: 0; }
@@ -2348,18 +2363,6 @@ html.js .buildpath-intro { --rail-progress: 0; }
 .handson-grid .alu-preset { padding: 0.4rem 0.35rem; font-size: 0.7rem; }
 .handson-grid .alu-bit { padding: 0.4rem 0.15rem; }
 .handson-grid .alu-bit__val { font-size: 0.95rem; }
-@media (min-width: 900px) {
-  /* Two independent columns. Left: D-latch + datapath. Right: Check Yourself +
-     the ALU waveform (so the waveform sits directly below Check Yourself, in the
-     region to the right of the datapath). */
-  .handson-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(2rem, 4vw, 3.75rem);
-    align-items: start;
-  }
-  /* In a half-width column the answer choices read better stacked. */
-  .handson-grid .quiz__options { grid-template-columns: 1fr; }
-}
 
 
 /* ------------------------------------------------------------------ *
