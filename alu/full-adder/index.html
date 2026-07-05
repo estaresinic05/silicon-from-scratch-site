@@ -284,10 +284,10 @@ endmodule</textarea>
               functionality we learned last lesson! Therefore, we can write the
               logic expression for <code>Sum</code> as
               <code>Sum = a &oplus; b &oplus; C<sub>in</sub></code> and draw the
-              circuit as so.
+              circuit as follows.
             </p>
 
-            <figure class="figure figure--diagram figure--diagram-tall"
+            <figure class="figure figure--media-row"
                     style="margin: var(--space-3) auto 0;">
               <img src="../../assets/ALU/sum-circuit.jpg"
                    alt="An XOR gate with three inputs — a, b, and Cin — producing the output Sum." decoding="async" />
@@ -305,18 +305,16 @@ endmodule</textarea>
     <section class="section" id="multi-bit" aria-labelledby="multibit-title">
       <div class="container container--wide">
         <div class="section__head">
-          <h2 id="multibit-title">Adding Multi-bit Numbers</h2>
+          <h2 id="multibit-title">The Ripple Carry Adder</h2>
         </div>
 
-        <div class="split">
+        <div class="split" style="align-items: center;">
           <div class="prose">
             <p>
               Naturally, the next step is adding numbers with multiple bits. The
               good news is that this isn't hard at all, so long as we remember to
               include the carry-out from the previous bit when we add the next
-              one. As discussed before, we call the carry <em>out</em> of a bit its
-              <strong>C<sub>out</sub></strong>, and the carry <em>into</em> a bit
-              its <strong>C<sub>in</sub></strong>. With some careful thinking, you
+              one. With some careful thinking, you
               might reason that to add multiple bits, the carry-out of the
               previous bit has to become the carry-in of the next bit. And you'd
               be right!
@@ -326,21 +324,95 @@ endmodule</textarea>
               together, connecting each bit's <code>C<sub>out</sub></code> to the
               next bit's <code>C<sub>in</sub></code>. This chain is often referred
               to as a <strong>ripple carry adder</strong>, and it is the backbone
-              of our ALU design. Since the <code>C<sub>in</sub></code> of each
-              full adder is now an input in its own right, we can update our table
-              to include all three of <code>a</code>, <code>b</code>, and
-              <code>C<sub>in</sub></code> as inputs.
+              of our ALU design.
             </p>
+            <p>
+              Remarkably, this same circuit can <em>subtract</em> with only a tiny
+              tweak. Recall that in two's complement, negating a number means
+              flipping all its bits and adding 1 &mdash; so
+              <code>a &minus; b</code> is just
+              <code>a + <span style="text-decoration: overline;">b</span> + 1</code>. To pull this off, we feed each bit of
+              <code>b</code> through an XOR gate controlled by a single
+              <strong>subtract</strong> signal: when it's 0 the bits pass through
+              untouched (plain addition), and when it's 1 every bit of
+              <code>b</code> is inverted. Wiring that same subtract signal into the
+              very first <code>C<sub>in</sub></code> supplies the &ldquo;+ 1&rdquo;,
+              and just like that our adder becomes an
+              <strong>adder&ndash;subtractor</strong>.
+            </p>
+
+            <a class="code-card"
+               href="https://github.com/estaresinic05/Silicon-From-Scratch/blob/main/single-cycle-cpu/rtl/ripple_carry_adder.v"
+               target="_blank" rel="noopener">
+              <svg class="code-card__logo" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+              </svg>
+              <span class="code-card__text">
+                <span class="code-card__title">See the code on GitHub</span>
+                <span class="code-card__sub">Browse the Verilog behind the ripple carry adder</span>
+              </span>
+              <span class="code-card__arrow" aria-hidden="true">&rarr;</span>
+            </a>
           </div>
 
-          <figure class="figure figure--diagram figure--diagram-tall">
-            <img src="../../assets/ALU/full-adder-chain.jpg"
-                 alt="A vertical chain of full adders. The topmost adder takes a, b, and a carry-in Cin and produces Sum-0; its carry-out feeds down into the next adder producing Sum-1, and so on down to the last adder producing Sum-31 and the final carry-out Cout." decoding="async" />
+          <figure class="figure figure--diagram figure--diagram-tall"
+                  style="max-width: 30rem;">
+            <div class="adder-reveal" id="adder-reveal">
+              <img class="adder-reveal__img adder-reveal__base"
+                   src="../../assets/ALU/full-adder-chain-aligned.jpg"
+                   alt="A vertical chain of full adders. The topmost adder takes a, b, and a carry-in Cin and produces Sum-0; its carry-out feeds down into the next adder producing Sum-1, and so on down to the last adder producing Sum-31 and the final carry-out Cout." decoding="async" />
+              <img class="adder-reveal__img adder-reveal__over"
+                   src="../../assets/ALU/adder-subtractor-aligned.jpg"
+                   alt="The same chain reworked into an adder–subtractor: each bit of b now passes through an XOR gate driven by a shared Sub control line before entering its full adder, and Sub also feeds the first carry-in." decoding="async" />
+            </div>
             <figcaption>
-              A chain of full adders with each bit's <code>C<sub>out</sub></code>
-              connected to the next bit's <code>C<sub>in</sub></code>.
+              Swap between the ripple carry adder and the adder&ndash;subtractor
+              circuits.
             </figcaption>
+            <button class="btn btn--ghost adder-reveal__toggle" type="button"
+                    id="adder-reveal-toggle" aria-pressed="false">
+              See Adder&ndash;Subtractor
+            </button>
           </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== OVERFLOW ========================== -->
+    <section class="section" id="overflow" aria-labelledby="overflow-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="overflow-title">A Word on Overflow</h2>
+        </div>
+
+        <div class="prose" style="max-width: 60rem; margin-inline: auto;">
+          <p>
+            Because our adder is built from a <em>fixed</em> number of bits, some
+            sums simply have no room to land. Adding two large numbers can produce
+            a result too big for the available bits, and the extra information
+            spills off the top. This is called <strong>overflow</strong>, and if we
+            don't catch it, the answer we read back will be flat-out wrong.
+          </p>
+          <p>
+            The good news is that overflow is cheap to detect. For
+            <strong>unsigned</strong> numbers it's simple: if the final
+            <code>C<sub>out</sub></code> &mdash; the carry off the most significant
+            bit &mdash; is 1, the sum didn't fit, and overflow has occurred. For
+            <strong>signed</strong> (two's complement) numbers the tell-tale sign is
+            different: overflow happens exactly when we add two numbers of the
+            <em>same</em> sign and get a result of the <em>opposite</em> sign
+            (two positives yielding a negative, or two negatives yielding a
+            positive).
+          </p>
+          <p>
+            Hardware has an even slicker trick. It compares the carry
+            <em>into</em> the most significant bit with the carry <em>out</em> of
+            it: if those two carries differ, signed overflow has occurred. In other
+            words, a single XOR gate on those two carry bits,
+            <code>V = C<sub>in</sub> &oplus; C<sub>out</sub></code> at the top bit,
+            gives us an <strong>overflow flag</strong> essentially for free &mdash;
+            one of several status flags a real ALU hands back alongside the result.
+          </p>
         </div>
       </div>
     </section>
@@ -408,6 +480,13 @@ endmodule</textarea>
       RISC-V Edition</em>, Appendix A.5, &ldquo;Constructing a Basic Arithmetic
       Logic Unit&rdquo; (Morgan Kaufmann, 2021).
     </p>
+    <p class="container footer__credit">
+      Adapted from: Christopher S. Coulston,
+      <a href="https://coulston.github.io/Advanced-Digital-Design/handout/Digital%20Design%20Textbook.pdf"
+         target="_blank" rel="noopener"><em>Digital Design: A Datapath and Control
+      Approach</em></a>, Chapter 4, &ldquo;Combinational Logic Building
+      Blocks,&rdquo; &sect;4.3 &ldquo;The Adder.&rdquo;
+    </p>
   </footer>
 
   <!-- Mobile nav toggle + project directory drawer -->
@@ -445,6 +524,21 @@ endmodule</textarea>
           feedback.classList.add("is-wrong");
         }
       });
+    });
+  })();
+  </script>
+
+  <!-- Adder ↔ adder-subtractor toggle: the button below the diagram fades the
+       aligned adder-subtractor sketch in over the ripple-carry chain (and back). -->
+  <script>
+  (function () {
+    var el = document.getElementById("adder-reveal");
+    var btn = document.getElementById("adder-reveal-toggle");
+    if (!el || !btn) return;
+    btn.addEventListener("click", function () {
+      var showing = el.classList.toggle("is-revealed");
+      btn.setAttribute("aria-pressed", showing ? "true" : "false");
+      btn.innerHTML = showing ? "See Ripple Carry Adder" : "See Adder&ndash;Subtractor";
     });
   })();
   </script>
