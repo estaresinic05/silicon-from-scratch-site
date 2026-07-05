@@ -756,3 +756,95 @@ Drop this once per page that has a quiz (guards for a missing `.quiz__next`):
 > Multiple quizzes on one page: the markup/script above key off the single id
 > `quiz`. For more than one on a page, switch to a class-based selector
 > (`document.querySelectorAll(".quiz")`) and loop, giving each its own container.
+
+---
+
+## "See the code on GitHub" card
+
+A compact paper-card link out to the project's source: the **GitHub mark** on the
+left, a two-line label ("See the code on GitHub" + a one-line subtitle), and a
+purple **arrow** on the right that nudges right on hover while the whole card
+lifts. The entire card is one `<a>`, so all of it is clickable. Reference
+implementations: `alu/full-adder/index.html` (links straight to the lesson's
+Verilog file) and the homepage Hands On section in `index.html` (links to the
+repo root).
+
+The card rides the standard **paper card** — `var(--paper)` background, hairline
+border, `var(--radius)` corners, `var(--shadow-soft)` — matching every other
+raised panel on the site. It opens in a new tab (`target="_blank"
+rel="noopener"`).
+
+### Markup
+
+```html
+<a class="code-card"
+   href="https://github.com/estaresinic05/Silicon-From-Scratch/blob/main/PATH/TO/file.v"
+   target="_blank" rel="noopener">
+  <svg class="code-card__logo" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+  </svg>
+  <span class="code-card__text">
+    <span class="code-card__title">See the code on GitHub</span>
+    <span class="code-card__sub">One line naming what the reader will find</span>
+  </span>
+  <span class="code-card__arrow" aria-hidden="true">&rarr;</span>
+</a>
+```
+
+Rules:
+- Point `href` at the **most specific** source that fits: a single `.v` file for a
+  lesson about that circuit, or the repo root for a general "browse everything."
+- The GitHub mark inherits `fill: var(--ink)`, so it stays legible in both themes
+  — don't hard-code a colour.
+- Keep the subtitle to one short line describing what's on the other end.
+
+### CSS
+
+The rules live in `styles/alu.css` for the ALU-section pages and are **duplicated
+in `styles/main.css`** for the homepage (which doesn't load `alu.css`) — keep the
+two copies in sync.
+
+```css
+.code-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease),
+              border-color 0.18s var(--ease);
+}
+.code-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--accent);
+}
+.code-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.code-card__logo { flex: none; width: 2.25rem; height: 2.25rem; fill: var(--ink); }
+.code-card__text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.code-card__title {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+.code-card__sub { color: var(--soft-ink); font-size: 0.9rem; }
+.code-card__arrow {
+  margin-left: auto;
+  flex: none;
+  color: var(--accent);
+  font-size: 1.2rem;
+  transition: transform 0.18s var(--ease);
+}
+.code-card:hover .code-card__arrow { transform: translateX(3px); }
+```
+
+> Placed at the bottom of the Hands On section's right column, the card travels
+> **with** the Interactive Waveforms widget: `index.html`'s waveform-relocation
+> script moves the `.code-card` alongside `.aluwave` so it stays directly beneath
+> the diagram in both the two-column and the narrow full-width layouts.

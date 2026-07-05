@@ -278,6 +278,7 @@
       buildProjectTree(ul, 2);
     });
     projDir.classList.add("is-mobile-only");
+    projDir.classList.add("menu__projdir");   // tagged so openToc can auto-expand it
 
     // Mobile-only: the top-bar quick links (Home / Meet the Processor / GitHub /
     // About / Tools), styled to match the drawer's flat rows, with the
@@ -324,6 +325,17 @@
       tocBtn.setAttribute("aria-expanded", "true");
       if (navToggle) navToggle.setAttribute("aria-expanded", "true");
       document.body.classList.add("nav-open");
+      // On mobile (where the quick links + a collapsible "Project Directory"
+      // ride inside this drawer), also expand that dropdown so the reader lands
+      // straight on the project tree rather than a single collapsed row.
+      if (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) {
+        var pd = tocMenu.querySelector(".menu__projdir");
+        if (pd && !pd.classList.contains("is-open")) {
+          pd.classList.add("is-open");
+          var pdBtn = pd.querySelector(".menu__toggle");
+          if (pdBtn) pdBtn.setAttribute("aria-expanded", "true");
+        }
+      }
     }
     function closeToc() {
       tocMenu.classList.remove("is-open");
