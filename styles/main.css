@@ -2416,6 +2416,9 @@ html.js .buildpath-intro { --rail-progress: 0; }
   border-top: 1px solid var(--hairline);
   padding: var(--space-3) 0 0;
   overflow-x: auto;
+  /* Let a finger scroll the page vertically over the widget, but claim
+     horizontal drags for the scrubber (aluwave.js) instead of panning. */
+  touch-action: pan-y;
 }
 .awv-svg {
   display: block;

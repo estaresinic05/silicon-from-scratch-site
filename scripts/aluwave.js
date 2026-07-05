@@ -187,12 +187,22 @@
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     build();
 
-    /* ---- hover scrubber: vertical guide through the cursor + a value tooltip
+    /* ---- scrubber: a vertical guide through the cursor + a value tooltip
        (each value coloured to match its signal). Attached once; it reads the
-       current SVG/lanes on every move, so it survives rebuilds. ---- */
+       current SVG/lanes on every move, so it survives rebuilds.
+
+       Mouse: follows hover, clears when the pointer leaves.
+       Touch/pen: press to place it, drag to move it, and it STAYS where you let
+       go (no hover on touch, so a persistent line is the only way to read a
+       value). `dragging` tracks an active press; `persist` keeps the touch line
+       up after release. touch-action:pan-y (CSS) lets vertical page scrolling
+       through the widget while we claim horizontal drags for scrubbing. ---- */
     var tip = document.createElement("div");
     tip.className = "awv-tip";
     root.appendChild(tip);
+
+    var dragging = false, persist = false;
+    function isTouch(e) { return e.pointerType === "touch" || e.pointerType === "pen"; }
 
     function onMove(e) {
       var svgEl = scope.querySelector(".awv-svg");
@@ -200,7 +210,11 @@
       if (!svgEl || !line) return;
       var r = svgEl.getBoundingClientRect();
       var vbX = (e.clientX - r.left) / r.width * W;
-      if (vbX < PLOTL || vbX > PLOTR) { onLeave(); return; }
+      if (vbX < PLOTL || vbX > PLOTR) {
+        // While dragging, stick to the nearest edge instead of vanishing.
+        if (dragging) vbX = clamp(vbX, PLOTL, PLOTR);
+        else { onLeave(); return; }
+      }
       var step = clamp(Math.floor((vbX - PLOTL) / STEPW), 0, N - 1);
       var tns = clamp(Math.round((vbX - PLOTL) / (PLOTR - PLOTL) * (N * 10)), 0, N * 10);
 
@@ -230,8 +244,47 @@
       if (line) line.classList.remove("is-on");
       tip.classList.remove("is-on");
     }
-    scope.addEventListener("pointermove", onMove);
-    scope.addEventListener("pointerleave", onLeave);
+
+    function onDown(e) {
+      var svgEl = scope.querySelector(".awv-svg");
+      if (!svgEl) return;
+      var r = svgEl.getBoundingClientRect();
+      var vbX = (e.clientX - r.left) / r.width * W;
+      // Only grab presses inside the plot — taps on the eye toggles still work.
+      if (vbX < PLOTL || vbX > PLOTR) return;
+      dragging = true;
+      persist = isTouch(e);
+      if (scope.setPointerCapture) { try { scope.setPointerCapture(e.pointerId); } catch (_) {} }
+      onMove(e);
+      if (isTouch(e)) e.preventDefault();   // no synthetic click / text selection
+    }
+    function release(e) {
+      dragging = false;
+      if (scope.releasePointerCapture) { try { scope.releasePointerCapture(e.pointerId); } catch (_) {} }
+    }
+    function onUp(e) {
+      if (!dragging) return;
+      release(e);
+      if (!persist) onLeave();               // touch line stays; mouse clears
+    }
+    function onCancel(e) {
+      // The browser reclaimed the gesture (e.g. a vertical page scroll started
+      // over the widget) — this was never a scrub, so clear the line.
+      if (!dragging) return;
+      release(e);
+      persist = false;
+      onLeave();
+    }
+
+    scope.addEventListener("pointerdown", onDown);
+    scope.addEventListener("pointermove", function (e) {
+      if (dragging && isTouch(e)) e.preventDefault();
+      onMove(e);
+    });
+    scope.addEventListener("pointerup", onUp);
+    scope.addEventListener("pointercancel", onCancel);
+    // Mouse hover only clears on leave; a placed touch line persists.
+    scope.addEventListener("pointerleave", function () { if (!dragging && !persist) onLeave(); });
   }
 
   var roots = document.querySelectorAll(".aluwave");
