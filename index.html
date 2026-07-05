@@ -652,26 +652,6 @@ endmodule</textarea>
   })();
   </script>
 
-  <!-- "Open Project Directory" buttons (hero CTA + "How to get started"): open
-       the same Project Directory drawer the ☰ / hamburger opens (main.js owns
-       it) by forwarding the click. -->
-  <script>
-  (function () {
-    // Both the hero CTA and the "How to get started" button open the same
-    // Project Directory drawer that the ☰ / hamburger opens (main.js owns it).
-    var btns = document.querySelectorAll(".js-open-proj-dir");
-    for (var i = 0; i < btns.length; i++) {
-      btns[i].addEventListener("click", function () {
-        // Drop the (auto-hidden) top bar back down, then open its drawer.
-        var bar = document.querySelector(".topbar");
-        if (bar) bar.classList.remove("is-hidden");
-        var t = document.querySelector(".toc__btn");
-        if (t) t.click();
-      });
-    }
-  })();
-  </script>
-
   <!-- Interactive Waveforms placement: on phones/smaller devices the widget
        moves out of the right Hands On column to become a full-width row of its
        own (the wide timing diagram needs the room); on larger screens it lives

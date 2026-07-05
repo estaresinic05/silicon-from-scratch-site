@@ -331,7 +331,7 @@ endmodule</textarea>
               tweak. Recall that in two's complement, negating a number means
               flipping all its bits and adding 1 &mdash; so
               <code>a &minus; b</code> is just
-              <code>a + <span style="text-decoration: overline;">b</span> + 1</code>. To pull this off, we feed each bit of
+              <code>a + <span class="ovl">b</span> + 1</code>. To pull this off, we feed each bit of
               <code>b</code> through an XOR gate controlled by a single
               <strong>subtract</strong> signal: when it's 0 the bits pass through
               untouched (plain addition), and when it's 1 every bit of
@@ -366,8 +366,7 @@ endmodule</textarea>
                    alt="The same chain reworked into an adder–subtractor: each bit of b now passes through an XOR gate driven by a shared Sub control line before entering its full adder, and Sub also feeds the first carry-in." decoding="async" />
             </div>
             <figcaption>
-              Swap between the ripple carry adder and the adder&ndash;subtractor
-              circuits.
+              Swap between the ripple carry adder and the adder&ndash;subtractor.
             </figcaption>
             <button class="btn btn--ghost adder-reveal__toggle" type="button"
                     id="adder-reveal-toggle" aria-pressed="false">
@@ -454,7 +453,7 @@ endmodule</textarea>
           <p class="quiz__feedback" role="status" aria-live="polite"></p>
 
           <div class="quiz__next">
-            <a class="btn btn--primary" href="../../coming-soon/?topic=32-bit%20ALU%20Slice">
+            <a class="btn btn--primary" href="../alu-slice/">
               Continue to the 32-bit ALU Slice <span aria-hidden="true">&rarr;</span>
             </a>
           </div>

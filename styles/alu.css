@@ -446,6 +446,17 @@
 /* A narrow cap for a portrait diagram set beside prose (the ripple-carry chain,
    which is tall and skinny). */
 .figure--diagram-tall { max-width: 20rem; }
+/* Overbar for a complemented signal (b-bar = "not b"), drawn a hair lower than a
+   plain text-decoration overline so the bar sits closer to the letter. */
+.ovl { position: relative; }
+.ovl::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0.08em;
+  border-top: 0.06em solid currentColor;
+}
 /* Adder → adder-subtractor cross-fade. The two sketches share identical
    dimensions (padded so their full-adder chains register exactly), so stacking
    them and fading the subtractor in on top makes the XOR gates + Sub line appear
@@ -1031,6 +1042,33 @@
   .quiz__reveal,
   .quiz__figure--tt,
   .quiz__figure--cout { transition: none; }
+}
+
+/* ALU-slice Check Yourself reveal: the slice sketch sits small on its own, then
+   on a correct answer slides toward centre-left while the De Morgan sketch fades
+   in beside it — the two then sit side by side. Same mechanism as the full-adder
+   reveal above, sized for these two images. */
+/* A roomier card so the slice + De Morgan sketches can sit larger side by side. */
+.quiz--wide { max-width: 66rem; }
+.quiz__figure--slice {
+  width: min(26rem, 100%);
+  transition: width 0.55s var(--ease);
+}
+.quiz__figure--demorgan {
+  width: 0;
+  opacity: 0;
+  transition: width 0.55s var(--ease), opacity 0.45s var(--ease) 0.45s;
+}
+.quiz.is-solved .quiz__figure--slice { width: min(22rem, 40%); }
+.quiz.is-solved .quiz__figure--demorgan { width: min(34rem, 56%); opacity: 1; }
+/* Narrow screens: stack the two panels instead of squeezing them side by side. */
+@media (max-width: 600px) {
+  .quiz.is-solved .quiz__figure--slice { width: min(24rem, 100%); }
+  .quiz.is-solved .quiz__figure--demorgan { width: min(30rem, 100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quiz__figure--slice,
+  .quiz__figure--demorgan { transition: none; }
 }
 .quiz__options {
   display: grid;

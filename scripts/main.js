@@ -123,7 +123,7 @@
         ["Logic Gates and Simple 1-bit ALU", "alu/logic-gates/"],
         ["Full Adder and Ripple Carry Adder", "alu/full-adder/"],
         "Ripple Carry Adder",
-        "32-bit ALU Slice",
+        ["32-bit ALU Slice", "alu/alu-slice/"],
         "Complete 32-bit ALU",
         "Testing",
         "Bonus: Carry Lookahead"
@@ -385,6 +385,18 @@
       navToggle.addEventListener("click", function () {
         if (tocMenu.classList.contains("is-open")) closeToc();
         else openToc();
+      });
+    }
+
+    // "Open Project Directory" buttons (home hero CTAs, the About page, etc.) open
+    // this same drawer. Un-hide the (auto-hiding) top bar first so it doesn't
+    // slide away, then open — openToc() also auto-expands the mobile Project
+    // Directory dropdown, so a tap lands straight on the project tree.
+    var openers = document.querySelectorAll(".js-open-proj-dir");
+    for (var oi = 0; oi < openers.length; oi++) {
+      openers[oi].addEventListener("click", function () {
+        if (topbar) topbar.classList.remove("is-hidden");
+        if (!tocMenu.classList.contains("is-open")) openToc();
       });
     }
   }
