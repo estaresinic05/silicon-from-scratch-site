@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. Without JS this
+       never runs and the full page stays visible. -->
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>The Full Adder and Ripple Carry Adder — Silicon From Scratch</title>
+  <meta name="description"
+        content="Wire a handful of gates together into a full adder — the smallest circuit that can add two bits and a carry, and the first real arithmetic in hardware." />
+
+  <!-- Social link previews: shared logo + "Silicon From Scratch" card (see index.html). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Silicon From Scratch" />
+  <meta property="og:title" content="Silicon From Scratch" />
+  <meta property="og:url" content="https://siliconfromscratch.com/alu/full-adder/" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+  <meta property="og:image:width" content="1408" />
+  <meta property="og:image:height" content="768" />
+  <meta property="og:image:alt" content="Silicon From Scratch logo" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Silicon From Scratch" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+
+  <link rel="icon" href="../../assets/home/logo.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles, then the ALU project components (this page lives at
+       /alu/full-adder/, two levels down). -->
+  <link rel="stylesheet" href="../../styles/main.css" />
+  <link rel="stylesheet" href="../../styles/alu.css" />
+</head>
+<body class="theme-dark page-logic">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../../" aria-label="Silicon From Scratch — home">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="../../">Home</a>
+        <a href="../../meet-the-processor/">Meet the Processor</a>
+        <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+           target="_blank" rel="noopener">GitHub</a>
+        <a href="../../about/">About</a>
+        <a href="../../#tools">Tools</a>
+      </nav>
+
+      <div class="topbar__right">
+        <!-- Section index (desktop only): hover the ☰ to open the project directory -->
+        <div class="toc" id="page-toc">
+          <button class="toc__btn" type="button" aria-haspopup="true"
+                  aria-expanded="false" aria-label="Open the project directory">
+            <span class="nav-toggle__bars" aria-hidden="true"></span>
+          </button>
+          <ul class="toc__menu" aria-label="Project directory"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================== DOC HERO ============================ -->
+    <section class="doc-hero doc-hero--balanced container" aria-labelledby="fa-title">
+      <div class="doc-hero__text">
+        <h1 id="fa-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">The Full Adder</span> <span class="title-eyebrow__group">and Ripple Carry Adder</span></span></h1>
+        <p class="doc-hero__lead">
+          A single gate makes one decision, but arithmetic needs gates working
+          together. The <strong>full adder</strong> is the smallest circuit that
+          can really add — it takes two bits plus a <strong>carry-in</strong> and
+          produces a <strong>sum</strong> bit and a <strong>carry-out</strong>.
+          Chain a row of them and you can add numbers of any width.
+        </p>
+        <div class="doc-hero__actions">
+          <span class="doc-hero__prompt">Think you got this already?</span>
+          <a class="btn btn--primary" href="#check">Skip to Check Yourself</a>
+        </div>
+      </div>
+
+      <figure class="doc-hero__art">
+        <img src="../../assets/ALU/full-adder.jpg"
+             alt="A hand-drawn full adder block: inputs a and b enter from the left and a carry-in Cin enters from the top; the box outputs a Sum on the right and a carry-out Cout on the bottom."
+             decoding="async" />
+      </figure>
+    </section>
+
+    <!-- ============================ BINARY ADDITION ====================== -->
+    <section class="section" id="binary-addition" aria-labelledby="binadd-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="binadd-title">Binary Addition</h2>
+        </div>
+
+        <div class="split split--media-left">
+          <figure class="figure figure--diagram">
+            <img src="../../assets/ALU/bit-addition-by-hand.jpg"
+                 alt="The four ways to add two bits worked out by hand: 0 + 0 = 0, 0 + 1 = 1, 1 + 0 = 1, and 1 + 1 = 10, where the 1 carried into the next column is labelled Cout." decoding="async" />
+          </figure>
+
+          <div class="prose">
+            <p>
+              Adding two bits in binary works exactly like adding two digits in
+              the base-10 number system — also called the <strong>decimal</strong>
+              number system — that you already know. Start with the smallest
+              cases: <code>0 + 0</code> is <code>0</code>, <code>1 + 0</code> is
+              <code>1</code>, and <code>0 + 1</code> is <code>1</code>.
+            </p>
+            <p>
+              The interesting one is <code>1 + 1</code>, which equals
+              <code>2</code>. The only problem is that we need <em>two</em> bits
+              to represent <code>2</code> in binary — so <code>1 + 1 = 10</code>!
+              Look closely at that answer and the bit we started with actually
+              turned into a <code>0</code>, and we &ldquo;carried&rdquo; a
+              <code>1</code> to the left by one position.
+            </p>
+          </div>
+        </div>
+
+        <div class="split">
+          <div class="prose">
+            <p>
+              Just like in decimal, binary addition requires carrying bits. In
+              fact, each time we add two input bits we actually get <em>two</em>
+              output bits: the <strong>sum</strong> of our two input bits, and a
+              <strong>carry</strong> into the next most significant bit.
+            </p>
+            <p>
+              The table at right illustrates the different results we could get
+              from adding two bits. As expected, <code>C<sub>out</sub></code> is
+              only <code>1</code> when both <code>a</code> and <code>b</code> are
+              <code>1</code>, because this is the only combination where adding
+              the two bits would result in an answer that we cannot fit in just
+              one bit.
+            </p>
+          </div>
+
+          <figure class="figure figure--diagram figure--diagram-lg">
+            <img src="../../assets/ALU/bit-addition-table.jpg"
+                 alt="A four-column table with headers a, b, Cout, and Sum. Its rows list every pair of input bits: 0 and 0 give Cout 0 and Sum 0; 0 and 1 give Cout 0 and Sum 1; 1 and 0 give Cout 0 and Sum 1; 1 and 1 give Cout 1 and Sum 0." decoding="async" />
+            <figcaption>
+              Every result of adding two bits: the sum, and the carry-out
+              (<code>C<sub>out</sub></code>) into the next column.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= ADDING MULTI-BIT NUMBERS ================== -->
+    <section class="section" id="multi-bit" aria-labelledby="multibit-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="multibit-title">Adding Multi-bit Numbers</h2>
+        </div>
+
+        <div class="split">
+          <div class="prose">
+            <p>
+              Naturally, the next step is adding numbers with multiple bits. The
+              good news is that this isn't hard at all, so long as we remember to
+              include the carry-out from the previous bit when we add the next
+              one. As discussed before, we call the carry <em>out</em> of a bit its
+              <strong>C<sub>out</sub></strong>, and the carry <em>into</em> a bit
+              its <strong>C<sub>in</sub></strong>. With some careful thinking, you
+              might reason that to add multiple bits, the carry-out of the
+              previous bit has to become the carry-in of the next bit. And you'd
+              be right!
+            </p>
+            <p>
+              To add multiple bits, we must <em>chain</em> multiple full adders
+              together, connecting each bit's <code>C<sub>out</sub></code> to the
+              next bit's <code>C<sub>in</sub></code>. This chain is often referred
+              to as a <strong>ripple carry adder</strong>, and it is the backbone
+              of our ALU design. Since the <code>C<sub>in</sub></code> of each
+              full adder is now an input in its own right, we can update our table
+              to include all three of <code>a</code>, <code>b</code>, and
+              <code>C<sub>in</sub></code> as inputs.
+            </p>
+          </div>
+
+          <figure class="figure figure--diagram figure--diagram-tall">
+            <img src="../../assets/ALU/full-adder-chain.jpg"
+                 alt="A vertical chain of full adders. The topmost adder takes a, b, and a carry-in Cin and produces Sum-0; its carry-out feeds down into the next adder producing Sum-1, and so on down to the last adder producing Sum-31 and the final carry-out Cout." decoding="async" />
+            <figcaption>
+              A chain of full adders with each bit's <code>C<sub>out</sub></code>
+              connected to the next bit's <code>C<sub>in</sub></code>.
+            </figcaption>
+          </figure>
+        </div>
+
+        <figure class="figure figure--diagram figure--diagram-xl">
+          <img src="../../assets/ALU/full-adder-tt.jpg"
+               alt="The full-adder truth table with three input columns a, b, and Cin, two output columns Cout and Sum, and a comments column showing the arithmetic. All eight input combinations are listed; Cout is 1 whenever at least two inputs are 1, and Sum is 1 whenever an odd number of inputs are 1." decoding="async" />
+          <figcaption>
+            The full adder's truth table, now with <code>C<sub>in</sub></code> as
+            a third input. The comments column shows each row as the sum
+            <code>a + b + C<sub>in</sub></code>.
+          </figcaption>
+        </figure>
+
+        <div class="split split--media-left">
+          <figure class="figure figure--diagram figure--diagram-lg">
+            <img src="../../assets/ALU/sum-circuit.jpg"
+                 alt="An XOR gate with three inputs — a, b, and Cin — producing the output Sum." decoding="async" />
+          </figure>
+
+          <div class="prose">
+            <p>
+              From this table we can create logic expressions for both outputs,
+              <code>C<sub>out</sub></code> and <code>Sum</code>. Notice that
+              <code>Sum</code> is only ever <code>1</code> when an <em>odd</em>
+              number of the input bits are <code>1</code>. Thinking back to the
+              last lesson, this is precisely the <strong>XOR</strong>
+              functionality, so we can draw the circuit for <code>Sum</code> as
+              shown at left. The logic expression for
+              <code>C<sub>out</sub></code> is left as an exercise at the end of
+              this lesson!
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= LESSON BODY (to author) =================== -->
+    <!-- Remaining full-adder sections go here (the gate-level Cout build and
+         the Verilog flip card). -->
+
+    <!-- ============================== CHECK YOURSELF ===================== -->
+    <section class="section section--tight" id="check" aria-labelledby="check-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="check-title">Check Yourself</h2>
+        </div>
+
+        <div class="quiz" id="quiz">
+          <p class="quiz__q">A full adder is given a&nbsp;=&nbsp;1, b&nbsp;=&nbsp;1, and Cin&nbsp;=&nbsp;0. What are Sum and Cout?</p>
+
+          <figure class="figure figure--photo quiz__figure">
+            <img src="../../assets/ALU/full-adder.jpg"
+                 alt="A full adder block with inputs a and b on the left, a carry-in Cin on top, and outputs Sum on the right and carry-out Cout on the bottom."
+                 decoding="async" />
+          </figure>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button">Sum = 1 &amp; Cout = 0</button>
+            <button class="quiz__opt" type="button" data-correct="true">Sum = 0 &amp; Cout = 1</button>
+            <button class="quiz__opt" type="button">Sum = 1 &amp; Cout = 1</button>
+            <button class="quiz__opt" type="button">Sum = 0 &amp; Cout = 0</button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <div class="quiz__next">
+            <a class="btn btn--primary" href="../../coming-soon/?topic=Ripple%20Carry%20Adder">
+              Continue to the Ripple Carry Adder <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+    <p class="container footer__credit">
+      Adapted from: David A. Patterson and John L. Hennessy,
+      <em>Computer Organization and Design: The Hardware/Software Interface,
+      RISC-V Edition</em>, Appendix A.5, &ldquo;Constructing a Basic Arithmetic
+      Logic Unit&rdquo; (Morgan Kaufmann, 2021).
+    </p>
+  </footer>
+
+  <!-- Mobile nav toggle + project directory drawer -->
+  <script src="../../scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger from CDN for the same scroll-reveal feel as the rest
+       of the site. If they fail to load, scroll.js removes the `js` class and
+       the page is simply fully visible. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
+  <script src="../../scripts/scroll.js" defer></script>
+
+  <!-- "Check yourself" quiz: colour the chosen answer, show feedback, and reveal
+       the continue button once the correct answer (Sum = 0 & Cout = 1) is picked. -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          if (next) next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+        } else {
+          btn.classList.add("is-wrong");
+          feedback.textContent = "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

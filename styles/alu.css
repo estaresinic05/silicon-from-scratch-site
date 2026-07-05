@@ -420,6 +420,19 @@
 .split--media-left .prose { max-width: none; }
 /* The mux figure — a large diagram hung to the left of its explanation. */
 .figure--mux { width: 100%; max-width: 34rem; margin-inline: 0 auto; }
+/* Small hand-drawn diagrams set beside prose in a .split (e.g. the Binary
+   Addition worked sums + bit-addition table): cap the width so the sketch sits
+   neatly next to the text rather than dominating the auto grid track. */
+.figure--diagram { width: 100%; max-width: 26rem; margin-inline: auto; }
+/* A wider variant for the landscape bit-addition table, which reads better a
+   little larger than the near-square worked-sums sketch. */
+.figure--diagram-lg { max-width: 34rem; }
+/* A narrow cap for a portrait diagram set beside prose (the ripple-carry chain,
+   which is tall and skinny). */
+.figure--diagram-tall { max-width: 20rem; }
+/* An extra-wide cap for a large landscape table shown full-width and centred
+   (the 3-input full-adder truth table). */
+.figure--diagram-xl { max-width: 48rem; }
 /* Quieter checklist: bold lead-ins use the muted prose colour (matches
    .prose strong) rather than the brighter site default. */
 .checklist--quiet strong { color: var(--soft-ink); }

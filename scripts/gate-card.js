@@ -54,9 +54,18 @@
     /* Flip back by clicking the card frame — the border/padding around the
        editor, including the space by the return arrow. Clicks inside the
        interactive editor or the live-sim box are left alone. The return button
-       lives outside both, so its clicks (mouse or keyboard) flip back too. */
+       lives outside both, so its clicks (mouse or keyboard) flip back too.
+       The thin gap between the code block and the output row is dead space:
+       only the outer frame flips, not that sliver. */
     if (back) back.addEventListener("click", function (e) {
       if (e.target.closest(".code-editor, .gate-sim")) return;
+      var ed = back.querySelector(".code-editor");
+      var row = back.querySelector(".gate-card__backrow");
+      if (ed && row && !e.target.closest(".gate-card__return")) {
+        var edBottom = ed.getBoundingClientRect().bottom;
+        var rowTop = row.getBoundingClientRect().top;
+        if (e.clientY > edBottom && e.clientY < rowTop) return;
+      }
       flipTo(false);
     });
     if (resetBtn) resetBtn.addEventListener("click", function () { ta.value = original; state = {}; refresh(); if (!ta.readOnly) ta.focus(); });
