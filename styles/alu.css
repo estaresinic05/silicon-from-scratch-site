@@ -183,6 +183,14 @@
    ("Logic Gates &" / "the 1-bit ALU") — never mid-phrase. */
 .title-eyebrow__group { white-space: nowrap; }
 .title-eyebrow__text { min-width: 0; text-align: center; }
+/* A long lesson title (e.g. "The Full Adder and Ripple Carry Adder") tuned to
+   sit on one line on desktop: keep the whole text together and tighten the
+   tracking a touch so it fits the hero column. Mobile keeps the default 0.22em
+   tracking and the clean two-line break between the groups. */
+@media (min-width: 769px) {
+  .title-eyebrow--long { letter-spacing: 0.16em; }
+  .title-eyebrow--long .title-eyebrow__text { white-space: nowrap; }
+}
 .doc-hero__lead {
   font-size: 1.25rem;
   color: var(--soft-ink);
@@ -204,6 +212,14 @@
 .doc-hero--balanced h1.title-eyebrow { justify-content: center; }
 .doc-hero--balanced .doc-hero__lead { text-align: center; }
 .doc-hero--balanced .doc-hero__actions { justify-content: center; }
+/* Text-shift variant: everything stays centred per the style guide (title, lead,
+   and actions inherit the .doc-hero--balanced centring above); we only nudge the
+   whole text column a little toward the outside (left) so the one-line title has
+   breathing room from the picture instead of crowding it. Desktop only — mobile
+   still stacks and centres per the base balanced rules. */
+@media (min-width: 769px) {
+  .doc-hero--textshift .doc-hero__text { transform: translateX(-3.75rem); }
+}
 
 /* Sub-headings inside long sections (e.g. "The control vector") */
 .subhead {
@@ -799,6 +815,10 @@
   background: rgba(74, 144, 217, 0.08);
 }
 .gate-sim__out { font-size: 0.82rem; color: var(--soft-ink); white-space: nowrap; }
+/* When a card shows more than one output (e.g. the full adder's sum + cout),
+   the readouts sit together as one group on the right of the sim bar, wrapping
+   to a new line if the chips leave no room. */
+.gate-sim__outs { display: flex; align-items: center; gap: 0.15rem 0.85rem; flex-wrap: wrap; }
 .gate-sim__val {
   font-weight: 600;
   font-size: 1rem;

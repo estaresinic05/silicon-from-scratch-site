@@ -23,8 +23,11 @@
 
     var resetBtn = card.querySelector(".code-editor__reset");
     var inputsEl = card.querySelector(".gate-sim__inputs");
-    var lhsEl = card.querySelector(".gate-sim__lhs");
-    var valEl = card.querySelector(".gate-sim__val");
+    // One readout per output. Most cards declare a single output; a card can
+    // list several (e.g. the full adder's sum + cout), and the k-th readout
+    // tracks the k-th declared output port.
+    var lhsEls = card.querySelectorAll(".gate-sim__lhs");
+    var valEls = card.querySelectorAll(".gate-sim__val");
     var controls = (card.getAttribute("data-control") || "").split(/[,\s]+/);
     var original = ta.value;
     var env = {};            // input chip values
@@ -81,11 +84,13 @@
     }
 
     function showVal(res) {
-      if (!valEl) return;
+      if (!valEls.length) return;
       var vals = res.eval(env, state);
-      var out = res.display;
-      if (out != null && (out in vals)) { valEl.textContent = String(vals[out] & 1); valEl.removeAttribute("data-bad"); }
-      else { valEl.textContent = "—"; valEl.setAttribute("data-bad", "1"); }
+      for (var i = 0; i < valEls.length; i++) {
+        var out = res.outputs[i];
+        if (out != null && (out in vals)) { valEls[i].textContent = String(vals[out] & 1); valEls[i].removeAttribute("data-bad"); }
+        else { valEls[i].textContent = "—"; valEls[i].setAttribute("data-bad", "1"); }
+      }
     }
 
     // Input toggled (code unchanged): recompute the value only.
@@ -96,11 +101,11 @@
       var res = V.compile(ta.value);
       if (res.ok) {
         rebuildChips(res.inputs);
-        if (lhsEl && res.display) lhsEl.textContent = res.display;
+        for (var i = 0; i < lhsEls.length; i++) { if (res.outputs[i]) lhsEls[i].textContent = res.outputs[i]; }
         showVal(res);
         errRange = null;
       } else {
-        if (valEl) { valEl.textContent = "—"; valEl.setAttribute("data-bad", "1"); }
+        for (var j = 0; j < valEls.length; j++) { valEls[j].textContent = "—"; valEls[j].setAttribute("data-bad", "1"); }
         errRange = res.error;          // keep the last-good chips + label
       }
       render();

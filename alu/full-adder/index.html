@@ -81,15 +81,14 @@
     <span id="top"></span>
 
     <!-- ============================== DOC HERO ============================ -->
-    <section class="doc-hero doc-hero--balanced container" aria-labelledby="fa-title">
+    <section class="doc-hero doc-hero--balanced doc-hero--textshift container" aria-labelledby="fa-title">
       <div class="doc-hero__text">
-        <h1 id="fa-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">The Full Adder</span> <span class="title-eyebrow__group">and Ripple Carry Adder</span></span></h1>
+        <h1 id="fa-title" class="title-eyebrow title-eyebrow--long"><span class="title-eyebrow__text"><span class="title-eyebrow__group">The Full Adder</span> <span class="title-eyebrow__group">and Ripple Carry Adder</span></span></h1>
         <p class="doc-hero__lead">
           A single gate makes one decision, but arithmetic needs gates working
           together. The <strong>full adder</strong> is the smallest circuit that
-          can really add — it takes two bits plus a <strong>carry-in</strong> and
-          produces a <strong>sum</strong> bit and a <strong>carry-out</strong>.
-          Chain a row of them and you can add numbers of any width.
+          can really add, and if we string multiple of them together, we can add
+          numbers of any size.
         </p>
         <div class="doc-hero__actions">
           <span class="doc-hero__prompt">Think you got this already?</span>
@@ -122,16 +121,15 @@
               Adding two bits in binary works exactly like adding two digits in
               the base-10 number system — also called the <strong>decimal</strong>
               number system — that you already know. Start with the smallest
-              cases: <code>0 + 0</code> is <code>0</code>, <code>1 + 0</code> is
-              <code>1</code>, and <code>0 + 1</code> is <code>1</code>.
+              cases: 0 + 0 = 0, 0 + 1 = 1, and 1 + 0 = 1.
             </p>
             <p>
-              The interesting one is <code>1 + 1</code>, which equals
-              <code>2</code>. The only problem is that we need <em>two</em> bits
-              to represent <code>2</code> in binary — so <code>1 + 1 = 10</code>!
-              Look closely at that answer and the bit we started with actually
-              turned into a <code>0</code>, and we &ldquo;carried&rdquo; a
-              <code>1</code> to the left by one position.
+              The interesting one is 1 + 1, which equals
+              2. The only problem is that we need <em>two</em> bits
+              to represent 2 in binary — so 1 + 1 = 10!
+              If you look closely at our answer, the bit we started with actually
+              turned into a 0, and we &ldquo;carried&rdquo; a
+              1 to the left by one position.
             </p>
           </div>
         </div>
@@ -147,8 +145,8 @@
             <p>
               The table at right illustrates the different results we could get
               from adding two bits. As expected, <code>C<sub>out</sub></code> is
-              only <code>1</code> when both <code>a</code> and <code>b</code> are
-              <code>1</code>, because this is the only combination where adding
+              only 1 when both a and b are
+              1, because this is the only combination where adding
               the two bits would result in an answer that we cannot fit in just
               one bit.
             </p>
@@ -162,6 +160,103 @@
               (<code>C<sub>out</sub></code>) into the next column.
             </figcaption>
           </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= THE FULL ADDER ====================== -->
+    <section class="section" id="the-full-adder" aria-labelledby="fulladd-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="fulladd-title">The Full Adder</h2>
+        </div>
+
+        <div class="split">
+          <div class="prose">
+            <p>
+              Believe it or not, we are now one step away from the makings of a
+              full adder. If you think back to how addition is performed by hand,
+              each time we exceed the decimal value of 1 we must carry a 1 to the
+              next bit. We called this the <code>C<sub>out</sub></code> of our bit
+              — but from the perspective of the bit it carries <em>into</em>, what
+              should we call it?
+            </p>
+            <p>
+              With each bit having a <code>C<sub>out</sub></code>, it only makes
+              sense that each bit should also have a <code>C<sub>in</sub></code>,
+              because the <code>C<sub>out</sub></code> of one bit is by definition
+              the <code>C<sub>in</sub></code> of the next bit. Each of a, b, and
+              <code>C<sub>in</sub></code> are inputs to our full adder, and are
+              summed together to produce both the <code>Sum</code> and the
+              <code>C<sub>out</sub></code> that we then pass on to the next bit.
+            </p>
+          </div>
+
+          <div class="gate-card gate-card--solo">
+            <div class="gate-card__inner">
+              <figure class="figure gate-card__face gate-card__face--front" role="button" tabindex="0"
+                      aria-label="Full adder diagram. Activate to open an editable Verilog module.">
+                <img src="../../assets/ALU/full-adder.jpg"
+                     alt="A full adder block: inputs a and b enter from the left and a carry-in Cin enters from the top; the box outputs a Sum on the right and a carry-out Cout on the bottom." decoding="async" />
+                <figcaption>
+                  The full adder — flip it to read the Verilog.
+                </figcaption>
+                <span class="gate-card__flip" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
+                </span>
+              </figure>
+              <div class="gate-card__face gate-card__face--back">
+                <figure class="code-editor">
+                  <figcaption class="code-editor__bar">
+                    <svg class="code-editor__glyph" viewBox="0 0 24 24"><path d="m9 8-4 4 4 4"/><path d="m15 8 4 4-4 4"/></svg>
+                    <span class="code-editor__lang">Verilog HDL</span>
+                    <button class="code-editor__reset" type="button" aria-label="Reset the code to the original">
+                      <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/></svg>
+                      Reset
+                    </button>
+                  </figcaption>
+                  <div class="code-editor__body">
+                    <pre class="code-editor__hl" aria-hidden="true"><code><span class="tok-kw">module</span> full_adder (
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> a,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> b,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> cin,
+    <span class="tok-kw">output</span> <span class="tok-kw">wire</span> sum,
+    <span class="tok-kw">output</span> <span class="tok-kw">wire</span> cout
+);
+
+  <span class="tok-kw">assign</span> sum  = a <span class="tok-op">^</span> b <span class="tok-op">^</span> cin;   <span class="tok-cm">// 3-input XOR</span>
+  <span class="tok-kw">assign</span> cout = (a <span class="tok-op">&amp;</span> b) <span class="tok-op">|</span> (a <span class="tok-op">&amp;</span> cin) <span class="tok-op">|</span> (b <span class="tok-op">&amp;</span> cin);
+
+<span class="tok-kw">endmodule</span></code></pre>
+                    <textarea class="code-editor__ta" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-label="Editable Verilog module for a full adder">module full_adder (
+    input  wire a,
+    input  wire b,
+    input  wire cin,
+    output wire sum,
+    output wire cout
+);
+
+  assign sum  = a ^ b ^ cin;   // 3-input XOR
+  assign cout = (a &amp; b) | (a &amp; cin) | (b &amp; cin);
+
+endmodule</textarea>
+                  </div>
+                </figure>
+                <div class="gate-card__backrow">
+                  <div class="gate-sim">
+                    <div class="gate-sim__inputs"></div>
+                    <div class="gate-sim__outs">
+                      <div class="gate-sim__out"><span class="gate-sim__lhs">sum</span> = <span class="gate-sim__val">0</span></div>
+                      <div class="gate-sim__out"><span class="gate-sim__lhs">cout</span> = <span class="gate-sim__val">0</span></div>
+                    </div>
+                  </div>
+                  <button class="gate-card__return" type="button" aria-label="Back to the full adder diagram">
+                    <svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -193,7 +288,7 @@
               to as a <strong>ripple carry adder</strong>, and it is the backbone
               of our ALU design. Since the <code>C<sub>in</sub></code> of each
               full adder is now an input in its own right, we can update our table
-              to include all three of <code>a</code>, <code>b</code>, and
+              to include all three of a, b, and
               <code>C<sub>in</sub></code> as inputs.
             </p>
           </div>
@@ -214,7 +309,7 @@
           <figcaption>
             The full adder's truth table, now with <code>C<sub>in</sub></code> as
             a third input. The comments column shows each row as the sum
-            <code>a + b + C<sub>in</sub></code>.
+            a + b + <code>C<sub>in</sub></code>.
           </figcaption>
         </figure>
 
@@ -228,8 +323,8 @@
             <p>
               From this table we can create logic expressions for both outputs,
               <code>C<sub>out</sub></code> and <code>Sum</code>. Notice that
-              <code>Sum</code> is only ever <code>1</code> when an <em>odd</em>
-              number of the input bits are <code>1</code>. Thinking back to the
+              <code>Sum</code> is only ever 1 when an <em>odd</em>
+              number of the input bits are 1. Thinking back to the
               last lesson, this is precisely the <strong>XOR</strong>
               functionality, so we can draw the circuit for <code>Sum</code> as
               shown at left. The logic expression for
@@ -337,5 +432,11 @@
     });
   })();
   </script>
+
+  <!-- Editable Verilog flip card: the front flips to an editable Verilog
+       playground; verilog-mini.js parses + evaluates the code live (input chips,
+       output value + label, and a red squiggle on syntax errors). -->
+  <script src="../../scripts/verilog-mini.js" defer></script>
+  <script src="../../scripts/gate-card.js" defer></script>
 </body>
 </html>

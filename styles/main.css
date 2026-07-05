@@ -2893,6 +2893,9 @@ html.js .buildpath-intro { --rail-progress: 0; }
   background: rgba(74, 144, 217, 0.08);
 }
 .gate-sim__out { font-size: 0.82rem; color: var(--soft-ink); white-space: nowrap; }
+/* When a card shows more than one output (e.g. a full adder's sum + cout), the
+   readouts sit together as one group on the right of the sim bar. */
+.gate-sim__outs { display: flex; align-items: center; gap: 0.15rem 0.85rem; flex-wrap: wrap; }
 .gate-sim__val { font-weight: 600; font-size: 1rem; color: var(--accent-deep); }
 .gate-sim__val[data-bad="1"] { color: var(--soft-ink); }
 .gate-card__return {

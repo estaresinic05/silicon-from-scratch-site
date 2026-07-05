@@ -373,6 +373,10 @@ The arrow keeps its own colour on hover — it has **no** colour/highlight chang
 ### Behaviour notes
 - The output **label** (`.gate-sim__lhs`) follows the declared `output` port, so
   renaming the output in the code updates it.
+- **Multiple outputs.** A card can show more than one live output (e.g. the full
+  adder's `sum` + `cout`): list several `.gate-sim__out` readouts inside a
+  `.gate-sim__outs` group, and the *k*-th readout tracks the *k*-th declared
+  `output` port (label + value both follow, positionally).
 - The output **value** is driven by the parsed logic, so changing the functions
   (e.g. `&` → `|`) is reflected live; input chips toggle the values.
 - `reg` state persists across chip toggles (so a latch actually remembers a bit).
