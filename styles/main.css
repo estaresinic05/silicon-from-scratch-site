@@ -2518,6 +2518,17 @@ html.js .buildpath-intro { --rail-progress: 0; }
   margin-top: clamp(1.5rem, 5vw, 3rem);
 }
 
+/* Phones + smaller devices (matches the waveform mover's 820px breakpoint):
+   stack the Hands On widgets in one column so the Check Yourself card spans the
+   full screen width instead of being squeezed into a half-column, and let the
+   waveform scale down to fit — drop its legibility floor so the timing diagram
+   shrinks to the viewport rather than forcing a horizontal scrollbar. */
+@media (max-width: 820px) {
+  .handson-grid { grid-template-columns: 1fr; }
+  .aluwave__scope { overflow-x: visible; }
+  .awv-svg { min-width: 0; }
+}
+
 /* ------------------------------------------------------------------ *
    HOW TO GET STARTED — intro copy + a "Open the Project Directory"
    button with a nudge alongside it.

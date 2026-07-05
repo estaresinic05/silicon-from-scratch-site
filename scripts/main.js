@@ -151,10 +151,12 @@
         "Control Hazards",
         "Testing"
       ]],
-      ["ALU Physical Design", ["Coming Soon"]]
+      ["ALU Physical Design", ["Coming Soon"]],
+      ["Memory Hierarchy", ["Coming Soon"]]
     ]],
     ["Very Advanced", [
-      ["Pipelined CPU Physical Design", ["Coming Soon"]]
+      ["Pipelined CPU Physical Design", ["Coming Soon"]],
+      ["Timing Analysis", ["Coming Soon"]]
     ]]
   ];
 
