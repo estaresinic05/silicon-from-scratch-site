@@ -584,9 +584,8 @@
 .gate-card__face--front:focus-visible { transform: scale(1.045); }
 .gate-card__face--front:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 
-/* Back: a column that fills the card — editor on top, output box below. The
-   frame (padding/border around the editor, incl. the space by the return arrow)
-   is a click target that flips back to the front; wired in gate-card.js. */
+/* Back: a column that fills the card — editor on top, output box below. Only
+   the return arrow flips back (wired in gate-card.js); the frame is inert. */
 .gate-card__face--back {
   transform: rotateY(180deg);
   display: flex;
@@ -597,18 +596,13 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
   padding: clamp(var(--space-2), 2.5vw, var(--space-3));
-  cursor: pointer;                       /* the frame flips you back */
   transition: transform 0.2s var(--ease);
 }
-/* Hovering the frame grows the whole card a touch — the same cue the front gives
-   before its flip — rather than highlighting the return arrow on its own. */
-.gate-card.is-flipped .gate-card__face--back:hover { transform: rotateY(180deg) scale(1.045); }
-/* …but not while the pointer is over the interactive editor or live-sim box:
-   those keep their own cursor and don't trigger the grow. */
-.gate-card.is-flipped .gate-card__face--back:has(.code-editor:hover),
-.gate-card.is-flipped .gate-card__face--back:has(.gate-sim:hover) { transform: rotateY(180deg); }
-.gate-card__face--back .code-editor,
-.gate-card__face--back .gate-sim { cursor: auto; }
+/* Hovering the return arrow bulges the whole card a touch — the mirror of the
+   cue the front gives before its flip — rather than recolouring the arrow. */
+.gate-card.is-flipped .gate-card__face--back:has(.gate-card__return:hover) {
+  transform: rotateY(180deg) scale(1.045);
+}
 
 /* A miniature VS Code editor filling the card: titlebar (<> glyph + "Verilog
    HDL" + a return-to-front button) over an editable body. */
@@ -750,8 +744,8 @@
   color: var(--accent);
   cursor: pointer;
 }
-/* The arrow itself doesn't react to hover — the whole card grows instead (see
-   .gate-card__face--back:hover), so the frame reads as one flip-back target. */
+/* The arrow doesn't recolour on hover — hovering it grows the whole card
+   instead (see .gate-card__face--back:has(.gate-card__return:hover) above). */
 .gate-card__return svg {
   width: 1.15rem;
   height: 1.15rem;

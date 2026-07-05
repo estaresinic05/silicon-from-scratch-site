@@ -352,27 +352,23 @@ sequential clocking semantics. Keep card examples inside the subset.
 
 ### Flipping back
 Clicking the **front** flips to the editor. To flip **back**, the reader clicks
-anywhere on the back card's **frame** — the padding/border around the editor,
-including the empty space by the return arrow (and the arrow itself). Only the
-interactive `.code-editor` and `.gate-sim` boxes are exempt (a click there edits
-code or toggles a chip; it never flips). This is wired in `gate-card.js` as one
-delegated listener on `.gate-card__face--back`:
+the **return arrow** (`.gate-card__return`) in the bottom row — the frame is
+inert. This is wired in `gate-card.js` as one listener on that button:
 
 ```js
-back.addEventListener("click", function (e) {
-  if (e.target.closest(".code-editor, .gate-sim")) return;
-  flipTo(false);
-});
+if (ret) ret.addEventListener("click", function () { flipTo(false); });
 ```
-Because the whole frame is the target, the return `<button>` no longer needs its
-own handler (its mouse/keyboard clicks bubble up and flip back).
 
-Hover feedback mirrors the front: hovering the frame **grows the whole card a
-touch** (`.gate-card__face--back:hover { transform: rotateY(180deg) scale(1.045) }`
-— the same `1.045` the front uses before its flip), *not* a highlight on the
-return arrow. A `:has(.code-editor:hover, .gate-sim:hover)` guard cancels the grow
-while the pointer is over the interactive boxes, which also keep `cursor: auto`.
-The arrow is a static affordance only — it has **no** hover style.
+Hover feedback mirrors the front: hovering the **return arrow** **grows the whole
+card a touch** (the same `1.045` the front uses before its flip) rather than
+recolouring the arrow itself, so the cue reads "grow, then flip":
+
+```css
+.gate-card.is-flipped .gate-card__face--back:has(.gate-card__return:hover) {
+  transform: rotateY(180deg) scale(1.045);
+}
+```
+The arrow keeps its own colour on hover — it has **no** colour/highlight change.
 
 ### Behaviour notes
 - The output **label** (`.gate-sim__lhs`) follows the declared `output` port, so
