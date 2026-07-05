@@ -656,26 +656,26 @@ endmodule</textarea>
     <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> a,
     <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> b,
     <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> operation,
-    <span class="tok-kw">output</span> <span class="tok-kw">wire</span> y
+    <span class="tok-kw">output</span> <span class="tok-kw">wire</span> result
 );
     <span class="tok-cm">// operation: 0 = AND, 1 = OR</span>
-    <span class="tok-kw">assign</span> y = operation ? (a <span class="tok-op">|</span> b) : (a <span class="tok-op">&amp;</span> b);
+    <span class="tok-kw">assign</span> result = operation ? (a <span class="tok-op">|</span> b) : (a <span class="tok-op">&amp;</span> b);
 <span class="tok-kw">endmodule</span></code></pre>
                   <textarea class="code-editor__ta" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-label="Editable Verilog module for a 1-bit ALU">module alu (
     input  wire a,
     input  wire b,
     input  wire operation,
-    output wire y
+    output wire result
 );
     // operation: 0 = AND, 1 = OR
-    assign y = operation ? (a | b) : (a &amp; b);
+    assign result = operation ? (a | b) : (a &amp; b);
 endmodule</textarea>
                 </div>
               </figure>
               <div class="gate-card__backrow">
                 <div class="gate-sim">
                   <div class="gate-sim__inputs"></div>
-                  <div class="gate-sim__out"><span class="gate-sim__lhs">y</span> = <span class="gate-sim__val">0</span></div>
+                  <div class="gate-sim__out"><span class="gate-sim__lhs">result</span> = <span class="gate-sim__val">0</span></div>
                 </div>
                 <button class="gate-card__return" type="button" aria-label="Back to the 1-bit ALU diagram">
                   <svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/></svg>

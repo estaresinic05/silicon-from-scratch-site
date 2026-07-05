@@ -145,7 +145,7 @@
             <p>
               The table at right illustrates the different results we could get
               from adding two bits. As expected, <code>C<sub>out</sub></code> is
-              only 1 when both a and b are
+              only 1 when both <code>a</code> and <code>b</code> are
               1, because this is the only combination where adding
               the two bits would result in an answer that we cannot fit in just
               one bit.
@@ -156,8 +156,8 @@
             <img src="../../assets/ALU/bit-addition-table.jpg"
                  alt="A four-column table with headers a, b, Cout, and Sum. Its rows list every pair of input bits: 0 and 0 give Cout 0 and Sum 0; 0 and 1 give Cout 0 and Sum 1; 1 and 0 give Cout 0 and Sum 1; 1 and 1 give Cout 1 and Sum 0." decoding="async" />
             <figcaption>
-              Every result of adding two bits: the sum, and the carry-out
-              (<code>C<sub>out</sub></code>) into the next column.
+              Outputs <code>C<sub>out</sub></code> and <code>Sum</code> for each
+              input combination of <code>a</code> and <code>b</code>.
             </figcaption>
           </figure>
         </div>
@@ -174,7 +174,7 @@
         <div class="split">
           <div class="prose">
             <p>
-              Believe it or not, we are now one step away from the makings of a
+              Believe it or not, we are now just one step away from the makings of a
               full adder. If you think back to how addition is performed by hand,
               each time we exceed the decimal value of 1 we must carry a 1 to the
               next bit. We called this the <code>C<sub>out</sub></code> of our bit
@@ -185,21 +185,26 @@
               With each bit having a <code>C<sub>out</sub></code>, it only makes
               sense that each bit should also have a <code>C<sub>in</sub></code>,
               because the <code>C<sub>out</sub></code> of one bit is by definition
-              the <code>C<sub>in</sub></code> of the next bit. Each of a, b, and
+              the <code>C<sub>in</sub></code> of the next bit. Each of <code>a</code>, <code>b</code>, and
               <code>C<sub>in</sub></code> are inputs to our full adder, and are
               summed together to produce both the <code>Sum</code> and the
               <code>C<sub>out</sub></code> that we then pass on to the next bit.
             </p>
+            <p>
+              Since we now have three inputs to our full adder, we can update our
+              truth table to now have 8 different input
+              combinations. The updated truth table is below.
+            </p>
           </div>
 
-          <div class="gate-card gate-card--solo">
+          <div class="gate-card gate-card--solo gate-card--nudge-left">
             <div class="gate-card__inner">
               <figure class="figure gate-card__face gate-card__face--front" role="button" tabindex="0"
                       aria-label="Full adder diagram. Activate to open an editable Verilog module.">
                 <img src="../../assets/ALU/full-adder.jpg"
                      alt="A full adder block: inputs a and b enter from the left and a carry-in Cin enters from the top; the box outputs a Sum on the right and a carry-out Cout on the bottom." decoding="async" />
                 <figcaption>
-                  The full adder — flip it to read the Verilog.
+                  The full adder — the smallest circuit that can really add.
                 </figcaption>
                 <span class="gate-card__flip" aria-hidden="true">
                   <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
@@ -258,6 +263,41 @@ endmodule</textarea>
             </div>
           </div>
         </div>
+
+        <div class="split split--media-left" style="align-items: start;">
+          <figure class="figure figure--diagram figure--diagram-lg">
+            <img src="../../assets/ALU/full-adder-tt.jpg"
+                 alt="The full-adder truth table with three input columns a, b, and Cin, two output columns Cout and Sum, and a comments column showing the arithmetic. All eight input combinations are listed; Cout is 1 whenever at least two inputs are 1, and Sum is 1 whenever an odd number of inputs are 1." decoding="async" />
+          </figure>
+
+          <div class="prose">
+            <p>
+              We can use the truth table to create what are called
+              <strong>logic expressions</strong> for both of our outputs,
+              <code>Sum</code> and <code>C<sub>out</sub></code>. A logic
+              expression will always describe an output purely in terms of its
+              inputs, combining them with the logic gates &mdash; AND, OR, NOT,
+              and XOR &mdash; that we met last lesson. For example, if you look
+              closely at the truth table, the output <code>Sum</code> is only ever
+              1 when an <em>odd</em> number of the input bits are
+              1. This is precisely the <strong>XOR</strong>
+              functionality we learned last lesson! Therefore, we can write the
+              logic expression for <code>Sum</code> as
+              <code>Sum = a &oplus; b &oplus; C<sub>in</sub></code> and draw the
+              circuit as so.
+            </p>
+
+            <figure class="figure figure--diagram figure--diagram-tall"
+                    style="margin: var(--space-3) auto 0;">
+              <img src="../../assets/ALU/sum-circuit.jpg"
+                   alt="An XOR gate with three inputs — a, b, and Cin — producing the output Sum." decoding="async" />
+              <figcaption>
+                The circuit for <code>Sum</code>: a three-input XOR of
+                <code>a</code>, <code>b</code>, and <code>C<sub>in</sub></code>.
+              </figcaption>
+            </figure>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -288,7 +328,7 @@ endmodule</textarea>
               to as a <strong>ripple carry adder</strong>, and it is the backbone
               of our ALU design. Since the <code>C<sub>in</sub></code> of each
               full adder is now an input in its own right, we can update our table
-              to include all three of a, b, and
+              to include all three of <code>a</code>, <code>b</code>, and
               <code>C<sub>in</sub></code> as inputs.
             </p>
           </div>
@@ -301,37 +341,6 @@ endmodule</textarea>
               connected to the next bit's <code>C<sub>in</sub></code>.
             </figcaption>
           </figure>
-        </div>
-
-        <figure class="figure figure--diagram figure--diagram-xl">
-          <img src="../../assets/ALU/full-adder-tt.jpg"
-               alt="The full-adder truth table with three input columns a, b, and Cin, two output columns Cout and Sum, and a comments column showing the arithmetic. All eight input combinations are listed; Cout is 1 whenever at least two inputs are 1, and Sum is 1 whenever an odd number of inputs are 1." decoding="async" />
-          <figcaption>
-            The full adder's truth table, now with <code>C<sub>in</sub></code> as
-            a third input. The comments column shows each row as the sum
-            a + b + <code>C<sub>in</sub></code>.
-          </figcaption>
-        </figure>
-
-        <div class="split split--media-left">
-          <figure class="figure figure--diagram figure--diagram-lg">
-            <img src="../../assets/ALU/sum-circuit.jpg"
-                 alt="An XOR gate with three inputs — a, b, and Cin — producing the output Sum." decoding="async" />
-          </figure>
-
-          <div class="prose">
-            <p>
-              From this table we can create logic expressions for both outputs,
-              <code>C<sub>out</sub></code> and <code>Sum</code>. Notice that
-              <code>Sum</code> is only ever 1 when an <em>odd</em>
-              number of the input bits are 1. Thinking back to the
-              last lesson, this is precisely the <strong>XOR</strong>
-              functionality, so we can draw the circuit for <code>Sum</code> as
-              shown at left. The logic expression for
-              <code>C<sub>out</sub></code> is left as an exercise at the end of
-              this lesson!
-            </p>
-          </div>
         </div>
       </div>
     </section>
@@ -348,26 +357,33 @@ endmodule</textarea>
         </div>
 
         <div class="quiz" id="quiz">
-          <p class="quiz__q">A full adder is given a&nbsp;=&nbsp;1, b&nbsp;=&nbsp;1, and Cin&nbsp;=&nbsp;0. What are Sum and Cout?</p>
+          <p class="quiz__q">Given the truth table below, what would be the logic expression for C<sub>out</sub>?</p>
 
-          <figure class="figure figure--photo quiz__figure">
-            <img src="../../assets/ALU/full-adder.jpg"
-                 alt="A full adder block with inputs a and b on the left, a carry-in Cin on top, and outputs Sum on the right and carry-out Cout on the bottom."
-                 decoding="async" />
-          </figure>
+          <div class="quiz__reveal">
+            <figure class="figure figure--photo quiz__figure quiz__figure--tt">
+              <img src="../../assets/ALU/full-adder-tt.jpg"
+                   alt="The full-adder truth table with three input columns a, b, and Cin, two output columns Cout and Sum, and a comments column showing the arithmetic. All eight input combinations are listed; Cout is 1 whenever at least two inputs are 1, and Sum is 1 whenever an odd number of inputs are 1."
+                   decoding="async" />
+            </figure>
+            <figure class="figure figure--photo quiz__figure quiz__figure--cout" aria-hidden="true">
+              <img src="../../assets/ALU/cout-circuit.jpg"
+                   alt="The gate-level circuit for Cout: three AND gates forming the products a·b, b·Cin, and a·Cin, whose outputs feed an OR gate to produce the carry-out."
+                   decoding="async" />
+            </figure>
+          </div>
 
           <div class="quiz__options" role="group" aria-label="Answer choices">
-            <button class="quiz__opt" type="button">Sum = 1 &amp; Cout = 0</button>
-            <button class="quiz__opt" type="button" data-correct="true">Sum = 0 &amp; Cout = 1</button>
-            <button class="quiz__opt" type="button">Sum = 1 &amp; Cout = 1</button>
-            <button class="quiz__opt" type="button">Sum = 0 &amp; Cout = 0</button>
+            <button class="quiz__opt" type="button"><span class="eq">(<var>a</var> + <var>b</var>)(<var>b</var> + <var>C</var><sub>in</sub>)(<var>a</var> + <var>C</var><sub>in</sub>)</span></button>
+            <button class="quiz__opt" type="button"><span class="eq"><var>a</var><var>b</var><var>C</var><sub>in</sub> + <var>a</var><var>b</var></span></button>
+            <button class="quiz__opt" type="button" data-correct="true"><span class="eq"><var>a</var><var>b</var> + <var>b</var><var>C</var><sub>in</sub> + <var>a</var><var>C</var><sub>in</sub></span></button>
+            <button class="quiz__opt" type="button"><span class="eq">(<var>a</var> &oplus; <var>b</var>)<var>C</var><sub>in</sub></span></button>
           </div>
 
           <p class="quiz__feedback" role="status" aria-live="polite"></p>
 
           <div class="quiz__next">
-            <a class="btn btn--primary" href="../../coming-soon/?topic=Ripple%20Carry%20Adder">
-              Continue to the Ripple Carry Adder <span aria-hidden="true">&rarr;</span>
+            <a class="btn btn--primary" href="../../coming-soon/?topic=32-bit%20ALU%20Slice">
+              Continue to the 32-bit ALU Slice <span aria-hidden="true">&rarr;</span>
             </a>
           </div>
         </div>

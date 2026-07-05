@@ -572,6 +572,11 @@
 /* A standalone flip card (mux / 1-bit ALU) sitting outside the gate grid —
    capped and centred so its editor back isn't overly wide. */
 .gate-card--solo { max-width: 30rem; margin-inline: auto; }
+/* Nudge a right-column flip card left on the two-column desktop layout so it
+   centres over the text column below it. Removed once the split stacks. */
+@media (min-width: 769px) {
+  .gate-card--nudge-left { transform: translateX(-7rem); }
+}
 .gate-card__inner {
   display: grid;                    /* stack both faces → identical footprint */
   transform-style: preserve-3d;
@@ -881,6 +886,44 @@
   margin: 0 0 var(--space-3);
 }
 .quiz__figure { max-width: 48rem; margin: 0 auto var(--space-4); }
+
+/* Answer reveal: once the correct answer is picked (.quiz.is-solved), the truth
+   table scales down a little and slides toward centre-left to make room, while
+   the Cout circuit fades in beside it — the two then sit side by side. The Cout
+   panel grows into place first, then fades in (delayed opacity) so it only
+   appears once the table has moved over. Driven purely by the is-solved class. */
+.quiz__reveal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  margin: 0 auto var(--space-4);
+  transition: gap 0.55s var(--ease);
+}
+.quiz__reveal .quiz__figure { margin: 0; }
+.quiz__figure--tt {
+  width: min(34rem, 100%);
+  transition: width 0.55s var(--ease);
+}
+.quiz__figure--cout {
+  width: 0;
+  opacity: 0;
+  transition: width 0.55s var(--ease), opacity 0.45s var(--ease) 0.45s;
+}
+.quiz.is-solved .quiz__reveal { gap: clamp(0.75rem, 2.5vw, 1.75rem); }
+.quiz.is-solved .quiz__figure--tt { width: min(26rem, 58%); }
+.quiz.is-solved .quiz__figure--cout { width: min(18rem, 40%); opacity: 1; }
+/* Narrow screens: stack the two panels instead of squeezing them side by side. */
+@media (max-width: 600px) {
+  .quiz.is-solved .quiz__figure--tt { width: min(30rem, 100%); }
+  .quiz.is-solved .quiz__figure--cout { width: min(24rem, 100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quiz__reveal,
+  .quiz__figure--tt,
+  .quiz__figure--cout { transition: none; }
+}
 .quiz__options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -911,6 +954,22 @@
   color: var(--accent);
   font-family: var(--font-mono);
   font-weight: 600;
+}
+/* Typeset a choice as an equation (Word-style): italic variables, upright
+   operators, and a touch more space around them, so a Boolean expression reads
+   as a formula rather than plain typed text. Keeps the same display font. */
+.eq {
+  font-size: 1.1em;
+  word-spacing: 0.14em;      /* breathing room around + and ⊕ operators */
+  white-space: nowrap;
+}
+.eq var {
+  font-style: italic;        /* variables lean, like a real formula */
+  padding-inline: 0.03em;    /* keep italic letters from touching */
+}
+.eq sub {
+  font-style: italic;
+  font-size: 0.72em;
 }
 .quiz__opt:hover { border-color: var(--accent); }
 .quiz__opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
