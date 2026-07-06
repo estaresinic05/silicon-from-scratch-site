@@ -103,6 +103,114 @@
       </figure>
     </section>
 
+    <!-- ============================== GROUND ZERO ======================= -->
+    <section class="section" id="ground-zero" aria-labelledby="gz-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="gz-title">Ground Zero</h2>
+        </div>
+
+        <div class="split split--media-left">
+          <figure class="figure figure--diagram" style="max-width: 30rem;">
+            <div class="adder-reveal" id="alu-reveal">
+              <img class="adder-reveal__img adder-reveal__base"
+                   src="../../assets/ALU/1-bit-alu-aligned.jpg"
+                   alt="The simple 1-bit ALU from the Logic Gates lesson: inputs a and b feed an AND gate and an OR gate, whose outputs enter a 2-to-1 multiplexer selected by an Operation bit to produce the Result." decoding="async" />
+              <img class="adder-reveal__img adder-reveal__over"
+                   src="../../assets/ALU/alu-first-upgrade-aligned.jpg"
+                   alt="The same ALU upgraded: each of a and b now passes through a 2-to-1 mux, controlled by Ainvert and Binvert, that selects the input or its inverted version before it reaches the AND and OR gates; the rest of the ALU is unchanged." decoding="async" />
+            </div>
+            <figcaption>
+              Swap between the simple ALU and its first upgrade.
+            </figcaption>
+            <button class="btn btn--ghost adder-reveal__toggle" type="button"
+                    id="alu-reveal-toggle" aria-pressed="false">
+              See the First Upgrade
+            </button>
+          </figure>
+
+          <div class="prose">
+            <p>
+              Back in the Logic Gates lesson, we built our very first ALU, and it
+              was about as simple as an ALU can get. The two inputs <code>a</code>
+              and <code>b</code> fed an AND gate and an OR gate side by side, and a
+              single 2&times;1 multiplexer &mdash; steered by an
+              <code>operation</code> bit &mdash; picked which of those two results
+              to send out as the <code>Result</code>. One control line, two
+              operations, but a real, working ALU nonetheless.
+            </p>
+            <p>
+              One of the first upgrades we can make is the ability to
+              <em>invert</em> either input before it reaches the gates &mdash; to
+              feed in <code>a</code> or its complement, and likewise for
+              <code>b</code>. Since that's a choice between exactly two things (the
+              input or its inverted version), the most straightforward way to build
+              it is with another <strong>2&times;1 multiplexer</strong> on each
+              input. We run each input through a NOT gate to produce its inverted
+              twin, wire both the original and the inverted signal into a 2&times;1
+              mux, and add a control line &mdash; <code>Ainvert</code> for the
+              <code>a</code> side and <code>Binvert</code> for the <code>b</code>
+              side &mdash; to select which one actually enters the AND and OR gates.
+              Set the control to 0 and the input passes straight through; set it to
+              1 and its inverted version takes its place.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================== ADDITION INCOMING ==================== -->
+    <section class="section" id="addition-incoming" aria-labelledby="ai-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="ai-title">Addition Incoming</h2>
+        </div>
+
+        <div class="split">
+          <div class="prose">
+            <p>
+              The next upgrade is the one that finally lets our ALU do arithmetic:
+              we drop a <strong>full adder</strong> into every slice. A full adder
+              never works alone, though &mdash; each bit's sum depends on the carry
+              rippling in from the bit before it. By putting in the full adder, we
+              have introduced another input, <code>C<sub>in</sub></code>, and another
+              output <code>C<sub>out</sub></code>, to each slice.
+            </p>
+            <p>
+              You also may notice that we've added an input to our multiplexer.
+              Instead of a 2&times;1 multiplexer, it is now a &hellip; 3&times;1
+              multiplexer?
+            </p>
+            <p>
+              As soon as we increase the number of inputs in a multiplexer beyond
+              two, a single control bit is no longer enough. We need at least
+              <strong>two</strong> control bits to select which path is transmitted
+              to the output. With two bits we technically have the ability to choose
+              from any one of <em>four</em> inputs, which is why multiplexers usually
+              grow in powers of two. For simplicity, in our image we've only drawn
+              the three inputs we actually use; the fourth is left out because it
+              could technically be anything, so long as our operation bits never take
+              on the value <code>11</code>. A situation like this &mdash; where an
+              input's value genuinely doesn't matter &mdash; is called a
+              <strong>don't care</strong>, and is usually written as an
+              <code>x</code>.
+            </p>
+          </div>
+
+          <figure class="aluwave slicewave" id="slice-wave" aria-label="Interactive timing diagram of the ALU slice">
+            <div class="aluwave__art">
+              <img src="../../assets/ALU/simple-alu-slice.jpg"
+                   alt="The 1-bit ALU slice with a full adder added: a and b pass through invert muxes, then feed an AND gate, an OR gate, and a full adder with a carry-in Cin and carry-out Cout; a 3-input Operation multiplexer selects among the AND, OR, and adder results to produce the Result."
+                   decoding="async" />
+            </div>
+            <div class="aluwave__scope" role="group" aria-label="ALU slice timing diagram">
+              <noscript><p class="wave-noscript">This interactive timing diagram needs JavaScript.</p></noscript>
+            </div>
+          </figure>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================== CHECK YOURSELF ===================== -->
     <section class="section section--tight" id="check" aria-labelledby="check-title">
       <div class="container container--wide">
@@ -130,7 +238,7 @@
           <div class="quiz__options" role="group" aria-label="Answer choices">
             <button class="quiz__opt" type="button">Add a NAND and NOR gate into the architecture, and increase the mux to have 6 inputs instead of 4.</button>
             <button class="quiz__opt" type="button">Feed each input before they enter the AND and OR gates through a NOT gate. The mux should not change.</button>
-            <button class="quiz__opt" type="button">Only the <code>a</code> input of each AND and OR gate should be fed through a NOT gate before entering its gate.</button>
+            <button class="quiz__opt" type="button"><span>Only the <strong>a</strong> input of each AND and OR gate should be fed through a NOT gate before entering its gate.</span></button>
             <button class="quiz__opt" type="button" data-correct="true">No change needs to be made. The ALU already supports NAND and NOR operations because of the 2&times;1 muxes at the start.</button>
           </div>
 
@@ -200,6 +308,24 @@
           feedback.classList.add("is-wrong");
         }
       });
+    });
+  })();
+  </script>
+
+  <!-- Interactive ALU-slice timing diagram (Addition Incoming section). -->
+  <script src="../../scripts/slice-wave.js" defer></script>
+
+  <!-- Simple ALU ↔ first-upgrade toggle: the button below the diagram fades the
+       aligned upgrade sketch in over the simple ALU (and back). -->
+  <script>
+  (function () {
+    var el = document.getElementById("alu-reveal");
+    var btn = document.getElementById("alu-reveal-toggle");
+    if (!el || !btn) return;
+    btn.addEventListener("click", function () {
+      var showing = el.classList.toggle("is-revealed");
+      btn.setAttribute("aria-pressed", showing ? "true" : "false");
+      btn.innerHTML = showing ? "See the Simple ALU" : "See the First Upgrade";
     });
   })();
   </script>
