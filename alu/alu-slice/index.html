@@ -185,9 +185,10 @@
               As soon as we increase the number of inputs in a multiplexer beyond
               two, a single control bit is no longer enough. We need at least
               <strong>two</strong> control bits to select which path is transmitted
-              to the output. With two bits we technically have the ability to choose
-              from any one of <em>four</em> inputs, which is why multiplexers usually
-              grow in powers of two. For simplicity, in our image we've only drawn
+              to the output. With two bits, we technically have the ability to choose
+              from any one of <em>four</em> inputs, and every additional bit we add to the select
+              signal, the amount of inputs we can choose from increases by a power of
+              2. For simplicity, in our image we've only drawn
               the three inputs we actually use; the fourth is left out because it
               could technically be anything, so long as our operation bits never take
               on the value <code>11</code>. A situation like this &mdash; where an
@@ -211,6 +212,82 @@
       </div>
     </section>
 
+    <!-- ============================== THE FINAL UPGRADE ================== -->
+    <section class="section" id="final-upgrade" aria-labelledby="fu-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="fu-title">The Final Upgrade</h2>
+        </div>
+
+        <div class="split">
+          <div class="prose">
+            <p>
+              There's one operation our ALU still can't perform:
+              <strong>set on less than</strong>, or <code>slt</code>. It asks a
+              single question &mdash; is <code>a</code> less than <code>b</code>?
+              &mdash; and produces a result of <code>1</code> when the answer is
+              yes and <code>0</code> when it's no.
+            </p>
+            <p>
+              To make room for that answer, we add a fourth input to the operation
+              multiplexer called <strong>less</strong>. When the control bits
+              select <code>slt</code>, the mux ignores the AND, OR, and adder
+              results and passes <code>less</code> straight through to the
+              <code>Result</code>. Each slice's output for an <code>slt</code> is
+              simply whatever value is sitting on its <code>less</code> line.
+            </p>
+          </div>
+
+          <figure class="figure figure--photo">
+            <img src="../../assets/ALU/slice-architecture-lsb.jpg?v=2"
+                 alt="The least-significant-bit ALU slice with a new 'less' input added to the operation multiplexer: a and b pass through their invert muxes into an AND gate, an OR gate, and an adder, and the 4-to-1 mux now selects among AND, OR, the adder sum, and the 'less' input to produce the Result."
+                 decoding="async" />
+          </figure>
+        </div>
+
+        <div class="split split--media-left">
+          <figure class="figure figure--photo">
+            <img src="../../assets/ALU/slice-architecture-msb.jpg"
+                 alt="The most-significant-bit ALU slice: the same slice as before, but its adder produces an extra 'set' output — the sign bit of a minus b — which is routed back down to the 'less' input of the least-significant slice."
+                 decoding="async" />
+          </figure>
+
+          <div class="prose">
+            <p>
+              But where does that <code>less</code> value come from? Here's the
+              clever part. To decide whether <code>a &lt; b</code>, we lean on the
+              subtractor we already built: <code>a &lt; b</code> exactly when
+              <code>a &minus; b</code> is negative &mdash; and a two's-complement
+              number is negative precisely when its <strong>most significant
+              bit</strong> is <code>1</code>.
+            </p>
+            <p>
+              So we give the most significant slice one extra output,
+              <strong>set</strong> &mdash; the sign bit of <code>a &minus; b</code>
+              coming straight out of its adder. We then route <code>set</code> all
+              the way back down to the <code>less</code> input of the
+              <em>least</em> significant slice. When <code>slt</code> runs, every
+              slice outputs <code>0</code> except the least significant one, which
+              outputs <code>set</code>: a clean 32-bit result of either
+              <code>0&hellip;000</code> (when <code>a &ge; b</code>) or
+              <code>0&hellip;001</code> (when <code>a &lt; b</code>).
+            </p>
+            <p>
+              This is also why the <code>less</code> input is
+              <strong>hard-wired to 0</strong> on every slice except the least
+              significant one. Only bit&nbsp;0 ever needs to carry the
+              comparison's outcome; all the higher bits of an <code>slt</code>
+              result are always <code>0</code>. Rather than snake the
+              <code>set</code> signal into all 32 slices, we tie their
+              <code>less</code> inputs to a constant <code>0</code> and feed the
+              single meaningful value &mdash; <code>set</code> &mdash; into
+              bit&nbsp;0 alone.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================== CHECK YOURSELF ===================== -->
     <section class="section section--tight" id="check" aria-labelledby="check-title">
       <div class="container container--wide">
@@ -224,7 +301,7 @@
 
           <div class="quiz__reveal">
             <figure class="figure figure--photo quiz__figure quiz__figure--slice">
-              <img src="../../assets/ALU/slice-architecture-lsb.jpg"
+              <img src="../../assets/ALU/slice-architecture-lsb.jpg?v=2"
                    alt="The least-significant-bit ALU slice: a and b each pass through an invert mux (Ainvert, Binvert), then feed an AND gate, an OR gate, and an adder; a 4-to-1 Operation mux selects AND, OR, the adder, or a 'less' input as the Result, with a carry-in Cin and carry-out Cout on the adder."
                    decoding="async" />
             </figure>

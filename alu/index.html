@@ -272,14 +272,13 @@
         </div>
 
         <figure class="figure figure--wide">
-          <img src="../assets/ALU/slice-architecture.jpg"
-               alt="Two side-by-side schematics of a 1-bit ALU slice. Each shows operand a and b entering 2:1 inverting multiplexers controlled by Ainvert and Binvert, feeding an AND gate, an OR gate, and a full adder, whose outputs enter a 4:1 result multiplexer selected by the operation control. The left schematic outputs a carry-out. The right schematic adds an overflow-detection block and a set output."
+          <img src="../assets/ALU/slice-architecture-msb.jpg"
+               alt="Schematic of the most-significant-bit ALU slice. Operands a and b enter 2:1 inverting multiplexers controlled by Ainvert and Binvert, feeding an AND gate, an OR gate, and a full adder whose outputs enter a 4:1 result multiplexer selected by the operation control. It adds an overflow-detection block and a set output used for signed comparison."
                loading="lazy" decoding="async" />
           <figcaption>
-            <strong>Left:</strong> the generic <code>alu_slice</code> used for bits
-            0&nbsp;…&nbsp;N&minus;2. <strong>Right:</strong> the <code>alu_msb</code>
-            for bit N&minus;1, which adds the overflow-detection block and the
-            <code>set</code> output used for signed comparison.
+            The <code>alu_msb</code> slice for bit N&minus;1, which adds the
+            overflow-detection block and the <code>set</code> output used for
+            signed comparison.
           </figcaption>
         </figure>
       </div>

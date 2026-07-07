@@ -122,7 +122,6 @@
       ["ALU", [
         ["Logic Gates and Simple 1-bit ALU", "alu/logic-gates/"],
         ["Full Adder and Ripple Carry Adder", "alu/full-adder/"],
-        "Ripple Carry Adder",
         ["32-bit ALU Slice", "alu/alu-slice/"],
         "Complete 32-bit ALU",
         "Testing",

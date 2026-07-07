@@ -425,6 +425,10 @@
 }
 .split .prose { margin: 0; }
 .split .figure { margin: 0; }
+/* Addition Incoming: pull the heading nearer the copy, and top-align the text
+   with the top of the timing widget instead of vertically centering it. */
+#addition-incoming .section__head { margin-bottom: var(--space-2); }
+#addition-incoming .split { margin-top: var(--space-2); align-items: start; }
 /* "Your First ALU": on desktop the diagram sits beside the explanation (via the
    base .split grid — prose left, card right). On phones it stacks, with the
    diagram first (see it, then read about it). */
