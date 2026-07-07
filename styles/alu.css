@@ -425,10 +425,30 @@
 }
 .split .prose { margin: 0; }
 .split .figure { margin: 0; }
+/* Numbered / bulleted lists set inside prose (e.g. the Final Upgrade "two
+   tricks"): give the items breathing room and align them under the text. */
+.prose ol,
+.prose ul { margin: 0 0 var(--space-3); padding-left: 1.5rem; }
+.prose li { margin-bottom: var(--space-2); }
+.prose li:last-child { margin-bottom: 0; }
 /* Addition Incoming: pull the heading nearer the copy, and top-align the text
    with the top of the timing widget instead of vertically centering it. */
 #addition-incoming .section__head { margin-bottom: var(--space-2); }
-#addition-incoming .split { margin-top: var(--space-2); align-items: start; }
+#addition-incoming .split { margin-top: var(--space-2); align-items: stretch; }
+/* Stacked / mobile: normal paragraph rhythm. */
+#addition-incoming .prose p { margin: 0; }
+#addition-incoming .prose p + p { margin-top: var(--space-3); }
+/* Two-column layout: stretch the copy to the widget's height and distribute the
+   three paragraphs evenly — the first flush with the top of the timing widget,
+   the last flush with its bottom. */
+@media (min-width: 769px) {
+  #addition-incoming .prose {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  #addition-incoming .prose p + p { margin-top: 0; }
+}
 /* "Your First ALU": on desktop the diagram sits beside the explanation (via the
    base .split grid — prose left, card right). On phones it stacks, with the
    diagram first (see it, then read about it). */
@@ -672,6 +692,10 @@
    similar length so the cards balance. Bold terms keep the muted prose colour so
    emphasis reads the same as body paragraphs (see .prose strong). */
 .gate-grid figcaption { text-align: center; }
+/* Card front captions centre in any context — the gate grid or a standalone
+   .gate-card--solo sitting in a split — so the gate-name eyebrow + caption stay
+   symmetrical about the card's centre line. */
+.gate-card__face--front figcaption { text-align: center; }
 /* Mono eyebrow naming the gate at the top of each caption. */
 .gate-name {
   display: block;
@@ -985,6 +1009,22 @@
   .gate-card__face--front,
   .gate-card__face--back { transition: none; }
 }
+
+/* A slightly smaller hero image for this lesson. */
+.doc-hero__art--slim { max-width: 30rem; margin-inline: auto; }
+
+/* Static (display-only) flip cards hold longer, wider Verilog than the 1-bit
+   editable snippets. Give them a touch more width, shrink the code slightly,
+   and soft-wrap it so a long line (e.g. a trailing comment) can never force a
+   left-right scrollbar. */
+.gate-card[data-static] { max-width: 32rem; }
+.gate-card[data-static] .code-editor__hl,
+.gate-card[data-static] .code-editor__ta {
+  font-size: 0.72rem;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+.gate-card[data-static] .code-editor__ta { overflow-x: hidden; }
 
 /* ------------------------------------------------------------------ *
    CHECK-YOURSELF QUIZ — a multiple-choice widget: a diagram, four answer

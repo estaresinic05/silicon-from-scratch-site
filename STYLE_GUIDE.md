@@ -348,7 +348,29 @@ which the editor draws as a red wavy underline (`.tok-err`); the output shows `�
 
 Not supported (reported as errors): multi-bit arithmetic/buses beyond 1 bit,
 `case`, `for`/`generate`, module instantiation, tasks/functions, `initial`, real
-sequential clocking semantics. Keep card examples inside the subset.
+sequential clocking semantics. Keep *editable* card examples inside the subset.
+
+### Display-only cards (`data-static`) — code outside the 1-bit subset
+
+To show structural/multi-module Verilog (e.g. the 32-bit ALU slices, which
+instantiate `mux_2x1` / `full_adder`) as a flip card **without** a live
+simulation, add `data-static` to the `.gate-card`. Reference implementation:
+`alu/alu-slice/index.html` (the Final Upgrade `alu_slice` / `alu_msb` cards).
+
+Use the **same markup** as an editable card — including the `.code-editor__hl`
+`<pre><code>` underlay and the `.code-editor__ta` textarea (both hold the code;
+`gate-card.js` still needs the textarea) — with three changes:
+- add `data-static` to the `.gate-card`,
+- add `readonly` to the `.code-editor__ta` (it's reference source, not editable),
+- **omit** the `.gate-sim` from `.gate-card__backrow` (there's no 1-bit output to
+  show); keep just the return button, right-aligned via
+  `style="justify-content: flex-end;"`.
+
+`gate-card.js` detects `data-static` and wires the flip + one-shot syntax
+highlight (`VerilogMini.highlight`) but **skips `compile()`** — so no input
+chips, no output value, and no red error squiggle. Size a standalone card with
+`.gate-card--solo`. Everything else (flip animation, VS Code editor chrome,
+return arrow) is identical to the editable card.
 
 ### Flipping back
 Clicking the **front** flips to the editor. To flip **back**, the reader clicks

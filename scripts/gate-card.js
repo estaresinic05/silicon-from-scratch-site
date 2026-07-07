@@ -111,6 +111,19 @@
       render();
     }
 
+    /* Static / display-only card: for Verilog that instantiates sub-modules
+       (e.g. the 32-bit ALU slices), which is outside verilog-mini's 1-bit
+       subset and can't be simulated. Such a card still flips and gets live
+       syntax highlighting, but skips compile — so no input chips, no output
+       value, and no error squiggle. Opt in with `data-static` on the
+       .gate-card, and omit the .gate-sim from its back row. */
+    if (card.hasAttribute("data-static")) {
+      ta.readOnly = true;
+      errRange = null;
+      render();
+      return;
+    }
+
     ta.addEventListener("input", refresh);
     refresh();
   }
