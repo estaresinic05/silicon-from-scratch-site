@@ -347,7 +347,7 @@ palette. **These exact values live in *both* `styles/alu.css` and
 | `.tok-type` | module names — **declared** (`module <name>`) *or* **instantiated** (the type in `<type> [#(…)] <inst> (…)`) | `#4ec9b0` teal |
 | `.tok-inst` | the **instance name** in an instantiation | `#dcdcaa` pale yellow |
 | `.tok-paren` | parentheses `(` `)` | `#ffd700` gold |
-| `.tok-op` | operators — `= & \| ^ ~ ? + - == && …` | `#c586c0` mauve |
+| `.tok-op` | operators — `= & \| ^ ~ ? + - == && …` | `#b794f6` purple |
 | `.tok-err` | error span — red wavy underline (not a fill) | `#f14c4c` |
 
 Plain signal identifiers (and non-paren punctuation like `[] {} ; , : @`) get **no

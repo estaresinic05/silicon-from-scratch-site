@@ -913,7 +913,7 @@
 /* VS Code Dark+ Verilog token colours. */
 .tok-kw { color: #569cd6; }              /* keywords: input / output / wire / reg / assign */
 .tok-cm { color: #6a9955; }              /* comments */
-.tok-op { color: #c586c0; }              /* operators: = & | ^ ~ ? + - == && … */
+.tok-op { color: #b794f6; }              /* operators: = & | ^ ~ ? + - == && … */
 .tok-num { color: #b5cea8; }             /* numeric literals: 42, 1'b0, 4'hF */
 .tok-type { color: #4ec9b0; }            /* module names — declared or instantiated */
 .tok-inst { color: #dcdcaa; }            /* instance names in a module instantiation */
