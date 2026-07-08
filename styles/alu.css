@@ -397,6 +397,35 @@
   border-radius: var(--radius-sm);
   margin-inline: auto;
 }
+/* Final Upgrade: the slice diagram on the basic image figure, centred, with two
+   "See the code on GitHub" cards below it — one under each slice. */
+/* The slice diagram on the basic image figure, with the two GitHub cards a sliver
+   below the frame — one under each slice. */
+.slice-figure { max-width: 66rem; margin-inline: auto; }
+.slice-links {
+  --slice-gap: clamp(var(--space-2), 3vw, var(--space-3));
+  max-width: 66rem;
+  margin: var(--slice-gap) auto 0;        /* same gap below the image as between the cards */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--slice-gap);
+}
+.slice-links .code-card { margin-top: 0; }
+
+/* "Not less than" (≮): a < with a diagonal slash drawn on top via a pseudo-element,
+   so it renders in any font — the precomposed glyph and the combining-slash overlay
+   don't in our type stack, especially inside a monospace <code>. */
+.nless { position: relative; display: inline-block; }
+.nless::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 0.8em;
+  height: 0.09em;
+  background: currentColor;
+  transform: rotate(-55deg);
+}
 /* The ripple-carry diagram is tall/portrait — cap its width so it doesn't
    tower over the reading column. */
 .figure--tall img { max-width: 460px; }
@@ -798,17 +827,17 @@
   font-size: 0.62rem;
   letter-spacing: 0.02em;
 }
+/* The </> mark — literal text so it reads exactly as typed, three distinct
+   characters with a little tracking between them. */
 .code-editor__glyph {
-  width: 0.9rem;
-  height: 0.9rem;
   flex: none;
-  color: #569cd6;                        /* the <> in VS Code keyword-blue */
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  color: #569cd6;                        /* the </> in VS Code keyword-blue */
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
 }
+/* The </> glyph + "Verilog HDL" label sit on the LEFT; `margin-right: auto` on the
+   label pushes the Reset button over to the right. */
 .code-editor__lang { margin-right: auto; }
 /* Reset action in the titlebar — reverts the editor to its original code. */
 .code-editor__reset {
@@ -882,9 +911,13 @@
 .code-editor__ta:focus { outline: none; }
 .code-editor__ta::selection { background: rgba(38, 79, 120, 0.75); color: transparent; }
 /* VS Code Dark+ Verilog token colours. */
-.tok-kw { color: #569cd6; }              /* keywords: input / output / wire / assign */
+.tok-kw { color: #569cd6; }              /* keywords: input / output / wire / reg / assign */
 .tok-cm { color: #6a9955; }              /* comments */
-.tok-op { color: #d4d4d4; }              /* operators */
+.tok-op { color: #c586c0; }              /* operators: = & | ^ ~ ? + - == && … */
+.tok-num { color: #b5cea8; }             /* numeric literals: 42, 1'b0, 4'hF */
+.tok-type { color: #4ec9b0; }            /* module names — declared or instantiated */
+.tok-inst { color: #dcdcaa; }            /* instance names in a module instantiation */
+.tok-paren { color: #ffd700; }           /* parentheses */
 /* Syntax error — red wavy underline under the offending code (VS Code style). */
 .tok-err {
   text-decoration: underline wavy #f14c4c;
@@ -1095,7 +1128,7 @@
 /* A roomier card so the slice + De Morgan sketches can sit larger side by side. */
 .quiz--wide { max-width: 66rem; }
 .quiz__figure--slice {
-  width: min(26rem, 100%);
+  width: min(21rem, 100%);
   transition: width 0.55s var(--ease);
 }
 .quiz__figure--demorgan {
@@ -1147,9 +1180,9 @@
 }
 /* Typeset a choice as an equation (Word-style): italic variables, upright
    operators, and a touch more space around them, so a Boolean expression reads
-   as a formula rather than plain typed text. Keeps the same display font. */
+   as a formula rather than plain typed text. Keeps the same display font *and*
+   size as the standard style-guide answer choice (`.quiz__opt`, 1.05rem). */
 .eq {
-  font-size: 1.1em;
   word-spacing: 0.14em;      /* breathing room around + and ⊕ operators */
   white-space: nowrap;
 }

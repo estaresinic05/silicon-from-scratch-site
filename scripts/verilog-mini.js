@@ -413,10 +413,52 @@
 
   function highlight(src, err) {
     var toks = lex(src).tokens, out = "", pos = 0;
+
+    /* Some colours need more than a token's own type — a bare identifier could
+       be a signal, a declared module name, an instantiated module's type, or an
+       instance name. Resolve those with a little lookahead over the non-comment
+       tokens, recording an override class per token index:
+         - `module <name>`               → <name> is a module name (tok-type)
+         - `<type> [#( … )] <inst> ( … )` → <type> tok-type, <inst> tok-inst  */
+    var sig = [];
+    for (var s = 0; s < toks.length; s++) if (toks[s].type !== "comment") sig.push(s);
+    var extra = {};
+    function T(j) { return (j >= 0 && j < sig.length) ? toks[sig[j]] : null; }
+    function val(j) { var t = T(j); return t ? t.value : null; }
+    function typ(j) { var t = T(j); return t ? t.type : null; }
+
+    for (var j = 0; j < sig.length; j++) {
+      var st = T(j);
+      if (!st || st.type !== "id" || extra[sig[j]]) continue;
+      if (val(j - 1) === "module") { extra[sig[j]] = "tok-type"; continue; }
+      var k = j + 1;
+      if (val(k) === "#") {                     // skip an optional #( … ) param list
+        k++;
+        if (val(k) !== "(") continue;
+        var depth = 0;
+        while (k < sig.length) {
+          var v = val(k);
+          if (v === "(") depth++;
+          else if (v === ")") { depth--; if (depth === 0) { k++; break; } }
+          k++;
+        }
+      }
+      if (typ(k) === "id" && val(k + 1) === "(") {   // `<type> <inst> (` → instantiation
+        extra[sig[j]] = "tok-type";
+        extra[sig[k]] = "tok-inst";
+      }
+    }
+
     for (var i = 0; i < toks.length; i++) {
       var tk = toks[i];
       if (tk.start > pos) out += esc(src.slice(pos, tk.start));
-      var cls = tk.type === "kw" ? "tok-kw" : tk.type === "comment" ? "tok-cm" : tk.type === "op" ? "tok-op" : "";
+      var cls = tk.type === "kw" ? "tok-kw"
+              : tk.type === "comment" ? "tok-cm"
+              : tk.type === "num" ? "tok-num"
+              : tk.type === "op" ? "tok-op"
+              : (tk.type === "punc" && (tk.value === "(" || tk.value === ")")) ? "tok-paren"
+              : "";
+      if (extra[i]) cls = extra[i];             // semantic override beats the plain id
       var isErr = err && tk.type !== "comment" && tk.start < err.end && tk.end > err.start;
       if (isErr) cls = (cls ? cls + " " : "") + "tok-err";
       var text = esc(src.slice(tk.start, tk.end));

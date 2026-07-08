@@ -2827,17 +2827,17 @@ html.js .buildpath-intro { --rail-progress: 0; }
   font-size: 0.62rem;
   letter-spacing: 0.02em;
 }
+/* The </> mark — literal text so it reads exactly as typed, three distinct
+   characters with a little tracking between them. */
 .code-editor__glyph {
-  width: 0.9rem;
-  height: 0.9rem;
   flex: none;
   color: #569cd6;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
 }
+/* The </> glyph + "Verilog HDL" label sit on the LEFT; `margin-right: auto` on the
+   label pushes the Reset button over to the right. */
 .code-editor__lang { margin-right: auto; }
 .code-editor__reset {
   display: inline-flex;
@@ -2903,7 +2903,11 @@ html.js .buildpath-intro { --rail-progress: 0; }
 /* VS Code Dark+ Verilog token colours. */
 .tok-kw { color: #569cd6; }
 .tok-cm { color: #6a9955; }
-.tok-op { color: #d4d4d4; }
+.tok-op { color: #c586c0; }              /* operators: = & | ^ ~ ? + - == && … */
+.tok-num { color: #b5cea8; }             /* numeric literals */
+.tok-type { color: #4ec9b0; }            /* module names — declared or instantiated */
+.tok-inst { color: #dcdcaa; }            /* instance names in a module instantiation */
+.tok-paren { color: #ffd700; }           /* parentheses */
 /* Syntax error — red wavy underline under the offending code (VS Code style). */
 .tok-err {
   text-decoration: underline wavy #f14c4c;
