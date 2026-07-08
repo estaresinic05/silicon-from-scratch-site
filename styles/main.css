@@ -2220,8 +2220,8 @@ html.js .buildpath-intro { --rail-progress: 0; }
   background: rgba(183, 148, 246, 0.16);
   color: #d9c6ff;
 }
-/* Control signals (operation, Ainvert, Binvert, sel) in inline <code> wear the
-   same light blue they have on the back of the Verilog cards (the control-chip
+/* Control signals (operation, Ainvert, Binvert, sel, clk) in inline <code> wear
+   the same light blue they have on the back of the Verilog cards (the control-chip
    blue), rather than the default code purple. */
 code.ctrl-sig,
 .theme-dark code.ctrl-sig {
