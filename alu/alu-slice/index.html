@@ -325,16 +325,18 @@
             evaluating <code>a &minus; b</code> and comparing that result to
             <code>0</code>. One subtlety to this way of doing things is that there is a
             chance that we could <strong>overflow</strong> during that subtraction, and
-            our ALU would report&hellip;
+            our ALU would report a corrupted, flat-out wrong answer &mdash; the overflow
+            quietly poisons our result, flipping its sign so the comparison comes out
+            exactly backwards from the truth.
           </p>
           <p>
-            For example, suppose we are working with a 4-bit word size, two's-complement
-            interpretation ALU. If we wanted to compare <code>&minus;7</code>
+            For example, suppose we are working with a 4-bit word size in two's complement
+            interpretation. If we wanted to compare <code>&minus;7</code>
             (<code>1001</code>) with <code>6</code> (<code>0110</code>), we would have to
             perform <code>&minus;7 &minus; 6</code>, or more simply
             <code>&minus;7 + (&minus;6)</code>. After doing this operation, our intuition
             tells us that something is off; we cannot store the number
-            <code>&minus;13</code> in a 4-bit, two's-complement number &mdash; we can
+            <code>&minus;13</code> in a 4-bit, two's complement number &mdash; we can
             only go as low as <code>&minus;8</code>.
           </p>
           <p>

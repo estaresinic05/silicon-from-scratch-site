@@ -467,16 +467,16 @@
 /* Stacked / mobile: normal paragraph rhythm. */
 #addition-incoming .prose p { margin: 0; }
 #addition-incoming .prose p + p { margin-top: var(--space-3); }
-/* Two-column layout: stretch the copy to the widget's height and distribute the
-   three paragraphs evenly — the first flush with the top of the timing widget,
-   the last flush with its bottom. */
+/* Two-column layout: the copy stretches to the widget's height, but the three
+   paragraphs sit as a tight group centred against it (normal paragraph rhythm)
+   rather than being spread the full height. */
 @media (min-width: 769px) {
   #addition-incoming .prose {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
   }
-  #addition-incoming .prose p + p { margin-top: 0; }
+  #addition-incoming .prose p + p { margin-top: var(--space-3); }
 }
 /* "Your First ALU": on desktop the diagram sits beside the explanation (via the
    base .split grid — prose left, card right). On phones it stacks, with the
@@ -1099,9 +1099,12 @@
 }
 .quiz__reveal .quiz__figure { margin: 0; }
 .quiz__figure--tt {
-  width: min(34rem, 100%);
+  width: 100%;                 /* white frame spans the card, matching the answer buttons' margins */
+  max-width: none;
+  background: #fff;
   transition: width 0.55s var(--ease);
 }
+.quiz__figure--tt img { max-width: 34rem; margin-inline: auto; }  /* drawing keeps its size, centred */
 .quiz__figure--cout {
   width: 0;
   opacity: 0;
@@ -1128,9 +1131,12 @@
 /* A roomier card so the slice + De Morgan sketches can sit larger side by side. */
 .quiz--wide { max-width: 66rem; }
 .quiz__figure--slice {
-  width: min(21rem, 100%);
+  width: 100%;                 /* white frame spans the card, matching the answer buttons' margins */
+  max-width: none;
+  background: #fff;
   transition: width 0.55s var(--ease);
 }
+.quiz__figure--slice img { max-width: 21rem; margin-inline: auto; }  /* drawing keeps its size, centred */
 .quiz__figure--demorgan {
   width: 0;
   opacity: 0;
