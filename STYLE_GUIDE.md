@@ -118,6 +118,27 @@ purple).
 
 ---
 
+## Bolding key terms in body text
+
+Emphasize a **key term** the first time it matters in a paragraph by wrapping it
+in `<strong>` — e.g. `a <strong>multiplexer</strong>`, `the <strong>power
+supply</strong>`, `<strong>set-less-than</strong>`. This is the standard (and only)
+way to bold within `.prose` body copy; don't reach for `<b>`, inline
+`font-weight`, or ALL-CAPS to emphasize a word.
+
+- **Look:** `<strong>` in `.prose` inherits the paragraph's colour and the
+  browser's bold weight — a plain, muted bold that reads as emphasis without
+  shouting. It's the same bold used in `.doc-hero__lead` leads and the flip-card
+  `figcaption` descriptions, so don't add a per-instance colour or weight.
+- **Scope:** bold the **term being introduced or defined**, not whole phrases or
+  sentences — one or two words is the norm.
+- **Sparingly:** if everything in a paragraph is bold, nothing is emphasized.
+- **Not for code or stress:** use `<code>` for a signal / identifier / literal
+  (`<code>sel</code>`, `<code>1001</code>`) and `<em>` for light stress; reserve
+  `<strong>` for the defined term.
+
+---
+
 ## Lesson headers
 
 The top of a lesson page — everything from the lesson title down to (but not

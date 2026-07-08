@@ -923,17 +923,6 @@ main section[id] { scroll-margin-top: 5rem; }
   font-size: clamp(1.3rem, 3vw, 2rem);
   letter-spacing: -0.01em;
 }
-/* The title links to its lesson; it tints + grows on hover to signal it's clickable. */
-.bp-title a {
-  display: inline-block;             /* so transform applies (inline can't scale) */
-  color: inherit;
-  text-decoration: none;
-  transform-origin: left center;     /* grow from the left so it stays aligned */
-  transition: color 0.18s var(--ease), transform 0.18s var(--ease);
-}
-.bp-title a:hover,
-.bp-title a:focus-visible { color: var(--accent); transform: scale(1.05); }
-.bp-title a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .bp-desc {
   margin: 0;
   max-width: 48ch;
@@ -2230,6 +2219,14 @@ html.js .buildpath-intro { --rail-progress: 0; }
 .theme-dark code {
   background: rgba(183, 148, 246, 0.16);
   color: #d9c6ff;
+}
+/* Control signals (operation, Ainvert, Binvert, sel) in inline <code> wear the
+   same light blue they have on the back of the Verilog cards (the control-chip
+   blue), rather than the default code purple. */
+code.ctrl-sig,
+.theme-dark code.ctrl-sig {
+  color: #4a90d9;
+  background: rgba(74, 144, 217, 0.14);
 }
 
 /* Skip link stays visible when focused on dark. */

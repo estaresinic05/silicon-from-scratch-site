@@ -135,7 +135,7 @@
               was about as simple as an ALU can get. The two inputs <code>a</code>
               and <code>b</code> fed an AND gate and an OR gate side by side, and a
               single 2&times;1 multiplexer &mdash; steered by an
-              <code>operation</code> bit &mdash; picked which of those two results
+              <code class="ctrl-sig">operation</code> bit &mdash; picked which of those two results
               to send out as the <code>Result</code>. One control line, two
               operations, but a real, working ALU nonetheless.
             </p>
@@ -148,8 +148,8 @@
               it is with another <strong>2&times;1 multiplexer</strong> on each
               input. We run each input through a NOT gate to produce its inverted
               twin, wire both the original and the inverted signal into a 2&times;1
-              mux, and add a control line &mdash; <code>Ainvert</code> for the
-              <code>a</code> side and <code>Binvert</code> for the <code>b</code>
+              mux, and add a control line &mdash; <code class="ctrl-sig">Ainvert</code> for the
+              <code>a</code> side and <code class="ctrl-sig">Binvert</code> for the <code>b</code>
               side &mdash; to select which one actually enters the AND and OR gates.
               Set the control to 0 and the input passes straight through; set it to
               1 and its inverted version takes its place.
@@ -378,7 +378,7 @@
 
           <div class="quiz__options" role="group" aria-label="Answer choices">
             <button class="quiz__opt" type="button">Add a NAND and NOR gate into the architecture, and increase the mux to have 6 inputs instead of 4.</button>
-            <button class="quiz__opt" type="button"><span>Assign two new <strong>Operation</strong> control codes so the multiplexer can select NAND and NOR directly. No gates or inputs need to change.</span></button>
+            <button class="quiz__opt" type="button"><span>Assign two new <strong>operation</strong> control codes so the multiplexer can select NAND and NOR directly. No gates or inputs need to change.</span></button>
             <button class="quiz__opt" type="button"><span>By De Morgan's laws, inverting a single input is enough: use the <strong>Ainvert</strong> mux to invert only <strong>a</strong>, then feed it into the AND and OR gates to produce NOR and NAND.</span></button>
             <button class="quiz__opt" type="button" data-correct="true"><span>Nothing needs to change. By De Morgan's laws, inverting <em>both</em> <strong>a</strong> and <strong>b</strong> &mdash; which the <strong>Ainvert</strong> and <strong>Binvert</strong> muxes already do &mdash; turns the AND gate into a NOR and the OR gate into a NAND.</span></button>
           </div>

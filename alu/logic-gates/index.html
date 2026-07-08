@@ -120,7 +120,7 @@
           <p>
             The 0's are easy — they are 0&nbsp;Volts (V) or ground in a circuit.
             The 1's however could be a couple different values depending on the
-            power supply used in the circuit. Often called
+            <strong>power supply</strong> used in the circuit. Often called
             <strong>V<sub>DD</sub></strong> or <strong>V<sub>CC</sub></strong>,
             the power supply sets what voltage is read as a '1'. In some
             applications this '1' or 'high' voltage can be 5V, 3.3V or even 1.8V
@@ -507,7 +507,9 @@ assign y = ~(a | b);   // OR, then NOT</textarea>
                 <img src="../../assets/ALU/mux.jpg"
                      alt="Two multiplexers drawn as trapezoids. A 2-by-1 mux picks between inputs a and b with a single select bit. A 4-by-1 mux picks among a, b, c, and d with a 2-bit select. Each passes the chosen input straight through to Result." decoding="async" />
                 <figcaption>
-                  A 2&times;1 mux and a 4&times;1 mux.
+                  <span class="gate-name">MUX · 2&times;1 &amp; 4&times;1</span>
+                  <strong>Passes one input straight through</strong> guided by a
+                  <code class="ctrl-sig">sel</code> signal.
                 </figcaption>
                 <span class="gate-card__flip" aria-hidden="true">
                   <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
@@ -597,13 +599,13 @@ endmodule</textarea>
             <p>
               Here it is — your first ALU. It may be tiny, but it still packs a
               punch! This ALU can perform both AND and OR operations depending on
-              the value of the <code>operation</code> signal.
+              the value of the <code class="ctrl-sig">operation</code> signal.
             </p>
             <p>
               That's the whole trick, and it's worth pausing on: with a single
               control wire, the <em>same</em> hardware performs two different
               operations. The gates do the work; the mux, steered by
-              <code>operation</code>, chooses which work counts. Scale that idea up
+              <code class="ctrl-sig">operation</code>, chooses which work counts. Scale that idea up
               and you have the defining feature of an ALU — one block that carries
               out whichever operation the processor asks for.
             </p>
@@ -635,7 +637,10 @@ endmodule</textarea>
               <img src="../../assets/ALU/1-bit-alu.jpg"
                    alt="A 1-bit ALU: inputs a and b each feed both an AND gate and an OR gate. Both gate outputs feed a two-way multiplexer whose select line is labelled Operation. The mux output is labelled Result." decoding="async" />
               <figcaption>
-                Your first ALU&hellip; we'll make it cooler, don't worry.
+                <span class="gate-name">ALU · 1-bit</span>
+                <strong>Your first ALU</strong> &mdash; AND and OR into a mux, so one
+                <code class="ctrl-sig">operation</code> bit picks the result. We'll make it cooler,
+                don't worry.
               </figcaption>
               <span class="gate-card__flip" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>

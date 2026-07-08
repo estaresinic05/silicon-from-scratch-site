@@ -255,7 +255,7 @@
             Before worrying about 32 bits, look at a single one — that's where the
             whole design stops being intimidating. Operand <code>a</code> and
             operand <code>b</code> each pass through a 2:1 multiplexer that can
-            optionally invert them (<code>Ainvert</code> / <code>Binvert</code>).
+            optionally invert them (<code class="ctrl-sig">Ainvert</code> / <code class="ctrl-sig">Binvert</code>).
             Those operands then feed an AND gate, an OR gate, and a full adder
             <em>in parallel</em>. A 4:1 multiplexer picks which of those — AND, OR,
             the sum, or the <code>less</code> signal — becomes this bit's output,
@@ -497,9 +497,9 @@
               <tr><th>Bits</th><th>Name</th><th>Function</th></tr>
             </thead>
             <tbody>
-              <tr><td><code>control[3]</code></td>  <td><code>Ainvert</code></td>  <td>Invert operand A</td></tr>
+              <tr><td><code>control[3]</code></td>  <td><code class="ctrl-sig">Ainvert</code></td>  <td>Invert operand A</td></tr>
               <tr><td><code>control[2]</code></td>  <td><code>Bnegate</code></td>  <td>Invert operand B <strong>and</strong> set carry-in (two's-complement subtract)</td></tr>
-              <tr><td><code>control[1:0]</code></td><td><code>operation</code></td><td>Result mux select: <code>00</code>=AND, <code>01</code>=OR, <code>10</code>=ADD, <code>11</code>=less</td></tr>
+              <tr><td><code>control[1:0]</code></td><td><code class="ctrl-sig">operation</code></td><td>Result mux select: <code>00</code>=AND, <code>01</code>=OR, <code>10</code>=ADD, <code>11</code>=less</td></tr>
             </tbody>
           </table>
         </div>
