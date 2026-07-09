@@ -1,6 +1,6 @@
 /* =========================================================================
    Silicon From Scratch — alu-widget.js
-   Interactive 1-bit ALU datapath explorer for the ALU page (/alu/).
+   Interactive 1-bit ALU datapath explorer (homepage Hands On section).
 
    WHAT THIS DOES
    - Builds an inline SVG schematic of TWO ALU slices, each drawn as a module

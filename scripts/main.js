@@ -10,7 +10,7 @@
   /* ---- 1. Clean URLs for in-page anchors --------------------------------
      Sections are linked with #fragments (e.g. "Back to the path" -> /#learn,
      the nav, "See the architecture"). We still scroll to the section, but
-     strip the #fragment so the URL stays clean (just / or /alu/).
+     strip the #fragment so the URL stays clean (just / or a page path).
      Two cases: arriving from another page (on load) and clicking an anchor on
      the current page (on click). */
   // Drop the #fragment from the URL without moving the page. We deliberately do
@@ -123,7 +123,7 @@
         ["Logic Gates and Simple 1-bit ALU", "alu/logic-gates/"],
         ["Full Adder and Ripple Carry Adder", "alu/full-adder/"],
         ["32-bit ALU Slice", "alu/alu-slice/"],
-        "Complete 32-bit ALU",
+        ["Complete 32-bit ALU", "alu/complete-alu/"],
         "Testing",
         "Bonus: Carry Lookahead"
       ]],

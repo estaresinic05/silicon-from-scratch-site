@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. Without JS this
+       never runs and the full page stays visible. -->
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>The Complete 32-bit ALU — Silicon From Scratch</title>
+  <meta name="description"
+        content="Stack thirty-two ALU slices, chain the carries, and route the set signal — and the one-bit slice becomes a complete, fully working 32-bit ALU." />
+
+  <!-- Social link previews: shared logo + "Silicon From Scratch" card (see index.html). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Silicon From Scratch" />
+  <meta property="og:title" content="Silicon From Scratch" />
+  <meta property="og:url" content="https://siliconfromscratch.com/alu/complete-alu/" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+  <meta property="og:image:width" content="1408" />
+  <meta property="og:image:height" content="768" />
+  <meta property="og:image:alt" content="Silicon From Scratch logo" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Silicon From Scratch" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+
+  <link rel="icon" href="../../assets/home/logo.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles, then the ALU project components (this page lives at
+       /alu/complete-alu/, two levels down). -->
+  <link rel="stylesheet" href="../../styles/main.css" />
+  <link rel="stylesheet" href="../../styles/alu.css" />
+  <!-- Interactive ALU datapath explorer (Play Time section). -->
+  <link rel="stylesheet" href="../../styles/alu-widget.css" />
+</head>
+<body class="theme-dark page-logic">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../../" aria-label="Silicon From Scratch — home">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="../../">Home</a>
+        <a href="../../meet-the-processor/">Meet the Processor</a>
+        <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+           target="_blank" rel="noopener">GitHub</a>
+        <a href="../../about/">About</a>
+        <a href="../../#tools">Tools</a>
+      </nav>
+
+      <div class="topbar__right">
+        <!-- Section index (desktop only): hover the ☰ to open the project directory -->
+        <div class="toc" id="page-toc">
+          <button class="toc__btn" type="button" aria-haspopup="true"
+                  aria-expanded="false" aria-label="Open the project directory">
+            <span class="nav-toggle__bars" aria-hidden="true"></span>
+          </button>
+          <ul class="toc__menu" aria-label="Project directory"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================== DOC HERO ============================ -->
+    <section class="doc-hero doc-hero--balanced container" aria-labelledby="complete-title">
+      <div class="doc-hero__text">
+        <h1 id="complete-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">The Complete</span> <span class="title-eyebrow__group">32-bit ALU</span></span></h1>
+        <p class="doc-hero__lead">
+          We've built and perfected a single <strong>ALU slice</strong>. Now we
+          line up thirty-two of them, chain each slice's carry into the next, and
+          route the most significant slice's <code>set</code> signal back down to
+          the bottom &mdash; and just like that, our one-bit block becomes a
+          complete, fully working <strong>32-bit ALU</strong>.
+        </p>
+        <div class="doc-hero__actions">
+          <span class="doc-hero__prompt">Think you got this already?</span>
+          <a class="btn btn--primary" href="#check">Skip to Check Yourself</a>
+        </div>
+      </div>
+
+      <figure class="doc-hero__art doc-hero__art--slim">
+        <img src="../../assets/ALU/alu-block.jpg"
+             alt="The complete 32-bit ALU drawn as a single block: two 32-bit inputs a and b enter the top, a shared control signal selects the operation, and the block produces a 32-bit Result along with status outputs such as carry-out, overflow, and zero."
+             decoding="async" />
+      </figure>
+    </section>
+
+    <!-- ========================== UNFINISHED BUSINESS =================== -->
+    <section class="section" id="unfinished-business" aria-labelledby="ub-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="ub-title">Unfinished Business</h2>
+        </div>
+
+        <div class="split">
+          <div class="prose">
+            <p>
+              In the last lesson, we briefly discussed how we would edit our ALU
+              slices to accommodate the <code>slt</code> instruction. However, we
+              didn't quite get to how the <code>set</code> signal from the most
+              significant slice would interact with the rest of the slices to
+              properly produce the final <code>slt</code> result. As we saw from the
+              last lesson, the <code>set</code> signal by itself is not enough to
+              produce an output of 000&hellip;01 if <code>slt</code> evaluates to
+              true, or 000&hellip;00 if <code>slt</code> evaluates to false.
+              Instead, by routing the <code>set</code> signal back to the least
+              significant bit's <code>less</code> input and choosing output 3 of the
+              mux (<code class="ctrl-sig">operation</code> = 11), we can effectively
+              produce a <code>1</code> in the least significant bit of our result.
+            </p>
+            <p>
+              But what do we do with the other <code>less</code> inputs? Well, the
+              key insight is noticing that no matter if <code>slt</code> evaluates
+              to true and we get a result equal to 000&hellip;01, or if
+              <code>slt</code> evaluates to false and we get a result equal to
+              000&hellip;00, all of bits [1:31] are 0! The solution to our problem
+              is therefore to simply <strong>hardwire</strong>, or to force, the
+              <code>less</code> input on all of bits [1:31] as 0!
+            </p>
+            <p>
+              The image at right shows precisely this. The sequence of events
+              during the execution of an <code>slt</code> instruction is as
+              follows:
+            </p>
+            <ol>
+              <li>
+                The ALU's control bits are set so that
+                <code class="ctrl-sig">Binvert</code> = 1 and
+                <code class="ctrl-sig">operation</code> = 11, configuring every
+                slice to subtract and to select its <code>less</code> input.
+              </li>
+              <li>
+                The expression <code>a &minus; b</code> is computed across the
+                chain.
+              </li>
+              <li>
+                The sign bit of that answer &mdash; produced in the most
+                significant slice &mdash; encodes whether <code>slt</code>
+                evaluated to true, so it is routed back down to the first slice's
+                <code>less</code> input.
+              </li>
+              <li>
+                Each slice then passes its <code>less</code> signal through the
+                mux to its <code>Result</code> bit.
+              </li>
+              <li>
+                A <code>Result</code> of 000&hellip;01 means <code>slt</code> was
+                true, and a <code>Result</code> of 000&hellip;00 means it was
+                false.
+              </li>
+            </ol>
+          </div>
+
+          <figure class="figure" style="max-width: 34rem;">
+            <img src="../../assets/ALU/alu-chain.jpg"
+                 alt="Thirty-two ALU slices chained together: each slice's carry-out feeds the next slice's carry-in, the most-significant slice's 'set' output routes down to the least-significant slice's 'less' input, and every other slice's 'less' input is hardwired to 0."
+                 decoding="async" />
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ FINAL TOUCHES ======================= -->
+    <section class="section" id="final-touches" aria-labelledby="ft-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="ft-title">Final Touches</h2>
+        </div>
+
+        <div class="split split--media-left">
+          <figure class="figure" style="max-width: 34rem;">
+            <img src="../../assets/ALU/alu-chain-2.jpg"
+                 alt="The 32-slice ALU chain with equality-detection added: every slice's Result bit feeds a single 32-input NOR gate on the right, which produces a new output signal 'zero' that is 1 only when all Result bits are 0."
+                 decoding="async" />
+          </figure>
+
+          <div class="prose">
+            <p>
+              As of now, our ALU is fully functional &mdash; you could drop it
+              into a processor as-is! However, that processor would be fairly
+              slow and weak, limited to just the AND, OR, NAND, NOR, add,
+              subtract, and slt operations. In this course, we will
+              add one more capability that proves incredibly useful during branch
+              instructions. We can already test for less-than (and therefore
+              greater-than), but we can't yet test for <em>equal to</em>!
+            </p>
+            <p>
+              Just like with our other operations, we can implement this with a
+              simple hardware trick that keeps our design relatively unchanged.
+              Recall that during the design of the <code>slt</code> operation, we
+              used the fact that to compare <code>a</code> to <code>b</code> you
+              can perform the <strong>subtraction</strong>
+              <code>a &minus; b</code>. If <code>a &minus; b &lt; 0</code>, that
+              means <code>a</code> is less than <code>b</code>. To check if
+              <code>a</code> is <em>equal to</em> <code>b</code>, the same
+              operation is performed, but this time we need to check whether our
+              result is <em>equal to</em> 0. To do this, we can make use of one of
+              our old friends &mdash; a gate that outputs a <code>1</code> if and
+              only if <em>all</em> of its inputs are 0. You guessed it: the NOR
+              gate!
+            </p>
+            <p>
+              By feeding every slice's <code>Result</code> bit into a single
+              32-input NOR gate, we introduce one new output signal,
+              <code>zero</code>, that goes high exactly when every
+              <code>Result</code> bit is 0 &mdash; that is, when
+              <code>a &minus; b = 0</code>, meaning <code>a</code> and
+              <code>b</code> are equal. Not only will we then be able to test for
+              equality, but we will also be able to test for <em>inequality</em>
+              (<code>a &ne; b</code>), which is the case whenever
+              <code>zero</code> = 0.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== PLAY TIME ========================= -->
+    <section class="section" id="play-time" aria-labelledby="pt-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="pt-title">Play Time</h2>
+        </div>
+
+        <!-- Datapath on the left as its own plate; a right column holds the
+             explanatory copy above the control panel, which is broken out as its
+             own card at the bottom-right of the datapath. Everything stays inside
+             #alu-widget so alu-widget.js still wires the presets/bits/live and the
+             SVG inherits the widget's theme colours. -->
+        <div class="handson-grid playtime-grid">
+          <div class="alu-widget playtime-widget" id="alu-widget">
+            <div class="playtime-left">
+              <p class="hoi-title">Complete 32-bit ALU Datapath</p>
+              <div class="alu-widget__stage">
+                <svg id="alu-diagram" viewBox="0 0 685 970" role="img"
+                     aria-label="ALU datapath schematic. Choose an operation to highlight the active path."></svg>
+                <noscript>
+                  <p class="alu-noscript">This interactive diagram needs JavaScript.</p>
+                </noscript>
+              </div>
+            </div>
+
+            <div class="playtime-right">
+              <div class="prose playtime-intro">
+                <p>
+                  You may have noticed that between the last two sections, we
+                  quietly got rid of our <code class="ctrl-sig">Cin</code> and
+                  <code class="ctrl-sig">Binvert</code> inputs, and in their place
+                  put a single <code class="ctrl-sig">Bnegate</code> input. This is
+                  a way to clean up our hardware, given that both signals are
+                  asserted (<code>1</code>) during subtraction and <code>0</code>
+                  otherwise.
+                </p>
+                <p>
+                  Another useful tidbit is that you will often see the signals
+                  <code class="ctrl-sig">Ainvert</code>,
+                  <code class="ctrl-sig">Bnegate</code>, and
+                  <code class="ctrl-sig">operation</code> combined into one control
+                  signal, <code class="ctrl-sig">Control</code>, which is 4 bits
+                  wide and is formed by concatenating all of the control signals
+                  together. Use the datapath to the left, and the control panel
+                  below, to explore how each operation maps to its own 4-bit
+                  <code class="ctrl-sig">Control</code> value &mdash; pick a preset
+                  or flip the individual control bits and watch the active path
+                  light up.
+                </p>
+              </div>
+
+              <aside class="alu-panel">
+                <div class="alu-readout" aria-hidden="true">
+                  <span class="alu-readout__label">Operation</span>
+                  <span class="alu-readout__name" id="alu-op-name">add</span>
+                  <span class="alu-readout__bits" id="alu-op-bits">0010</span>
+                </div>
+
+                <div class="alu-controls__group" role="group" aria-label="Named operations">
+                  <span class="alu-controls__label">Presets</span>
+                  <div class="alu-presets">
+                    <button class="alu-preset" type="button" data-code="0"  aria-pressed="false">AND</button>
+                    <button class="alu-preset" type="button" data-code="1"  aria-pressed="false">OR</button>
+                    <button class="alu-preset" type="button" data-code="2"  aria-pressed="false">add</button>
+                    <button class="alu-preset" type="button" data-code="6"  aria-pressed="false">subtract</button>
+                    <button class="alu-preset" type="button" data-code="7"  aria-pressed="false">slt</button>
+                    <button class="alu-preset" type="button" data-code="12" aria-pressed="false">NOR</button>
+                    <button class="alu-preset" type="button" data-code="13" aria-pressed="false">NAND</button>
+                  </div>
+                </div>
+
+                <div class="alu-controls__group" role="group" aria-label="Control bits">
+                  <span class="alu-controls__label">control[3:0]</span>
+                  <div class="alu-bits">
+                    <button class="alu-bit" type="button" data-bit="3" aria-pressed="false" aria-label="control bit 3, Ainvert">
+                      <span class="alu-bit__name">Ainv</span><span class="alu-bit__val">0</span>
+                    </button>
+                    <button class="alu-bit" type="button" data-bit="2" aria-pressed="false" aria-label="control bit 2, Bnegate">
+                      <span class="alu-bit__name">Bneg</span><span class="alu-bit__val">0</span>
+                    </button>
+                    <button class="alu-bit" type="button" data-bit="1" aria-pressed="false" aria-label="control bit 1, Operation high">
+                      <span class="alu-bit__name">Op1</span><span class="alu-bit__val">0</span>
+                    </button>
+                    <button class="alu-bit" type="button" data-bit="0" aria-pressed="false" aria-label="control bit 0, Operation low">
+                      <span class="alu-bit__name">Op0</span><span class="alu-bit__val">0</span>
+                    </button>
+                  </div>
+                </div>
+
+                <p class="alu-widget__live" aria-live="polite"></p>
+              </aside>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== CHECK YOURSELF ===================== -->
+    <section class="section section--tight" id="check" aria-labelledby="check-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="check-title">Check Yourself</h2>
+        </div>
+
+        <div class="quiz quiz--wide" id="quiz">
+          <p class="quiz__q">
+            Last lesson, we saw that slt needs extra logic to stay
+            correct when a &minus; b overflows. The equality test
+            (a = b) also works by subtracting and inspecting the
+            result. So, when performing the equality test, do we need to take
+            overflow into account the way we did for slt? If so, why?
+          </p>
+
+          <figure class="figure figure--photo quiz__figure quiz__figure--equality">
+            <img src="../../assets/ALU/equality-check.jpg"
+                 alt="The equality test drawn as hardware: a 32-bit ALU takes inputs a and b with its control set to subtract, and every bit of the resulting a minus b feeds a single 32-input NOR gate whose output, zero, is 1 when a equals b."
+                 decoding="async" />
+          </figure>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button"><span><strong>Yes</strong> &mdash; because a &minus; b could overflow and wrap around to zero, making the ALU falsely report a = b when the two values aren't actually equal.</span></button>
+            <button class="quiz__opt" type="button"><span><strong>Yes</strong> &mdash; subtraction always risks overflow, so we must correct the sign bit before running the zero check, exactly as slt does.</span></button>
+            <button class="quiz__opt" type="button" data-correct="true"><span><strong>No</strong> &mdash; a &minus; b equals the all-zero bit pattern <em>if and only if</em> a = b, and overflow never changes whether the result is <em>exactly zero</em>; it only corrupts the <em>sign</em> that slt relies on.</span></button>
+            <button class="quiz__opt" type="button"><span><strong>No</strong> &mdash; because the equality test reads the NOR (zero) output instead of the adder's sign bit, and NOR gates can't overflow.</span></button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+    <p class="container footer__credit">
+      Adapted from: David A. Patterson and John L. Hennessy,
+      <em>Computer Organization and Design: The Hardware/Software Interface,
+      RISC-V Edition</em>, Appendix A.5, &ldquo;Constructing a Basic Arithmetic
+      Logic Unit&rdquo; (Morgan Kaufmann, 2021).
+    </p>
+  </footer>
+
+  <!-- Mobile nav toggle + project directory drawer -->
+  <script src="../../scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger from CDN for the same scroll-reveal feel as the rest
+       of the site. If they fail to load, scroll.js removes the `js` class and
+       the page is simply fully visible. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
+  <script src="../../scripts/scroll.js" defer></script>
+
+  <!-- Interactive ALU datapath explorer (Play Time). Builds the schematic +
+       wires the control panel; keys off #alu-widget. -->
+  <script src="../../scripts/alu-widget.js" defer></script>
+
+  <!-- "Check yourself" quiz: colour the chosen answer, show feedback, and reveal
+       the continue button once the correct answer is picked. -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          if (next) next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+        } else {
+          btn.classList.add("is-wrong");
+          feedback.textContent = "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
+  })();
+  </script>
+
+</body>
+</html>

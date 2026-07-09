@@ -386,7 +386,7 @@ function buildBpTrace(managed) {
     });
   }
 
-  /* ---- Doc hero (e.g. the ALU page): on load, settle the text up in sequence,
+  /* ---- Doc hero (e.g. the ALU lesson pages): on load, settle the text up in sequence,
          then fade + gently scale the diagram in — mirrors the home hero feel. */
   if (document.querySelector(".doc-hero")) {
     gsap

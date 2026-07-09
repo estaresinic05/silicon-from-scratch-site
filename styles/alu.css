@@ -1,6 +1,6 @@
 /* =========================================================================
    Silicon From Scratch — alu.css
-   Page-specific components for the ALU deep-dive (alu.html). Built entirely on
+   Page-specific components for the ALU lesson pages. Built entirely on
    the design tokens defined in main.css (loaded first): colours, fonts, spacing
    scale, radii, shadows, --ease. Keep this file to things the home page never
    needed — figures, data tables, code blocks, the doc hero, disclosures.
@@ -1130,6 +1130,17 @@
    reveal above, sized for these two images. */
 /* A roomier card so the slice + De Morgan sketches can sit larger side by side. */
 .quiz--wide { max-width: 66rem; }
+/* Complete-ALU equality Check Yourself: the drawing sits on a full-width white
+   frame spanning the widened card, centred and padded so there's white space
+   around it (matches the slice/truth-table sketches). */
+.quiz__figure--equality {
+  width: 100%;
+  max-width: none;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: clamp(var(--space-3), 4vw, var(--space-5));
+}
+.quiz__figure--equality img { max-width: 40rem; margin-inline: auto; }
 .quiz__figure--slice {
   width: 100%;                 /* white frame spans the card, matching the answer buttons' margins */
   max-width: none;
@@ -1395,4 +1406,62 @@
   .doc-hero__actions .btn,
   .nextstep .doc-hero__actions .btn { flex: 1 1 auto; justify-content: center; }
   .figure--tall img { max-width: 100%; }
+}
+
+/* ------------------------------------------------------------------ *
+   PLAY TIME (complete-alu) — the home page's ALU datapath explorer, split
+   into TWO frames: the datapath on the left as its own white plate, and a
+   right column holding the explanatory copy above the control panel, which
+   is broken out as its own card at the bottom-right of the datapath. The
+   white-plate + colour machinery still comes from `.handson-grid
+   .alu-widget*` (main.css); the rules below drop the single outer card,
+   lay the widget out in two columns, and give the panel back its own frame.
+ * ------------------------------------------------------------------ */
+/* Single full-width cell; the widget itself becomes the two-column grid. */
+.handson-grid.playtime-grid {
+  grid-template-columns: 1fr;
+  max-width: none;
+  margin: var(--space-5) 0 0;
+}
+/* Drop the combined outer card — the two inner frames are the cards now — and
+   lay the datapath (left) beside the text-over-panel column (right). */
+.handson-grid.playtime-grid .alu-widget {
+  display: grid;
+  grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
+  gap: clamp(var(--space-3), 3vw, var(--space-5));
+  align-items: stretch;
+  margin-top: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+/* The datapath + its title ride their own paper card (the white plate sits
+   inside it, just like the original combined card). */
+.playtime-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  padding: clamp(var(--space-4), 5vw, var(--space-5));
+}
+.playtime-right { display: flex; flex-direction: column; gap: var(--space-4); }
+.playtime-intro { max-width: none; margin: 0; }
+/* Push the control panel to the bottom of the right column so it sits at the
+   bottom-right of the datapath, with the copy above it. */
+.handson-grid.playtime-grid .alu-panel {
+  margin-top: auto;
+  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+
+@media (max-width: 768px) {
+  .handson-grid.playtime-grid .alu-widget { grid-template-columns: 1fr; }
+  .handson-grid.playtime-grid .alu-panel { margin-top: 0; }
 }
