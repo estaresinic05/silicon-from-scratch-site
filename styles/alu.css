@@ -460,6 +460,23 @@
 .prose ul { margin: 0 0 var(--space-3); padding-left: 1.5rem; }
 .prose li { margin-bottom: var(--space-2); }
 .prose li:last-child { margin-bottom: 0; }
+/* Numbered lists ride a shaded card — the same raised surface as the picture
+   frames — so the steps read as a distinct block, not plain body text. The
+   extra left padding keeps the (accent-coloured) numbers inside the frame. */
+.prose ol {
+  margin: var(--space-4) 0;
+  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  padding-left: calc(clamp(var(--space-3), 3vw, var(--space-4)) + 1.6rem);
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+.prose ol li::marker {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
 /* Addition Incoming: pull the heading nearer the copy, and top-align the text
    with the top of the timing widget instead of vertically centering it. */
 #addition-incoming .section__head { margin-bottom: var(--space-2); }

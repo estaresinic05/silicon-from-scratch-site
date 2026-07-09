@@ -168,8 +168,8 @@
                      alt="A NOT gate: a single input of 0 produces an output of 1." decoding="async" />
                 <figcaption>
                   <span class="gate-name">NOT · inverter</span>
-                  <strong>Flips its single input</strong> — a <code>0</code> becomes a
-                  <code>1</code>, and a <code>1</code> becomes a <code>0</code>.
+                  <strong>Flips its single input</strong> — a 0 becomes a
+                  1, and a 1 becomes a 0.
                 </figcaption>
                 <span class="gate-card__flip" aria-hidden="true">
                   <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
@@ -269,7 +269,7 @@ assign y = a &amp; b;   // &amp; denotes bitwise AND</textarea>
                 <figcaption>
                   <span class="gate-name">OR · either</span>
                   <strong>Outputs 1 when at least one input is 1</strong> — only
-                  <code>0</code> and <code>0</code> give a <code>0</code>.
+                  0 and 0 give a 0.
                 </figcaption>
                 <span class="gate-card__flip" aria-hidden="true">
                   <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
@@ -320,7 +320,7 @@ assign y = a | b;   // | denotes bitwise OR</textarea>
                 <figcaption>
                   <span class="gate-name">XOR · difference</span>
                   <strong>Outputs 1 only when the two inputs differ</strong> —
-                  matching bits cancel to <code>0</code>.
+                  matching bits cancel to 0.
                 </figcaption>
                 <span class="gate-card__flip" aria-hidden="true">
                   <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
@@ -371,7 +371,7 @@ assign y = a ^ b;   // ^ denotes bitwise XOR</textarea>
                 <figcaption>
                   <span class="gate-name">NAND · not-and</span>
                   <strong>An AND with its answer flipped</strong> — it gives
-                  <code>0</code> only when both inputs are <code>1</code>.
+                  0 only when both inputs are 1.
                 </figcaption>
                 <span class="gate-card__flip" aria-hidden="true">
                   <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
@@ -422,7 +422,7 @@ assign y = ~(a &amp; b);   // AND, then NOT</textarea>
                 <figcaption>
                   <span class="gate-name">NOR · not-or</span>
                   <strong>An OR with its answer flipped</strong> — it gives
-                  <code>1</code> only when both inputs are <code>0</code>.
+                  1 only when both inputs are 0.
                 </figcaption>
                 <span class="gate-card__flip" aria-hidden="true">
                   <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
@@ -568,9 +568,9 @@ endmodule</textarea>
             </p>
             <p>
               A two-way mux is the simplest kind. It has two data inputs,
-              labelled <code>0</code> and <code>1</code>, and a single control
-              wire. When the control is <code>0</code> it forwards the first
-              input; when it's <code>1</code> it forwards the second. Nothing is
+              labelled 0 and 1, and a single control
+              wire. When the control is 0 it forwards the first
+              input; when it's 1 it forwards the second. Nothing is
               computed here! The mux simply decides which existing signal gets to
               be the output. That single idea is what turns a pile of gates into
               something that can perform <em>different</em> operations on command.

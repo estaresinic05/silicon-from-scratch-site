@@ -331,7 +331,7 @@ endmodule</textarea>
               Remarkably, this same circuit can <em>subtract</em> with only a tiny
               tweak. Recall that in two's complement, negating a number means
               flipping all its bits and adding 1 &mdash; so
-              <code>a &minus; b</code> is just
+              <code>a</code> &minus; <code>b</code> is just
               <code>a + <span class="ovl">b</span> + 1</code>. To pull this off, we feed each bit of
               <code>b</code> through an XOR gate controlled by a single
               <strong>subtract</strong> signal: when it's 0 the bits pass through
@@ -409,7 +409,7 @@ endmodule</textarea>
             <em>into</em> the most significant bit with the carry <em>out</em> of
             it: if those two carries differ, signed overflow has occurred. In other
             words, a single XOR gate on those two carry bits,
-            <code>V = C<sub>in</sub> &oplus; C<sub>out</sub></code> at the top bit,
+            <code>ovf = C<sub>in</sub> &oplus; C<sub>out</sub></code> at the top bit,
             gives us an <strong>overflow flag</strong> essentially for free &mdash;
             one of several status flags a real ALU hands back alongside the result.
           </p>

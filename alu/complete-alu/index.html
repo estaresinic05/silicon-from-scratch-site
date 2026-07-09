@@ -127,7 +127,7 @@
               Instead, by routing the <code>set</code> signal back to the least
               significant bit's <code>less</code> input and choosing output 3 of the
               mux (<code class="ctrl-sig">operation</code> = 11), we can effectively
-              produce a <code>1</code> in the least significant bit of our result.
+              produce a 1 in the least significant bit of our result.
             </p>
             <p>
               But what do we do with the other <code>less</code> inputs? Well, the
@@ -151,7 +151,7 @@
                 slice to subtract and to select its <code>less</code> input.
               </li>
               <li>
-                The expression <code>a &minus; b</code> is computed across the
+                The expression <code>a</code> &minus; <code>b</code> is computed across the
                 chain.
               </li>
               <li>
@@ -211,12 +211,12 @@
               Recall that during the design of the <code>slt</code> operation, we
               used the fact that to compare <code>a</code> to <code>b</code> you
               can perform the <strong>subtraction</strong>
-              <code>a &minus; b</code>. If <code>a &minus; b &lt; 0</code>, that
+              <code>a</code> &minus; <code>b</code>. If <code>a</code> &minus; <code>b</code> &lt; 0, that
               means <code>a</code> is less than <code>b</code>. To check if
               <code>a</code> is <em>equal to</em> <code>b</code>, the same
               operation is performed, but this time we need to check whether our
               result is <em>equal to</em> 0. To do this, we can make use of one of
-              our old friends &mdash; a gate that outputs a <code>1</code> if and
+              our old friends &mdash; a gate that outputs a 1 if and
               only if <em>all</em> of its inputs are 0. You guessed it: the NOR
               gate!
             </p>
@@ -225,10 +225,10 @@
               32-input NOR gate, we introduce one new output signal,
               <code>zero</code>, that goes high exactly when every
               <code>Result</code> bit is 0 &mdash; that is, when
-              <code>a &minus; b = 0</code>, meaning <code>a</code> and
+              <code>a</code> &minus; <code>b</code> = 0, meaning <code>a</code> and
               <code>b</code> are equal. Not only will we then be able to test for
               equality, but we will also be able to test for <em>inequality</em>
-              (<code>a &ne; b</code>), which is the case whenever
+              (<code>a</code> &ne; <code>b</code>), which is the case whenever
               <code>zero</code> = 0.
             </p>
           </div>
@@ -269,7 +269,7 @@
                   <code class="ctrl-sig">Binvert</code> inputs, and in their place
                   put a single <code class="ctrl-sig">Bnegate</code> input. This is
                   a way to clean up our hardware, given that both signals are
-                  asserted (<code>1</code>) during subtraction and <code>0</code>
+                  asserted (1) during subtraction and 0
                   otherwise.
                 </p>
                 <p>

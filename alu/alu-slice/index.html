@@ -232,8 +232,8 @@
           </p>
           <ol>
             <li>
-              If <code>a &lt; b</code>, that would mean that
-              <code>a &minus; b</code> &lt; 0. In other words, to test whether
+              If <code>a</code> &lt; <code>b</code>, that would mean that
+              <code>a</code> &minus; <code>b</code> &lt; 0. In other words, to test whether
               <code>a</code> is less than <code>b</code>, we subtract
               <code>b</code> from <code>a</code> and compare the result with
               zero.
@@ -241,12 +241,12 @@
             <li>
               Recall that in two's complement, the most significant bit is the
               <strong>sign bit</strong> of the 32-bit number. If
-              <code>a &minus; b</code> &lt; 0, our result from subtracting
+              <code>a</code> &minus; <code>b</code> &lt; 0, our result from subtracting
               <code>b</code> from <code>a</code> is negative, so
               <code>Result</code>'s most significant bit would be
               1. We can route that single bit down to the least
               significant slice to set our result to 1. And in case
-              you were wondering &mdash; if <code>a &minus; b</code> &ge; 0,
+              you were wondering &mdash; if <code>a</code> &minus; <code>b</code> &ge; 0,
               <code>Result</code> is positive, its most significant bit stays
               0, and the least significant bit is never set,
               leaving 000&hellip;00.
@@ -322,8 +322,8 @@
             Before we move on, I thought this would be the perfect time to mention one
             small detail that we must include in our overflow-detection unit. The way
             we have organized our hardware, the <code>slt</code> operation works by
-            evaluating <code>a &minus; b</code> and comparing that result to
-            <code>0</code>. One subtlety to this way of doing things is that there is a
+            evaluating <code>a</code> &minus; <code>b</code> and comparing that result to
+            0. One subtlety to this way of doing things is that there is a
             chance that we could <strong>overflow</strong> during that subtraction, and
             our ALU would report a corrupted, flat-out wrong answer &mdash; the overflow
             quietly poisons our result, flipping its sign so the comparison comes out
@@ -331,20 +331,20 @@
           </p>
           <p>
             For example, suppose we are working with a 4-bit word size in two's complement
-            interpretation. If we wanted to compare <code>&minus;7</code>
-            (<code>1001</code>) with <code>6</code> (<code>0110</code>), we would have to
-            perform <code>&minus;7 &minus; 6</code>, or more simply
-            <code>&minus;7 + (&minus;6)</code>. After doing this operation, our intuition
+            interpretation. If we wanted to compare &minus;7
+            (1001) with 6 (0110), we would have to
+            perform &minus;7 &minus; 6, or more simply
+            &minus;7 + (&minus;6). After doing this operation, our intuition
             tells us that something is off; we cannot store the number
-            <code>&minus;13</code> in a 4-bit, two's complement number &mdash; we can
-            only go as low as <code>&minus;8</code>.
+            &minus;13 in a 4-bit, two's complement number &mdash; we can
+            only go as low as &minus;8.
           </p>
           <p>
             So what will our ALU do? Well, our ALU will take the lowest 4 bits for its
-            result and interpret our result as a <code>3</code>! Now, if we think back
+            result and interpret our result as a 3! Now, if we think back
             to what we said earlier, the <code>slt</code> operation will output
-            <code>1</code> if and only if <code>a &minus; b &lt; 0</code>, but as we see
-            here <code>3 <span class="nless">&lt;</span> 0</code>&hellip; How do we handle this? Think about how
+            1 if and only if <code>a</code> &minus; <code>b</code> &lt; 0, but as we see
+            here 3 <span class="nless">&lt;</span> 0&hellip; How do we handle this? Think about how
             <em>you</em> would handle this first, and if you need some help, check out
             the <a href="https://github.com/estaresinic05/Silicon-From-Scratch/blob/main/ALU/rtl/alu_msb.v"
                target="_blank" rel="noopener"><code>alu_msb.v</code></a> file on GitHub.
