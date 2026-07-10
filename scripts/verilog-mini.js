@@ -82,7 +82,7 @@
       var three = src.substr(i, 3), two = src.substr(i, 2);
       if (three === "===" || three === "!==") { push("op", i, i + 3); i += 3; continue; }
       if (/^(==|!=|&&|\|\||<=|>=|<<|>>|~&|~\||~\^|\^~)$/.test(two)) { push("op", i, i + 2); i += 2; continue; }
-      if ("()[]{};,:@*".indexOf(c) >= 0) { push("punc", i, i + 1); i++; continue; }
+      if ("()[]{};,:@*.#".indexOf(c) >= 0) { push("punc", i, i + 1); i++; continue; }
       if ("~&|^?!=<>+-".indexOf(c) >= 0) { push("op", i, i + 1); i++; continue; }
       if (!error) error = { message: "unexpected character '" + c + "'", start: i, end: i + 1 };
       push("unknown", i, i + 1); i++;
@@ -160,7 +160,41 @@
       if (t.value === "assign") return parseAssign();
       if (t.value === "always") return parseAlways();
       if (t.value === "parameter" || t.value === "localparam") return parseParam();
+      if (t.type === "id") return parseInstance();
       throw err("unexpected " + (t.type === "eof" ? "end of input" : "'" + t.value + "'"), t);
+    }
+
+    /* Module instantiation:  <type> [#( … )] <inst> ( <port connections> ) ;
+       verilog-mini can't simulate the sub-module (it's outside the 1-bit
+       subset), so this is a no-op for evaluation — but it's ACCEPTED so real
+       testbench code (which instantiates the DUT) doesn't read as a syntax
+       error. The connected signals are still parsed, so an undeclared signal in
+       a port map is still reported. */
+    function parseInstance() {
+      var typeTok = peek();
+      if (typeTok.type !== "id") throw err("expected a module or type name", typeTok);
+      next();
+      if (isV("#")) { next(); eat("("); parseConnList(); eat(")"); }   // parameter overrides
+      var inst = peek();
+      if (inst.type !== "id") throw err("expected an instance name", inst);
+      next();
+      eat("("); parseConnList(); eat(")"); eat(";");
+    }
+    /* A comma list of `.name(expr)` (named) or bare `expr` (positional)
+       connections — used for both a port map and a #( … ) parameter override.
+       The port / parameter NAME belongs to the sub-module, so it is not
+       ref-checked; the connected expression IS parsed, so its identifiers are. */
+    function parseConnList() {
+      if (isV(")")) return;
+      do {
+        if (isV(".")) {
+          next();
+          var pn = peek(); if (pn.type !== "id") throw err("expected a port name", pn); next();
+          eat("("); if (!isV(")")) parseExpr(); eat(")");
+        } else {
+          parseExpr();
+        }
+      } while (isV(",") && next());
     }
 
     function parsePortDecl() {

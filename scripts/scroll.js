@@ -397,6 +397,41 @@ function buildBpTrace(managed) {
               { opacity: 1, scale: 1, duration: 0.9, clearProps: "transform" }, "-=0.6");
   }
 
+  /* ---- Lesson pages, taller viewports only: reveal the ENTIRE first content
+         section on load — its heading, ALL of its body text, and its figures —
+         so nothing in that section reads as a blank gap on landing (its lower
+         paragraphs otherwise sit below the scroll-reveal trigger line and stay
+         hidden). On shorter viewports the hero fills the screen (CSS pushes this
+         section below the fold), so we leave it to the generic scroll reveals
+         below. The min-height:901px cutoff matches the CSS max-height:900 rule
+         that grows the hero. We exclude this section from the generic reveals via
+         inDocFirstLoad() so nothing double-animates. ---- */
+  var tallLanding = window.matchMedia && window.matchMedia("(min-height: 901px)").matches;
+  var docFirst = document.querySelector(".doc-hero") ? document.querySelector("section.section") : null;
+  function inDocFirstLoad(el) { return tallLanding && docFirst && docFirst.contains(el); }
+  if (tallLanding && docFirst) {
+    var dfHead = docFirst.querySelector(".section__head");
+    /* Everything the reveal CSS pre-hides inside this section (see main.css). */
+    var dfBody = docFirst.querySelectorAll(".prose > *, .checklist > *, .table-wrap");
+    var dfFigs = docFirst.querySelectorAll(".figure");
+    var dfLand = gsap.timeline({ delay: 0.4, defaults: { ease: EASE } });
+    if (dfHead) {
+      dfLand.fromTo(dfHead.querySelectorAll(".kicker, h2, .section__note"),
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.7, stagger: 0.1, clearProps: "transform" });
+    }
+    if (dfBody.length) {
+      dfLand.fromTo(dfBody,
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.7, stagger: 0.06, clearProps: "transform" }, "-=0.35");
+    }
+    if (dfFigs.length) {
+      dfLand.fromTo(dfFigs,
+        { opacity: 0, scale: 0.96 },
+        { opacity: 1, scale: 1, duration: 0.9, clearProps: "transform" }, "-=0.6");
+    }
+  }
+
   /* ---- Overview band: zoom the die shot in toward the column-1 / row-3 core.
          The animation plays on its own (not scrubbed) but only starts once the
          reader is halfway into the section. It zooms in once and stays there.
@@ -464,6 +499,7 @@ function buildBpTrace(managed) {
   function inHandsOn(el) { return handsonGrid && handsonGrid.contains(el); }
   gsap.utils.toArray(".figure").forEach(function (fig) {
     if (inBasics(fig)) return;
+    if (inDocFirstLoad(fig)) return;   // revealed on load with the first section (tall screens)
     if (inHandsOn(fig)) return;   // revealed as part of its widget card below
     revealFigure(fig);
   });
@@ -478,6 +514,7 @@ function buildBpTrace(managed) {
   /* ---- Section headings: kicker -> heading -> note, staggered ---- */
   gsap.utils.toArray(".section__head").forEach(function (head) {
     if (inBasics(head)) return;
+    if (inDocFirstLoad(head)) return;   // revealed on load with the first section (tall screens)
     reveal(head.querySelectorAll(".kicker, h2, .section__note"), head, {
       y: 20,
       stagger: 0.12,
@@ -495,9 +532,11 @@ function buildBpTrace(managed) {
   if (document.querySelector(".page-logic")) {
     gsap.utils.toArray(".page-logic .prose, .page-logic .checklist").forEach(function (block) {
       if (inBasics(block)) return;
+      if (inDocFirstLoad(block)) return;   // revealed on load with the first section (tall screens)
       reveal(block.children, block, { stagger: 0.1, start: "top 85%" });
     });
     gsap.utils.toArray(".page-logic .table-wrap").forEach(function (t) {
+      if (inDocFirstLoad(t)) return;       // revealed on load with the first section (tall screens)
       reveal(t, t, { start: "top 85%" });
     });
   }

@@ -35,6 +35,16 @@
   .doc-hero { transform: translateX(-2rem); }
 }
 
+/* Landing height. On shorter viewports the lesson hero fills the screen, so the
+   first content section — its heading included — stays below the fold on landing
+   and only fades in on the first scroll (its scroll-reveal trigger sits off-screen
+   at load). On taller viewports the hero keeps its natural height, so the first
+   section sits within the initial view and fades in on load. Scoped to lesson
+   pages (.page-logic). The topbar is fixed, so 100svh maps to the whole viewport. */
+@media (max-height: 900px) {
+  .page-logic .doc-hero { min-height: 100vh; min-height: 100svh; }
+}
+
 /* Balanced variant: the standard side-by-side hero (text + diagram), sized so
    the pair sits as a tight unit centred in the middle of the screen. Unlike the
    ALU overview hero it tightens the image column and centres the two columns as
@@ -940,6 +950,85 @@
   text-decoration: underline wavy #f14c4c;
   text-decoration-skip-ink: none;
   text-underline-offset: 2px;
+}
+
+/* Static, display-only code block. Same VS Code chrome + `.tok-*` token colours as
+   the editable card, but a plain in-flow <pre> that grows to fit its code (no
+   textarea, no JS, no Reset button). Used to show read-only Verilog snippets in
+   the Testing lesson. The panel scrolls horizontally on its own when a line is
+   wider than the column, so the page never scrolls sideways. */
+.code-editor--static { flex: none; }
+.code-editor--static .code-editor__body {
+  position: static;
+  min-height: 0;
+  overflow-x: auto;
+}
+.code-editor--static .code-editor__hl {
+  position: static;
+  height: auto;
+  overflow: visible;
+  padding: 0.8rem 1rem;                 /* a touch more room than the compact editor cards */
+}
+
+/* Testing lesson: a prose column that hosts floated code blocks, so the body text
+   wraps beside each block and flows underneath it when the copy runs longer.
+   flow-root keeps every float contained within its own section. It fills the full
+   container width (max-width: none) so its left AND right edges match the body
+   copy in alu-slice's "Final Upgrade" section. */
+.prose--flow { display: flow-root; max-width: none; }
+/* Full-width code (the text sits above and below it). */
+.prose--flow .code-editor--full { width: 100%; margin: var(--space-4) 0; }
+/* Editable code block (typable, with a Reset button and live error detection):
+   a prominent left-aligned block, taller than the read-only snippets so the whole
+   testbench interface is visible without scrolling, with the text above and below
+   it. On narrow screens it fills the column. */
+.prose--flow .code-editor--edit {
+  width: 100%;
+  max-width: 48rem;
+  margin: var(--space-4) 0;
+}
+.prose--flow .code-editor--edit .code-editor__body { min-height: 22rem; }
+/* Floated code: prose wraps beside the block, then continues underneath it.
+   Alternating sides give the page rhythm; generous margins keep the text off the
+   block. Unfloats to full width on narrow screens (the same 768px seam .split
+   stacks at). */
+.prose--flow .code-editor--float-left,
+.prose--flow .code-editor--float-right { width: 33rem; max-width: 100%; }
+.prose--flow .code-editor--float-right { float: right; margin: 0.4rem 0 var(--space-4) var(--space-5); }
+.prose--flow .code-editor--float-left  { float: left;  margin: 0.4rem var(--space-5) var(--space-4) 0; }
+@media (max-width: 768px) {
+  .prose--flow .code-editor--float-left,
+  .prose--flow .code-editor--float-right {
+    float: none; width: 100%; margin: var(--space-4) 0;
+  }
+}
+/* The takeaway list and the GitHub card always start on a fresh full-width line,
+   below any float above them, rather than wrapping into the narrow side gap. */
+.prose--flow .checklist,
+.prose--flow .code-card { clear: both; }
+
+/* A hand-drawn diagram shown in place of (or beside) a code block: a paper card
+   that floats like the code blocks so the copy wraps beside it. Kept a plain
+   <figure> WITHOUT the .figure class so it reveals once (as a prose child) rather
+   than also being caught by the generic .figure scroll reveal. */
+.prose--flow .flow-figure {
+  margin: 0;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: clamp(var(--space-2), 3vw, var(--space-3));
+  box-shadow: var(--shadow-soft);
+}
+.prose--flow .flow-figure img { width: 100%; height: auto; border-radius: var(--radius-sm); }
+.prose--flow .flow-figure--float-left,
+.prose--flow .flow-figure--float-right { width: 33rem; max-width: 100%; }
+.prose--flow .flow-figure--float-right { float: right; margin: 0.4rem 0 var(--space-4) var(--space-5); }
+.prose--flow .flow-figure--float-left  { float: left;  margin: 0.4rem var(--space-5) var(--space-4) 0; }
+@media (max-width: 768px) {
+  .prose--flow .flow-figure--float-left,
+  .prose--flow .flow-figure--float-right {
+    float: none; width: 100%; max-width: 28rem; margin: var(--space-4) auto;
+  }
 }
 
 /* Bottom row of the back: the output box + the return button at bottom-right.
