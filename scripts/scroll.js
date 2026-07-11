@@ -221,6 +221,26 @@ function buildBpTrace(managed) {
 
   var EASE = "power2.out";
 
+  /* Run a callback once the web fonts have settled (or after a short safety
+     timeout if the font load stalls). Use this to gate every reveal that plays
+     ON LOAD — the hero, the doc hero, the first-section landing. Those elements
+     are pre-hidden by CSS until we reveal them, so if we animate before the
+     fonts arrive the browser swaps the fallback font for the real one MID-fade
+     and the text reflows, which reads as a glitchy flicker. Waiting shows
+     nothing early and lets the copy fade in already in its final font.
+     (Scroll-triggered reveals further down don't need this: by the time the
+     reader scrolls to them the fonts are long since loaded.) */
+  function whenFontsReady(fn) {
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+      var done = false;
+      var go = function () { if (!done) { done = true; fn(); } };
+      document.fonts.ready.then(go);
+      setTimeout(go, 1200);   // never let a stalled font load leave content hidden
+    } else {
+      fn();
+    }
+  }
+
   /* Reveal helper: gentle fade + small upward move when `trigger` enters. */
   function reveal(targets, trigger, opts) {
     opts = opts || {};
@@ -244,16 +264,18 @@ function buildBpTrace(managed) {
 
   /* ---- Home hero: a gentle settling-in on load ---- */
   if (document.querySelector(".hero")) {
-    gsap
-      .timeline({ defaults: { ease: EASE } })
-      .fromTo(".hero__logo", { opacity: 0, scale: 0.94 },
-              { opacity: 1, scale: 1, duration: 0.9 })
-      .fromTo(".hero h1", { opacity: 0, y: 20 },
-              { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5")
-      .fromTo(".hero__intro", { opacity: 0, y: 20 },
-              { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5")
-      .fromTo(".hero__actions", { opacity: 0, y: 20 },
-              { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5");
+    whenFontsReady(function () {
+      gsap
+        .timeline({ defaults: { ease: EASE } })
+        .fromTo(".hero__logo", { opacity: 0, scale: 0.94 },
+                { opacity: 1, scale: 1, duration: 0.9 })
+        .fromTo(".hero h1", { opacity: 0, y: 20 },
+                { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5")
+        .fromTo(".hero__intro", { opacity: 0, y: 20 },
+                { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5")
+        .fromTo(".hero__actions", { opacity: 0, y: 20 },
+                { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5");
+    });
 
     /* subtle logo parallax as the hero scrolls away */
     var smallScreen = window.matchMedia("(max-width: 768px)").matches;
@@ -316,7 +338,7 @@ function buildBpTrace(managed) {
          — the main line is visibly drawing as you move, rather than finishing
          before you reach it. */
       bpTL = gsap.timeline({
-        scrollTrigger: { trigger: bpSectionEl, start: "top 82%", end: "bottom 48%", scrub: 0.6 }
+        scrollTrigger: { trigger: bpSectionEl, start: "top 82%", end: "bottom 52%", scrub: 0.6 }
       });
 
       /* The opening branch draws FIRST — paragraph out to the first graphic — and
@@ -389,12 +411,14 @@ function buildBpTrace(managed) {
   /* ---- Doc hero (e.g. the ALU lesson pages): on load, settle the text up in sequence,
          then fade + gently scale the diagram in — mirrors the home hero feel. */
   if (document.querySelector(".doc-hero")) {
-    gsap
-      .timeline({ defaults: { ease: EASE } })
-      .fromTo(".doc-hero__text > *", { opacity: 0, y: 20 },
-              { opacity: 1, y: 0, duration: 0.7, stagger: 0.1, clearProps: "transform" })
-      .fromTo(".doc-hero__art", { opacity: 0, scale: 0.96 },
-              { opacity: 1, scale: 1, duration: 0.9, clearProps: "transform" }, "-=0.6");
+    whenFontsReady(function () {
+      gsap
+        .timeline({ defaults: { ease: EASE } })
+        .fromTo(".doc-hero__text > *", { opacity: 0, y: 20 },
+                { opacity: 1, y: 0, duration: 0.7, stagger: 0.1, clearProps: "transform" })
+        .fromTo(".doc-hero__art", { opacity: 0, scale: 0.96 },
+                { opacity: 1, scale: 1, duration: 0.9, clearProps: "transform" }, "-=0.6");
+    });
   }
 
   /* ---- Lesson pages, taller viewports only: reveal the ENTIRE first content
@@ -410,26 +434,28 @@ function buildBpTrace(managed) {
   var docFirst = document.querySelector(".doc-hero") ? document.querySelector("section.section") : null;
   function inDocFirstLoad(el) { return tallLanding && docFirst && docFirst.contains(el); }
   if (tallLanding && docFirst) {
-    var dfHead = docFirst.querySelector(".section__head");
-    /* Everything the reveal CSS pre-hides inside this section (see main.css). */
-    var dfBody = docFirst.querySelectorAll(".prose > *, .checklist > *, .table-wrap");
-    var dfFigs = docFirst.querySelectorAll(".figure");
-    var dfLand = gsap.timeline({ delay: 0.4, defaults: { ease: EASE } });
-    if (dfHead) {
-      dfLand.fromTo(dfHead.querySelectorAll(".kicker, h2, .section__note"),
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.7, stagger: 0.1, clearProps: "transform" });
-    }
-    if (dfBody.length) {
-      dfLand.fromTo(dfBody,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.7, stagger: 0.06, clearProps: "transform" }, "-=0.35");
-    }
-    if (dfFigs.length) {
-      dfLand.fromTo(dfFigs,
-        { opacity: 0, scale: 0.96 },
-        { opacity: 1, scale: 1, duration: 0.9, clearProps: "transform" }, "-=0.6");
-    }
+    whenFontsReady(function () {
+      var dfHead = docFirst.querySelector(".section__head");
+      /* Everything the reveal CSS pre-hides inside this section (see main.css). */
+      var dfBody = docFirst.querySelectorAll(".prose > *, .checklist > *, .table-wrap");
+      var dfFigs = docFirst.querySelectorAll(".figure");
+      var dfLand = gsap.timeline({ delay: 0.4, defaults: { ease: EASE } });
+      if (dfHead) {
+        dfLand.fromTo(dfHead.querySelectorAll(".kicker, h2, .section__note"),
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.7, stagger: 0.1, clearProps: "transform" });
+      }
+      if (dfBody.length) {
+        dfLand.fromTo(dfBody,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.7, stagger: 0.06, clearProps: "transform" }, "-=0.35");
+      }
+      if (dfFigs.length) {
+        dfLand.fromTo(dfFigs,
+          { opacity: 0, scale: 0.96 },
+          { opacity: 1, scale: 1, duration: 0.9, clearProps: "transform" }, "-=0.6");
+      }
+    });
   }
 
   /* ---- Overview band: zoom the die shot in toward the column-1 / row-3 core.

@@ -162,21 +162,16 @@
 
         <div class="prose prose--flow">
           <p>
-            In our case, the DUT is the 32-bit ALU we just built. In
-            the image provided, the inputs and outputs of our design act as the
+            In our case, the DUT is the 32-bit ALU we just built. The inputs and
+            outputs of our design act as the
             <em>interface</em> between the testbench and the DUT. Our inputs,
             <code>a</code>, <code>b</code>, and <code class="ctrl-sig">control</code>, are given to
             the <em>DUT</em> from the <em>testbench</em>, and our outputs,
             <code>result</code>, <code>ovf</code>, and <code>zero</code>, are given
-            to the <em>testbench</em> from the <em>DUT</em>.
+            to the <em>testbench</em> from the <em>DUT</em>. This will become a
+            little clearer once we actually wire the testbench to our ALU.
           </p>
-          <p>
-            Before we can poke the ALU, we have to connect to it &mdash; and this
-            is where everyone's first testbench trips up: which signals should be
-            <code>reg</code>, and which should be <code>wire</code>?
-          </p>
-
-          <figure class="code-editor code-editor--edit" id="dut-editor">
+          <figure class="code-editor code-editor--edit code-editor--float-right" id="dut-editor">
             <figcaption class="code-editor__bar">
               <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
               <span class="code-editor__lang">Verilog HDL</span>
@@ -220,134 +215,123 @@ alu_full #(.N(32)) dut (
           </figure>
 
           <p>
-            The rule follows <em>who drives the signal</em>. The testbench drives
-            the ALU's inputs, so <code>a</code>, <code>b</code>, and
-            <code class="ctrl-sig">control</code> are declared <code>reg</code>
-            &mdash; a <code>reg</code> can be assigned a value inside a procedural
-            block, which is exactly what we'll do. The ALU drives its outputs back
-            at us, so <code>result</code>, <code>ovf</code>, and <code>zero</code>
-            are <code>wire</code> &mdash; we only observe them.
+            Before we wire anything up, though, there are a couple of useful
+            pieces of Verilog you should know. In Verilog, every signal is one of
+            two fundamental <strong>data types</strong>: a <code>wire</code> or a
+            <code>reg</code>. A <code>wire</code> is a <em>net</em> &mdash; a
+            connection that is always being driven by something, whether that's a
+            0, a 1, or a high-impedance <code>z</code>
+            (a floating, undriven state). A <code>reg</code>, on the other hand,
+            behaves more like a storage container: it holds whatever value it was
+            last assigned until something assigns it a new one.
           </p>
           <p>
-            With the signals declared, we <strong>instantiate</strong> the ALU
-            &mdash; create one working copy of it &mdash; name that copy
-            <code>dut</code>, and connect each of its ports to our signals.
+            When we connect our ALU to the testbench, we have to declare each
+            signal with the correct data type, and the rule comes down to
+            <em>who drives the signal</em>. Let's start with the inputs. In our
+            testbench, we want to try many different inputs and compare the
+            outputs our ALU gives us against what we expect &mdash; which means we
+            need to set and change <code>a</code>, <code>b</code>, and
+            <code class="ctrl-sig">control</code> ourselves, from inside a
+            procedural block. Only a <code>reg</code> can be assigned that way, so
+            our inputs are declared <code>reg</code>. Our outputs, on the other
+            hand, are continuously driven by the ALU depending on whatever input
+            we hand it &mdash; we only ever observe them, never assign them. That's
+            exactly what a <code>wire</code> is for, so <code>result</code>,
+            <code>ovf</code>, and <code>zero</code> are declared <code>wire</code>.
           </p>
-
           <p>
-            It helps to picture a real workbench: you clip a power supply onto the
-            inputs to set them, and a multimeter onto the outputs to read them.
-            <code>reg</code> is the power supply; <code>wire</code> is the
-            multimeter. The <code>#(.N(32))</code> passes the ALU's width as a
-            parameter, so the very same testbench works for an ALU of any size.
+            With the signals declared, we can now <strong>instantiate</strong> our
+            ALU, which is essentially creating a copy of it that we'll actually
+            work with. For obvious reasons, it's typical to name that copy
+            something like <code>dut</code>, and we connect each of its ports to
+            our signals. If you look at the code on GitHub, you'll notice our ALU
+            has a variable called <code>N</code> floating around it. <code>N</code>
+            is a parameter that the user passes in to tell the ALU how large it
+            should be &mdash; that is, how many bits wide its operands are. In our
+            instantiation, we pin that down to a 32-bit ALU with the code
+            <code>#(.N(32))</code>. And with that, we're finally ready to start
+            applying some stimulus.
           </p>
         </div>
       </div>
     </section>
 
-    <!-- ===================== STIMULUS & CHECKING ======================== -->
-    <section class="section" id="stimulus" aria-labelledby="stim-title">
+    <!-- ===================== THE GOLDEN MODEL =========================== -->
+    <section class="section" id="golden-model" aria-labelledby="gm-title">
       <div class="container container--wide">
         <div class="section__head">
-          <h2 id="stim-title">Applying Stimulus, Checking Automatically</h2>
+          <h2 id="gm-title">Stimulus and the Golden Model</h2>
+        </div>
+
+        <div class="split split--media-left">
+          <figure class="figure figure--diagram">
+            <img src="../../assets/ALU/testbench-flow.png"
+                 alt="A hand-drawn flowchart of the testbench. START leads into an 'Apply inputs a, b, control' step, whose single arrow fans out to two parallel branches: the DUT, which produces a result, and the golden model, which computes the expected answer. Both feed into a 'match?' decision. A mismatch adds to the error count; either way a 'more tests?' decision loops back to apply the next input vector, and once the vectors run out the testbench reaches a PASS or FAIL verdict."
+                 decoding="async" />
+          </figure>
+
+          <div class="prose prose--flow">
+            <p>
+              With our ALU wired into the testbench, we can finally start feeding it
+              inputs and watching what comes back out. In the testbench used in this
+              project, we set up a separate <strong>task</strong> called
+              <code>run_one</code> whose whole job is to push a single input
+              combination through the ALU and see what it produces. A task, in
+              Verilog, is really just a reusable block of code &mdash; think of it
+              like a function in an ordinary programming language &mdash; that we can
+              call again and again with different arguments, so we don't have to
+              rewrite the same handful of steps for every test we want to run. Each
+              time we call it, <code>run_one</code> routes its given inputs to the
+              matching ports on our <code>dut</code>. Our <code>dut</code> then does
+              some thinking and spits out values for <code>result</code>,
+              <code>ovf</code>, and <code>zero</code>.
+            </p>
+            <figure class="code-editor code-editor--static code-editor--float-right">
+              <figcaption class="code-editor__bar">
+                <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+                <span class="code-editor__lang">Verilog HDL</span>
+              </figcaption>
+              <div class="code-editor__body">
+                <pre class="code-editor__hl"><code><span class="tok-kw">case</span> (ctrl)
+  CTRL_AND:  exp_result <span class="tok-op">=</span> av <span class="tok-op">&amp;</span> bv;
+  CTRL_OR:   exp_result <span class="tok-op">=</span> av <span class="tok-op">|</span> bv;
+  CTRL_ADD:  exp_result <span class="tok-op">=</span> av <span class="tok-op">+</span> bv;
+  CTRL_SUB:  exp_result <span class="tok-op">=</span> av <span class="tok-op">-</span> bv;
+  CTRL_SLT:  exp_result <span class="tok-op">=</span> (sav <span class="tok-op">&lt;</span> sbv) ? <span class="tok-num">32'd1</span> : <span class="tok-num">32'd0</span>;
+  CTRL_NOR:  exp_result <span class="tok-op">=</span> <span class="tok-op">~</span>(av <span class="tok-op">|</span> bv);
+  CTRL_NAND: exp_result <span class="tok-op">=</span> <span class="tok-op">~</span>(av <span class="tok-op">&amp;</span> bv);
+<span class="tok-kw">endcase</span></code></pre>
+              </div>
+            </figure>
+
+            <p>
+              Now for the real question, and it's the same one we ran into all the
+              way back at the start: once we have an output, how do we actually
+              <em>know</em> it's correct? We're certainly not going to sit there and
+              check billions of results by hand. Instead, we get the testbench to
+              work out the expected answer entirely on its own &mdash; and this
+              independent, known-good reference is what we call the
+              <strong>golden model</strong> (you'll also hear it called an
+              <em>oracle</em>). For every input we hand the ALU, the golden model
+              figures out what the answer <em>should</em> be, and then we simply
+              compare the two. In the case of an ALU, the golden model doesn't have
+              to work too hard: it can re-derive every result from just a few plain
+              Verilog operators.
+            </p>
+          </div>
         </div>
 
         <div class="prose prose--flow">
           <p>
-            Everything happens inside an <code>initial</code> block &mdash; code
-            that runs <em>once</em>, top to bottom, in simulated time. Testing one
-            input combination is three steps: set the inputs, wait a moment for the
-            logic to settle, then read the outputs back.
+            After we get two results &mdash; one from the DUT and one from the
+            golden model &mdash; we compare them. If the results match, our ALU
+            is working correctly for that input combination; if they're
+            different, we increment the error count and print a short description
+            of which test failed. In either case, we keep moving through all of
+            our tests. But with billions of possible input combinations, how do
+            we know which ones to actually test?
           </p>
-
-          <figure class="code-editor code-editor--static code-editor--float-right">
-            <figcaption class="code-editor__bar">
-              <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
-              <span class="code-editor__lang">Verilog HDL</span>
-            </figcaption>
-            <div class="code-editor__body">
-              <pre class="code-editor__hl"><code><span class="tok-cm">// Apply one input combination, then check the ALU's response</span>
-a       = av;
-b       = bv;
-control = ctrl;
-#(SETTLE);                 <span class="tok-cm">// let the combinational logic settle</span>
-
-predict(ctrl, av, bv);     <span class="tok-cm">// work out what the answer SHOULD be</span>
-<span class="tok-kw">if</span> ((result <span class="tok-op">!==</span> exp_result) <span class="tok-op">||</span>
-    (ovf    <span class="tok-op">!==</span> exp_ovf)    <span class="tok-op">||</span>
-    (zero   <span class="tok-op">!==</span> exp_zero))
-  error_count = error_count + <span class="tok-num">1</span>;   <span class="tok-cm">// a mismatch - record it</span></code></pre>
-            </div>
-          </figure>
-
-          <p>
-            That <code>#(SETTLE)</code> is a tiny delay. Our ALU is pure
-            combinational logic with no clock, but its outputs still take a
-            (simulated) instant to ripple through the gates &mdash; so we pause
-            before trusting them.
-          </p>
-          <p>
-            Now the leap that makes a testbench powerful. Instead of a human
-            squinting at hexadecimal to decide whether it looks right, the
-            testbench works out the expected answer <em>itself</em> &mdash; a
-            <strong>golden model</strong> &mdash; and compares automatically. Ours
-            re-derives each result with plain Verilog operators:
-          </p>
-
-          <figure class="code-editor code-editor--static code-editor--full">
-            <figcaption class="code-editor__bar">
-              <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
-              <span class="code-editor__lang">Verilog HDL</span>
-            </figcaption>
-            <div class="code-editor__body">
-              <pre class="code-editor__hl"><code><span class="tok-kw">case</span> (ctrl)
-  CTRL_AND:  exp_result = av <span class="tok-op">&amp;</span> bv;
-  CTRL_OR:   exp_result = av <span class="tok-op">|</span> bv;
-  CTRL_ADD:  exp_result = av + bv;
-  CTRL_SUB:  exp_result = av - bv;
-  CTRL_SLT:  exp_result = (sav <span class="tok-op">&lt;</span> sbv) ? <span class="tok-num">32'd1</span> : <span class="tok-num">32'd0</span>;  <span class="tok-cm">// signed compare</span>
-  CTRL_NOR:  exp_result = <span class="tok-op">~</span>(av <span class="tok-op">|</span> bv);
-  CTRL_NAND: exp_result = <span class="tok-op">~</span>(av <span class="tok-op">&amp;</span> bv);
-<span class="tok-kw">endcase</span>
-
-<span class="tok-cm">// Overflow from the sign-bit identity - a DIFFERENT formula than the</span>
-<span class="tok-cm">// ALU's own cin ^ cout, so it is a genuine second opinion</span>
-exp_ovf = (opA[<span class="tok-num">31</span>] <span class="tok-op">==</span> opB[<span class="tok-num">31</span>]) <span class="tok-op">&amp;&amp;</span> (sum[<span class="tok-num">31</span>] <span class="tok-op">!=</span> opA[<span class="tok-num">31</span>]);</code></pre>
-            </div>
-          </figure>
-
-          <p>
-            Look closely at the overflow line: it uses a <em>completely different
-            formula</em> than the ALU does. The ALU flags overflow by comparing the
-            adder's carry-in and carry-out; the golden model instead inspects the
-            sign bits directly. That independence is the whole point &mdash; if the
-            checker simply copied the ALU's own logic, a bug in that logic would
-            appear identically in both, and the test would happily pass. A good
-            <strong>oracle</strong> is a second opinion, not an echo.
-          </p>
-          <p>
-            With an expected answer in hand, the check is a single comparison. We
-            use <code>!==</code> rather than <code>!=</code> because
-            <code>!==</code> is <em>four-state</em>: it also catches <code>x</code>
-            (unknown) and <code>z</code> (floating) values, the garbage that means
-            something has genuinely gone wrong. Every mismatch bumps an error
-            counter, and at the end the testbench prints its own verdict:
-          </p>
-
-          <figure class="code-editor code-editor--static code-editor--full">
-            <figcaption class="code-editor__bar">
-              <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
-              <span class="code-editor__lang">Verilog HDL</span>
-            </figcaption>
-            <div class="code-editor__body">
-              <pre class="code-editor__hl"><code><span class="tok-kw">if</span> (error_count <span class="tok-op">==</span> <span class="tok-num">0</span>)
-  $display(" RESULT: PASS - 0 errors. DUT == behavioral oracle.");
-<span class="tok-kw">else</span>
-  $display(" RESULT: FAIL - %0d error(s).", error_count);
-
-$finish;</code></pre>
-            </div>
-          </figure>
         </div>
       </div>
     </section>
@@ -356,72 +340,92 @@ $finish;</code></pre>
     <section class="section" id="coverage" aria-labelledby="cov-title">
       <div class="container container--wide">
         <div class="section__head">
-          <h2 id="cov-title">Choosing Good Tests, and Reading Waveforms</h2>
+          <h2 id="cov-title">Choosing Good Tests and <br class="cov-heading__break">Reading Waveforms</h2>
         </div>
 
         <div class="prose prose--flow">
+          <aside class="edge-card">
+            <p class="edge-card__title">Common ALU edge cases</p>
+            <ul>
+              <li>Both operands zero &mdash; exercises the <code>zero</code> flag and the identity cases
+                <figure class="code-editor code-editor--static">
+                  <figcaption class="code-editor__bar">
+                    <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+                    <span class="code-editor__lang">Verilog HDL</span>
+                  </figcaption>
+                  <div class="code-editor__body">
+                    <pre class="code-editor__hl"><code>run_one(CTRL_ADD, <span class="tok-num">32'h0</span>, <span class="tok-num">32'h0</span>);</code></pre>
+                  </div>
+                </figure>
+              </li>
+              <li>Maximum positive value plus one &mdash; forces a positive overflow
+                <figure class="code-editor code-editor--static">
+                  <figcaption class="code-editor__bar">
+                    <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+                    <span class="code-editor__lang">Verilog HDL</span>
+                  </figcaption>
+                  <div class="code-editor__body">
+                    <pre class="code-editor__hl"><code>run_one(CTRL_ADD, <span class="tok-num">32'h7FFFFFFF</span>, <span class="tok-num">32'h1</span>);</code></pre>
+                  </div>
+                </figure>
+              </li>
+              <li>Minimum negative value plus negative one &mdash; forces a negative overflow
+                <figure class="code-editor code-editor--static">
+                  <figcaption class="code-editor__bar">
+                    <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+                    <span class="code-editor__lang">Verilog HDL</span>
+                  </figcaption>
+                  <div class="code-editor__body">
+                    <pre class="code-editor__hl"><code>run_one(CTRL_ADD, <span class="tok-num">32'h80000000</span>, <span class="tok-num">32'hFFFFFFFF</span>);</code></pre>
+                  </div>
+                </figure>
+              </li>
+              <li>The min / max pair for set-less-than &mdash; the signed-comparison overflow edge
+                <figure class="code-editor code-editor--static">
+                  <figcaption class="code-editor__bar">
+                    <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+                    <span class="code-editor__lang">Verilog HDL</span>
+                  </figcaption>
+                  <div class="code-editor__body">
+                    <pre class="code-editor__hl"><code>run_one(CTRL_SLT, <span class="tok-num">32'h80000000</span>, <span class="tok-num">32'h7FFFFFFF</span>);</code></pre>
+                  </div>
+                </figure>
+              </li>
+            </ul>
+          </aside>
+
           <p>
-            We still can't try every input &mdash; so we choose the ones most
-            likely to break something. That's the idea of <strong>coverage</strong>:
-            a small, curated set of <em>vectors</em> that each target a specific
-            corner of the design.
+            Since we still can't choose every input to test, we make sure to test
+            the ones most likely to break something. That's the whole idea behind
+            <strong>coverage</strong>: instead of throwing billions of random
+            inputs at our ALU and hoping for the best, we hand-pick a small,
+            curated set of test <em>vectors</em> that each probe a specific corner
+            of the design &mdash; the awkward boundaries where bugs love to hide.
+          </p>
+          <p>
+            The nice thing is that most of those corners are the same from one ALU
+            to the next. A handful of classic edge cases &mdash; overflow
+            boundaries, zero results, sign flips, and carries that ripple the whole
+            way across &mdash; catch the overwhelming majority of arithmetic and
+            logic bugs. A few sharp vectors like these find far more problems than
+            thousands of random ones ever would.
+          </p>
+          <p>
+            Sharp vectors tell us <em>that</em> something failed, but not always
+            <em>where</em>. To watch a failure unfold signal by signal, the
+            testbench records a <strong>VCD</strong> file. A VCD file, or value
+            change dump, is a complete history of every signal's value across the
+            whole run. You can open a file like this in a waveform viewer, and
+            instead of painstakingly tracking outputs in raw hexadecimal, you can
+            watch the bits change over time, making the exact moment things go
+            wrong far easier to find.
           </p>
 
-          <figure class="code-editor code-editor--static code-editor--full">
-            <figcaption class="code-editor__bar">
-              <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
-              <span class="code-editor__lang">Verilog HDL</span>
-            </figcaption>
-            <div class="code-editor__body">
-              <pre class="code-editor__hl"><code><span class="tok-cm">// Each vector targets one specific edge case</span>
-run_one(CTRL_AND, <span class="tok-num">32'hF0F0F0F0</span>, <span class="tok-num">32'h0F0F0F0F</span>, "AND disjoint -&gt; 0, zero set");
-run_one(CTRL_ADD, <span class="tok-num">32'h7FFFFFFF</span>, <span class="tok-num">32'h00000001</span>, "ADD maxpos + 1 -&gt; +overflow");
-run_one(CTRL_ADD, <span class="tok-num">32'h80000000</span>, <span class="tok-num">32'hFFFFFFFF</span>, "ADD minneg + (-1) -&gt; -overflow");
-run_one(CTRL_SUB, <span class="tok-num">32'h12345678</span>, <span class="tok-num">32'h12345678</span>, "SUB equal -&gt; 0, zero set");
-run_one(CTRL_SLT, <span class="tok-num">32'h80000000</span>, <span class="tok-num">32'h7FFFFFFF</span>, "SLT minneg &lt; maxpos -&gt; 1 (ovf edge)");</code></pre>
-            </div>
+          <figure class="flow-figure">
+            <img src="../../assets/ALU/waveform.jpg"
+                 alt="A waveform viewer showing the ALU testbench running over roughly thirteen nanoseconds. The left panel lists the signals — Time, control[3:0], Ainvert, Bnegate, a[31:0], b[31:0], result[31:0], ovf, zero, and set — and the right panel plots each one across time. The green control bus steps through op codes (0000, 0001, 1100, 1101, 0010, 0110, 0111); the red a, b, and result buses show 32-bit hex operands and outputs changing at each step; and the orange ovf, zero, and set flags toggle high and low as each test vector is applied."
+                 decoding="async" />
           </figure>
-
-          <p>
-            Read the note on each line and the reasoning shows through: ANDing two
-            disjoint patterns should give exactly zero (does the <code>zero</code>
-            flag fire?); addition is pushed one step past the largest positive and
-            the smallest negative value to force overflow in <em>both</em>
-            directions; subtracting equal operands is another zero; and
-            set-less-than is handed the min/max pair &mdash; the case a naive
-            comparison gets wrong unless overflow is handled. A handful of sharp
-            vectors like these catch far more bugs than thousands of random ones.
-          </p>
-          <p>
-            When a check <em>does</em> fail, you'll want to see what happened,
-            signal by signal. Two lines make that possible:
-          </p>
-
-          <figure class="code-editor code-editor--static code-editor--float-left">
-            <figcaption class="code-editor__bar">
-              <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
-              <span class="code-editor__lang">Verilog HDL</span>
-            </figcaption>
-            <div class="code-editor__body">
-              <pre class="code-editor__hl"><code><span class="tok-kw">initial</span> <span class="tok-kw">begin</span>
-  $dumpfile("waveforms/dump.vcd");   <span class="tok-cm">// write a VCD waveform file</span>
-  $dumpvars(<span class="tok-num">0</span>, <span class="tok-type">tb_alu_full</span>);         <span class="tok-cm">// record every signal in the testbench</span>
-<span class="tok-kw">end</span></code></pre>
-            </div>
-          </figure>
-
-          <p>
-            This writes a <strong>VCD</strong> file &mdash; a recording of every
-            signal's value across the whole run &mdash; which you open in a waveform
-            viewer such as EPWave. Instead of reading numbers you watch the bits
-            change over time, which makes the failing moment far easier to find.
-          </p>
-          <p>
-            And when the run ends with <code>RESULT: PASS</code>, it means
-            something concrete: on every vector we tried, our ALU agreed with an
-            <em>independent</em> model of what it should do. That's real evidence
-            the design is correct &mdash; not a hunch.
-          </p>
 
           <a class="code-card"
              href="https://github.com/estaresinic05/Silicon-From-Scratch/blob/main/ALU/testbench/tb_alu_full.v"
@@ -436,6 +440,15 @@ run_one(CTRL_SLT, <span class="tok-num">32'h80000000</span>, <span class="tok-nu
             <span class="code-card__arrow" aria-hidden="true">&rarr;</span>
           </a>
         </div>
+
+        <div class="prose prose--flow">
+          <p>
+            And when the run ends with <code>RESULT: PASS</code>, it means
+            something concrete: on every vector we tried, our ALU agreed with an
+            <em>independent</em> model of what it should do. That's real evidence
+            the design is correct &mdash; not a hunch.
+          </p>
+        </div>
       </div>
     </section>
 
@@ -446,22 +459,34 @@ run_one(CTRL_SLT, <span class="tok-num">32'h80000000</span>, <span class="tok-nu
           <h2 id="check-title">Check Yourself</h2>
         </div>
 
-        <div class="quiz" id="quiz">
+        <div class="quiz quiz--wide" id="quiz">
           <p class="quiz__q">
-            The testbench already knows how the ALU computes overflow (carry-in XOR
-            carry-out). Why does its golden model check overflow a
-            <em>different</em> way &mdash; by comparing the sign bits &mdash;
-            instead of reusing that same expression?
+            Your testbench runs the four curated edge-case vectors and prints
+            RESULT: PASS. A teammate concludes that the ALU is now
+            <em>proven</em> correct for every possible input. Are they right?
           </p>
 
+          <figure class="figure figure--photo quiz__figure quiz__figure--alu">
+            <img src="../../assets/ALU/alu-check.jpg"
+                 alt="The 32-bit ALU drawn as its trapezoid symbol with a green check mark inside: inputs a and b enter from the left, the Control code from the top, and the Zero, Result, and Overflow outputs leave to the right — the finished block, marked verified."
+                 decoding="async" />
+          </figure>
+
           <div class="quiz__options" role="group" aria-label="Answer choices">
-            <button class="quiz__opt" type="button" data-correct="true"><span>An independent formula is a real second opinion. If the check copied the ALU's own logic, a bug in that logic would show up identically in <em>both</em> the design and the check &mdash; and the test would pass even though the hardware is wrong.</span></button>
-            <button class="quiz__opt" type="button"><span>The carry-in and carry-out signals can't be reached from inside a testbench, so the sign-bit formula is the only option available.</span></button>
-            <button class="quiz__opt" type="button"><span>Comparing sign bits simulates faster than an XOR, which keeps the testbench from slowing down on long runs.</span></button>
-            <button class="quiz__opt" type="button"><span>The two formulas give different answers, and the sign-bit version is the one the RISC-V specification requires.</span></button>
+            <button class="quiz__opt" type="button"><span><strong>Yes</strong> &mdash; the golden model is an independent reference, so agreement between it and the ALU is a proof that the design is correct.</span></button>
+            <button class="quiz__opt" type="button"><span><strong>Yes</strong> &mdash; the edge cases are chosen to target every corner of the design, so if none of them break, no other input can break it either.</span></button>
+            <button class="quiz__opt" type="button" data-correct="true"><span><strong>No</strong> &mdash; PASS only means the ALU agreed with the oracle on the handful of vectors we actually ran. A bug hiding in some untested input combination could still slip through; simulation <em>samples</em> the input space, it doesn't exhaust it.</span></button>
+            <button class="quiz__opt" type="button"><span><strong>No</strong> &mdash; but only because we never opened the waveform to visually confirm the outputs; add that step and the proof is complete.</span></button>
           </div>
 
           <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <div class="quiz__next quiz__next--done">
+            <p class="quiz__done">Congratulations! You have completed the ALU! &#128079;</p>
+            <a class="btn btn--primary" href="../../coming-soon/?topic=Basics%20of%20Instructions">
+              Start the Single Cycle CPU <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
         </div>
       </div>
     </section>
@@ -532,6 +557,86 @@ run_one(CTRL_SLT, <span class="tok-num">32'h80000000</span>, <span class="tok-nu
   })();
   </script>
 
+  <!-- Confetti celebration for finishing the module: a self-contained canvas
+       burst that rains from the top of the screen under gravity, with drift and
+       spin. No external library, so nothing can fail to load. Skipped entirely
+       for users who prefer reduced motion. -->
+  <script>
+  (function () {
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.launchConfetti = function () {
+      if (reduce) return;
+      var colors = ["#b794f6", "#6B2FC9", "#86efac", "#4ec9b0", "#f4a5d0", "#ffd166", "#63c7ff"];
+      var canvas = document.createElement("canvas");
+      canvas.setAttribute("aria-hidden", "true");
+      canvas.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999";
+      document.body.appendChild(canvas);
+      var ctx = canvas.getContext("2d");
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      function W() { return window.innerWidth; }
+      function H() { return window.innerHeight; }
+      function resize() {
+        canvas.width = W() * dpr;
+        canvas.height = H() * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      resize();
+      window.addEventListener("resize", resize);
+      function rand(a, b) { return a + Math.random() * (b - a); }
+      var parts = [];
+      for (var i = 0; i < 220; i++) {
+        parts.push({
+          x: rand(0, W()),
+          y: rand(-H() * 2, -10),          // staggered well above the top -> a longer, sustained fall
+          vx: rand(-1.4, 1.4),
+          vy: rand(1, 3),
+          size: rand(6, 12),
+          ratio: rand(0.45, 1),            // rectangles of varying aspect
+          round: Math.random() < 0.22,     // a few round pieces
+          color: colors[(Math.random() * colors.length) | 0],
+          rot: rand(0, Math.PI * 2),
+          vr: rand(-0.22, 0.22)
+        });
+      }
+      var gravity = 0.1, drag = 0.995, last = null;
+      function frame(t) {
+        if (last === null) last = t;
+        var dt = Math.min((t - last) / 16.67, 2);   // normalize to ~60fps steps
+        last = t;
+        ctx.clearRect(0, 0, W(), H());
+        for (var i = parts.length - 1; i >= 0; i--) {
+          var p = parts[i];
+          p.vy += gravity * dt;
+          p.vx *= Math.pow(drag, dt);
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.rot += p.vr * dt;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          if (p.round) {
+            ctx.beginPath();
+            ctx.arc(0, 0, p.size * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillRect(-p.size / 2, -p.size * p.ratio / 2, p.size, p.size * p.ratio);
+          }
+          ctx.restore();
+          if (p.y > H() + 40) parts.splice(i, 1);
+        }
+        if (parts.length) {
+          requestAnimationFrame(frame);
+        } else {
+          window.removeEventListener("resize", resize);
+          canvas.remove();
+        }
+      }
+      requestAnimationFrame(frame);
+    };
+  })();
+  </script>
+
   <!-- "Check yourself" quiz: colour the chosen answer and show feedback once the
        correct answer (the independent-oracle option) is picked. -->
   <script>
@@ -550,6 +655,7 @@ run_one(CTRL_SLT, <span class="tok-num">32'h80000000</span>, <span class="tok-nu
           feedback.classList.add("is-correct");
           if (next) next.classList.add("is-shown");
           quiz.classList.add("is-solved");
+          if (window.launchConfetti) window.launchConfetti();
         } else {
           btn.classList.add("is-wrong");
           feedback.textContent = "Incorrect, try again.";

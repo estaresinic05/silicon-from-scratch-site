@@ -511,6 +511,73 @@
 .split--stack .prose { max-width: none; }
 /* Media-left variant: figure on the left, text on the right. */
 .split--media-left { grid-template-columns: auto minmax(0, 1fr); }
+/* Golden Model: the testbench flowchart is a tall portrait sketch, so top-align
+   it with the copy — the text should start level with the top of the chart and
+   run down the right column (with the golden-model code block below it), rather
+   than floating in the vertical middle the way a short diagram would. */
+#golden-model .split { align-items: start; }
+/* The golden-model case block floats to the right of its paragraph so the copy
+   wraps beside it and continues underneath. Sized to fit its own longest line
+   (fit-content) so it stays as narrow as possible without clipping any code,
+   far tighter than the default floated code width — leaving the copy room to
+   wrap beside it inside the split's right column. */
+#golden-model .code-editor--float-right { width: fit-content; max-width: 100%; }
+
+/* "Choosing Good Tests and Reading Waveforms": let the heading use the full
+   section width so it sits on ONE line on desktop (the default prose cap forces
+   it to wrap). On phones it drops to a controlled two-line break after "and",
+   with a slightly smaller face so the first line never overflows a narrow
+   screen. */
+#coverage .section__head { max-width: none; }
+.cov-heading__break { display: none; }
+@media (max-width: 768px) {
+  #cov-title { font-size: 1.5rem; }
+  .cov-heading__break { display: inline; }
+}
+
+/* Framed "common edge cases" list floated beside the coverage copy — the same
+   raised paper surface as the numbered-list cards, but bulleted and in white
+   text with accent bullets. The copy wraps beside it and continues underneath;
+   on phones it unfloats to full width and sits above the text. */
+.edge-card {
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  margin: 0.4rem 0 var(--space-4) var(--space-5);
+  color: #fdfdfb;
+}
+.prose--flow .edge-card { float: right; width: 34rem; max-width: 100%; }
+.edge-card__title {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin: 0 0 var(--space-2);
+}
+.edge-card ul { margin: 0; padding-left: 1.35rem; list-style: disc; }
+.edge-card li { color: #fdfdfb; margin-bottom: var(--space-3); }
+.edge-card li:last-child { margin-bottom: 0; }
+.edge-card li::marker { color: var(--accent); }
+/* The concrete example for each case: a short, display-only Verilog code block
+   (same VS Code chrome as the lesson's other snippets) sitting under the case it
+   illustrates. */
+.edge-card .code-editor { margin: var(--space-2) 0 0; }
+@media (max-width: 768px) {
+  .prose--flow .edge-card { float: none; width: 100%; margin: var(--space-4) 0; }
+}
+
+/* The waveform figure sits beside the (tall) edge-card, below the paragraphs:
+   establishing its own block-formatting context makes its box shrink to the
+   space left of the float rather than sliding under it, so it fills the column
+   next to the card. It unfloats to full width once the card stacks on phones. */
+#coverage .flow-figure { display: flow-root; }
+/* Keep the GitHub sendoff beside the edge-card, right under the waveform, rather
+   than clearing to a full-width line below the float (its flex box already
+   avoids overlapping the card). */
+#coverage .code-card { clear: none; }
 /* In the wider mux section, let the explanation fill its column rather than
    staying pinned to the default prose measure. */
 .split--media-left .prose { max-width: none; }
@@ -1247,6 +1314,17 @@
   padding: clamp(var(--space-3), 4vw, var(--space-5));
 }
 .quiz__figure--equality img { max-width: 40rem; margin-inline: auto; }
+/* Testing Check Yourself: the finished-ALU sketch on the same full-width white
+   frame as the equality drawing, but capped smaller since it's a near-square
+   symbol rather than a wide diagram. */
+.quiz__figure--alu {
+  width: 100%;
+  max-width: none;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: clamp(var(--space-3), 4vw, var(--space-5));
+}
+.quiz__figure--alu img { max-width: 22rem; margin-inline: auto; }
 .quiz__figure--slice {
   width: 100%;                 /* white frame spans the card, matching the answer buttons' margins */
   max-width: none;
@@ -1344,6 +1422,18 @@
   justify-content: center;
 }
 .quiz__next.is-shown { display: flex; }
+/* Completion stub (revealed on the right answer): the "you finished the ALU"
+   message sits centred in the card's grey space, with the next-project button
+   stacked beneath it. */
+.quiz__next--done.is-shown { flex-direction: column; align-items: center; gap: var(--space-3); }
+.quiz__done {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  color: #fdfdfb;
+}
 
 @media (max-width: 560px) {
   .quiz__options { grid-template-columns: 1fr; }
