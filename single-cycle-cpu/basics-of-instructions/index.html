@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. Without JS this
+       never runs and the full page stays visible. -->
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>The Basics of Instructions — Silicon From Scratch</title>
+  <meta name="description"
+        content="Instructions are the language of the computer — the simple commands a processor actually runs. Learn how a single RISC-V instruction is written down and encoded into bits." />
+
+  <!-- Social link previews: shared logo + "Silicon From Scratch" card (see index.html). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Silicon From Scratch" />
+  <meta property="og:title" content="Silicon From Scratch" />
+  <meta property="og:url" content="https://siliconfromscratch.com/single-cycle-cpu/basics-of-instructions/" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+  <meta property="og:image:width" content="1408" />
+  <meta property="og:image:height" content="768" />
+  <meta property="og:image:alt" content="Silicon From Scratch logo" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Silicon From Scratch" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+
+  <link rel="icon" href="../../assets/home/logo.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles, then the ALU project components (this page lives at
+       /single-cycle-cpu/basics-of-instructions/, two levels down). -->
+  <link rel="stylesheet" href="../../styles/main.css" />
+  <link rel="stylesheet" href="../../styles/alu.css" />
+</head>
+<body class="theme-dark page-logic">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../../" aria-label="Silicon From Scratch — home">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="../../">Home</a>
+        <a href="../../meet-the-processor/">Meet the Processor</a>
+        <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+           target="_blank" rel="noopener">GitHub</a>
+        <a href="../../about/">About</a>
+        <a href="../../#tools">Tools</a>
+      </nav>
+
+      <div class="topbar__right">
+        <!-- Section index (desktop only): hover the ☰ to open the project directory -->
+        <div class="toc" id="page-toc">
+          <button class="toc__btn" type="button" aria-haspopup="true"
+                  aria-expanded="false" aria-label="Open the project directory">
+            <span class="nav-toggle__bars" aria-hidden="true"></span>
+          </button>
+          <ul class="toc__menu" aria-label="Project directory"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================== DOC HERO ============================ -->
+    <section class="doc-hero doc-hero--balanced container" aria-labelledby="boi-title">
+      <div class="doc-hero__text">
+        <h1 id="boi-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">The Basics of</span> <span class="title-eyebrow__group">Instructions</span></span></h1>
+        <p class="doc-hero__lead">
+          Every program, in any language, is ultimately handed to the processor
+          as a stream of simple commands called <strong>instructions</strong> —
+          the <strong>language of the computer</strong>, and the only vocabulary
+          the hardware understands. Before we can build a CPU that runs them, we
+          need to see how a single instruction is encoded into bits.
+        </p>
+        <div class="doc-hero__actions">
+          <span class="doc-hero__prompt">Think you got this already?</span>
+          <a class="btn btn--primary" href="#check">Skip to Check Yourself</a>
+        </div>
+      </div>
+
+      <figure class="doc-hero__art">
+        <img src="../../assets/single-cycle-cpu/basics-of-instructions.jpg"
+             alt="A hand-drawn desktop computer — monitor, tower, keyboard, and mouse — with the title 'The Basics of Instructions' written on the screen in purple, surrounded by scattered RISC-V instructions like lw x7, 8(x10); addi x5, x6, 7; sw x5, 12(x8); sub x10, x6, x8; slt x4, x7, x6; and beq x5, x6, 16."
+             decoding="async" />
+      </figure>
+    </section>
+
+    <!-- ==================== ARITHMETIC AND LOGIC INSTRUCTIONS =========== -->
+    <section class="section" id="arith-logic" aria-labelledby="arith-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="arith-title">Arithmetic and Logic Instructions</h2>
+        </div>
+
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-right">
+            <img src="../../assets/single-cycle-cpu/r-type.jpg"
+                 alt="The R-type instruction format drawn as a six-field bar — funct7, rs2, rs1, funct3, rd, and opcode — above a worked example encoding of add x5, x6, x7: funct7 is 0000000, rs2 is 00111 (x7), rs1 is 00110 (x6), funct3 is 000, rd is 00101 (x5), and opcode is 0110011."
+                 decoding="async" />
+          </figure>
+
+          <p>
+            In the last project, we constructed our very own Arithmetic Logic
+            Unit, or ALU. Our ALU could perform basic addition, subtraction,
+            AND, OR, NAND, NOR, and a few other operations. While building this,
+            we assumed some other hardware in the computer would be responsible
+            for telling — or <em>instructing</em> — the ALU to perform the
+            operations, and only then would our ALU know to manipulate its
+            control bits to do so. But what do these so-called
+            &ldquo;instructions&rdquo; look like?
+          </p>
+          <p>
+            There are a few different types of instructions in the RISC-V
+            instruction set, but the most basic is the <strong>R-type</strong>
+            instruction. R-type instructions handle exactly the work our ALU was
+            built for: register-to-register arithmetic and logic. Each one reads
+            two source registers, performs an operation such as add, subtract,
+            AND, or OR on their values, and writes the result back to a
+            destination register.
+          </p>
+          <p>
+            In RISC-V, every R-type instruction is a single 32-bit number, split
+            into six <strong>fields</strong> — reserved portions that each carry one piece
+            of the instruction. The <code class="fld-rs1">rs1</code> and <code class="fld-rs2">rs2</code> fields
+            name the two source registers and <code class="fld-rd">rd</code> names the
+            destination, while the <code class="fld-opcode">opcode</code>, <code class="fld-funct3">funct3</code>, and
+            <code class="fld-funct7">funct7</code> fields together select which operation to run,
+            setting the very control bits our ALU depended on.
+          </p>
+          <p>
+            The diagram shows exactly this for <code>add x5, x6, x7</code>. Its
+            <code class="fld-opcode">opcode</code> is <code>0110011</code>, the pattern shared by
+            every R-type instruction, and <code class="fld-funct3">funct3</code> and
+            <code class="fld-funct7">funct7</code> — <code>000</code> and <code>0000000</code> —
+            together mean add. The source registers <code>x6</code> and
+            <code>x7</code> fill <code class="fld-rs1">rs1</code> and <code class="fld-rs2">rs2</code>, and the
+            destination <code>x5</code> fills <code class="fld-rd">rd</code>, so the hardware
+            reads <code>x6</code> and <code>x7</code>, adds them, and stores the
+            sum back in <code>x5</code>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== DATA TRANSFER INSTRUCTIONS ================== -->
+    <section class="section" id="data-transfer" aria-labelledby="dt-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="dt-title">Data Transfer Instructions</h2>
+        </div>
+
+        <div class="prose">
+          <p>
+            A huge part of computing isn't performing arithmetic at all — it's
+            moving information from one place to another. A processor can only
+            operate on values sitting in its <strong>registers</strong>, yet
+            there are only a few dozen of them, far too few to hold everything a
+            program needs. The rest lives out in <strong>memory</strong>, so a
+            program is constantly shuttling data back and forth: pulling values
+            in from memory to work on them, then writing the results back out.
+            The instructions that do this shuttling are called
+            <strong>data transfer instructions</strong>.
+          </p>
+          <p>
+            The two most common are <code>lw</code> (load word) and
+            <code>sw</code> (store word). A <code>lw</code> reads a word from
+            memory into a register, while a <code>sw</code> writes a word from a
+            register back out to memory. Both find their memory address the same
+            way — by adding an immediate offset to a base register — but they are
+            built from different instruction formats. Because <code>lw</code>
+            writes its result into a destination register, it is an
+            <strong>I-type</strong> instruction: it carries an <code class="fld-rd">rd</code>
+            field alongside a single 12-bit immediate. A <code>sw</code> has no
+            destination register — it instead reads <em>two</em> registers, the
+            base address and the data to be stored — so it uses the
+            <strong>S-type</strong> format. To make room for that second source
+            register where <code class="fld-rd">rd</code> would sit, the S-type splits its
+            12-bit immediate into two pieces, <code>imm[11:5]</code> and
+            <code>imm[4:0]</code>, that straddle the register fields.
+          </p>
+
+          <!-- Memory-alignment image (user is preparing it): once it's added,
+               switch this .prose to .prose--flow and float the figure right
+               beside the paragraph below — exactly like the R-type diagram in
+               the section above (.flow-figure flow-figure--float-right). -->
+          <p>
+            One more detail matters whenever we reach out to memory:
+            <strong>alignment</strong>. Memory is <em>byte-addressable</em>,
+            meaning every individual byte has its own address — but a word is
+            four bytes wide. So when we load or store a word, we don't step to
+            the next address one byte at a time; we move through memory in chunks
+            of four, at addresses 0, 4, 8, 12, and so on. Keeping each word on one
+            of these four-byte boundaries is what it means for it to be
+            <strong>aligned</strong>, and the hardware counts on it: a word that
+            sits neatly at a multiple of four can be read or written in a single,
+            clean access.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== CHECK YOURSELF ===================== -->
+    <section class="section section--tight" id="check" aria-labelledby="check-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="check-title">Check Yourself</h2>
+        </div>
+
+        <div class="quiz quiz--wide" id="quiz">
+          <p class="quiz__q">What RISC-V instruction does this represent? Choose from one of the four options below.</p>
+
+          <div class="quiz__reveal">
+            <figure class="figure figure--photo quiz__figure quiz__figure--instr">
+              <img src="../../assets/single-cycle-cpu/instruction-check.jpg"
+                   alt="A 32-bit RISC-V R-type instruction laid out in six fields. From left to right: funct7 is 0100000, rs2 is 01010, rs1 is 01100, funct3 is 000, rd is 01000, and opcode is 0110011."
+                   decoding="async" />
+            </figure>
+            <figure class="figure figure--photo quiz__figure quiz__figure--decode" aria-hidden="true">
+              <img src="../../assets/single-cycle-cpu/instruction-answer.jpg"
+                   alt="The same instruction decoded: funct7 and funct3 together mean sub, rs2 is register x10, rs1 is register x12, rd is register x8, and the opcode marks it R-type — assembling to the instruction sub x8, x12, x10."
+                   decoding="async" />
+            </figure>
+          </div>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button" data-correct="true"><span class="eq">sub x8, x12, x10</span></button>
+            <button class="quiz__opt" type="button"><span class="eq">add x8, x12, x10</span></button>
+            <button class="quiz__opt" type="button"><span class="eq">sub x8, x10, x12</span></button>
+            <button class="quiz__opt" type="button"><span class="eq">sub x10, x12, x8</span></button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <div class="quiz__next">
+            <a class="btn btn--primary" href="../../coming-soon/">
+              Continue to Fetch, Decode, Execute <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+    <p class="container footer__credit">
+      Informed by: David A. Patterson and John L. Hennessy,
+      <em>Computer Organization and Design RISC-V Edition: The Hardware/Software
+      Interface</em>, Second Edition, Chapter 2, &ldquo;Instructions: Language of the
+      Computer&rdquo; (Morgan Kaufmann, 2021).
+    </p>
+    <p class="container footer__credit">
+      Informed by: John L. Hennessy, David A. Patterson, and Christos Kozyrakis,
+      <em>Computer Architecture: A Quantitative Approach</em>, Seventh Edition,
+      Appendix A, &ldquo;Instruction Set Principles&rdquo; (Morgan Kaufmann, 2026).
+    </p>
+  </footer>
+
+  <!-- Mobile nav toggle + project directory drawer -->
+  <script src="../../scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger from CDN for the same scroll-reveal feel as the rest
+       of the site. If they fail to load, scroll.js removes the `js` class and
+       the page is simply fully visible. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
+  <script src="../../scripts/scroll.js" defer></script>
+
+  <!-- "Check yourself" quiz: colour the chosen answer, show feedback, reveal the
+       decoded-answer image (it slides in as the encoded one fades), and show the
+       continue button once the correct answer (sub x8, x12, x10) is picked. -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          if (next) next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+        } else {
+          btn.classList.add("is-wrong");
+          feedback.textContent = "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -1097,6 +1097,25 @@
     float: none; width: 100%; max-width: 28rem; margin: var(--space-4) auto;
   }
 }
+/* R-type banner: a wider float on large screens (it's a wide two-row diagram, so
+   it reads better big); keeps the default flow-figure size on mid widths and
+   unfloats on mobile via the rules above. */
+@media (min-width: 1025px) {
+  #arith-logic .flow-figure--float-right { width: 42rem; }
+}
+
+/* Field-name <code> tinted to the colours of the R-type diagram
+   (assets/single-cycle-cpu/r-type.jpg) so a field named in the prose reads as
+   the same field shown in the image: funct7/funct3/opcode stay the default
+   purple code chip, while rs2/rs1/rd take the diagram's green/amber/periwinkle.
+   Scoped under .theme-dark with a `code` element to outrank the base `.theme-dark
+   code` chip colour. */
+.theme-dark code.fld-funct7,
+.theme-dark code.fld-funct3,
+.theme-dark code.fld-opcode { background: rgba(183, 148, 246, 0.18); color: #d9c6ff; }
+.theme-dark code.fld-rs2 { background: rgba(134, 214, 162, 0.18); color: #8fe0a0; }
+.theme-dark code.fld-rs1 { background: rgba(240, 200, 134, 0.18); color: #f0c886; }
+.theme-dark code.fld-rd  { background: rgba(160, 168, 232, 0.22); color: #b3baf2; }
 
 /* Bottom row of the back: the output box + the return button at bottom-right.
    The output box flexes but leaves room for the button. */
@@ -1347,6 +1366,36 @@
 @media (prefers-reduced-motion: reduce) {
   .quiz__figure--slice,
   .quiz__figure--demorgan { transition: none; }
+}
+
+/* Basics-of-Instructions Check Yourself reveal: the encoded R-type instruction
+   sits alone at first; on a correct answer it shrinks and slides toward
+   centre-left while the decoded answer (register meanings + the assembled `sub`
+   instruction) fades in beside it — the two then sit side by side. Exactly the
+   full-adder reveal mechanism above, sized for these two wide diagrams. */
+.quiz__figure--instr {
+  width: 100%;                 /* white frame spans the card, matching the answer buttons' margins */
+  max-width: none;
+  background: #fff;
+  transition: width 0.55s var(--ease);
+}
+.quiz__figure--instr img { max-width: 40rem; margin-inline: auto; }  /* drawing keeps its size, centred */
+.quiz__figure--decode {
+  width: 0;
+  opacity: 0;
+  background: #fff;
+  transition: width 0.55s var(--ease), opacity 0.45s var(--ease) 0.45s;
+}
+.quiz.is-solved .quiz__figure--instr  { width: min(28rem, 46%); }
+.quiz.is-solved .quiz__figure--decode { width: min(34rem, 50%); opacity: 1; }
+/* Narrow screens: stack the two panels instead of squeezing them side by side. */
+@media (max-width: 600px) {
+  .quiz.is-solved .quiz__figure--instr  { width: min(30rem, 100%); }
+  .quiz.is-solved .quiz__figure--decode { width: min(34rem, 100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quiz__figure--instr,
+  .quiz__figure--decode { transition: none; }
 }
 .quiz__options {
   display: grid;

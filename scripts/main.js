@@ -132,7 +132,7 @@
     ]],
     ["Intermediate", [
       ["Single Cycle CPU", [
-        "Basics of Instructions",
+        ["The Basics of Instructions", "single-cycle-cpu/basics-of-instructions/"],
         "Fetch, Decode, Execute",
         "Constructing a Datapath",
         "Immediate Generation Unit and ALU Control",
@@ -241,10 +241,9 @@
                 a.href = PREFIX + sub[1];
                 a.textContent = sub[0];
               } else {
-                // A literal "Coming Soon" leaf names its parent project on the
-                // placeholder page; named topics pass through as themselves.
-                var topic = sub === "Coming Soon" ? proj[0] : sub;
-                a.href = SOON + "?topic=" + encodeURIComponent(topic);
+                // A leaf that isn't a published lesson points at the generic
+                // placeholder page.
+                a.href = SOON;
                 a.textContent = sub;
               }
               leaf.appendChild(a);

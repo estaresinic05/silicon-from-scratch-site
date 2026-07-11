@@ -94,7 +94,6 @@
     <!-- ============================= COMING SOON ========================= -->
     <section class="section coming-soon" aria-labelledby="soon-title">
       <div class="container">
-        <p class="kicker" id="soon-topic" hidden></p>
         <h1 id="soon-title">Coming Soon</h1>
         <p>
           This part of the path is on its way. Check back soon — or start with
@@ -118,19 +117,6 @@
          target="_blank" rel="noopener">GitHub Repository</a>
     </div>
   </footer>
-
-  <!-- Name the requested topic above the heading, if one was passed. -->
-  <script>
-    (function () {
-      var params = new URLSearchParams(location.search);
-      var topic = (params.get("topic") || "").trim();
-      if (!topic) return;
-      var el = document.getElementById("soon-topic");
-      el.textContent = topic;
-      el.hidden = false;
-      document.title = topic + " — Coming Soon — Silicon From Scratch";
-    })();
-  </script>
 
   <script src="../scripts/main.js" defer></script>
 </body>
