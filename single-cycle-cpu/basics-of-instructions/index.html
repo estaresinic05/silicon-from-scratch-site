@@ -108,7 +108,7 @@
     <section class="section" id="arith-logic" aria-labelledby="arith-title">
       <div class="container container--wide">
         <div class="section__head">
-          <h2 id="arith-title">Arithmetic and Logic Instructions</h2>
+          <h2 id="arith-title">Arithmetic and Logical Instructions</h2>
         </div>
 
         <div class="prose prose--flow">
@@ -147,15 +147,15 @@
             setting the very control bits our ALU depended on.
           </p>
           <p>
-            The diagram shows exactly this for <code>add x5, x6, x7</code>. Its
-            <code class="fld-opcode">opcode</code> is <code>0110011</code>, the pattern shared by
+            The diagram shows exactly this for <em>add x5, x6, x7</em>. Its
+            <code class="fld-opcode">opcode</code> is 0110011, the pattern shared by
             every R-type instruction, and <code class="fld-funct3">funct3</code> and
-            <code class="fld-funct7">funct7</code> — <code>000</code> and <code>0000000</code> —
-            together mean add. The source registers <code>x6</code> and
-            <code>x7</code> fill <code class="fld-rs1">rs1</code> and <code class="fld-rs2">rs2</code>, and the
-            destination <code>x5</code> fills <code class="fld-rd">rd</code>, so the hardware
-            reads <code>x6</code> and <code>x7</code>, adds them, and stores the
-            sum back in <code>x5</code>.
+            <code class="fld-funct7">funct7</code> — 000 and 0000000 —
+            together mean add. The source registers <em>x6</em> and
+            <em>x7</em> fill <code class="fld-rs1">rs1</code> and <code class="fld-rs2">rs2</code>, and the
+            destination <em>x5</em> fills <code class="fld-rd">rd</code>, so the hardware
+            reads <em>x6</em> and <em>x7</em>, adds them, and stores the
+            sum back in <em>x5</em>.
           </p>
         </div>
       </div>
@@ -168,7 +168,7 @@
           <h2 id="dt-title">Data Transfer Instructions</h2>
         </div>
 
-        <div class="prose">
+        <div class="prose prose--full">
           <p>
             A huge part of computing isn't performing arithmetic at all — it's
             moving information from one place to another. A processor can only
@@ -181,38 +181,91 @@
             <strong>data transfer instructions</strong>.
           </p>
           <p>
-            The two most common are <code>lw</code> (load word) and
-            <code>sw</code> (store word). A <code>lw</code> reads a word from
-            memory into a register, while a <code>sw</code> writes a word from a
+            The two most common are <em>lw</em> (load word) and
+            <em>sw</em> (store word). A <em>lw</em> reads a word from
+            memory into a register, while a <em>sw</em> writes a word from a
             register back out to memory. Both find their memory address the same
-            way — by adding an immediate offset to a base register — but they are
-            built from different instruction formats. Because <code>lw</code>
-            writes its result into a destination register, it is an
-            <strong>I-type</strong> instruction: it carries an <code class="fld-rd">rd</code>
-            field alongside a single 12-bit immediate. A <code>sw</code> has no
-            destination register — it instead reads <em>two</em> registers, the
-            base address and the data to be stored — so it uses the
-            <strong>S-type</strong> format. To make room for that second source
-            register where <code class="fld-rd">rd</code> would sit, the S-type splits its
-            12-bit immediate into two pieces, <code>imm[11:5]</code> and
-            <code>imm[4:0]</code>, that straddle the register fields.
+            way, adding an <code class="fld-imm">immediate</code> or <em>constant</em>
+            offset to a base register.
+            However, because one writes to a register and one doesn't they are
+            built from different instruction formats.
           </p>
+        </div>
 
-          <!-- Memory-alignment image (user is preparing it): once it's added,
-               switch this .prose to .prose--flow and float the figure right
-               beside the paragraph below — exactly like the R-type diagram in
-               the section above (.flow-figure flow-figure--float-right). -->
+        <div class="split split--media-left">
+          <figure class="figure figure--diagram">
+            <img src="../../assets/single-cycle-cpu/i-type.jpg"
+                 alt="The I-type instruction format as a five-field bar — a 12-bit immediate at bits [31:20], rs1 at [19:15], funct3 at [14:12], rd at [11:7], and opcode at [6:0] — above a worked example of lw x7, 8(x10): the immediate encodes 8, rs1 is 01010 (x10), funct3 is 010, rd is 00111 (x7), and the opcode is 0000011."
+                 decoding="async" />
+          </figure>
+          <div class="prose">
+            <p>
+              A <em>lw</em> (load word) copies a word out of memory and into
+              a register. Because it writes to a destination, it uses the
+              <strong>I-type</strong> format: the top 12 bits are a single
+              <code class="fld-imm">immediate</code> offset, followed by the base register
+              <code class="fld-rs1">rs1</code>, a <code class="fld-funct3">funct3</code>,
+              the destination <code class="fld-rd">rd</code>, and the
+              <code class="fld-opcode">opcode</code>. In <em>lw x7, 8(x10)</em>,
+              the address is <em>x10</em> plus an offset of 8, and the word
+              read from there is placed in <em>x7</em>.
+            </p>
+          </div>
+        </div>
+
+        <div class="split split--media-left">
+          <figure class="figure figure--diagram">
+            <img src="../../assets/single-cycle-cpu/s-type.jpg"
+                 alt="The S-type instruction format as a six-field bar — imm[11:5] at bits [31:25], rs2 at [24:20], rs1 at [19:15], funct3 at [14:12], imm[4:0] at [11:7], and opcode at [6:0] — above a worked example of sw x5, 12(x8): rs2 is 00101 (x5), rs1 is 01000 (x8), funct3 is 010, and the split immediate encodes 12."
+                 decoding="async" />
+          </figure>
+          <div class="prose">
+            <p>
+              A <em>sw</em> (store word) does the reverse, copying a word from
+              a register back out to memory. It has no destination register, but
+              rather two source registers, so it takes the
+              <strong>S&#8209;type</strong> format. To make room for that second source
+              register, we split up our <code class="fld-imm">immediate</code> into two
+              chunks, <code class="fld-imm">imm[11:5]</code> and
+              <code class="fld-imm">imm[4:0]</code>, and place the smaller chunk where
+              <code class="fld-rd">rd</code> would normally sit. Although this
+              arrangement looks quite strange, RISC-V has chosen to do this so that
+              across all instruction types, <code class="fld-rs2">rs2</code>,
+              <code class="fld-rs1">rs1</code>, <code class="fld-rd">rd</code>,
+              <code class="fld-funct3">funct3</code>, and the
+              <code class="fld-opcode">opcode</code> always use the exact same bits,
+              making it easy for the hardware to pull each field from the same
+              place no matter which instruction it is decoding. In
+              <em>sw x5, 12(x8)</em>, the value in <em>x5</em> is stored at the
+              address <em>x8</em> plus 12.
+            </p>
+          </div>
+        </div>
+
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-right">
+            <img src="../../assets/single-cycle-cpu/memory-alignment.jpg"
+                 alt="A table showing which memory accesses are aligned: rows list object widths — 1 byte, 2-byte half word, 4-byte word, and 8-byte double word — against the value of the three low-order bits of the byte address, 0 through 7. Each object is aligned only when its starting address is a multiple of its size; a 4-byte word, for instance, is aligned at addresses 0 and 4 but misaligned at every address in between."
+                 decoding="async" />
+          </figure>
+
           <p>
             One more detail matters whenever we reach out to memory:
             <strong>alignment</strong>. Memory is <em>byte-addressable</em>,
-            meaning every individual byte has its own address — but a word is
-            four bytes wide. So when we load or store a word, we don't step to
-            the next address one byte at a time; we move through memory in chunks
-            of four, at addresses 0, 4, 8, 12, and so on. Keeping each word on one
-            of these four-byte boundaries is what it means for it to be
-            <strong>aligned</strong>, and the hardware counts on it: a word that
-            sits neatly at a multiple of four can be read or written in a single,
-            clean access.
+            meaning every byte sits at its own address, one right after another.
+            A word, however, spans four of those bytes, so it can only begin at an
+            address that is a multiple of four — 0, 4, 8, 12, and so on. A word
+            that starts on one of these boundaries is <strong>aligned</strong>;
+            one that starts anywhere else is <em>misaligned</em>. As the table
+            shows, the same rule applies to objects of every size, and the
+            hardware leans on it: an aligned word can be read or written in a
+            single, clean access, while a misaligned one cannot.
+          </p>
+          <p>
+            On their own, data transfer and arithmetic instructions already do a
+            great deal — but to make decisions and repeat work, a processor needs
+            one more family: <strong>control flow</strong> instructions, which
+            we'll explore next.
           </p>
         </div>
       </div>

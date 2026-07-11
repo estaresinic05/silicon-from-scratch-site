@@ -133,9 +133,56 @@ way to bold within `.prose` body copy; don't reach for `<b>`, inline
 - **Scope:** bold the **term being introduced or defined**, not whole phrases or
   sentences — one or two words is the norm.
 - **Sparingly:** if everything in a paragraph is bold, nothing is emphasized.
-- **Not for code or stress:** use `<code>` for a signal / identifier / literal
-  (`<code>sel</code>`, `<code>1001</code>`) and `<em>` for light stress; reserve
-  `<strong>` for the defined term.
+- **Not for code or stress:** use `<code>` for a signal / identifier / instruction
+  field (`<code>sel</code>`, `<code>rs1</code>`) and `<em>` for light stress;
+  reserve `<strong>` for the defined term. **Numbers are never in `<code>`, and
+  instruction/register names go in `<em>`, not `<code>`** — see *Code, italics, and
+  numbers* below.
+
+---
+
+## Code, italics, and numbers (assembly & RTL prose)
+
+How to typeset signals, instructions, registers, fields, and numbers in body copy.
+Reference implementation: `single-cycle-cpu/basics-of-instructions/index.html`.
+
+- **`<code>` is reserved for two things:** *variable / signal names* (`<code>sel</code>`,
+  `<code>clk</code>`, `<code>a</code>`) and *instruction fields*
+  (`<code>rs1</code>`, `<code>rs2</code>`, `<code>rd</code>`, `<code>opcode</code>`,
+  `<code>funct3</code>`, `<code>funct7</code>`, `<code>imm[11:5]</code>`). Nothing else.
+- **Instruction names, whole instructions, and register names go in `<em>`
+  (italic), never `<code>`.** That covers bare mnemonics (`<em>lw</em>`,
+  `<em>add</em>`), full instructions (`<em>add x5, x6, x7</em>`,
+  `<em>sw x5, 12(x8)</em>`), and standalone register names (`<em>x7</em>`,
+  `<em>x10</em>`). They read as italic body text, the same face as light `<em>` stress.
+- **Numbers are never in `<code>`** — bit patterns (`0110011`), field values
+  (`000`), and decimal literals (offsets like 8 or 12) are all plain body text.
+
+### Instruction-field colours
+
+Every instruction-field `<code>` is tinted to match its cell in the
+instruction-format diagrams (`assets/single-cycle-cpu/r-type.jpg`, `i-type.jpg`,
+`s-type.jpg`), so a field named in prose reads as the same field shown in the
+image. Add the matching `fld-*` class to the `<code>`; the colours live in
+`styles/alu.css` as `.theme-dark code.fld-*` (scoped under `.theme-dark` + the
+`code` element so they outrank the base code-chip colour).
+
+| Field(s) | Class | Colour | Text | Chip background |
+|---|---|---|---|---|
+| `funct7`, `funct3`, `opcode` | `fld-funct7` / `fld-funct3` / `fld-opcode` | purple | `#d9c6ff` | `rgba(183, 148, 246, 0.18)` |
+| `rs2` | `fld-rs2` | green | `#8fe0a0` | `rgba(134, 214, 162, 0.18)` |
+| `rs1` | `fld-rs1` | amber | `#f0c886` | `rgba(240, 200, 134, 0.18)` |
+| `rd` | `fld-rd` | periwinkle | `#b3baf2` | `rgba(160, 168, 232, 0.22)` |
+| `imm[…]` | `fld-imm` | rose | `#eaa9ba` | `rgba(216, 150, 170, 0.20)` |
+
+The purple trio (`funct7`/`funct3`/`opcode`) is the same as the default `<code>`
+chip (`.theme-dark code`, `#d9c6ff`), so they already match — but still carry an
+explicit `fld-*` class so the field-colour scheme is complete and self-documenting.
+
+```html
+<em>lw x7, 8(x10)</em> loads from address <em>x10</em> + 8 into the
+<code class="fld-rd">rd</code> field; the opcode bits are 0000011.
+```
 
 ---
 

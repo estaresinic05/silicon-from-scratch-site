@@ -238,6 +238,9 @@
 }
 
 /* Small muted note paragraph (e.g. the `make` requirement) */
+/* Full-measure prose: let a block span the whole content width instead of the
+   44rem reading column (e.g. a section's lead paragraph set across the page). */
+.prose--full { max-width: none; }
 .prose--note {
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -1100,8 +1103,16 @@
 /* R-type banner: a wider float on large screens (it's a wide two-row diagram, so
    it reads better big); keeps the default flow-figure size on mid widths and
    unfloats on mobile via the rules above. */
+/* Drop the alignment paragraph down a little so it doesn't sit flush with the
+   top of the memory-alignment image floated beside it. */
+#data-transfer .prose--flow p:first-of-type { margin-top: var(--space-5); }
+
 @media (min-width: 1025px) {
   #arith-logic .flow-figure--float-right { width: 42rem; }
+  #data-transfer .flow-figure--float-right { width: 40rem; }
+  /* The i-type / s-type banners sit image-left, text-right; give them room to
+     read on large screens (they keep the default figure width on mid widths). */
+  #data-transfer .split--media-left .figure--diagram { max-width: 38rem; }
 }
 
 /* Field-name <code> tinted to the colours of the R-type diagram
@@ -1116,6 +1127,7 @@
 .theme-dark code.fld-rs2 { background: rgba(134, 214, 162, 0.18); color: #8fe0a0; }
 .theme-dark code.fld-rs1 { background: rgba(240, 200, 134, 0.18); color: #f0c886; }
 .theme-dark code.fld-rd  { background: rgba(160, 168, 232, 0.22); color: #b3baf2; }
+.theme-dark code.fld-imm { background: rgba(216, 150, 170, 0.20); color: #eaa9ba; }  /* rose immediate */
 
 /* Bottom row of the back: the output box + the return button at bottom-right.
    The output box flexes but leaves room for the button. */
