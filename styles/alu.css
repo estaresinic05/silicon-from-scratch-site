@@ -514,6 +514,12 @@
 .split--stack .prose { max-width: none; }
 /* Media-left variant: figure on the left, text on the right. */
 .split--media-left { grid-template-columns: auto minmax(0, 1fr); }
+/* Media-right variant: text on the left, figure on the right. The figure stays
+   first in the source (so it leads on mobile), so `order` swaps the columns on
+   desktop — text into the wide left track, figure into the auto right track. */
+.split--media-right { grid-template-columns: minmax(0, 1fr) auto; }
+.split--media-right .figure { order: 2; }
+.split--media-right .prose { order: 1; max-width: none; }
 /* Golden Model: the testbench flowchart is a tall portrait sketch, so top-align
    it with the copy — the text should start level with the top of the chart and
    run down the right column (with the golden-model code block below it), rather
@@ -765,7 +771,12 @@
   /* Stack to one column; the figure comes first in the DOM, so the mux image
      sits above its explanation. */
   .split,
-  .split--media-left { grid-template-columns: 1fr; }
+  .split--media-left,
+  .split--media-right { grid-template-columns: 1fr; }
+  /* Media-right stacks figure-first (it leads in the DOM), same as media-left,
+     so the diagram sits above its explanation on phones. */
+  .split--media-right .figure { order: 1; }
+  .split--media-right .prose { order: 2; }
   .figure--mux { max-width: 340px; margin-inline: auto; }   /* re-centre on mobile */
   /* First-ALU section: stack with the diagram above its explanation. `order`
      puts the card first without moving its long markup ahead of the prose. */
@@ -1113,6 +1124,9 @@
   /* The i-type / s-type banners sit image-left, text-right; give them room to
      read on large screens (they keep the default figure width on mid widths). */
   #data-transfer .split--media-left .figure--diagram { max-width: 38rem; }
+  /* The sb-type / uj-type branch diagrams sit image-right, text-left; match the
+     Data Transfer banners' large-screen width. */
+  #control-flow .split--media-right .figure--diagram { max-width: 38rem; }
 }
 
 /* Field-name <code> tinted to the colours of the R-type diagram

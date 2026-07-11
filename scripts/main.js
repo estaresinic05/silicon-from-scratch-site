@@ -317,16 +317,19 @@
 
     buildDrawer(tocMenu);
 
-    function openToc() {
+    function openToc(expandProjDir) {
       tocMenu.classList.add("is-open");
       backdrop.classList.add("is-open");
       tocBtn.setAttribute("aria-expanded", "true");
       if (navToggle) navToggle.setAttribute("aria-expanded", "true");
       document.body.classList.add("nav-open");
-      // On mobile (where the quick links + a collapsible "Project Directory"
-      // ride inside this drawer), also expand that dropdown so the reader lands
-      // straight on the project tree rather than a single collapsed row.
-      if (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) {
+      // On mobile the collapsible "Project Directory" dropdown rides inside this
+      // drawer. Only auto-expand it when the reader explicitly asked for the
+      // project directory (the "Open Project Directory" CTAs) — opening from the
+      // hamburger should land on the collapsed top folder (Home / Project
+      // Directory / GitHub / About / Tools), not jump straight into the tree.
+      if (expandProjDir &&
+          window.matchMedia && window.matchMedia("(max-width: 768px)").matches) {
         var pd = tocMenu.querySelector(".menu__projdir");
         if (pd && !pd.classList.contains("is-open")) {
           pd.classList.add("is-open");
@@ -388,13 +391,13 @@
 
     // "Open Project Directory" buttons (home hero CTAs, the About page, etc.) open
     // this same drawer. Un-hide the (auto-hiding) top bar first so it doesn't
-    // slide away, then open — openToc() also auto-expands the mobile Project
-    // Directory dropdown, so a tap lands straight on the project tree.
+    // slide away, then open with expandProjDir so the mobile Project Directory
+    // dropdown is auto-expanded and a tap lands straight on the project tree.
     var openers = document.querySelectorAll(".js-open-proj-dir");
     for (var oi = 0; oi < openers.length; oi++) {
       openers[oi].addEventListener("click", function () {
         if (topbar) topbar.classList.remove("is-hidden");
-        if (!tocMenu.classList.contains("is-open")) openToc();
+        if (!tocMenu.classList.contains("is-open")) openToc(true);
       });
     }
   }

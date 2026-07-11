@@ -134,8 +134,9 @@
             instruction. R-type instructions handle exactly the work our ALU was
             built for: register-to-register arithmetic and logic. Each one reads
             two source registers, performs an operation such as add, subtract,
-            AND, or OR on their values, and writes the result back to a
-            destination register.
+            AND, OR, or slt (set on less than, which writes 1 to the destination
+            when the first value is less than the second and 0 otherwise) on
+            their values, and writes the result back to a destination register.
           </p>
           <p>
             In RISC-V, every R-type instruction is a single 32-bit number, split
@@ -266,6 +267,120 @@
             great deal — but to make decisions and repeat work, a processor needs
             one more family: <strong>control flow</strong> instructions, which
             we'll explore next.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CONTROL FLOW INSTRUCTIONS =================== -->
+    <section class="section" id="control-flow" aria-labelledby="cf-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="cf-title">Control Flow Instructions</h2>
+        </div>
+
+        <div class="prose prose--full">
+          <p>
+            So far every instruction we've met runs in a straight line, one after
+            the next. But real programs rarely march straight through — they need
+            to make decisions and repeat work. Without a way
+            to redirect the flow of execution, a processor could only ever run a
+            fixed, predetermined list of instructions. The instructions that let
+            it choose <em>which</em> instruction to run next are called
+            <strong>control flow instructions</strong>, and because loops and
+            conditionals sit at the heart of nearly every algorithm, they make up a
+            large fraction of everything a CPU actually executes.
+          </p>
+        </div>
+
+        <div class="split split--media-right">
+          <figure class="figure figure--diagram">
+            <img src="../../assets/single-cycle-cpu/sb-type.jpg"
+                 alt="The SB-type instruction format as a six-field bar — imm[12|10:5] at bits [31:25], rs2 at [24:20], rs1 at [19:15], funct3 at [14:12], imm[4:1|11] at [11:7], and opcode at [6:0] — above a worked example of beq x5, x6, 16: imm[12|10:5] is 0000000, rs2 is 00110 (x6), rs1 is 00101 (x5), funct3 is 000, imm[4:1|11] is 10000, and the opcode is 1100011."
+                 decoding="async" />
+          </figure>
+          <div class="prose">
+            <p>
+              RISC-V's <strong>conditional branches</strong> compare two registers
+              and jump only if the test passes — <em>beq</em> (branch if equal),
+              <em>bne</em> (branch if not equal), and <em>blt</em> (branch if less
+              than), among others. Each reads two source registers and needs a
+              target to jump to, but never writes a result back to a register. You
+              might notice that shape looks awfully familiar — two sources, no
+              destination, plus an immediate — it's the very same shape as the
+              store's S&#8209;type, so branches take the closely related
+              <strong>SB&#8209;type</strong> (or B&#8209;type) format. Its fields, from
+              the high bits down, are
+              <code class="fld-imm">imm[12|10:5]</code>,
+              <code class="fld-rs2">rs2</code>,
+              <code class="fld-rs1">rs1</code>,
+              <code class="fld-funct3">funct3</code>,
+              <code class="fld-imm">imm[4:1|11]</code>, and the
+              <code class="fld-opcode">opcode</code>. Just as with the S&#8209;type, the
+              <code class="fld-imm">immediate</code> is chopped into scattered chunks
+              so that <code class="fld-rs2">rs2</code>,
+              <code class="fld-rs1">rs1</code>,
+              <code class="fld-funct3">funct3</code>, and the
+              <code class="fld-opcode">opcode</code> stay in the exact same bit
+              positions they occupy in every other format. This time the immediate
+              is a <em>branch offset</em> — a signed distance, measured from the
+              branch itself, to the instruction we want to jump to. In
+              <em>beq x5, x6, 16</em>, if the values in <em>x5</em> and
+              <em>x6</em> are equal, the processor adds 16 to the current address
+              and continues from there; otherwise it moves on to the very next
+              instruction.
+            </p>
+          </div>
+        </div>
+
+        <div class="split split--media-right">
+          <figure class="figure figure--diagram">
+            <img src="../../assets/single-cycle-cpu/uj-type.jpg"
+                 alt="The UJ-type instruction format as a three-field bar — the scrambled immediate imm[20|10:1|11|19:12] at bits [31:12], rd at [11:7], and opcode at [6:0] — above a worked example of jal x1, 6708: the immediate field is 00100011010100000001, rd is 00001 (x1), and the opcode is 1101111."
+                 decoding="async" />
+          </figure>
+          <div class="prose">
+            <p>
+              Branches are perfect for the small, nearby hops of an <em>if</em> or a
+              loop, but their offset is only wide enough to reach a limited range of
+              addresses. Calling a function may mean leaping much farther across the
+              program, so RISC-V provides <em>jal</em> (jump and link). A
+              <em>jal</em> does two things at once: it jumps to a far-off target, and
+              it &ldquo;links&rdquo; by saving the address of the following
+              instruction into a destination register, leaving a breadcrumb the
+              function can use to return. Because it writes a destination and carries
+              one very large immediate, it uses the <strong>UJ&#8209;type</strong>
+              (or J&#8209;type) format. Its fields are the scrambled
+              <code class="fld-imm">imm[20|10:1|11|19:12]</code>, the destination
+              <code class="fld-rd">rd</code>, and the
+              <code class="fld-opcode">opcode</code>. Nearly the whole instruction is
+              given over to that single <code class="fld-imm">immediate</code>,
+              which is what lets <em>jal</em> reach so much farther than a branch. In
+              <em>jal x1, 6708</em>, the processor jumps 6708 bytes ahead and
+              records the return address in <em>x1</em>, ready to resume once the
+              function is done.
+            </p>
+          </div>
+        </div>
+
+        <div class="prose prose--full">
+          <p>
+            Look back at both of those immediate fields and you'll notice something
+            strange: the branch runs <code class="fld-imm">imm[12]</code> down to
+            <code class="fld-imm">imm[1]</code> and <em>jal</em> runs
+            <code class="fld-imm">imm[20]</code> down to
+            <code class="fld-imm">imm[1]</code>, yet neither one has an
+            <code class="fld-imm">imm[0]</code> anywhere in the instruction. That
+            missing bit is no accident. Instructions in memory are always at least
+            two bytes wide, so a branch or jump can only ever land on an
+            <em>even</em> address — its offset is guaranteed to be a multiple of
+            two, which means the lowest bit of that offset is <em>always</em> zero.
+            Rather than waste a precious instruction bit storing a value that can
+            never be anything but 0, RISC-V simply leaves <code class="fld-imm">imm[0]</code>
+            out and has the hardware assume it. This effectively stretches the
+            reach of these instructions: the same number of stored bits now spans
+            twice as many bytes, since each step of the offset counts two bytes
+            instead of one.
           </p>
         </div>
       </div>
