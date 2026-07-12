@@ -133,7 +133,7 @@
     ["Intermediate", [
       ["Single Cycle CPU", [
         ["The Basics of Instructions", "single-cycle-cpu/basics-of-instructions/"],
-        "Fetch, Decode, Execute",
+        ["Fetch, Decode, Execute", "single-cycle-cpu/fetch-decode-execute/"],
         "Constructing a Datapath",
         "Immediate Generation Unit and ALU Control",
         "Main Control Unit and Branch Logic",
