@@ -99,11 +99,59 @@
         </div>
       </div>
 
-      <figure class="doc-hero__art">
+      <figure class="doc-hero__art" style="max-width: 33rem; margin-inline: auto;">
         <img src="../../assets/single-cycle-cpu/fde.jpg"
              alt="A cycle diagram drawn as a circle split into three purple wedges — Fetch, Decode, and Execute — linked by teal arrows that loop clockwise from one stage to the next, showing the repeating instruction cycle a processor runs."
              decoding="async" />
       </figure>
+    </section>
+
+    <!-- ============================ THE CPU'S BOOKMARK =================== -->
+    <section class="section" id="program-counter" aria-labelledby="pc-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="pc-title">The CPU&rsquo;s Bookmark</h2>
+        </div>
+
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-right">
+            <img src="../../assets/single-cycle-cpu/program-counter.jpg"
+                 alt="A diagram of the program counter: a register holding the address of the current instruction, with an adder feeding the program counter plus 4 back in so it points at the next instruction in memory."
+                 decoding="async" />
+          </figure>
+          <p>
+            Ok, so we have all these instructions at the ready for our CPU to
+            run. Some may be arithmetic, some branches, some data transfers
+            &mdash; a whole mix of orders waiting their turn. Each of these
+            instructions is like a word on a page, each page like a unique task,
+            and the book as a whole like a specific program our processor must
+            read through and run from cover to cover. But a book is
+            only useful if you can find where you left off. With a modern
+            processor tearing through <strong>billions of instructions every
+            second</strong>, we need somewhere to keep our place.
+          </p>
+          <p>
+            Along the very same lines as our analogy, the <strong>program
+            counter</strong> &mdash; often shortened to the <strong>PC</strong>
+            &mdash; was developed to be exactly that bookmark. It is a small,
+            dedicated register that holds the memory address of the <em>next</em>
+            instruction the CPU is about to read. At the start of every cycle,
+            the processor looks at the program counter to know precisely which
+            instruction to grab from memory, so it never loses its place in the
+            book.
+          </p>
+          <p>
+            Once the CPU has an instruction in hand, the program counter needs to
+            move on to the next one. Because every RISC-V instruction is exactly
+            32-bits, or 4 bytes, the CPU normally just
+            adds 4 to the program counter, nudging our bookmark forward. The exception is when an instruction wants to jump
+            somewhere else in the book entirely, like a <strong>branch</strong>
+            or a <strong>jump</strong>; in that case the program counter is
+            loaded with a brand-new address instead of the usual
+            +&nbsp;4, and our story picks up from there.
+          </p>
+        </div>
+      </div>
     </section>
 
     <!-- ============================== CHECK YOURSELF ===================== -->
