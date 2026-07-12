@@ -154,6 +154,310 @@
       </div>
     </section>
 
+    <!-- ===================== INSTRUCTION AND DATA MEMORIES ============== -->
+    <section class="section" id="memories" aria-labelledby="mem-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="mem-title">Instruction and Data Memories</h2>
+        </div>
+
+        <!-- Instruction memory: explanation on the left, card on the right -->
+        <div class="split split--textleft mem-split">
+          <!-- Instruction memory: display-only (data-static) flip card -->
+          <div class="gate-card mem-card" data-static>
+            <div class="gate-card__inner">
+              <figure class="figure gate-card__face gate-card__face--front" role="button" tabindex="0"
+                      aria-label="Instruction memory diagram. Activate to see its Verilog module.">
+                <img src="../../assets/single-cycle-cpu/instruction-mem.jpg"
+                     alt="A block diagram of the instruction memory: a 32-bit instruction address enters on the left and the 32-bit instruction stored at that address comes out on the right." decoding="async" />
+                <figcaption>
+                  <span class="gate-name">Instruction memory</span>
+                  <strong>Where the program&rsquo;s instructions live.</strong>
+                </figcaption>
+                <span class="gate-card__flip" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
+                </span>
+              </figure>
+              <div class="gate-card__face gate-card__face--back">
+                <figure class="code-editor">
+                  <figcaption class="code-editor__bar">
+                    <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+                    <span class="code-editor__lang">Verilog HDL</span>
+                  </figcaption>
+                  <div class="code-editor__body">
+                    <pre class="code-editor__hl" aria-hidden="true"><code>module instruct_mem #(
+    parameter DEPTH = 256
+) (
+    input  wire [31:0] instAddress,
+    output wire [31:0] instruction
+);
+
+  reg [31:0] memory[0:DEPTH-1];  //create 32-bit registers
+  integer i;
+  initial begin
+    for (i = 0; i &lt; DEPTH; i = i + 1) begin
+      memory[i] = 32'h00000013;  // NOP
+    end
+      $readmemh("programs/program.mem", memory);
+  end
+
+  assign instruction = (instAddress[31:2] &lt; DEPTH) ?
+                       memory[instAddress[31:2]] : 32'b0;
+endmodule</code></pre>
+                    <textarea class="code-editor__ta" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" readonly aria-label="Verilog module for the instruction memory">module instruct_mem #(
+    parameter DEPTH = 256
+) (
+    input  wire [31:0] instAddress,
+    output wire [31:0] instruction
+);
+
+  reg [31:0] memory[0:DEPTH-1];  //create 32-bit registers
+  integer i;
+  initial begin
+    for (i = 0; i &lt; DEPTH; i = i + 1) begin
+      memory[i] = 32'h00000013;  // NOP
+    end
+      $readmemh("programs/program.mem", memory);
+  end
+
+  assign instruction = (instAddress[31:2] &lt; DEPTH) ?
+                       memory[instAddress[31:2]] : 32'b0;
+endmodule</textarea>
+                  </div>
+                </figure>
+                <div class="gate-card__backrow">
+                  <!-- Custom stepper: cycle instAddress through the 10 words in
+                       the program; the instruction readout shows the raw hex
+                       word stored there and its assembly. Wired below. -->
+                  <div class="gate-sim imem-sim">
+                    <div class="imem-sim__field">
+                      <span class="imem-sim__chip">
+                        <b>instAddress</b> =
+                        <span class="imem-sim__addr" data-imem-addr>0x00000000</span>
+                        <span class="imem-sim__steppers">
+                          <button type="button" class="imem-sim__step" data-imem-up aria-label="Next instruction address">&#9650;</button>
+                          <button type="button" class="imem-sim__step" data-imem-down aria-label="Previous instruction address">&#9660;</button>
+                        </span>
+                      </span>
+                    </div>
+                    <div class="imem-sim__out">
+                      <span class="imem-sim__lhs">instruction</span> =
+                      <span class="imem-sim__val" data-imem-hex>0x00100093</span>
+                      <span class="imem-sim__asm" data-imem-asm>addi x1, x0, 1</span>
+                    </div>
+                  </div>
+                  <button class="gate-card__return" type="button" aria-label="Back to the instruction memory diagram">
+                    <svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="prose">
+            <p>
+              By now you might be wondering where all of these instructions
+              actually live inside the processor, or what the program counter is
+              even pointing at in the first place. Easily enough, the
+              instructions live in a dedicated piece of hardware called the
+              <strong>instruction memory</strong>. The instruction memory is
+              exactly what it sounds like: a block of memory that holds our
+              program as one long list of encoded instructions, each sitting at
+              its own address. The program counter holds one of those addresses,
+              and on every cycle the processor uses it to look up the matching
+              instruction and hand it off to the rest of the CPU.
+            </p>
+            <p>
+              Notice, too, that unlike the data memory we build next, the
+              instruction memory has no control signals guarding it. There is no
+              <code class="sig-ctrl">readEnable</code> that has to be switched on
+              before it will hand back an instruction, and there is no
+              <code class="sig-ctrl">clk</code> edge it has to wait for either. It
+              simply presents whatever instruction lives at the address the
+              program counter gives it, the instant that address arrives &mdash;
+              the read is purely <em>combinational</em>. That is exactly the
+              behavior we want here: the processor needs a fresh instruction on
+              <em>every single cycle</em>, so there is never a reason to hold one
+              back or make it wait. Play around with the code on the back of the
+              provided card to see how it works!
+            </p>
+          </div>
+        </div>
+
+        <!-- Data memory: the flip card on the left; to its right a column with
+             the section copy on top and the live waveform bottom-aligned. -->
+        <div class="dmem-layout">
+          <!-- Data memory: display-only (data-static) flip card -->
+          <div class="gate-card mem-card" data-static>
+            <div class="gate-card__inner">
+              <figure class="figure gate-card__face gate-card__face--front" role="button" tabindex="0"
+                      aria-label="Data memory diagram. Activate to see its Verilog module.">
+                <img src="../../assets/single-cycle-cpu/data-mem.jpg"
+                     alt="A block diagram of the data memory: a data address, a write value, and read- and write-enable signals enter, clocked by clk, and the 32-bit read value comes out." decoding="async" />
+                <figcaption>
+                  <span class="gate-name">Data memory</span>
+                  <strong>Where a running program keeps its values.</strong>
+                </figcaption>
+                <span class="gate-card__flip" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
+                </span>
+              </figure>
+              <div class="gate-card__face gate-card__face--back">
+                <figure class="code-editor">
+                  <figcaption class="code-editor__bar">
+                    <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+                    <span class="code-editor__lang">Verilog HDL</span>
+                  </figcaption>
+                  <div class="code-editor__body">
+                    <pre class="code-editor__hl" aria-hidden="true"><code>module data_mem #(
+    parameter DEPTH = 256
+) (
+    input wire [31:0] dataAddress,
+    input wire [31:0] writeData,
+    input wire writeEnable,
+    input wire readEnable,
+    input wire clk,
+    output wire [31:0] readData
+);
+
+  reg [31:0] memory[0:DEPTH-1];  //create 32-bit registers
+
+  integer i;
+  initial begin
+    for (i = 0; i &lt; DEPTH; i = i + 1) memory[i] = 32'b0;
+  end
+
+  /*******Write*******/
+  always @(posedge clk) begin
+    if (writeEnable &amp;&amp; dataAddress[31:2] &lt; DEPTH)
+      memory[dataAddress[31:2]] &lt;= writeData;
+  end
+
+  /*******Read*******/
+  assign readData = (readEnable &amp;&amp; dataAddress[31:2] &lt; DEPTH) ?
+                    memory[dataAddress[31:2]] : 32'b0;
+endmodule</code></pre>
+                    <textarea class="code-editor__ta" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" readonly aria-label="Verilog module for the data memory">module data_mem #(
+    parameter DEPTH = 256
+) (
+    input wire [31:0] dataAddress,
+    input wire [31:0] writeData,
+    input wire writeEnable,
+    input wire readEnable,
+    input wire clk,
+    output wire [31:0] readData
+);
+
+  reg [31:0] memory[0:DEPTH-1];  //create 32-bit registers
+
+  integer i;
+  initial begin
+    for (i = 0; i &lt; DEPTH; i = i + 1) memory[i] = 32'b0;
+  end
+
+  /*******Write*******/
+  always @(posedge clk) begin
+    if (writeEnable &amp;&amp; dataAddress[31:2] &lt; DEPTH)
+      memory[dataAddress[31:2]] &lt;= writeData;
+  end
+
+  /*******Read*******/
+  assign readData = (readEnable &amp;&amp; dataAddress[31:2] &lt; DEPTH) ?
+                    memory[dataAddress[31:2]] : 32'b0;
+endmodule</textarea>
+                  </div>
+                </figure>
+                <div class="gate-card__backrow">
+                  <!-- Interactive data-memory playground: cycle dataAddress, type
+                       a hex writeData, toggle the control signals, and watch
+                       readData. Write commits on a clk rising edge while
+                       writeEnable is high; readData is driven only when
+                       readEnable is high. Wired below. -->
+                  <div class="gate-sim dmem-sim">
+                    <div class="dmem-sim__inputs">
+                      <span class="imem-sim__chip">
+                        <b>dataAddress</b> =
+                        <span class="imem-sim__addr" data-dmem-addr>0x00000000</span>
+                        <span class="imem-sim__steppers">
+                          <button type="button" class="imem-sim__step" data-dmem-up aria-label="Next data address">&#9650;</button>
+                          <button type="button" class="imem-sim__step" data-dmem-down aria-label="Previous data address">&#9660;</button>
+                        </span>
+                      </span>
+                      <label class="dmem-sim__wd">
+                        <b>writeData</b> =
+                        <span class="dmem-sim__wd-hex"><span class="dmem-sim__wd-prefix" aria-hidden="true">0x</span><input type="text" class="dmem-sim__wd-input" data-dmem-write
+                               placeholder="00000000" spellcheck="false"
+                               autocomplete="off" autocapitalize="off" maxlength="8"
+                               aria-label="writeData value in hexadecimal (8 digits after 0x)" /></span>
+                      </label>
+                      <button type="button" class="gate-sim__chip gate-sim__chip--control" data-dmem-sig="writeEnable" data-val="0"><b>writeEnable</b> = <span class="dmem-sim__bit">0</span></button>
+                      <button type="button" class="gate-sim__chip gate-sim__chip--control" data-dmem-sig="readEnable" data-val="0"><b>readEnable</b> = <span class="dmem-sim__bit">0</span></button>
+                      <button type="button" class="gate-sim__chip gate-sim__chip--control" data-dmem-sig="clk" data-val="0"><b>clk</b> = <span class="dmem-sim__bit">0</span></button>
+                    </div>
+                    <div class="dmem-sim__out">
+                      <span class="dmem-sim__group">
+                        <span class="imem-sim__lhs">memory</span> =
+                        <span class="imem-sim__val dmem-sim__mem" data-dmem-mem>0x00000000</span>
+                      </span>
+                      <span class="dmem-sim__group">
+                        <span class="imem-sim__lhs">readData</span> =
+                        <span class="imem-sim__val" data-dmem-read>0x00000000</span>
+                      </span>
+                    </div>
+                  </div>
+                  <button class="gate-card__return" type="button" aria-label="Back to the data memory diagram">
+                    <svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dmem-right">
+            <div class="prose prose--flow dmem-intro">
+              <p>
+                But a program is not just a list of orders &mdash; it also needs
+                somewhere to keep the values it works on. That job falls to a
+                second piece of hardware called the <strong>data memory</strong>.
+                Whenever we run a load word (<em>lw</em>) instruction, the CPU
+                reaches into the data memory and copies a value out into a
+                register; whenever we run a store word (<em>sw</em>) instruction,
+                it does the reverse, writing a register&rsquo;s value back into
+                the data memory. In short, the instruction memory holds
+                <em>what to do</em>, while the data memory holds
+                <em>what to do it to</em>. Flip the card to read its Verilog, then
+                drive the signals on the back: pick a <code>dataAddress</code>,
+                type in some <code>writeData</code>, toggle the control signals,
+                and pulse the <code class="sig-ctrl">clk</code>. Every pulse is
+                captured as a new column in the live timing diagram to the right,
+                so you can watch a value land in memory and then read back out on
+                <code>readData</code>.
+              </p>
+            </div>
+
+            <!-- Live data-memory timing diagram — one column captured per clk
+                 pulse from the controls on the data-memory card (dmem-wave.js). -->
+            <figure class="aluwave dmemwave">
+              <div class="aluwave__scope" role="group" aria-label="Live data memory timing diagram"></div>
+            </figure>
+          </div>
+        </div>
+
+        <div class="prose prose--flow mem-harvard">
+          <p>
+            In this project, we will actually keep these two memories completely
+            separate &mdash; one dedicated instruction memory and one dedicated
+            data memory, each with its own connections into the datapath.
+            Splitting them apart like this is known as the <strong>Harvard
+            architecture</strong>, named after early computers that stored their
+            instructions and data in separate places. It keeps our single-cycle
+            design simple: the processor can read the next instruction and read
+            or write a data value in the very same cycle, without the two ever
+            getting in each other&rsquo;s way.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================== CHECK YOURSELF ===================== -->
     <section class="section section--tight" id="check" aria-labelledby="check-title">
       <div class="container container--wide">
@@ -195,5 +499,169 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
   <script src="../../scripts/scroll.js" defer></script>
+
+  <!-- Flip cards (Instruction / Data memory): the shared Verilog highlighter +
+       card wiring. verilog-mini first, then gate-card. -->
+  <script src="../../scripts/verilog-mini.js" defer></script>
+  <script src="../../scripts/gate-card.js" defer></script>
+
+  <!-- Live data-memory timing diagram; the inline script below pushes a column
+       to it on every clk pulse. -->
+  <script src="../../scripts/dmem-wave.js" defer></script>
+
+  <!-- Instruction-memory stepper: the up/down arrows cycle instAddress through
+       the program's 10 words (0x00000000 .. 0x00000024, one word = 4 bytes),
+       and the readout shows the raw instruction hex stored there + its assembly. -->
+  <script>
+  (function () {
+    var sim = document.querySelector(".imem-sim");
+    if (!sim) return;
+    // The little demo program living in the instruction memory. Each entry is
+    // the raw 32-bit word (as $readmemh would load it) and the assembly it
+    // decodes to. Word i sits at byte address i * 4.
+    var IMEM = [
+      { hex: "0x00100093", asm: "addi x1, x0, 1" },
+      { hex: "0x00500113", asm: "addi x2, x0, 5" },
+      { hex: "0x002081B3", asm: "add x3, x1, x2" },
+      { hex: "0x40118233", asm: "sub x4, x3, x1" },
+      { hex: "0xFFE20293", asm: "addi x5, x4, -2" },
+      { hex: "0x0042E333", asm: "or x6, x5, x4" },
+      { hex: "0x005273B3", asm: "and x7, x4, x5" },
+      { hex: "0x00522433", asm: "slt x8, x4, x5" },
+      { hex: "0x0042A4B3", asm: "slt x9, x5, x4" },
+      { hex: "0x00302223", asm: "sw x3, 4(x0)" },
+      { hex: "0x00800513", asm: "addi x10, x0, 8" },
+      { hex: "0x00652223", asm: "sw x6, 4(x10)" },
+      { hex: "0x407105B3", asm: "sub x11, x2, x7" },
+      { hex: "0xFFC52603", asm: "lw x12, -4(x10)" },
+      { hex: "0x00410663", asm: "beq x2, x4, 12" },
+      { hex: "0x003002B3", asm: "add x5, x0, x3" },
+      { hex: "0x00F17693", asm: "andi x13, x2, 15" },
+      { hex: "0x00A02823", asm: "sw x10, 16(x0)" },
+      { hex: "0x00F17713", asm: "andi x14, x2, 15" },
+      { hex: "0x00411A63", asm: "bne x2, x4, 20" },
+      { hex: "0x00311463", asm: "bne x2, x3, 8" },
+      { hex: "0x407105B3", asm: "sub x11, x2, x7" },
+      { hex: "0x00610233", asm: "add x4, x2, x6" },
+      { hex: "0xFE1048E3", asm: "blt x0, x1, -16" },
+      { hex: "0x00326793", asm: "ori x15, x4, 3" },
+      { hex: "0x00208663", asm: "beq x1, x2, 12" },
+      { hex: "0x00114463", asm: "blt x2, x1, 8" },
+      { hex: "0x00902A23", asm: "sw x9, 20(x0)" },
+      { hex: "0x00928013", asm: "addi x0, x5, 9" },
+      { hex: "0x40238833", asm: "sub x16, x7, x2" }
+    ];
+    var addrEl = sim.querySelector("[data-imem-addr]");
+    var hexEl  = sim.querySelector("[data-imem-hex]");
+    var asmEl  = sim.querySelector("[data-imem-asm]");
+    var up     = sim.querySelector("[data-imem-up]");
+    var down   = sim.querySelector("[data-imem-down]");
+    var i = 0;
+
+    function fmtAddr(n) {
+      var s = (n >>> 0).toString(16).toUpperCase();
+      while (s.length < 8) s = "0" + s;
+      return "0x" + s;
+    }
+    function render() {
+      addrEl.textContent = fmtAddr(i * 4);
+      hexEl.textContent = IMEM[i].hex;
+      asmEl.textContent = IMEM[i].asm;
+    }
+    up.addEventListener("click", function () { i = (i + 1) % IMEM.length; render(); });
+    down.addEventListener("click", function () { i = (i - 1 + IMEM.length) % IMEM.length; render(); });
+    render();
+  })();
+  </script>
+
+  <!-- Data-memory playground: a tiny behavioural model of the data_mem module.
+       dataAddress cycles the same 10 words as the instruction memory; writeData
+       is typed in hex; writeEnable / readEnable / clk are toggled. A write
+       commits to memory on a clk rising edge while writeEnable is high (matching
+       `always @(posedge clk)`), and readData is driven only when readEnable is
+       high (otherwise it reads 0), matching the module's assign. -->
+  <script>
+  (function () {
+    var sim = document.querySelector(".dmem-sim");
+    if (!sim) return;
+    var WORDS = 10;          // dataAddress cycles 0x00000000 .. 0x00000024
+    var mem = {};            // word index -> stored 32-bit value
+    var i = 0;               // current dataAddress word index
+    var prevClk = 0;
+    var sig = { writeEnable: 0, readEnable: 0, clk: 0 };
+
+    var addrEl = sim.querySelector("[data-dmem-addr]");
+    var memEl  = sim.querySelector("[data-dmem-mem]");
+    var readEl = sim.querySelector("[data-dmem-read]");
+    var wInput = sim.querySelector("[data-dmem-write]");
+    var up     = sim.querySelector("[data-dmem-up]");
+    var down   = sim.querySelector("[data-dmem-down]");
+    var sigBtns = sim.querySelectorAll("[data-dmem-sig]");
+
+    function fmt(n) {
+      var s = (n >>> 0).toString(16).toUpperCase();
+      while (s.length < 8) s = "0" + s;
+      return "0x" + s;
+    }
+    // Parse whatever is typed as hex — a leading "0x" is optional, so the user
+    // only needs the 8 digits after the x. Blank / invalid reads as 0.
+    function writeVal() {
+      var raw = (wInput.value || "").trim().replace(/^0x/i, "");
+      if (!raw) return 0;
+      var n = parseInt(raw, 16);
+      return isNaN(n) ? 0 : (n >>> 0);
+    }
+    function update() {
+      // posedge clk + writeEnable high -> store writeData at dataAddress.
+      if (sig.clk === 1 && prevClk === 0 && sig.writeEnable === 1) {
+        mem[i] = writeVal();
+      }
+      prevClk = sig.clk;
+      // memory is the internal signal: whatever is stored at dataAddress, shown
+      // regardless of the control signals.
+      var stored = mem[i] || 0;
+      // readData only drives a value when readEnable is high; otherwise 0.
+      var out = (sig.readEnable === 1) ? stored : 0;
+      addrEl.textContent = fmt(i * 4);
+      memEl.textContent = fmt(stored);
+      readEl.textContent = fmt(out);
+    }
+
+    up.addEventListener("click", function () { i = (i + 1) % WORDS; update(); });
+    down.addEventListener("click", function () { i = (i - 1 + WORDS) % WORDS; update(); });
+    wInput.addEventListener("input", function () {
+      // The "0x" is a fixed prefix in the markup, so keep the field to at most
+      // 8 hex digits — strip anything the user pastes/types that isn't one.
+      var cleaned = wInput.value.replace(/[^0-9a-fA-F]/g, "").slice(0, 8);
+      if (cleaned !== wInput.value) wInput.value = cleaned;
+      update();
+    });
+    Array.prototype.forEach.call(sigBtns, function (btn) {
+      btn.addEventListener("click", function () {
+        var name = btn.getAttribute("data-dmem-sig");
+        sig[name] = sig[name] ? 0 : 1;
+        btn.setAttribute("data-val", sig[name] ? "1" : "0");
+        var bit = btn.querySelector(".dmem-sim__bit");
+        if (bit) bit.textContent = sig[name];
+        update();
+        // A clk pulse captures a column into the live timing diagram, sampling
+        // every signal at this moment (after any posedge write has committed).
+        if (name === "clk" && window.DMEMWave) {
+          var stored = mem[i] || 0;
+          window.DMEMWave.push({
+            addr: i * 4,
+            wd: writeVal(),
+            we: sig.writeEnable,
+            re: sig.readEnable,
+            clk: sig.clk,
+            mem: stored,
+            read: (sig.readEnable === 1) ? stored : 0
+          });
+        }
+      });
+    });
+    update();
+  })();
+  </script>
 </body>
 </html>

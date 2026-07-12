@@ -815,6 +815,48 @@
   .gate-grid .figure img { height: 9rem; }
 }
 
+/* Instruction / Data memory flip cards on the Fetch-Decode-Execute page. Each
+   sits beside its explanation in a .split — the instruction card in the left
+   (media) track, the data card in the right track — vertically centred against
+   the copy. The cards are larger than the little gate tiles, and the square
+   block diagram simply fills the whole card (width 100%, natural height) so the
+   card takes the image's own shape rather than being letterboxed onto a fixed
+   white tile the way the gate grid does. */
+.mem-split { align-items: center; }
+.mem-card { width: 36rem; max-width: 100%; margin-inline: auto; }
+.mem-card .gate-card__face--front img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+}
+/* A sliver more height on the card — extra breathing room below the diagram on
+   the front, which the flipped editor face grows to match. */
+.mem-card .gate-card__face--front { padding-bottom: 3.2rem; }
+/* Instruction memory sits a hair taller than the data card. */
+.split--textleft .mem-card .gate-card__face--front { padding-bottom: 4rem; }
+
+/* Text-left / card-right split: the card is first in the source (its markup is
+   long), so `order` drops the copy into the wide left track and the card into
+   the narrow right track without moving the markup. */
+.split--textleft { grid-template-columns: minmax(0, 1fr) auto; }
+.split--textleft .prose { order: 1; max-width: none; }
+.split--textleft .mem-card { order: 2; }
+@media (max-width: 768px) {
+  /* Stack card-first on phones (see the diagram, then read about it). */
+  .split--textleft { grid-template-columns: 1fr; }
+  .split--textleft .mem-card { order: 1; }
+  .split--textleft .prose { order: 2; }
+}
+/* Breathing room above the full-width Harvard-architecture paragraph. */
+.mem-harvard { margin-top: var(--space-5); }
+/* Inline control-signal names in prose (readEnable, clk) — the same light blue
+   as the cards' control chips and the waveform's control traces (overrides the
+   default purple <code> colour + tint). */
+code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
+@media (max-width: 768px) {
+  .mem-card { width: 100%; }
+}
+
 /* Tighter vertical rhythm so a two-row card grid clears one screen. */
 .section--tight { padding-block: var(--space-5); }
 .section--tight .section__head { margin-bottom: var(--space-3); }
@@ -1263,6 +1305,159 @@
   color: var(--accent-deep);
 }
 .gate-sim__val[data-bad="1"] { color: var(--soft-ink); }   /* couldn't parse */
+
+/* Instruction-memory stepper bar (Fetch-Decode-Execute page). Reuses the
+   .gate-sim frame but swaps the 1-bit chips for a hex instAddress readout with
+   up/down steppers on the left and the instruction hex + assembly on the right. */
+.imem-sim { gap: 0.45rem 0.9rem; }
+.imem-sim__field,
+.imem-sim__out { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.imem-sim__lhs { font-size: 0.7rem; color: var(--soft-ink); }
+.imem-sim__val { font-weight: 600; font-size: 0.9rem; color: var(--accent-deep); }
+/* instAddress sits in a pill, matching the gate cards' input chips (purple
+   accent name + value on a paper bubble). Not clickable — the steppers drive
+   it — so no pointer cursor. */
+.imem-sim__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.5rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: rgba(107, 47, 201, 0.06);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+.imem-sim__chip b { color: var(--accent); font-weight: 600; }
+.imem-sim__addr { color: var(--accent); font-weight: 600; }
+.imem-sim__asm { font-size: 0.72rem; color: var(--soft-ink); }
+.imem-sim__steppers { display: inline-flex; flex-direction: column; gap: 2px; }
+.imem-sim__step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2rem;
+  height: 0.85rem;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--soft-ink);
+  font-size: 0.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+.imem-sim__step:hover,
+.imem-sim__step:focus-visible { border-color: var(--accent); color: var(--accent-deep); }
+
+/* Data-memory playground bar. Inputs (dataAddress pill + steppers, the writeData
+   hex field, and the blue control toggles) wrap along the top; the readData
+   readout sits below, styled like the instruction memory's output. */
+.dmem-sim { gap: 0.45rem 0.7rem; }
+.dmem-sim__inputs { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.dmem-sim__out { display: flex; align-items: center; gap: 0.4rem 1.2rem; flex-wrap: wrap; }
+.dmem-sim__group { display: inline-flex; align-items: center; gap: 0.4rem; }
+/* `memory` is an internal signal — neither input nor output — so its value reads
+   in neutral grey to set it apart from readData's purple. */
+.dmem-sim__mem { color: var(--soft-ink); }
+.dmem-sim__bit { font-weight: 600; }
+/* writeData: a purple data-input pill (matching dataAddress) wrapping an inline
+   text field. The faint placeholder (0x00000000) shows the expected hex format
+   and clears as soon as the user types. */
+.dmem-sim__wd {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.14rem 0.5rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: rgba(107, 47, 201, 0.06);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+.dmem-sim__wd b { color: var(--accent); font-weight: 600; }
+/* The "0x" is a fixed prefix (always shown); the field holds only the 8 digits
+   after it. Prefix + field sit flush so together they read "0x########". */
+.dmem-sim__wd-hex { display: inline-flex; align-items: center; }
+.dmem-sim__wd-prefix { color: var(--accent); font-weight: 600; }
+.dmem-sim__wd-input {
+  width: 5rem;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 0;
+}
+.dmem-sim__wd-input:focus { outline: none; }
+.dmem-sim__wd-input::placeholder { color: var(--soft-ink); opacity: 0.5; font-weight: 400; }
+
+/* ---- Live data-memory timing diagram (dmem-wave.js) ---------------------- *
+   Rides the shared .aluwave card + .awv-* structure, but recolours every role
+   for the light lesson page (the home page's waveforms are tuned for the dark
+   theme). */
+/* Data memory: the flip card on the left; to its right a column holding the
+   section copy on top and the live waveform below. The right column stretches to
+   the card's height and the waveform is pushed to the bottom (margin-top:auto),
+   so its lower edge sits flush with the card's lower edge and the copy fills the
+   space above it beside the card. */
+.dmem-layout {
+  display: flex;
+  align-items: stretch;
+  gap: clamp(var(--space-3), 3vw, var(--space-4));
+  margin-top: var(--space-4);
+}
+.dmem-layout .mem-card { flex: 0 0 36rem; width: auto; max-width: 36rem; margin: 0; }
+.dmem-right { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
+/* Both the copy and the waveform take an auto top margin, so the free space in
+   the pocket splits above the copy and between the copy and the waveform — the
+   text drops into the middle of the pocket and the waveform stays bottom-flush. */
+.dmem-right .dmem-intro { margin: auto 0 0; }
+.dmem-right .dmemwave { margin: auto 0 0; }   /* bottom-aligned with the card */
+@media (max-width: 900px) {
+  .dmem-layout { flex-direction: column; align-items: stretch; }
+  .dmem-layout .mem-card { flex: none; width: 100%; max-width: 100%; }
+  .dmem-right { width: 100%; }
+  .dmem-right .dmemwave { margin-top: var(--space-4); }
+}
+/* No caption sits above the scope anymore, so drop its top hairline + padding —
+   the card's own padding gives the header room, and the SVG's own header rule
+   under "Signal / clk pulse" is the only divider up top. */
+.dmemwave .aluwave__scope { border-top: 0; padding-top: 0; }
+/* Scale the waveform up a little now that it owns the whole right column. */
+.dmemwave .awv-hdr  { font-size: 12px; }
+.dmemwave .awv-time { font-size: 12px; }
+.dmemwave .awv-name { font-size: 12.5px; }
+.dmemwave .awv-busval { font-size: 10.5px; }
+.dmemwave__cap {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--soft-ink);
+  margin: 0;
+}
+.dmemwave__cap b { color: var(--ink); font-weight: 600; }
+/* Light-theme separators / gridlines (the base .awv rules are light-on-dark). */
+.dmemwave .awv-rowsep,
+.dmemwave .awv-grid { stroke: rgba(35, 35, 42, 0.08); }
+.dmemwave .awv-name--muted { fill: rgba(35, 35, 42, 0.42); }
+/* Role colours: data inputs purple, control blue, output deep purple, and the
+   internal `memory` signal in neutral grey — matching the card's own readouts. */
+.dmemwave .awv-name--in         { fill: var(--accent); }
+.dmemwave .awv-trace--in        { stroke: var(--accent); }
+.dmemwave .awv-busval--in       { fill: var(--accent); }
+.dmemwave .awv-name--ctrl       { fill: #4a90d9; }
+.dmemwave .awv-trace--ctrl      { stroke: #4a90d9; }
+.dmemwave .awv-busval--ctrl     { fill: #4a90d9; }
+.dmemwave .awv-name--out        { fill: var(--accent-deep); }
+.dmemwave .awv-trace--out       { stroke: var(--accent-deep); }
+.dmemwave .awv-busval--out      { fill: var(--accent-deep); }
+.dmemwave .awv-name--internal   { fill: var(--soft-ink); }
+.dmemwave .awv-trace--internal  { stroke: var(--soft-ink); }
+.dmemwave .awv-busval--internal { fill: var(--soft-ink); }
+/* Empty-state hint shown before the first capture. */
+.awv-wave-hint { font-family: var(--font-mono); font-size: 10px; fill: var(--soft-ink); }
 
 /* Flip arrow on the front — a horizontal arrow in a bottom-right square box,
    matching the return button on the back. */
