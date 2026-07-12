@@ -520,6 +520,11 @@
 .split--media-right { grid-template-columns: minmax(0, 1fr) auto; }
 .split--media-right .figure { order: 2; }
 .split--media-right .prose { order: 1; max-width: none; }
+/* Control Flow diagrams: top-align the text and image (rather than centring the
+   shorter one), so each paragraph starts level with its diagram. Keep every gap
+   between blocks at the page's standard one-paragraph rhythm (--space-3). */
+#control-flow .split { align-items: start; margin-top: var(--space-3); }
+#control-flow .split + .prose--full { margin-top: var(--space-3); }
 /* Golden Model: the testbench flowchart is a tall portrait sketch, so top-align
    it with the copy — the text should start level with the top of the chart and
    run down the right column (with the golden-model code block below it), rather
@@ -1114,19 +1119,49 @@
 /* R-type banner: a wider float on large screens (it's a wide two-row diagram, so
    it reads better big); keeps the default flow-figure size on mid widths and
    unfloats on mobile via the rules above. */
-/* Drop the alignment paragraph down a little so it doesn't sit flush with the
-   top of the memory-alignment image floated beside it. */
-#data-transfer .prose--flow p:first-of-type { margin-top: var(--space-5); }
+/* Keep the Data Transfer blocks on the page's standard one-paragraph rhythm
+   (--space-3): the i-type / s-type diagram splits and the alignment paragraph
+   that follows them all sit the same distance apart as ordinary paragraphs. */
+#data-transfer .split { margin-top: var(--space-3); }
+#data-transfer .prose--flow p:first-of-type { margin-top: var(--space-3); }
+
+/* R-type intro: the first two paragraphs sit in a left column with the diagram
+   in a right column, vertically centred against them (align-items: center). This
+   keeps the image centred top-to-bottom between the top of the first paragraph
+   and the top of the third paragraph (which follows below), instead of floating
+   at the very top. */
+#arith-logic .arith-lead {
+  display: flex;
+  align-items: center;
+  gap: clamp(var(--space-3), 4vw, var(--space-5));
+}
+#arith-logic .arith-lead__text { flex: 1 1 0; min-width: 0; }
+/* Avoid a lone short word on the last line (e.g. "register") — pull it up. */
+#arith-logic .arith-lead__text p { text-wrap: pretty; }
+#arith-logic .arith-lead__text p:first-child { margin-top: 0; }
+#arith-logic .arith-lead__text p:last-child { margin-bottom: 0; }
+#arith-logic .arith-lead__fig { flex: 0 0 33rem; max-width: 33rem; }
+/* Clear paragraph break between the lead block (paragraphs 1–2) and the third
+   paragraph that follows below it. */
+#arith-logic .arith-lead + p { margin-top: var(--space-3); }
+@media (max-width: 768px) {
+  /* Stack: text first, then the diagram, then the third paragraph below. */
+  #arith-logic .arith-lead { flex-direction: column; }
+  #arith-logic .arith-lead__fig {
+    flex-basis: auto; width: 100%; max-width: 28rem; margin: var(--space-4) auto 0;
+  }
+}
 
 @media (min-width: 1025px) {
-  #arith-logic .flow-figure--float-right { width: 42rem; }
+  #arith-logic .arith-lead__fig { flex-basis: 38rem; max-width: 38rem; }
   #data-transfer .flow-figure--float-right { width: 40rem; }
   /* The i-type / s-type banners sit image-left, text-right; give them room to
      read on large screens (they keep the default figure width on mid widths). */
   #data-transfer .split--media-left .figure--diagram { max-width: 38rem; }
-  /* The sb-type / uj-type branch diagrams sit image-right, text-left; match the
-     Data Transfer banners' large-screen width. */
-  #control-flow .split--media-right .figure--diagram { max-width: 38rem; }
+  /* The sb-type / uj-type branch diagrams and the addi diagram sit image-right,
+     text-left; match the Data Transfer banners' large-screen width. */
+  #control-flow .split--media-right .figure--diagram,
+  #register-immediate .split--media-right .figure--diagram { max-width: 38rem; }
 }
 
 /* Field-name <code> tinted to the colours of the R-type diagram
@@ -1289,6 +1324,19 @@
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   padding: clamp(var(--space-4), 5vw, var(--space-5));
+  box-shadow: var(--shadow-soft);
+}
+
+/* Empty placeholder frame: a Check Yourself section whose interactive content
+   hasn't been built yet. Same paper card as the quiz, just blank, so the hero's
+   "Skip to Check Yourself" button still has a real destination to land on. */
+.blank-frame {
+  max-width: 52rem;
+  min-height: 20rem;
+  margin-inline: auto;
+  background: var(--paper);
+  border: 1px dashed var(--hairline);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
 }
 .quiz__q {

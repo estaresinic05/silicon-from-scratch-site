@@ -112,32 +112,35 @@
         </div>
 
         <div class="prose prose--flow">
-          <figure class="flow-figure flow-figure--float-right">
-            <img src="../../assets/single-cycle-cpu/r-type.jpg"
-                 alt="The R-type instruction format drawn as a six-field bar — funct7, rs2, rs1, funct3, rd, and opcode — above a worked example encoding of add x5, x6, x7: funct7 is 0000000, rs2 is 00111 (x7), rs1 is 00110 (x6), funct3 is 000, rd is 00101 (x5), and opcode is 0110011."
-                 decoding="async" />
-          </figure>
+          <div class="arith-lead">
+            <div class="arith-lead__text">
+              <p>
+                In the last project, we constructed our very own Arithmetic Logic
+                Unit, or ALU. Our ALU could perform basic addition, subtraction,
+                AND, OR, NAND, NOR, and a few other operations. While building this,
+                we assumed some other hardware in the computer would be responsible
+                for telling — or <em>instructing</em> — the ALU to perform the
+                operations, and only then would our ALU know to manipulate its
+                control bits to do so. But what do these so-called
+                &ldquo;instructions&rdquo; look like?
+              </p>
+              <p>
+                There are a few different types of instructions in the RISC-V
+                instruction set, but the most basic is the <strong>R-type</strong>
+                instruction. R-type instructions handle exactly the work our ALU was
+                built for: register-to-register arithmetic and logic. Each one reads
+                two source registers, performs an operation such as add, subtract,
+                AND, OR, or slt on their values, and writes the result back to a
+                destination register.
+              </p>
+            </div>
+            <figure class="flow-figure arith-lead__fig">
+              <img src="../../assets/single-cycle-cpu/r-type.jpg"
+                   alt="The R-type instruction format drawn as a six-field bar — funct7, rs2, rs1, funct3, rd, and opcode — above a worked example encoding of add x5, x6, x7: funct7 is 0000000, rs2 is 00111 (x7), rs1 is 00110 (x6), funct3 is 000, rd is 00101 (x5), and opcode is 0110011."
+                   decoding="async" />
+            </figure>
+          </div>
 
-          <p>
-            In the last project, we constructed our very own Arithmetic Logic
-            Unit, or ALU. Our ALU could perform basic addition, subtraction,
-            AND, OR, NAND, NOR, and a few other operations. While building this,
-            we assumed some other hardware in the computer would be responsible
-            for telling — or <em>instructing</em> — the ALU to perform the
-            operations, and only then would our ALU know to manipulate its
-            control bits to do so. But what do these so-called
-            &ldquo;instructions&rdquo; look like?
-          </p>
-          <p>
-            There are a few different types of instructions in the RISC-V
-            instruction set, but the most basic is the <strong>R-type</strong>
-            instruction. R-type instructions handle exactly the work our ALU was
-            built for: register-to-register arithmetic and logic. Each one reads
-            two source registers, performs an operation such as add, subtract,
-            AND, OR, or slt (set on less than, which writes 1 to the destination
-            when the first value is less than the second and 0 otherwise) on
-            their values, and writes the result back to a destination register.
-          </p>
           <p>
             In RISC-V, every R-type instruction is a single 32-bit number, split
             into six <strong>fields</strong> — reserved portions that each carry one piece
@@ -145,10 +148,8 @@
             name the two source registers and <code class="fld-rd">rd</code> names the
             destination, while the <code class="fld-opcode">opcode</code>, <code class="fld-funct3">funct3</code>, and
             <code class="fld-funct7">funct7</code> fields together select which operation to run,
-            setting the very control bits our ALU depended on.
-          </p>
-          <p>
-            The diagram shows exactly this for <em>add x5, x6, x7</em>. Its
+            setting the very control bits our ALU depended on. The diagram shows
+            exactly this for <em>add x5, x6, x7</em>. Its
             <code class="fld-opcode">opcode</code> is 0110011, the pattern shared by
             every R-type instruction, and <code class="fld-funct3">funct3</code> and
             <code class="fld-funct7">funct7</code> — 000 and 0000000 —
@@ -366,22 +367,76 @@
         <div class="prose prose--full">
           <p>
             Look back at both of those immediate fields and you'll notice something
-            strange: the branch runs <code class="fld-imm">imm[12]</code> down to
+            strange. The branch runs <code class="fld-imm">imm[12]</code> down to
             <code class="fld-imm">imm[1]</code> and <em>jal</em> runs
             <code class="fld-imm">imm[20]</code> down to
             <code class="fld-imm">imm[1]</code>, yet neither one has an
             <code class="fld-imm">imm[0]</code> anywhere in the instruction. That
             missing bit is no accident. Instructions in memory are always at least
             two bytes wide, so a branch or jump can only ever land on an
-            <em>even</em> address — its offset is guaranteed to be a multiple of
-            two, which means the lowest bit of that offset is <em>always</em> zero.
-            Rather than waste a precious instruction bit storing a value that can
-            never be anything but 0, RISC-V simply leaves <code class="fld-imm">imm[0]</code>
-            out and has the hardware assume it. This effectively stretches the
-            reach of these instructions: the same number of stored bits now spans
-            twice as many bytes, since each step of the offset counts two bytes
-            instead of one.
+            <em>even</em> address, which means its offset is always a multiple of
+            two and the lowest bit is always zero. Rather than waste a precious
+            instruction bit storing a value that can never be anything but 0,
+            RISC-V simply leaves <code class="fld-imm">imm[0]</code> out and lets the
+            hardware assume it, stretching the reach of these instructions since the
+            same stored bits now span twice as many bytes. The bits that remain look
+            scrambled for a related reason. RISC-V arranges the <em>jal</em>
+            immediate, just as it does the branch immediate, so that each bit falls
+            in nearly the same instruction position it occupies in the other
+            formats, with the sign bit pinned to the very top so sign extension is
+            trivial. That way the processor can reuse the same wiring to pull each
+            immediate bit from the same place no matter which format it is decoding,
+            trading a layout that looks confusing to us for a decoder that is
+            simpler and faster to build.
           </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== REGISTER-IMMEDIATE INSTRUCTIONS ============= -->
+    <section class="section" id="register-immediate" aria-labelledby="regimm-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="regimm-title">Register Immediate</h2>
+        </div>
+
+        <div class="split split--media-right">
+          <figure class="figure figure--diagram">
+            <img src="../../assets/single-cycle-cpu/addi.jpg"
+                 alt="The I-type instruction format as a five-field bar — immediate at bits [31:20], rs1 at [19:15], funct3 at [14:12], rd at [11:7], and opcode at [6:0] — above a worked example of addi x5, x6, 10: the immediate is 000000001010 (10), rs1 is 00110 (x6), funct3 is 000, rd is 00101 (x5), and the opcode is 0010011."
+                 decoding="async" />
+          </figure>
+          <div class="prose">
+            <p>
+              An R-type instruction combines the values held in <em>two</em>
+              registers, but very often one of the operands we want is just a
+              constant known ahead of time: add one to a counter, mask a value
+              against a fixed pattern, or compare a number to a threshold. Rather
+              than burn a whole register loading that constant first, RISC-V lets us
+              bake it straight into the instruction as a 12-bit
+              <code class="fld-imm">immediate</code> that stands in for the second
+              source register. These are the <strong>register-immediate</strong>
+              instructions, and they run the same arithmetic and logic as their
+              R-type cousins. Best of all, they don't take much extra effort to learn:
+              they use the very same <strong>I&#8209;type</strong> format we already
+              met with <em>lw</em>, so the <code class="fld-imm">immediate</code>,
+              <code class="fld-rs1">rs1</code>, <code class="fld-funct3">funct3</code>,
+              <code class="fld-rd">rd</code>, and <code class="fld-opcode">opcode</code>
+              fields all sit exactly where we've seen them before.
+            </p>
+            <p>
+              The family mirrors the R-type operations with an
+              <em>i</em> (for &ldquo;immediate&rdquo;) tacked on: <em>addi</em> adds a
+              constant to a register, <em>ori</em> ORs a register against a constant
+              to force chosen bits high, and <em>slti</em> sets its destination to 1
+              when the register is less than the constant and 0 otherwise. Each reads
+              one source register <code class="fld-rs1">rs1</code>, folds in the
+              <code class="fld-imm">immediate</code>, and writes the result to
+              <code class="fld-rd">rd</code>. For example, <em>addi x5, x6, 10</em>
+              takes the value in <em>x6</em>, adds the constant 10, and stores the
+              sum in <em>x5</em> &mdash; no second register required.
+            </p>
+          </div>
         </div>
       </div>
     </section>
