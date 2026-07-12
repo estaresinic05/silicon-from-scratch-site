@@ -19,10 +19,18 @@
 
   // Geometry (SVG user units; the scope scales the whole thing to fit). Steps are
   // wide enough to seat an 8-digit hex value in a bus cell.
-  var NAMEW = 144, HEADH = 38, STEPW = 84, MAXCOLS = 10;
-  var LANEH = 50, STRIP = 20, TXW = 9;            // full lane vs collapsed strip; bus transition half-width
+  var NAMEW = 148, HEADH = 38, STEPW = 90, MAXCOLS = 8;
+  var LANEH = 70, STRIP = 26, TXW = 9;            // full lane vs collapsed strip; bus transition half-width
   var NAMECX = (32 + NAMEW) / 2;
-  var COLOR = { in: "#6B2FC9", ctrl: "#4A90D9", out: "#4F1F9E", internal: "#56565F" };
+  // Bead motion — the datapath's own recipe (a fat dash sliding at a constant
+  // pixel speed, then parked off the end for the rest of a long cycle so a ripple
+  // passes only occasionally), identical to the style-guide waveforms.
+  var DASH = 12, PAD = DASH + 8, MARGIN = 2 * PAD, SPEED = 0.18, CYCLE = 10000;
+  // The signal-name / trace / bus colours live in CSS (.dmemwave scope), tuned
+  // for the light card. The hover tooltip, though, is a dark box (exactly like
+  // the style guide's), so its values use the LIGHTER role palette so they read
+  // on dark — the same tones the reference waveform uses.
+  var TIP = { in: "#b794f6", ctrl: "#60a5fa", out: "#d4bbff", internal: "rgba(253, 253, 251, 0.82)" };
 
   function el(tag, attrs) {
     var e = document.createElementNS(SVGNS, tag);
@@ -35,9 +43,9 @@
     t.textContent = s;
     return t;
   }
-  function railHi(top) { return top + LANEH / 2 - 11; }
-  function railLo(top) { return top + LANEH / 2 + 11; }
-  function railMid(top) { return top + LANEH / 2; }
+  function railHi(top) { return top + 13; }
+  function railLo(top) { return top + 57; }
+  function railMid(top) { return top + 35; }
   function clamp(n, lo, hi) { return n < lo ? lo : n > hi ? hi : n; }
   function hex8(n) { var s = (n >>> 0).toString(16).toUpperCase(); while (s.length < 8) s = "0" + s; return "0x" + s; }
 
@@ -49,7 +57,22 @@
     var hidden = {};          // signal visibility persists across redraws
     var N = 0;
     var PLOTL = NAMEW, PLOTR = PLOTL, W = PLOTL + 6 * STEPW + 14;   // W set per-render
-    var signals = [];
+    var signals = [], beads = [];
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // One bead per bit trace, animated exactly like the datapath / style-guide
+    // waveforms: a fat round-capped dash slid along the path at a constant pixel
+    // speed, parked off the end for the rest of a long cycle.
+    function animateBead(bead) {
+      var len = 200;
+      try { len = bead.getTotalLength() || 200; } catch (e) {}
+      var f = Math.max(((len + MARGIN) / SPEED) / CYCLE, 0.002);
+      bead.animate([
+        { strokeDashoffset: PAD + "px", opacity: 1, offset: 0 },
+        { strokeDashoffset: (-(len + PAD)) + "px", opacity: 1, offset: f },
+        { strokeDashoffset: (-(len + PAD)) + "px", opacity: 1, offset: 1 }
+      ], { duration: CYCLE, iterations: Infinity, easing: "linear" });
+    }
 
     function buildSignals() {
       var col = function (key) { return cols.map(function (c) { return c[key]; }); };
@@ -75,21 +98,34 @@
       }
       return d;
     }
-    // Bus: a stroked ribbon (top + bottom rails) that crosses over (an X) wherever
-    // the value changes, with the hex value written into each stable run.
-    function busPath(vals, top) {
-      var H = railHi(top), L = railLo(top), M = railMid(top), d = "", i = 0;
+    // A bus is drawn as its two rail edges (top + bottom) as separate polylines.
+    // Edge A starts on the top rail, edge B on the bottom; at every value change
+    // each crosses through the middle (M) to the opposite rail — so the top and
+    // bottom traces meet ONLY where the value changes (an X) and the ends stay
+    // open (no vertical caps). Two beads riding these edges move at the same speed
+    // and cross exactly over that X. The edges are mirror images, so their lengths
+    // match and the beads stay in lockstep.
+    function busEdges(vals, top) {
+      var H = railHi(top), L = railLo(top), M = railMid(top);
+      var a = "M " + PLOTL + " " + H, b = "M " + PLOTL + " " + L;
+      var la = H, lb = L, i = 0;
       while (i < N) {
         var j = i + 1; while (j < N && vals[j] === vals[i]) j++;
-        var xa = PLOTL + i * STEPW, xb = PLOTL + j * STEPW;
-        var lt = (i === 0) ? 0 : TXW, rt = (j === N) ? 0 : TXW;
-        d += " M " + (xa + lt) + " " + H + " H " + (xb - rt);
-        d += (rt > 0) ? (" L " + xb + " " + M + " L " + (xb - rt) + " " + L) : (" V " + L);
-        d += " H " + (xa + lt);
-        d += (lt > 0) ? (" L " + xa + " " + M + " L " + (xa + lt) + " " + H) : (" V " + H);
+        var xb = PLOTL + j * STEPW;
+        var rt = (j === N) ? 0 : TXW;
+        a += " L " + (xb - rt) + " " + la;           // horizontal run at current level
+        b += " L " + (xb - rt) + " " + lb;
+        if (rt > 0) {                                // cross through M, swap rails
+          a += " L " + xb + " " + M;
+          b += " L " + xb + " " + M;
+          la = (la === H) ? L : H;
+          lb = (lb === H) ? L : H;
+          a += " L " + (xb + TXW) + " " + la;
+          b += " L " + (xb + TXW) + " " + lb;
+        }
         i = j;
       }
-      return d.replace(/^\s+/, "");
+      return [a, b];
     }
     function busLabels(vals, top, role) {
       var g = el("g", {}), i = 0;
@@ -132,25 +168,23 @@
         svg.appendChild(txt(String(i + 1), PLOTL + (i + 0.5) * STEPW, 31, "awv-time", "middle"));
       var g = "";
       for (i = 0; i <= MAXCOLS; i++) g += "M " + (PLOTL + i * STEPW) + " " + HEADH + " V " + H + " ";
-      svg.appendChild(el("path", { "class": "awv-grid", d: g.replace(/\s+$/, "") }));
+      svg.appendChild(el("path", { "class": "awv-grid", d: g.replace(/\s+$/, ""), fill: "none" }));
 
       for (i = 1; i < signals.length; i++)
         svg.appendChild(el("line", { "class": "awv-rowsep", x1: 0, y1: signals[i].top, x2: W, y2: signals[i].top }));
       svg.appendChild(el("line", { "class": "awv-div", x1: 0, y1: HEADH, x2: W, y2: HEADH }));
       svg.appendChild(el("line", { "class": "awv-div", x1: NAMEW, y1: 0, x2: NAMEW, y2: H }));
 
+      beads = [];
       for (i = 0; i < signals.length; i++) addLane(svg, signals[i]);
-
-      // Empty-state hint, centred over the plot before the first capture.
-      if (N === 0)
-        svg.appendChild(txt("Toggle the signals on the card, then pulse clk to capture.",
-          (PLOTL + PLOTR) / 2, HEADH + (H - HEADH) / 2 + 3, "awv-wave-hint", "middle"));
 
       svg.appendChild(el("line", { "class": "awv-cursor", x1: 0, y1: HEADH, x2: 0, y2: H }));
 
       var old = scope.querySelector(".awv-svg");
       if (old) scope.removeChild(old);
       scope.appendChild(svg);
+      // Beads need attached elements (Web Animations API) — start them after swap.
+      if (!reduce) for (var k = 0; k < beads.length; k++) { try { animateBead(beads[k]); } catch (e) {} }
     }
 
     function addEye(svg, s, cy) {
@@ -159,7 +193,7 @@
         tabindex: "0", role: "button", "aria-pressed": s.visible ? "true" : "false",
         "aria-label": (s.visible ? "Hide signal " : "Show signal ") + s.label
       });
-      var ES = 0.68;
+      var ES = 1;
       var eye = el("g", { transform: "translate(" + (19 - 8 * ES).toFixed(2) + "," + (cy - 8 * ES).toFixed(2) + ") scale(" + ES + ")" });
       eye.appendChild(el("path", { "class": "awv-eye__lid",
         d: "M1 8 C3 4.5 5.4 3 8 3 C10.6 3 13 4.5 15 8 C13 11.5 10.6 13 8 13 C5.4 13 3 11.5 1 8 Z" }));
@@ -185,11 +219,27 @@
       if (!s.visible || N === 0) return;
 
       if (s.kind === "bus") {
-        svg.appendChild(el("path", { "class": "awv-trace awv-trace--" + s.role, d: busPath(s.vals, s.top) }));
+        // Draw the two rail edges as the trace — they only join at value changes
+        // (an X), with open ends (no vertical cap at the first/last column).
+        var edges = busEdges(s.vals, s.top);
+        svg.appendChild(el("path", { "class": "awv-trace awv-trace--" + s.role, d: edges[0] + " " + edges[1] }));
+        // Two ripples per bus — one per rail — moving at the same speed and
+        // crossing over the X at each value change, in the bus's own colour.
+        // Drawn before the labels so the hex stays readable on top.
+        for (var e = 0; e < edges.length; e++) {
+          var bd = el("path", { "class": "awv-bead awv-bead--" + s.role, d: edges[e] });
+          svg.appendChild(bd);
+          beads.push(bd);
+        }
         svg.appendChild(busLabels(s.vals, s.top, s.role));
         return;
       }
-      svg.appendChild(el("path", { "class": "awv-trace awv-trace--" + s.role, d: bitPath(s.bits, s.top) }));
+      var dStr = bitPath(s.bits, s.top);
+      svg.appendChild(el("path", { "class": "awv-trace awv-trace--" + s.role, d: dStr }));
+      // Travelling ripple (bead), same treatment as the datapath / style guide.
+      var bead = el("path", { "class": "awv-bead awv-bead--" + s.role, d: dStr });
+      svg.appendChild(bead);
+      beads.push(bead);
     }
 
     render();
@@ -213,20 +263,23 @@
       if (!svgEl || !line) return;
       var r = svgEl.getBoundingClientRect();
       var vbX = (e.clientX - r.left) / r.width * W;
-      var capR = PLOTL + STEPW * N;             // only the captured columns are scrubbable
-      if (vbX < PLOTL || vbX > capR) {
-        if (dragging) vbX = clamp(vbX, PLOTL, capR);
+      // Scrub anywhere in the plot; the bar shows for empty slots and for columns
+      // with every signal hidden, not only where signals are drawn.
+      if (vbX < PLOTL || vbX > PLOTR) {
+        if (dragging) vbX = clamp(vbX, PLOTL, PLOTR);
         else { onLeave(); return; }
       }
-      var step = clamp(Math.floor((vbX - PLOTL) / STEPW), 0, N - 1);
+      var step = clamp(Math.floor((vbX - PLOTL) / STEPW), 0, MAXCOLS - 1);
       line.setAttribute("x1", vbX); line.setAttribute("x2", vbX); line.classList.add("is-on");
 
       var html = '<div class="awv-tip__t">pulse ' + (step + 1) + "</div>";
-      for (var i = 0; i < signals.length; i++) {
-        var s = signals[i];
-        if (!s.visible) continue;
-        html += '<div class="awv-tip__row" style="color:' + COLOR[s.role] + '">' +
-                "<span>" + s.label + "</span><span>" + valueAt(s, step) + "</span></div>";
+      if (step < N) {
+        for (var i = 0; i < signals.length; i++) {
+          var s = signals[i];
+          if (!s.visible) continue;
+          html += '<div class="awv-tip__row" style="color:' + TIP[s.role] + '">' +
+                  "<span>" + s.label + "</span><span>" + valueAt(s, step) + "</span></div>";
+        }
       }
       tip.innerHTML = html;
       tip.classList.add("is-on");
@@ -245,9 +298,10 @@
     function onDown(e) {
       var svgEl = scope.querySelector(".awv-svg");
       if (!svgEl) return;
+      if (N === 0) return;
       var r = svgEl.getBoundingClientRect();
       var vbX = (e.clientX - r.left) / r.width * W;
-      if (vbX < PLOTL || vbX > PLOTL + STEPW * N) return;   // taps on the eye toggles / empty slots still work
+      if (vbX < PLOTL || vbX > PLOTR) return;   // taps on the name panel / eye toggles still work
       dragging = true; persist = isTouch(e);
       if (scope.setPointerCapture) { try { scope.setPointerCapture(e.pointerId); } catch (_) {} }
       onMove(e);

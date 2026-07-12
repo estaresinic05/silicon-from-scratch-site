@@ -853,6 +853,13 @@
    as the cards' control chips and the waveform's control traces (overrides the
    default purple <code> colour + tint). */
 code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
+
+/* Putting It All Together: the fetch-decode-execute diagram on the standard
+   `.figure` image card (paper background, hairline border, radius, soft shadow —
+   see the Figures / image cards entry in STYLE_GUIDE.md); just centred and
+   width-capped here. */
+#all-together .together-fig { max-width: 58rem; margin-inline: auto; }
+#all-together .together-fig figcaption { text-align: center; }
 @media (max-width: 768px) {
   .mem-card { width: 100%; }
 }
@@ -1233,7 +1240,8 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.3rem;
+  width: 2.5rem;
+  height: 2.05rem;
   border: 1px solid var(--hairline);
   border-radius: var(--radius-sm);
   background: var(--paper);
@@ -1398,38 +1406,31 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
    for the light lesson page (the home page's waveforms are tuned for the dark
    theme). */
 /* Data memory: the flip card on the left; to its right a column holding the
-   section copy on top and the live waveform below. The right column stretches to
-   the card's height and the waveform is pushed to the bottom (margin-top:auto),
-   so its lower edge sits flush with the card's lower edge and the copy fills the
-   space above it beside the card. */
+   section copy on top and the live waveform below. The right column is
+   bottom-aligned to the card, and the waveform is its last child, so the
+   waveform's lower edge sits flush with the card's lower edge with the copy
+   stacked just above it. */
 .dmem-layout {
   display: flex;
-  align-items: stretch;
+  align-items: flex-start;               /* card + waveform ride up to the top */
   gap: clamp(var(--space-3), 3vw, var(--space-4));
-  margin-top: var(--space-4);
+  margin-top: var(--space-2);
 }
-.dmem-layout .mem-card { flex: 0 0 36rem; width: auto; max-width: 36rem; margin: 0; }
-.dmem-right { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
-/* Both the copy and the waveform take an auto top margin, so the free space in
-   the pocket splits above the copy and between the copy and the waveform — the
-   text drops into the middle of the pocket and the waveform stays bottom-flush. */
-.dmem-right .dmem-intro { margin: auto 0 0; }
-.dmem-right .dmemwave { margin: auto 0 0; }   /* bottom-aligned with the card */
+/* Copy + waveform ride up to the top; the card drops to bottom-align its lower
+   edge with the waveform's lower edge. */
+.dmem-layout .mem-card { flex: 0 0 36rem; width: auto; max-width: 36rem; margin: 0; align-self: flex-end; }
+.dmem-right { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.dmem-right .dmem-intro { margin: var(--space-4) 0 0; }   /* nudged down from the top */
+.dmem-right .dmemwave { margin: 0; }
 @media (max-width: 900px) {
   .dmem-layout { flex-direction: column; align-items: stretch; }
   .dmem-layout .mem-card { flex: none; width: 100%; max-width: 100%; }
   .dmem-right { width: 100%; }
-  .dmem-right .dmemwave { margin-top: var(--space-4); }
 }
 /* No caption sits above the scope anymore, so drop its top hairline + padding —
    the card's own padding gives the header room, and the SVG's own header rule
    under "Signal / clk pulse" is the only divider up top. */
 .dmemwave .aluwave__scope { border-top: 0; padding-top: 0; }
-/* Scale the waveform up a little now that it owns the whole right column. */
-.dmemwave .awv-hdr  { font-size: 12px; }
-.dmemwave .awv-time { font-size: 12px; }
-.dmemwave .awv-name { font-size: 12.5px; }
-.dmemwave .awv-busval { font-size: 10.5px; }
 .dmemwave__cap {
   font-family: var(--font-body);
   font-size: 0.95rem;
@@ -1438,10 +1439,30 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   margin: 0;
 }
 .dmemwave__cap b { color: var(--ink); font-weight: 600; }
-/* Light-theme separators / gridlines (the base .awv rules are light-on-dark). */
-.dmemwave .awv-rowsep,
-.dmemwave .awv-grid { stroke: rgba(35, 35, 42, 0.08); }
-.dmemwave .awv-name--muted { fill: rgba(35, 35, 42, 0.42); }
+/* Light-theme separators / gridlines (the base .awv rules are light-on-dark).
+   Step gridlines + row separators are faint hairlines, the same weight as the
+   style-guide scope, just inverted for the light card. */
+/* This lesson uses the dark theme, so the scope card is dark — gridlines and
+   separators must be LIGHT (like the home widget), not dark, or they vanish
+   against the card. A slightly thicker unit stroke keeps them crisp at this
+   card's render scale. */
+.dmemwave .awv-grid   { stroke: rgba(253, 253, 251, 0.10); stroke-width: 2; }
+.dmemwave .awv-rowsep { stroke: rgba(253, 253, 251, 0.07); stroke-width: 2; }
+.dmemwave .awv-div    { stroke-width: 1.6; }
+.dmemwave .awv-name--muted { fill: rgba(253, 253, 251, 0.42); }
+/* The hover tooltip is a dark box (like the style guide's), so its "pulse N"
+   header and border read light — not the page's dark soft-ink / hairline. */
+.dmemwave .awv-tip { border-color: rgba(253, 253, 251, 0.18); }
+.dmemwave .awv-tip__t { color: rgba(253, 253, 251, 0.6); }
+/* Scaled up: taller lanes (set in dmem-wave.js) with proportionally thicker
+   traces, fatter ripples, and larger labels so everything reads easily. */
+.dmemwave .awv-trace      { stroke-width: 4.2; }
+.dmemwave .awv-trace--out { stroke-width: 4.8; }
+.dmemwave .awv-bead       { stroke-width: 10; }
+.dmemwave .awv-hdr        { font-size: 13.5px; }
+.dmemwave .awv-time       { font-size: 13.5px; }
+.dmemwave .awv-name       { font-size: 15px; }
+.dmemwave .awv-busval     { font-size: 12px; }
 /* Role colours: data inputs purple, control blue, output deep purple, and the
    internal `memory` signal in neutral grey — matching the card's own readouts. */
 .dmemwave .awv-name--in         { fill: var(--accent); }
@@ -1456,8 +1477,17 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .dmemwave .awv-name--internal   { fill: var(--soft-ink); }
 .dmemwave .awv-trace--internal  { stroke: var(--soft-ink); }
 .dmemwave .awv-busval--internal { fill: var(--soft-ink); }
+/* Ripple beads pull their colour from the SAME tokens as their trace (via the
+   role class), so every bead matches its signal's trace exactly. A tighter glow
+   than the dark-card default keeps the bead reading as the crisp trace colour
+   rather than a lighter smudge on the light card. */
+.dmemwave .awv-bead           { filter: drop-shadow(0 0 1.5px currentColor); }
+.dmemwave .awv-bead--in       { color: var(--accent); }
+.dmemwave .awv-bead--ctrl     { color: #4a90d9; }
+.dmemwave .awv-bead--out      { color: var(--accent-deep); }
+.dmemwave .awv-bead--internal { color: var(--soft-ink); }
 /* Empty-state hint shown before the first capture. */
-.awv-wave-hint { font-family: var(--font-mono); font-size: 10px; fill: var(--soft-ink); }
+.awv-wave-hint { font-family: var(--font-mono); font-size: 17px; fill: var(--soft-ink); }
 
 /* Flip arrow on the front — a horizontal arrow in a bottom-right square box,
    matching the return button on the back. */
@@ -1506,6 +1536,12 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   overflow-wrap: break-word;
 }
 .gate-card[data-static] .code-editor__ta { overflow-x: hidden; }
+/* The register-file card is bigger than the memory cards (a wider card that its
+   square-ish diagram also makes taller), which gives its module room to read at
+   a comfortable size without a scrollbar. */
+#register-files .mem-card { width: 38rem; max-width: 38rem; }
+#register-files .code-editor__hl,
+#register-files .code-editor__ta { font-size: 0.74rem; }
 
 /* ------------------------------------------------------------------ *
    CHECK-YOURSELF QUIZ — a multiple-choice widget: a diagram, four answer

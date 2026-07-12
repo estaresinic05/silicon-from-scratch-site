@@ -91,21 +91,33 @@
       }
       return d;
     }
-    // Bus: a stroked ribbon (top + bottom rails) that crosses over (an X) wherever
-    // the value changes, with the binary value written in each stable run.
-    function busPath(vals, top) {
-      var H = railHi(top), L = railLo(top), M = railMid(top), d = "", i = 0;
+    // A bus is drawn as its two rail edges (top + bottom) as separate polylines.
+    // Edge A starts on the top rail, edge B on the bottom; at every value change
+    // each crosses through the middle (M) to the opposite rail — so the top and
+    // bottom traces meet ONLY where the value changes (an X) and the ends stay
+    // open (no vertical caps at the first/last column). The binary value is
+    // written into each stable run by busLabels.
+    function busEdges(vals, top) {
+      var H = railHi(top), L = railLo(top), M = railMid(top);
+      var a = "M " + PLOTL + " " + H, b = "M " + PLOTL + " " + L;
+      var la = H, lb = L, i = 0;
       while (i < N) {
         var j = i + 1; while (j < N && vals[j] === vals[i]) j++;
-        var xa = PLOTL + i * STEPW, xb = PLOTL + j * STEPW;
-        var lt = (i === 0) ? 0 : TXW, rt = (j === N) ? 0 : TXW;
-        d += " M " + (xa + lt) + " " + H + " H " + (xb - rt);
-        d += (rt > 0) ? (" L " + xb + " " + M + " L " + (xb - rt) + " " + L) : (" V " + L);
-        d += " H " + (xa + lt);
-        d += (lt > 0) ? (" L " + xa + " " + M + " L " + (xa + lt) + " " + H) : (" V " + H);
+        var xb = PLOTL + j * STEPW;
+        var rt = (j === N) ? 0 : TXW;
+        a += " L " + (xb - rt) + " " + la;           // horizontal run at current level
+        b += " L " + (xb - rt) + " " + lb;
+        if (rt > 0) {                                // cross through M, swap rails
+          a += " L " + xb + " " + M;
+          b += " L " + xb + " " + M;
+          la = (la === H) ? L : H;
+          lb = (lb === H) ? L : H;
+          a += " L " + (xb + TXW) + " " + la;
+          b += " L " + (xb + TXW) + " " + lb;
+        }
         i = j;
       }
-      return d.replace(/^\s+/, "");
+      return [a, b];
     }
     function busLabels(vals, top) {
       var g = el("g", {}), i = 0;
@@ -211,7 +223,10 @@
       if (!s.visible) return;
 
       if (s.kind === "bus") {
-        svg.appendChild(el("path", { "class": "awv-trace awv-trace--" + s.role, d: busPath(s.vals, s.top) }));
+        // Draw the two rail edges as the trace — they only join at value changes
+        // (an X), with open ends (no vertical cap at the first/last column).
+        var edges = busEdges(s.vals, s.top);
+        svg.appendChild(el("path", { "class": "awv-trace awv-trace--" + s.role, d: edges[0] + " " + edges[1] }));
         svg.appendChild(busLabels(s.vals, s.top));
         return;
       }

@@ -186,6 +186,52 @@ explicit `fld-*` class so the field-colour scheme is complete and self-documenti
 
 ---
 
+## Figures / image cards
+
+Every image that isn't part of another widget — hand-drawn diagrams, worked
+examples, block diagrams, the datapath sketch — rides the **standard `.figure`
+card**, so images read as deliberate framed panels and look identical across
+every lesson. Reference implementations: the diagrams in
+`single-cycle-cpu/basics-of-instructions/index.html`, and the fetch-decode-execute
+diagram in `single-cycle-cpu/fetch-decode-execute/index.html` (`#all-together`).
+
+### Markup
+
+```html
+<figure class="figure">
+  <img src="PATH/TO/diagram.jpg" alt="Describe what the diagram shows." decoding="async" />
+</figure>
+```
+
+- The `figure` class both **draws the card** and is the hook `scroll.js` reveals
+  on scroll — keep it even when you add a sizing modifier.
+- Always give a real, descriptive `alt`, and add `decoding="async"`.
+
+### The card (already in `styles/alu.css` — don't redefine it per page)
+
+```css
+.figure {
+  margin: var(--space-5) 0 0;
+  background: var(--paper);              /* dark on the dark theme, light on the light theme */
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: clamp(var(--space-2), 3vw, var(--space-4));
+  box-shadow: var(--shadow-soft);
+}
+.figure img { width: 100%; height: auto; border-radius: var(--radius-sm); margin-inline: auto; }
+```
+
+- **Never hard-code a `#fff` background on the card.** The diagram JPGs already
+  carry their own light background, so a white plate blends into the image and the
+  card disappears. Use the token `var(--paper)` (i.e. just the base `.figure`) so
+  the card *frames* the image — dark card on the dark theme, light card on light.
+- **Per-figure CSS is sizing only:** at most `max-width` + `margin-inline: auto`
+  to cap and centre; let the base `.figure` own the background/border/radius/shadow.
+  Existing width caps: `.figure--diagram` (26rem), `.figure--diagram-lg` (34rem),
+  `.figure--diagram-tall` (20rem, portrait), `.figure--diagram-xl` (48rem).
+
+---
+
 ## Lesson headers
 
 The top of a lesson page — everything from the lesson title down to (but not

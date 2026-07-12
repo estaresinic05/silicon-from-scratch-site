@@ -425,12 +425,7 @@ endmodule</textarea>
                 the data memory. In short, the instruction memory holds
                 <em>what to do</em>, while the data memory holds
                 <em>what to do it to</em>. Flip the card to read its Verilog, then
-                drive the signals on the back: pick a <code>dataAddress</code>,
-                type in some <code>writeData</code>, toggle the control signals,
-                and pulse the <code class="sig-ctrl">clk</code>. Every pulse is
-                captured as a new column in the live timing diagram to the right,
-                so you can watch a value land in memory and then read back out on
-                <code>readData</code>.
+                drive the signals on the back.
               </p>
             </div>
 
@@ -455,6 +450,186 @@ endmodule</textarea>
             getting in each other&rsquo;s way.
           </p>
         </div>
+      </div>
+    </section>
+
+    <!-- ============================== REGISTER FILES ===================== -->
+    <section class="section" id="register-files" aria-labelledby="regfile-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="regfile-title">Register Files</h2>
+        </div>
+
+        <div class="split mem-split" style="align-items: center;">
+          <div class="prose">
+            <p>
+              We have seen instructions name registers over and over &mdash;
+              <em>add x8, x6, x7</em> reads <em>x6</em> and <em>x7</em> and writes
+              <em>x8</em> &mdash; but where do those registers actually live? They
+              sit together in a small, fast bank of storage inside the processor
+              called the <strong>register file</strong>. RISC-V gives us
+              <strong>32 general-purpose registers</strong>, <em>x0</em> through
+              <em>x31</em>, and the register file is simply the hardware that
+              holds all of them in one place, right next to the ALU where the
+              work gets done.
+            </p>
+            <p>
+              Notice that this register file has <strong>two read ports</strong>
+              &mdash; two separate read-address inputs feeding two separate
+              outputs. That is exactly what an instruction needs: an R-type instruction
+              names two source registers, <code class="fld-rs1">rs1</code> and
+              <code class="fld-rs2">rs2</code>, and having two read ports lets the
+              hardware fetch <em>both</em> of their values at once, in a
+              <strong>single clock cycle</strong>. We also hardwire <em>x0</em> to
+              <strong>zero</strong>: it always reads back 0 and ignores any write.
+              Giving up one register is well worth it, because a guaranteed 0 is
+              remarkably handy &mdash; it lets a single instruction copy a
+              register, load a small constant (<em>addi x5, x0, 8</em>), or throw
+              a result away.
+            </p>
+            <p>
+              And just like the data memory, only <strong>writing</strong> is
+              guarded. A write lands only on a <code class="sig-ctrl">clk</code>
+              edge while <code class="sig-ctrl">writeEnable</code> is high (and
+              never to <em>x0</em>), but <strong>reading is always live</strong>
+              &mdash; <code>data1</code> and <code>data2</code> present their
+              registers&rsquo; values continuously, no matter what the control
+              signals are doing, so both operands are ready the moment the
+              processor needs them. Flip the card to see how it all comes together
+              in Verilog.
+            </p>
+          </div>
+
+          <!-- Register file: display-only (data-static) flip card -->
+          <div class="gate-card mem-card" data-static>
+            <div class="gate-card__inner">
+              <figure class="figure gate-card__face gate-card__face--front" role="button" tabindex="0"
+                      aria-label="Register file diagram. Activate to see its Verilog module.">
+                <img src="../../assets/single-cycle-cpu/reg-file.jpg"
+                     alt="A block diagram of the register file: two 5-bit read-address inputs and a 5-bit write address, a 32-bit write value with a write-enable and clk, and two 32-bit read-data outputs." decoding="async" />
+                <figcaption>
+                  <span class="gate-name">Register file</span>
+                  <strong>The CPU&rsquo;s 32 registers, all in one place.</strong>
+                </figcaption>
+                <span class="gate-card__flip" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
+                </span>
+              </figure>
+              <div class="gate-card__face gate-card__face--back">
+                <figure class="code-editor">
+                  <figcaption class="code-editor__bar">
+                    <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+                    <span class="code-editor__lang">Verilog HDL</span>
+                  </figcaption>
+                  <div class="code-editor__body">
+                    <pre class="code-editor__hl" aria-hidden="true"><code>module reg_file (
+    input  wire [ 4:0] readAddress1,
+    input  wire [ 4:0] readAddress2,
+    input  wire [ 4:0] writeAddress,
+    input  wire [31:0] writeData,
+    input  wire        writeEnable,
+    input  wire        clk,
+    output wire [31:0] data1,
+    output wire [31:0] data2
+);
+
+  reg [31:0] RF[0:31];  // 32 registers each 32 bits long
+  integer i;
+  initial begin
+    for (i = 0; i &lt; 32; i = i + 1) RF[i] = 32'b0;  //initialize
+  end
+
+  assign data1 = (readAddress1 == 5'd0) ? 32'd0 : RF[readAddress1];
+  assign data2 = (readAddress2 == 5'd0) ? 32'd0 : RF[readAddress2];
+
+  always @(posedge clk) begin  //write register on posedge of clk
+    if (writeEnable &amp;&amp; (writeAddress != 5'd0))
+      RF[writeAddress] &lt;= writeData;  // when writeEnable is high
+  end
+
+endmodule</code></pre>
+                    <textarea class="code-editor__ta" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" readonly aria-label="Verilog module for the register file">module reg_file (
+    input  wire [ 4:0] readAddress1,
+    input  wire [ 4:0] readAddress2,
+    input  wire [ 4:0] writeAddress,
+    input  wire [31:0] writeData,
+    input  wire        writeEnable,
+    input  wire        clk,
+    output wire [31:0] data1,
+    output wire [31:0] data2
+);
+
+  reg [31:0] RF[0:31];  // 32 registers each 32 bits long
+  integer i;
+  initial begin
+    for (i = 0; i &lt; 32; i = i + 1) RF[i] = 32'b0;  //initialize
+  end
+
+  assign data1 = (readAddress1 == 5'd0) ? 32'd0 : RF[readAddress1];
+  assign data2 = (readAddress2 == 5'd0) ? 32'd0 : RF[readAddress2];
+
+  always @(posedge clk) begin  //write register on posedge of clk
+    if (writeEnable &amp;&amp; (writeAddress != 5'd0))
+      RF[writeAddress] &lt;= writeData;  // when writeEnable is high
+  end
+
+endmodule</textarea>
+                  </div>
+                </figure>
+                <div class="gate-card__backrow" style="justify-content: flex-end;">
+                  <button class="gate-card__return" type="button" aria-label="Back to the register file diagram">
+                    <svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================= PUTTING IT ALL TOGETHER ================= -->
+    <section class="section" id="all-together" aria-labelledby="together-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="together-title">Putting It All Together</h2>
+        </div>
+
+        <div class="prose prose--flow">
+          <p>
+            We now have all the hardware we need: the <strong>program
+            counter</strong> to keep our place, the <strong>instruction
+            memory</strong> holding the program, the <strong>register
+            file</strong> holding our 32 registers, the <strong>data
+            memory</strong> holding the values a program works on, and the
+            <strong>ALU</strong> we built earlier ready to do the math. On its
+            own, each of these is just a box. Wired together, they carry out the
+            <strong>fetch-decode-execute cycle</strong> &mdash; the loop the
+            processor runs for every single instruction.
+          </p>
+          <p>
+            The diagram below traces a single trip around that loop. It begins at
+            the <strong>program counter</strong>, which points into the
+            <strong>instruction memory</strong> to <strong>fetch</strong> the next
+            instruction before stepping forward, ready for the one after. That
+            instruction is then <strong>decoded</strong> into its fields, and its
+            source-register numbers are handed to the <strong>register
+            file</strong> so both operand values appear at once. Finally, in the
+            <strong>execute</strong> step, those values flow into the
+            <strong>ALU</strong> and the result goes wherever the instruction asks
+            &mdash; back into the register file, out to or in from the
+            <strong>data memory</strong>, or into the program counter for a branch
+            &mdash; before the cycle starts over with the next fetch, billions of
+            times a second.
+          </p>
+        </div>
+
+        <figure class="figure together-fig">
+          <img src="../../assets/single-cycle-cpu/simple-fde.jpg"
+               alt="A simple diagram of the fetch-decode-execute cycle: the program counter feeds the instruction memory to fetch an instruction, which is decoded and its registers read from the register file, then executed by the ALU with the result written back to the register file or data memory, looping back to update the program counter."
+               decoding="async" />
+          <figcaption>The simple fetch-decode-execute cycle</figcaption>
+        </figure>
       </div>
     </section>
 
