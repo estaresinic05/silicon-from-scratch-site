@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. Without JS this
+       never runs and the full page stays visible. -->
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>Constructing a Datapath — Silicon From Scratch</title>
+  <meta name="description"
+        content="With the program counter, memories, register file, and ALU all built, it is time to wire them into one working circuit. Meet the single-cycle datapath — the path every instruction travels from fetch to finish." />
+
+  <!-- Social link previews: shared logo + "Silicon From Scratch" card (see index.html). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Silicon From Scratch" />
+  <meta property="og:title" content="Silicon From Scratch" />
+  <meta property="og:url" content="https://siliconfromscratch.com/single-cycle-cpu/constructing-a-datapath/" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+  <meta property="og:image:width" content="1408" />
+  <meta property="og:image:height" content="768" />
+  <meta property="og:image:alt" content="Silicon From Scratch logo" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Silicon From Scratch" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+
+  <link rel="icon" href="../../assets/home/logo.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles, then the ALU project components (this page lives at
+       /single-cycle-cpu/constructing-a-datapath/, two levels down). -->
+  <link rel="stylesheet" href="../../styles/main.css" />
+  <link rel="stylesheet" href="../../styles/alu.css" />
+</head>
+<body class="theme-dark page-logic">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../../" aria-label="Silicon From Scratch — home">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="../../">Home</a>
+        <a href="../../meet-the-processor/">Meet the Processor</a>
+        <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+           target="_blank" rel="noopener">GitHub</a>
+        <a href="../../about/">About</a>
+        <a href="../../#tools">Tools</a>
+      </nav>
+
+      <div class="topbar__right">
+        <!-- Section index (desktop only): hover the ☰ to open the project directory -->
+        <div class="toc" id="page-toc">
+          <button class="toc__btn" type="button" aria-haspopup="true"
+                  aria-expanded="false" aria-label="Open the project directory">
+            <span class="nav-toggle__bars" aria-hidden="true"></span>
+          </button>
+          <ul class="toc__menu" aria-label="Project directory"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================== DOC HERO ============================ -->
+    <section class="doc-hero doc-hero--balanced container" aria-labelledby="cdp-title">
+      <div class="doc-hero__text">
+        <h1 id="cdp-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">Constructing a</span> <span class="title-eyebrow__group">Datapath</span></span></h1>
+        <p class="doc-hero__lead">
+          We have every piece on the bench &mdash; the <strong>program
+          counter</strong>, the <strong>instruction</strong> and <strong>data
+          memories</strong>, the <strong>register file</strong>, and the
+          <strong>ALU</strong>. On their own they are just boxes. Now we wire them
+          into a single working circuit: the <strong>datapath</strong>, the path
+          every instruction travels from fetch to finish. Add a few muxes and the
+          right connections, and one design can run arithmetic, memory, and branch
+          instructions alike.
+        </p>
+        <div class="doc-hero__actions">
+          <span class="doc-hero__prompt">Think you got this already?</span>
+          <a class="btn btn--primary" href="#check">Skip to Check Yourself</a>
+        </div>
+      </div>
+
+      <figure class="doc-hero__art">
+        <img src="../../assets/single-cycle-cpu/sc-cpu-architecture.jpg"
+             alt="A hand-drawn diagram of the complete single-cycle RISC-V datapath: the program counter feeds the instruction memory and a +4 adder; the instruction's fields drive the register file, an immediate generator, and the ALU; a control unit produces signals such as RegWrite, ALUSrc, MemRead, MemWrite, MemToReg, and Branch; the ALU result addresses the data memory; and adders, muxes, and branch logic steer the result back to the register file or into the next program counter."
+             decoding="async" />
+      </figure>
+    </section>
+
+    <!-- ============================== CHECK YOURSELF ===================== -->
+    <section class="section section--tight" id="check" aria-labelledby="check-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="check-title">Check Yourself</h2>
+        </div>
+
+        <!-- Placeholder: the interactive check for this lesson lands here later. -->
+        <div class="blank-frame" aria-hidden="true"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+    <p class="container footer__credit">
+      Adapted from: David A. Patterson and John L. Hennessy,
+      <em>Computer Organization and Design RISC-V Edition: The Hardware/Software
+      Interface</em>, Second Edition, Chapter 4, &ldquo;The Processor&rdquo;
+      (Morgan Kaufmann, 2021).
+    </p>
+  </footer>
+
+  <!-- Mobile nav toggle + project directory drawer -->
+  <script src="../../scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger from CDN for the same scroll-reveal feel as the rest
+       of the site. If they fail to load, scroll.js removes the `js` class and
+       the page is simply fully visible. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
+  <script src="../../scripts/scroll.js" defer></script>
+</body>
+</html>

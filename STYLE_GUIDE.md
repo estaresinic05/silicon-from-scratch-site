@@ -808,6 +808,10 @@ Rules:
   counter) — do **not** type numbers into the button text.
 - To put sub-parts on their own lines inside a choice, use `<br>` (e.g.
   `A: …<br>B: …<br>C: …`).
+- **No `<code>` in the question or answers.** Signal, port, and register names
+  (e.g. clk, data1, writeEnable) stay as plain text; use `<em>` only for whole
+  instructions or register operands (e.g. `<em>add x3, x1, x2</em>`, `<em>x1</em>`),
+  matching the rest of the prose. Keeps the quiz reading as prose, not code.
 - Order/number of choices is free; 2-column grid on desktop, 1-column ≤560px.
 - Include `.quiz__next` **only** when there's a genuine next page. The script
   guards for its absence, so leaving it out is fine.

@@ -1416,15 +1416,40 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   gap: clamp(var(--space-3), 3vw, var(--space-4));
   margin-top: var(--space-2);
 }
-/* Copy + waveform ride up to the top; the card drops to bottom-align its lower
-   edge with the waveform's lower edge. */
-.dmem-layout .mem-card { flex: 0 0 36rem; width: auto; max-width: 36rem; margin: 0; align-self: flex-end; }
+/* Stretch the card to fill the row and drop its top by the same space-4 the
+   intro paragraph uses, so the card's top edge stays flush with the top of the
+   "But a program is not just…" paragraph at every desktop width, while its
+   bottom keeps tracking the waveform's lower edge. */
+.dmem-layout .mem-card { flex: 0 0 36rem; width: auto; max-width: 36rem; margin: var(--space-4) 0 0; align-self: stretch; }
+/* Let the two flip faces fill that stretched height (they share this grid
+   footprint), so the extra room becomes breathing space around the diagram
+   rather than leaving the card content floating. */
+.dmem-layout .mem-card .gate-card__inner { height: 100%; }
+/* The front face is a `.figure` (top margin: space-5) while the back is a plain
+   div, so the front's card used to sit ~48px lower than the back and broke the
+   flush-with-paragraph alignment. Zero that margin and let the front stretch to
+   fill the cell, centring the diagram, so both faces line up at the top. */
+.dmem-layout .mem-card .gate-card__face--front {
+  margin-top: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+/* Return arrow: fill the gap between the control panel and the card's right edge
+   as a tall rectangle (the backrow already stretches its children), rather than
+   a small square floating at bottom-right. */
+.dmem-layout .gate-card__return { height: auto; align-self: stretch; width: 2.75rem; }
 .dmem-right { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .dmem-right .dmem-intro { margin: var(--space-4) 0 0; }   /* nudged down from the top */
 .dmem-right .dmemwave { margin: 0; }
 @media (max-width: 900px) {
   .dmem-layout { flex-direction: column; align-items: stretch; }
-  .dmem-layout .mem-card { flex: none; width: 100%; max-width: 100%; }
+  /* Stacked: natural size, no flush-alignment stretch or top offset. */
+  .dmem-layout .mem-card { flex: none; width: 100%; max-width: 100%; margin: 0; }
+  .dmem-layout .mem-card .gate-card__inner { height: auto; }
+  /* Front face back to its natural (unstretched) figure layout + margin. */
+  .dmem-layout .mem-card .gate-card__face--front { display: block; margin-top: var(--space-5); }
   .dmem-right { width: 100%; }
 }
 /* No caption sits above the scope anymore, so drop its top hairline + padding —

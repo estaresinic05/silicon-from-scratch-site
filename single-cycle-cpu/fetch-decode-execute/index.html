@@ -640,8 +640,36 @@ endmodule</textarea>
           <h2 id="check-title">Check Yourself</h2>
         </div>
 
-        <!-- Placeholder: the interactive check for this lesson lands here later. -->
-        <div class="blank-frame" aria-hidden="true"></div>
+        <div class="quiz quiz--wide" id="quiz">
+          <p class="quiz__q">
+            In the register file, a write only lands on a clk edge, but a read is
+            always live &mdash; data1 and data2 present their registers&rsquo;
+            values continuously. For a single instruction like
+            <em>add x3, x1, x2</em>, why do the reads have to stay continuous
+            instead of waiting for a clock edge the way the write does?
+          </p>
+
+          <figure class="figure figure--photo quiz__figure">
+            <img src="../../assets/single-cycle-cpu/reg-file-check.jpg"
+                 alt="The register file drawn as a block: on the left the inputs Read Reg 1, Read Reg 2, Write Reg, and Write Data, with a regWrite control entering the top; on the right the two outputs Read Data 1 and Read Data 2. Beside it, the instruction add x3, x1, x2."
+                 decoding="async" />
+          </figure>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button" data-correct="true"><span>The whole instruction must finish in one cycle, so <em>x1</em> and <em>x2</em> have to be readable at its start &mdash; leaving time to flow through the ALU and store at the closing clk edge. Clocking the reads would leave no time to compute.</span></button>
+            <button class="quiz__opt" type="button"><span>Since the instruction reads and writes in one cycle, live reads forward the new value of <em>x3</em> to the ALU inputs before the clk edge, so it never acts on a stale register.</span></button>
+            <button class="quiz__opt" type="button"><span>Clocking data1 and data2 would add flip-flops to each read port, so leaving the reads unclocked just saves hardware.</span></button>
+            <button class="quiz__opt" type="button"><span>The register file reads two registers at once, but a clk edge can capture only one value at a time, so continuous reads are the only way to get both <em>x1</em> and <em>x2</em> in one cycle.</span></button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <div class="quiz__next">
+            <a class="btn btn--primary" href="../constructing-a-datapath/">
+              Continue to Constructing a Datapath <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -836,6 +864,35 @@ endmodule</textarea>
       });
     });
     update();
+  })();
+  </script>
+
+  <!-- "Check yourself" quiz: colour the chosen answer, show feedback, and (when
+       present) reveal the continue button once the correct answer is picked. -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          if (next) next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+        } else {
+          btn.classList.add("is-wrong");
+          feedback.textContent = "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
   })();
   </script>
 </body>

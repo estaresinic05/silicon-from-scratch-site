@@ -134,7 +134,7 @@
       ["Single Cycle CPU", [
         ["The Basics of Instructions", "single-cycle-cpu/basics-of-instructions/"],
         ["Fetch, Decode, Execute", "single-cycle-cpu/fetch-decode-execute/"],
-        "Constructing a Datapath",
+        ["Constructing a Datapath", "single-cycle-cpu/constructing-a-datapath/"],
         "Immediate Generation Unit and ALU Control",
         "Main Control Unit and Branch Logic",
         "Testing"
