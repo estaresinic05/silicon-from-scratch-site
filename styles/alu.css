@@ -1159,7 +1159,252 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .prose--flow .flow-figure--float-right { width: 33rem; max-width: 100%; }
 .prose--flow .flow-figure--float-right { float: right; margin: 0.4rem 0 var(--space-4) var(--space-5); }
 .prose--flow .flow-figure--float-left  { float: left;  margin: 0.4rem var(--space-5) var(--space-4) 0; }
+
+/* --- PC-increment reveal (Constructing a Datapath) ---------------------------
+   Two hand-drawn diagrams share the same left half (PC + instruction memory +
+   first adder) and the same height; the branch-capable "upgrade" is simply
+   wider. So instead of the ALU adder-reveal's padded cross-fade, this widget
+   keeps a FIXED height and animates its WIDTH: it starts hugging the small
+   diagram and, on toggle, grows rightward — revealing whitespace beside the
+   shared left half while the wider diagram stretches and fades in.
+
+   The two widths come straight from the source images at equal height:
+     pc-inc.jpg          878 x 1210  -> small
+     pc-inc-upgrade.jpg 1796 x 1208  -> large  (small is 878/1796 = 48.9% of it)
+   Height is held constant, so there is never a vertical jump.                 */
+/* The card hugs the canvas (fit-content) so it stays sized to whichever diagram
+   is showing; it keeps the site's standard .figure padding around the image. */
+.pc-reveal-fig {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+}
+/* The caption would otherwise be the widest child and stretch the fit-content
+   card past the small diagram. width:0 + min-width:100% lets it FILL the card
+   without CONTRIBUTING to its width, so the card stays sized to the canvas and
+   the caption simply wraps. */
+.pc-reveal-fig figcaption { width: 0; min-width: 100%; box-sizing: border-box; }
+.pc-reveal {
+  --pc-h: 29.6rem;          /* fixed render height, shared by both states      */
+  --pc-w-large: 43.17rem;   /* expanded width  (= --pc-h x 1.4585)             */
+  --pc-w-small: 21.48rem;   /* collapsed width (= --pc-h x 0.7256)             */
+  position: relative;
+  width: var(--pc-w-large);
+  max-width: 100%;
+  height: var(--pc-h);
+  overflow: hidden;
+  background: #fff;         /* the "whitespace" beside the small diagram       */
+  border-radius: var(--radius-sm);
+  transition: width 0.7s var(--ease);
+}
+.pc-reveal.is-collapsed { width: var(--pc-w-small); }
+/* Both layers are pinned to the left edge and sized by height, so their shared
+   left half lines up; the small one leaves whitespace to its right. Higher
+   specificity than `.figure img` so width stays intrinsic (not stretched). */
+.pc-reveal .pc-reveal__img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  transition: opacity 0.5s var(--ease);
+}
+/* The simple path stays put and fully visible; the wider upgrade fades in
+   directly on top of it so the lines that already existed appear to hold their
+   position. The upgrade is aligned by a constant transform (same in both states,
+   so it never MOVES — only fades) that lands its shared left half — PC,
+   instruction memory, first adder — on the simple one. The two drawings differ
+   slightly in scale, so a plain offset can't line them up: the transform is
+   scale(0.995) about the top-left corner plus a small nudge, fit by edge
+   cross-correlation over the shared region. */
+.pc-reveal .pc-reveal__small { opacity: 1; }
+/* The upgrade also carries a left-to-right clip wipe: while the box slides open,
+   the wipe uncovers the image column by column, so the new horizontal wires
+   appear to draw rightward and the components at their ends (second adder, mux,
+   branch logic) surface last. Over the shared left half the wipe is invisible —
+   it just swaps in identical, aligned lines. The wipe runs with the width slide
+   (0.7s) while the opacity fade keeps its original 0.35s-delayed timing. */
+.pc-reveal .pc-reveal__large {
+  opacity: 0;
+  transform-origin: 0 0;
+  transform: translate(-0.682%, 0.663%) scale(0.995);
+  clip-path: inset(0 100% 0 0);
+  transition: opacity 0.4s var(--ease), clip-path 0.5s linear;
+}
+.pc-reveal:not(.is-collapsed) .pc-reveal__large {
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+  transition: opacity 0.5s var(--ease) 0.35s, clip-path 0.7s linear;
+}
+/* Toggle sits full-width under the caption, matching the ALU adder-reveal. */
+.pc-reveal__toggle {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: var(--space-3);
+}
+@media (max-width: 760px) {
+  /* Scale the whole trio down so the expanded width fits a phone. */
+  .pc-reveal { --pc-h: 60vw; --pc-w-large: 89.7vw; --pc-w-small: 43.5vw; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pc-reveal,
+  .pc-reveal .pc-reveal__img { transition-duration: 0.01ms; transition-delay: 0s; }
+}
+/* The ripple-carry row and the branch row share ONE column template: a fixed left
+   track sized to the widget's expanded width (--pc-w-large 43.17rem PLUS the
+   figure's padding on both sides — the clamp mirrors .figure's padding — so the
+   wide image isn't squeezed under its natural width and clipped) and a 1fr right
+   track. This lines the two rows up: the code-card ends up exactly as wide as,
+   and directly above, the branch paragraph, while the ripple-carry copy sits over
+   the widget. In the branch row the widget is left-pinned (margin-inline:0) so it
+   slides rightward into the reserved space rather than reflowing the text. Desktop
+   only; below 768px both splits stack. */
+.pc-rca-split,
+.pc-branch-split { --pc-track: calc(43.17rem + 2 * clamp(var(--space-2), 3vw, var(--space-4))); }
+.pc-rca-split .prose { max-width: none; }
+/* Drop the paragraph's trailing margin so its box hugs the visible text — then
+   align-items:center lands the card centred on the paragraph, not on a box that
+   runs taller than the text. */
+.pc-rca-split .prose p { margin: 0; }
+.pc-rca-split .code-card { margin-top: 0; }
+@media (min-width: 769px) {
+  .pc-rca-split,
+  .pc-branch-split { grid-template-columns: var(--pc-track) minmax(0, 1fr); }
+  .pc-branch-split .pc-reveal-fig { margin-inline: 0; }
+}
+
+/* --- Step 2 "operate" reveal (next-phase -> next-phase-2) --------------------
+   A FULL-WIDTH widget: left-pinned, it grows from a collapsed size to span the
+   entire column. The two drawings share a common SCALE rather than a common
+   height (the upgrade is wider AND ~17% taller — it adds the data-memory stage on
+   the right and a feedback wire along the bottom). Sizes are in container-query
+   units (of .op-stage, i.e. the full column) so the box HEIGHT stays constant at
+   the full-width height while only the WIDTH animates, and both images keep a
+   matched scale no matter the box width. The wider upgrade fades in on top —
+   nudged so its shared half sits exactly on the small one — and a left-to-right
+   clip wipe draws the new horizontal wires.
+     next-phase.jpg   1294 x 769  ratio 1.6827
+     next-phase-2.jpg 1937 x 869  ratio 2.229   (shared content at scale 1.0,
+                                                  offset dx 0px / dy -14px;
+                                                  collapsed width = 1294/1937 = 66.8%) */
+.op-stage { container-type: inline-size; width: 100%; margin-top: var(--space-5); }
+/* Give the paragraph beneath the widget extra breathing room from its card. */
+.op-stage + .prose--flow { margin-top: var(--space-5); }
+/* The paper card the widget rests on: it hugs the box (so it reaches the column
+   edges only when the box is expanded), carries the site's standard figure
+   padding, and is left-pinned. */
+.op-reveal-fig {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: clamp(var(--space-2), 3vw, var(--space-4));
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+.op-reveal {
+  /* Expanded width = the full column minus the card's padding (and border) on
+     both sides, so the white surface sits INSIDE the card and the card itself
+     reaches the margins. */
+  --op-pad: clamp(var(--space-2), 3vw, var(--space-4));
+  --op-full: calc(100cqw - 2 * var(--op-pad) - 4px);
+  position: relative;
+  width: var(--op-full);               /* expanded                              */
+  height: calc(var(--op-full) / 2.229);
+  overflow: hidden;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  transition: width 0.7s var(--ease);
+}
+.op-reveal.is-collapsed { width: calc(0.668 * var(--op-full)); }
+.op-reveal .op-reveal__img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  transition: opacity 0.5s var(--ease);
+}
+/* Sized in cqw (fixed to the column, not the animating box) so they never
+   rescale as the box opens. Small at 88.49% height, top-aligned, so its shared
+   upper-left half lines up with the large one's. */
+.op-reveal .op-reveal__small { height: 88.49%; opacity: 1; }
+.op-reveal .op-reveal__large {
+  height: 100%;
+  opacity: 0;
+  transform-origin: 0 0;
+  transform: translate(0%, -1.611%);
+  clip-path: inset(0 100% 0 0);
+  transition: opacity 0.4s var(--ease), clip-path 0.5s linear;
+}
+.op-reveal:not(.is-collapsed) .op-reveal__large {
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+  transition: opacity 0.5s var(--ease) 0.35s, clip-path 0.7s linear;
+}
+.op-reveal__toggle {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: var(--space-3);
+}
+@media (prefers-reduced-motion: reduce) {
+  .op-reveal,
+  .op-reveal .op-reveal__img { transition-duration: 0.01ms; transition-delay: 0s; }
+}
+
+/* --- "slide right" hint arrow (both reveal widgets) --------------------------
+   A purple arrow sitting just past the collapsed card's right edge, vertically
+   centred on the diagram, nudging rightward to suggest the widget grows that way
+   on press. Shown only while collapsed; fades out once expanded. */
+.reveal-hint {
+  position: absolute;
+  left: calc(100% + 0.6rem);
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+.reveal-hint__svg {
+  display: block;
+  width: 3rem;
+  height: auto;
+  animation: reveal-hint-nudge 1.3s ease-in-out infinite;
+}
+@keyframes reveal-hint-nudge {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(0.4rem); }
+}
+/* Vertically span the diagram box so align-items:center lands the arrow on its
+   middle (the box height differs per widget). */
+.pc-reveal-fig .reveal-hint {
+  top: clamp(var(--space-2), 3vw, var(--space-4));
+  height: 29.6rem;                       /* = --pc-h */
+}
+.op-reveal-fig .reveal-hint {
+  top: clamp(var(--space-2), 3vw, var(--space-4));
+  height: calc((100cqw - 2 * clamp(var(--space-2), 3vw, var(--space-4)) - 4px) / 2.229);
+}
+.pc-reveal-fig:has(.pc-reveal.is-collapsed) .reveal-hint,
+.op-reveal-fig:has(.op-reveal.is-collapsed) .reveal-hint { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal-hint__svg { animation: none; }
+}
+
 @media (max-width: 768px) {
+  /* On phones the card fills the width, leaving no room beside it — hide the hint. */
+  .reveal-hint { display: none; }
   .prose--flow .flow-figure--float-left,
   .prose--flow .flow-figure--float-right {
     float: none; width: 100%; max-width: 28rem; margin: var(--space-4) auto;
@@ -1212,6 +1457,9 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   #control-flow .split--media-right .figure--diagram,
   #register-immediate .split--media-right .figure--diagram { max-width: 38rem; }
 }
+/* Whole Kit: the full single-cycle datapath sits image-right; give the detailed
+   diagram room to read (capped so the wrap-up copy keeps a comfortable measure). */
+#whole-kit .split--media-right .figure--diagram { max-width: 42rem; }
 
 /* Field-name <code> tinted to the colours of the R-type diagram
    (assets/single-cycle-cpu/r-type.jpg) so a field named in the prose reads as
@@ -1793,6 +2041,97 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 }
 .quiz__feedback.is-correct { color: #4ade80; }
 .quiz__feedback.is-wrong { color: #f87171; }
+
+/* --- Control-signal Check Yourself (Constructing a Datapath) -----------------
+   A wider quiz card holding the gray datapath plus a row of toggle "chips": one
+   per 1-bit control signal, and a group of four bit-toggles for the ALU control.
+   Each toggle flips 0/1 and lights up purple when 1; Submit checks the set. */
+.ctrl-quiz { max-width: 64rem; }
+.ctrl-quiz__fig { margin: 0 auto var(--space-4); max-width: 40rem; }
+.ctrl-quiz__signals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.ctrl-sigbtn,
+.ctrl-quiz__alu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-width: 6.5rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius);
+}
+.ctrl-sigbtn {
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  color: var(--soft-ink);
+  cursor: pointer;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease),
+              color 0.15s var(--ease);
+}
+.ctrl-sigbtn:hover { border-color: var(--accent); }
+.ctrl-sigbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ctrl-sigbtn__name { font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.02em; }
+.ctrl-sigbtn__val {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.ctrl-sigbtn.is-on {
+  background: rgba(183, 148, 246, 0.16);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* ALU control: a small label over four bit-toggles that read as a 4-bit number. */
+.ctrl-quiz__alu { border: 1px solid transparent; }
+.ctrl-quiz__alu .ctrl-sigbtn__name { color: var(--soft-ink); }
+.ctrl-bits { display: flex; gap: 0.3rem; }
+.ctrl-bit {
+  width: 2.1rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  color: var(--soft-ink);
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease),
+              color 0.15s var(--ease);
+}
+.ctrl-bit:hover { border-color: var(--accent); }
+.ctrl-bit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ctrl-bit.is-on {
+  background: rgba(183, 148, 246, 0.16);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.ctrl-quiz__actions { display: flex; justify-content: center; }
+/* Solved: every toggle turns the same green as the "Correct!" feedback, and the
+   purple continue stub appears. */
+.ctrl-quiz.is-solved .ctrl-sigbtn,
+.ctrl-quiz.is-solved .ctrl-bit {
+  background: rgba(74, 222, 128, 0.16);
+  border-color: #4ade80;
+  color: #4ade80;
+}
+/* Solved: the Submit button disappears and "Correct!" takes its place, with the
+   continue stub beneath. */
+.ctrl-quiz.is-solved .ctrl-quiz__actions { display: none; }
+.ctrl-quiz.is-solved .quiz__feedback { margin-top: 0; }
+.ctrl-quiz__next { display: none; justify-content: center; margin-top: var(--space-3); }
+.ctrl-quiz.is-solved .ctrl-quiz__next { display: flex; }
 
 /* Revealed only after the correct answer is chosen (toggled by the class). */
 .quiz__next {

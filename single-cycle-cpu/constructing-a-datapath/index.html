@@ -88,11 +88,10 @@
           We have every piece on the bench &mdash; the <strong>program
           counter</strong>, the <strong>instruction</strong> and <strong>data
           memories</strong>, the <strong>register file</strong>, and the
-          <strong>ALU</strong>. On their own they are just boxes. Now we wire them
-          into a single working circuit: the <strong>datapath</strong>, the path
-          every instruction travels from fetch to finish. Add a few muxes and the
-          right connections, and one design can run arithmetic, memory, and branch
-          instructions alike.
+          <strong>ALU</strong>. Now we wire them into a single working circuit: the
+          <strong>datapath</strong>, the path every instruction travels from fetch
+          to finish. A few muxes and the right connections, and one design runs
+          arithmetic, memory, and branch instructions alike.
         </p>
         <div class="doc-hero__actions">
           <span class="doc-hero__prompt">Think you got this already?</span>
@@ -107,6 +106,232 @@
       </figure>
     </section>
 
+    <!-- ===================== STEP 1: INCREMENTING THE PC ================ -->
+    <section class="section" id="pc-increment" aria-labelledby="pc-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="pc-title">Incrementing the PC</h2>
+        </div>
+
+        <div class="prose prose--flow">
+          <p>
+            Of everything that has to work inside a processor, few circuits carry
+            as much weight as the one that moves the <strong>program counter</strong>
+            forward. If the PC ever lands on the wrong address, the CPU fetches the
+            wrong instruction and the whole program unravels &mdash; so getting this
+            piece right is foundational to a functioning design. We brushed up
+            against the key idea last lesson: because every RISC-V instruction is
+            exactly <strong>32 bits, or 4 bytes,</strong>
+            the instructions sit packed one after another in memory, each one a full
+            4 bytes further along than the instruction before it. To step from the
+            current instruction to the very next, all we need to do is
+            <strong>add 4 to the program counter</strong>.
+          </p>
+        </div>
+
+        <!-- The ripple-carry-adder sendoff sits to the RIGHT of the paragraph that
+             introduces it (text left, card right); it stacks below on mobile. -->
+        <div class="split pc-rca-split">
+          <div class="prose">
+            <p>
+              And that is really the whole job here: advancing the PC is nothing more
+              than addition. Since we are only ever adding, we can keep things simple
+              and reuse the very same <strong>ripple carry adder</strong> we built
+              back in the ALU project, handing it the current PC and a constant 4.
+            </p>
+          </div>
+
+          <a class="code-card"
+             href="https://github.com/estaresinic05/Silicon-From-Scratch/blob/main/single-cycle-cpu/rtl/ripple_carry_adder.v"
+             target="_blank" rel="noopener">
+            <svg class="code-card__logo" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+            </svg>
+            <span class="code-card__text">
+              <span class="code-card__title">See the code on GitHub</span>
+              <span class="code-card__sub">Browse the Verilog behind the ripple carry adder</span>
+            </span>
+            <span class="code-card__arrow" aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+
+        <!-- The toggle widget sits on the left; the branch text sits to its right
+             (the widget leads on mobile, where the split stacks). -->
+        <div class="split split--media-left pc-branch-split">
+          <figure class="figure figure--diagram pc-reveal-fig">
+            <div class="pc-reveal is-collapsed" id="pc-reveal">
+              <img class="pc-reveal__img pc-reveal__small"
+                   src="../../assets/single-cycle-cpu/pc-inc.jpg"
+                   alt="A hand-drawn datapath fragment for advancing the program counter. The PC register's output fans out two ways: straight into the Address input of the Instruction Memory block on the right, and upward into an adder whose other input is the constant 4. The adder, labelled Add, sums PC and 4, and its output wraps back around the top of the diagram to the PC's input — so each cycle the program counter loads PC + 4."
+                   decoding="async" />
+              <img class="pc-reveal__img pc-reveal__large"
+                   src="../../assets/single-cycle-cpu/pc-inc-upgrade.jpg"
+                   alt="An expanded version of the previous diagram that lets the program counter jump as well as increment. The PC still feeds the Instruction Memory address and the first adder, which adds 4. Now the PC and an immediate value also feed a second adder that computes an alternate target address. The two candidate addresses meet at a multiplexer on the right — PC + 4 on input 0, the branch target on input 1 — and a Branch Logic block drives the multiplexer's select line. The chosen address loops back around to the PC's input."
+                   decoding="async" />
+            </div>
+            <span class="reveal-hint" aria-hidden="true">
+              <svg class="reveal-hint__svg" viewBox="0 0 48 16" fill="none"
+                   stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+                   stroke-linejoin="round">
+                <path d="M3 8 H41" />
+                <path d="M33 2 L45 8 L33 14" />
+              </svg>
+            </span>
+            <button class="btn btn--ghost pc-reveal__toggle" type="button"
+                    id="pc-reveal-toggle" aria-pressed="false">
+              See the branch-capable path
+            </button>
+          </figure>
+
+          <div class="prose">
+            <p>
+              Adding 4 covers the common case, but it is not the only way a program
+              can move. Some instructions need to send the program counter somewhere
+              other than the very next instruction, redirecting execution to a
+              different point in the code. We can grow our picture to handle this too.
+              Alongside the adder that computes PC + 4, we introduce a second adder
+              that produces an alternate target address, and we place a
+              <strong>multiplexer</strong> at the program counter's input to choose
+              between the two candidates. A dedicated block of
+              <strong>branch logic</strong> drives that multiplexer: when execution
+              should simply continue in order, it selects PC + 4; when an instruction
+              calls for a jump, it selects the alternate address instead. And believe
+              it or not, those two moves &mdash; stepping forward to the next
+              instruction or jumping to a different address entirely &mdash; together
+              cover everything we need instruction fetching to do.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== STEP 2: OPERATING ON OUR DATA =============== -->
+    <section class="section" id="operating-on-data" aria-labelledby="op-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="op-title">Operating on Our Data</h2>
+        </div>
+
+        <div class="prose prose--flow">
+          <p>
+            With the program counter handing us one instruction after another, the
+            next job is to <em>act</em> on them. Each 32-bit instruction is decoded
+            into its fields, allowing us to send <code class="fld-rs1">rs1</code>,
+            <code class="fld-rs2">rs2</code>, and <code class="fld-rd">rd</code>
+            straight into our <strong>register file</strong>. Again, RISC-V is unique
+            in that no matter the instruction, <code class="fld-rs1">rs1</code>,
+            <code class="fld-rs2">rs2</code>, and <code class="fld-rd">rd</code> will
+            always lie in the same bit positions within the instruction, making the job
+            extra easy for our hardware to decode our instruction. These register
+            addresses then determine the data that is fed into the ALU to operate on.
+          </p>
+          <p>
+            The ALU doesn't <em>always</em> have to operate on two register values,
+            though, and can instead operate on an <code class="fld-imm">immediate</code>.
+            After all, we want our CPU to be able to run instructions like
+            <em>addi</em>, <em>andi</em>, <em>ori</em>, and even branch instructions
+            like <em>beq</em> and <em>bne</em>. In order to let the ALU take either
+            source, we introduce a <strong>2x1 multiplexer</strong> which selects
+            either the data read from register 2 or the
+            <code class="fld-imm">immediate</code> to use as the other operand for our
+            ALU. One thing we have to be careful about, however, is that the
+            <code class="fld-imm">immediate</code> isn't laid out the same way from one
+            instruction format to the next, so a dedicated
+            <strong>immediate-generation unit</strong> first extracts and sign-extends
+            it into a clean 32-bit value the ALU can use.
+          </p>
+        </div>
+
+        <!-- Full-width toggle widget: left-pinned, grows to span the whole column. -->
+        <div class="op-stage">
+          <figure class="op-reveal-fig">
+            <div class="op-reveal is-collapsed" id="op-reveal">
+              <img class="op-reveal__img op-reveal__small"
+                   src="../../assets/single-cycle-cpu/next-phase.jpg"
+                   alt="A hand-drawn datapath for operating on register data. The instruction bus fans out to rs1 [19:15], rs2 [24:20], and rd [11:7], which drive the register file's Read Reg 1, Read Reg 2, and Write Reg ports, with a regwrite control gating writes. Read Data 1 runs straight to the ALU's first input; Read Data 2 and an immediate produced by an Imm Gen unit meet at an ALUSrc 2x1 multiplexer that feeds the ALU's second input. An ALU Ctrl block selects the operation, and the ALU produces a Zero flag and an ALU result."
+                   decoding="async" />
+              <img class="op-reveal__img op-reveal__large"
+                   src="../../assets/single-cycle-cpu/next-phase-2.jpg"
+                   alt="The same operate datapath extended to memory. Everything from before — the register file, Imm Gen, ALUSrc multiplexer, and ALU — now reaches a Data Memory block: the ALU result drives its Address while Read Data 2 drives its Write Data, gated by MemWrite and MemRead. A MemToReg multiplexer then chooses between the ALU result and the memory's Read Data, and the 32-bit result loops back to the register file's Write Data port."
+                   decoding="async" />
+            </div>
+            <span class="reveal-hint" aria-hidden="true">
+              <svg class="reveal-hint__svg" viewBox="0 0 48 16" fill="none"
+                   stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+                   stroke-linejoin="round">
+                <path d="M3 8 H41" />
+                <path d="M33 2 L45 8 L33 14" />
+              </svg>
+            </span>
+            <button class="btn btn--ghost op-reveal__toggle" type="button"
+                    id="op-reveal-toggle" aria-pressed="false">
+              See the memory stage
+            </button>
+          </figure>
+        </div>
+
+        <div class="prose prose--flow">
+          <p>
+            The last step before we can put this all together is incorporating our
+            <strong>data memory</strong> into this datapath. Our CPU will access the
+            data memory during <em>lw</em> and <em>sw</em> instructions, both of which
+            require us to add an offset value to a base register address. Because of
+            this, we connect the output of our ALU to the Address port of the data
+            memory. For <em>sw</em> instructions, we need to <em>write</em> a value
+            from a register to memory, so we simply connect the
+            <code class="fld-rs2">rs2</code> data line to the Write Data port of our
+            data memory. In <em>lw</em> instructions, we load a word to a register
+            <em>from</em> memory, so we need to route the Read Data port of the data
+            memory all the way back to the Write Data port of our register file. And
+            lastly, before we can call this ready to go, we need to remember that we
+            should be able to <em>choose</em> whether we want to store the ALU's result
+            to our register file or the word we are loading to our register file
+            &mdash; a simple <strong>2x1 mux</strong> should do the trick.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== THE WHOLE KIT AND KABOODLE ================== -->
+    <section class="section" id="whole-kit" aria-labelledby="kit-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="kit-title">The Whole Kit and Kaboodle</h2>
+        </div>
+
+        <!-- The full datapath diagram on the right; the wrap-up copy on its left. -->
+        <div class="split split--media-right">
+          <figure class="figure figure--diagram">
+            <img src="../../assets/single-cycle-cpu/sc-cpu-architecture.jpg"
+                 alt="A hand-drawn diagram of the complete single-cycle RISC-V datapath: the program counter feeds the instruction memory and a +4 adder; the instruction's fields drive the register file, an immediate generator, and the ALU; a control unit produces signals such as RegWrite, ALUSrc, MemRead, MemWrite, MemToReg, and Branch; the ALU result addresses the data memory; and adders, muxes, and branch logic steer the result back to the register file or into the next program counter."
+                 decoding="async" />
+          </figure>
+
+          <div class="prose">
+            <p>
+              And just like that, you have your complete single-cycle CPU datapath.
+              This is about as simple as a CPU can get, and yet it still looks like a
+              plate of spaghetti. You may notice
+              that we very nearly just bolted together the PC-increment logic and the
+              ALU logic from the last two sections &mdash; but now there is a strange
+              &ldquo;Control&rdquo; bubble sitting at the heart of the design. This is
+              the <strong>control unit</strong>, and it is the brain to the datapath's
+              brawn.
+            </p>
+            <p>
+              We will dive deeper into the control unit in the next lesson, but for now
+              you can think of it as the &ldquo;mission control&rdquo; of the datapath.
+              It turns the knobs and throws the switches that decide whether the
+              register file writes, which operand the ALU takes, and whether memory is
+              read or written, steering the datapath through executing each instruction.
+              Without it, our datapath would be nothing more than a tangle of idle
+              wires, full of potential but with no idea what to do.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================== CHECK YOURSELF ===================== -->
     <section class="section section--tight" id="check" aria-labelledby="check-title">
       <div class="container container--wide">
@@ -114,8 +339,63 @@
           <h2 id="check-title">Check Yourself</h2>
         </div>
 
-        <!-- Placeholder: the interactive check for this lesson lands here later. -->
-        <div class="blank-frame" aria-hidden="true"></div>
+        <div class="quiz ctrl-quiz" id="ctrl-quiz">
+          <p class="quiz__q">
+            For the instruction <em>lw x7, 20(x9)</em>, toggle the control signals
+            below so they would carry this instruction through the datapath, then
+            press <strong>Submit</strong>.
+          </p>
+
+          <figure class="figure figure--diagram ctrl-quiz__fig">
+            <img src="../../assets/single-cycle-cpu/sc-cpu-architecture-gray.jpg"
+                 alt="The single-cycle datapath drawn in gray with the control unit and its output signals highlighted in blue: Branch, MemRead, MemToReg, ALUOp, MemWrite, ALUSrc, and RegWrite fan out from the Control bubble, while an ALU Ctrl block sets the ALU operation."
+                 decoding="async" />
+          </figure>
+
+          <div class="ctrl-quiz__signals" role="group" aria-label="Control signals">
+            <button type="button" class="ctrl-sigbtn" data-sig="RegWrite" aria-pressed="false">
+              <span class="ctrl-sigbtn__name">RegWrite</span>
+              <span class="ctrl-sigbtn__val">0</span>
+            </button>
+            <button type="button" class="ctrl-sigbtn" data-sig="ALUSrc" aria-pressed="false">
+              <span class="ctrl-sigbtn__name">ALUSrc</span>
+              <span class="ctrl-sigbtn__val">0</span>
+            </button>
+            <button type="button" class="ctrl-sigbtn" data-sig="MemRead" aria-pressed="false">
+              <span class="ctrl-sigbtn__name">MemRead</span>
+              <span class="ctrl-sigbtn__val">0</span>
+            </button>
+            <button type="button" class="ctrl-sigbtn" data-sig="MemWrite" aria-pressed="false">
+              <span class="ctrl-sigbtn__name">MemWrite</span>
+              <span class="ctrl-sigbtn__val">0</span>
+            </button>
+            <button type="button" class="ctrl-sigbtn" data-sig="MemToReg" aria-pressed="false">
+              <span class="ctrl-sigbtn__name">MemToReg</span>
+              <span class="ctrl-sigbtn__val">0</span>
+            </button>
+            <div class="ctrl-quiz__alu">
+              <span class="ctrl-sigbtn__name">ALU&nbsp;Ctrl</span>
+              <div class="ctrl-bits" data-sig="ALUCtrl" role="group" aria-label="ALU control bits">
+                <button type="button" class="ctrl-bit" aria-pressed="false">0</button>
+                <button type="button" class="ctrl-bit" aria-pressed="false">0</button>
+                <button type="button" class="ctrl-bit" aria-pressed="false">0</button>
+                <button type="button" class="ctrl-bit" aria-pressed="false">0</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ctrl-quiz__actions">
+            <button type="button" class="btn btn--primary ctrl-quiz__submit">Submit</button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <div class="ctrl-quiz__next">
+            <a class="btn btn--primary" href="../../coming-soon/?topic=The%20Control%20Unit">
+              Continue to the Control Unit <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -148,5 +428,107 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
   <script src="../../scripts/scroll.js" defer></script>
+
+  <!-- PC-increment reveal: unlike the ALU adder-reveal (which cross-fades two
+       same-size images), the two PC diagrams are different widths. The widget
+       starts collapsed on the simple path and, on press, expands horizontally —
+       padding whitespace to the right of the shared left half while the wider
+       branch-capable diagram stretches and fades in. -->
+  <script>
+  (function () {
+    var el = document.getElementById("pc-reveal");
+    var btn = document.getElementById("pc-reveal-toggle");
+    if (!el || !btn) return;
+    btn.addEventListener("click", function () {
+      el.classList.toggle("is-collapsed");
+      var expanded = !el.classList.contains("is-collapsed");
+      btn.setAttribute("aria-pressed", expanded ? "true" : "false");
+      btn.innerHTML = expanded ? "See the simple increment" : "See the branch-capable path";
+    });
+  })();
+  </script>
+
+  <!-- Step 2 "operate" reveal: same slide + left-to-right wire wipe as the PC
+       reveal, toggling between the operate stage and the memory stage. -->
+  <script>
+  (function () {
+    var el = document.getElementById("op-reveal");
+    var btn = document.getElementById("op-reveal-toggle");
+    if (!el || !btn) return;
+    btn.addEventListener("click", function () {
+      el.classList.toggle("is-collapsed");
+      var expanded = !el.classList.contains("is-collapsed");
+      btn.setAttribute("aria-pressed", expanded ? "true" : "false");
+      btn.innerHTML = expanded ? "See the operate stage" : "See the memory stage";
+    });
+  })();
+  </script>
+
+  <!-- Control-signal Check Yourself: each chip toggles 0/1 (the ALU control is four
+       bit-toggles); Submit is correct only for the exact lw x7, 20(x9) combination. -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("ctrl-quiz");
+    if (!quiz) return;
+    var correct = { RegWrite: "1", ALUSrc: "1", MemRead: "1", MemWrite: "0", MemToReg: "1", ALUCtrl: "0010" };
+    var feedback = quiz.querySelector(".quiz__feedback");
+    function clearFeedback() {
+      feedback.textContent = "";
+      feedback.classList.remove("is-correct", "is-wrong");
+      quiz.classList.remove("is-solved");   // changing an answer drops the solved state
+    }
+    function flip(el) {
+      var on = el.classList.toggle("is-on");
+      el.setAttribute("aria-pressed", on ? "true" : "false");
+      var val = el.querySelector(".ctrl-sigbtn__val") || el;
+      val.textContent = on ? "1" : "0";
+      clearFeedback();
+    }
+    quiz.querySelectorAll(".ctrl-sigbtn").forEach(function (b) { b.addEventListener("click", function () { flip(b); }); });
+    quiz.querySelectorAll(".ctrl-bit").forEach(function (b) { b.addEventListener("click", function () { flip(b); }); });
+    function readVal(sig) {
+      var b = quiz.querySelector('.ctrl-sigbtn[data-sig="' + sig + '"]');
+      return b.classList.contains("is-on") ? "1" : "0";
+    }
+    function readAlu() {
+      var s = "";
+      quiz.querySelectorAll('.ctrl-bits[data-sig="ALUCtrl"] .ctrl-bit').forEach(function (b) {
+        s += b.classList.contains("is-on") ? "1" : "0";
+      });
+      return s;
+    }
+    function show(html, cls) {
+      feedback.innerHTML = html;
+      feedback.classList.remove("is-correct", "is-wrong");
+      feedback.classList.add(cls);
+    }
+    quiz.querySelector(".ctrl-quiz__submit").addEventListener("click", function () {
+      var ok = {
+        RegWrite: readVal("RegWrite") === correct.RegWrite,
+        ALUSrc:   readVal("ALUSrc")   === correct.ALUSrc,
+        MemRead:  readVal("MemRead")  === correct.MemRead,
+        MemWrite: readVal("MemWrite") === correct.MemWrite,
+        MemToReg: readVal("MemToReg") === correct.MemToReg,
+        ALUCtrl:  readAlu() === correct.ALUCtrl
+      };
+      var onesRight = ok.RegWrite && ok.ALUSrc && ok.MemRead && ok.MemWrite && ok.MemToReg;
+      if (onesRight && ok.ALUCtrl) {
+        show("Correct!", "is-correct");
+        quiz.classList.add("is-solved");
+      } else if (onesRight && !ok.ALUCtrl) {
+        // Everything right but the ALU control bits.
+        show("You&rsquo;re close. Might be a good idea to review how the ALU control bits work&hellip;", "is-wrong");
+      } else if (!ok.MemToReg) {
+        // MemToReg is wrong — nudge toward the load-from-memory idea.
+        show("Remember, this is a <em>lw</em> instruction. Make sure you are loading the register with a word from <em>memory</em>.", "is-wrong");
+      } else if (!ok.ALUSrc) {
+        // ALUSrc is wrong — nudge toward the address computation (base + offset).
+        show("Be careful, how are we computing the memory address in this instruction?", "is-wrong");
+      } else {
+        show("Not quite, try again.", "is-wrong");
+      }
+    });
+  })();
+  </script>
 </body>
 </html>
