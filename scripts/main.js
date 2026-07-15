@@ -135,7 +135,7 @@
         ["The Basics of Instructions", "single-cycle-cpu/basics-of-instructions/"],
         ["Fetch, Decode, Execute", "single-cycle-cpu/fetch-decode-execute/"],
         ["Constructing a Datapath", "single-cycle-cpu/constructing-a-datapath/"],
-        "The Control Unit",
+        ["The Control Unit", "single-cycle-cpu/control-unit/"],
         "Testing"
       ]],
       ["Floating Point Adder", ["Coming Soon"]]
