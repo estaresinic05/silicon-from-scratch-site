@@ -137,7 +137,7 @@
   cursor: pointer;
   transition: border-color 0.18s var(--ease), background 0.18s var(--ease);
 }
-.alu-bit:hover { border-color: #4a90d9; }
+.alu-bit:hover { border-color: var(--accent); }
 .alu-bit__name {
   font-size: 0.52rem;
   letter-spacing: 0.04em;
@@ -151,13 +151,14 @@
   color: var(--soft-ink);
   font-variant-numeric: tabular-nums;
 }
-/* A selected control bit turns the control-signal light blue (not the operation
-   purple used by the presets), matching how control signals read elsewhere. */
+/* A selected control bit lights up purple, exactly like the Check Yourself
+   toggles (.ctrl-bit.is-on): accent border + text over a soft accent wash. */
 .alu-bit[aria-pressed="true"] {
-  background: rgba(74, 144, 217, 0.14);
-  border-color: #4a90d9;
+  background: rgba(183, 148, 246, 0.16);
+  border-color: var(--accent);
 }
-.alu-bit[aria-pressed="true"] .alu-bit__val { color: #60a5fa; }
+.alu-bit[aria-pressed="true"] .alu-bit__name,
+.alu-bit[aria-pressed="true"] .alu-bit__val { color: var(--accent); }
 
 /* ------------------------------------------------------------------ *
    RIGHT — DIAGRAM STAGE
