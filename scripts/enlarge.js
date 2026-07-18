@@ -55,6 +55,10 @@
       clone.removeAttribute("role");
       clone.removeAttribute("aria-label");
       clone.removeAttribute("aria-hidden");
+      // Some figures (e.g. hands-on cards) are only un-hidden by a scroll-reveal
+      // rule that depends on their container; the clone sits in the overlay, so
+      // force it visible or it would inherit the reveal's opacity:0.
+      clone.style.opacity = "1";
       clone.querySelectorAll("figcaption").forEach(function (cap) { cap.remove(); });
       overlay.appendChild(clone);
 
