@@ -124,8 +124,7 @@
         ["Full Adder and Ripple Carry Adder", "alu/full-adder/"],
         ["32-bit ALU Slice", "alu/alu-slice/"],
         ["Complete 32-bit ALU", "alu/complete-alu/"],
-        ["Testing Your ALU", "alu/testing/"],
-        "Bonus: Carry Lookahead"
+        ["Testing Your ALU", "alu/testing/"]
       ]],
       ["Multiplier & Divider", ["Coming Soon"]]
     ]],
