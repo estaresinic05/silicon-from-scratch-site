@@ -551,6 +551,20 @@
   #main-control .mc-split { grid-template-columns: 1fr; }
 }
 
+/* Testing lesson, "Choosing What to Test": the explanatory paragraphs sit on the
+   left, the program.mem listing on the right. Top-align them; the listing sizes
+   to its own content in the auto track, in a slightly smaller mono so the whole
+   program fits. */
+#choosing-tests .ct-split { align-items: start; margin-block: var(--space-4); }
+#choosing-tests .ct-split .prose { max-width: none; margin: 0; }
+#choosing-tests .prog-card { margin: 0; }
+#choosing-tests .prog-card .code-editor__hl { font-size: 0.92rem; }
+@media (max-width: 768px) {
+  /* Stack: the explanation first, then the program listing below it. */
+  #choosing-tests .ct-split { grid-template-columns: 1fr; }
+  #choosing-tests .prog-card { margin-top: var(--space-4); }
+}
+
 /* Branch Logic (control-unit lesson): the explanatory paragraphs sit on the
    left, the branch-decode case block on the right. Top-align the two columns. */
 #branch-logic .bl-split {
@@ -741,6 +755,39 @@
   transition: transform 0.18s var(--ease);
 }
 .code-card:hover .code-card__arrow { transform: translateX(3px); }
+
+/* Document-thumbnail variant: the standard GitHub sendoff card with a preview
+   image of the linked document stacked ON TOP, so the two read as one widget.
+   The card becomes a vertical stack, and the GitHub row (.code-card__row) keeps
+   the exact flex layout and padding of the plain .code-card, so its design is
+   unchanged. The whole card is still one <a>, and still lifts on hover. */
+.code-card--doc {
+  display: block;
+  padding: 0;
+  overflow: hidden;                 /* clip the thumbnail area to the card's rounded corners */
+  max-width: 36rem;
+  margin-inline: auto;
+}
+/* The preview sits on the SAME paper the card is made of: a padded frame around
+   the thumbnail, divided from the GitHub row below by a hairline. */
+.code-card--doc .code-card__thumbwrap {
+  display: block;
+  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  border-bottom: 1px solid var(--hairline);
+}
+.code-card--doc .code-card__thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+}
+.code-card--doc .code-card__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: clamp(var(--space-3), 3vw, var(--space-4));
+}
 
 /* "Go back / revisit" card — a deliberately DIFFERENT shape from the GitHub
    .code-card: a faint accent wash with an accent spine down the left edge, and a
@@ -2192,8 +2239,12 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 /* Once solved, lock the buttons so the answered state stays put. */
 .quiz.is-solved .quiz__opt { pointer-events: none; }
 
-/* Trim the focal image down a touch from the standard quiz figure. */
-#check .quiz__figure { max-width: 37rem; }
+/* Trim the focal image and pull the card in vertically — smaller image, less
+   top/bottom padding, and tighter gaps around the question and image — so the
+   whole card sits noticeably shorter. */
+#check .quiz { padding-top: var(--space-3); padding-bottom: var(--space-3); }
+#check .quiz__q { margin-bottom: var(--space-2); }
+#check .quiz__figure { max-width: 31rem; margin-bottom: var(--space-2); }
 
 /* Code-answer variant: each choice holds a small, syntax-coloured Verilog
    snippet instead of prose. It sits in the standard two-column .quiz__options

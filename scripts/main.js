@@ -136,7 +136,7 @@
         ["Fetch, Decode, Execute", "single-cycle-cpu/fetch-decode-execute/"],
         ["Constructing a Datapath", "single-cycle-cpu/constructing-a-datapath/"],
         ["The Control Unit", "single-cycle-cpu/control-unit/"],
-        "Testing Your Single Cycle CPU"
+        ["Testing Your Single Cycle CPU", "single-cycle-cpu/testing/"]
       ]],
       ["Floating Point Adder", ["Coming Soon"]]
     ]],

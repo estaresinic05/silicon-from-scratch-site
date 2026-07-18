@@ -391,6 +391,16 @@
               datapath choose whether it should increment the PC by 4, or increment it by
               an immediate specified in a branch instruction.
             </p>
+
+            <p>
+              Each branch instruction lights up its own bit of
+              <code class="ctrl-sig">branch</code>, while every non-branch instruction
+              leaves it at its default of 000 &mdash; telling the datapath to simply move on
+              to the next instruction at PC&nbsp;+&nbsp;4. When one of those bits is set, the
+              datapath checks the matching condition against the ALU&rsquo;s result, and if
+              it holds, redirects the program counter by the branch&rsquo;s immediate
+              instead.
+            </p>
           </div>
 
           <figure class="code-editor code-editor--static bl-code">
@@ -424,18 +434,6 @@
   <span class="tok-kw">end</span></code></pre>
             </div>
           </figure>
-        </div>
-
-        <div class="prose prose--flow">
-          <p>
-            Each branch instruction lights up its own bit of
-            <code class="ctrl-sig">branch</code>, while every non-branch instruction
-            leaves it at its default of 000 &mdash; telling the datapath to simply move on
-            to the next instruction at PC&nbsp;+&nbsp;4. When one of those bits is set, the
-            datapath checks the matching condition against the ALU&rsquo;s result, and if
-            it holds, redirects the program counter by the branch&rsquo;s immediate
-            instead.
-          </p>
         </div>
       </div>
     </section>
