@@ -186,6 +186,37 @@ explicit `fld-*` class so the field-colour scheme is complete and self-documenti
 
 ---
 
+## Lists
+
+**Every list inside `.prose` — numbered or bulleted — rides a shaded card**, the
+same raised surface as the figure frames, so the items read as one distinct block
+instead of loose body text. This is automatic: the styling is attached to
+`.prose ol` / `.prose ul` in `styles/alu.css`, so you never add a class or wrapper
+— just write a plain `<ol>`/`<ul>` inside a `.prose` container and it gets the
+card. Reference implementations: the "two tricks" list in the Final Upgrade section
+of `alu/alu-slice/index.html`, and the ALUOp list in
+`single-cycle-cpu/control-unit/index.html`.
+
+```html
+<div class="prose prose--flow">
+  <p>…lead-in sentence that ends with a colon:</p>
+  <ul>
+    <li>First point.</li>
+    <li>Second point.</li>
+  </ul>
+</div>
+```
+
+- The card (background `var(--paper)`, `1px solid var(--hairline)`,
+  `var(--radius)`, `var(--shadow-soft)`) and the accent-coloured, mono markers are
+  already defined — **don't** re-style lists per page.
+- **Exception — lists already inside another card** (e.g. the `.edge-card`) must
+  **not** become a card-within-a-card. The `.edge-card ol` / `.edge-card ul` reset
+  in `styles/alu.css` strips the frame back off; follow that pattern for any other
+  card that hosts a list.
+
+---
+
 ## Figures / image cards
 
 Every image that isn't part of another widget — hand-drawn diagrams, worked
@@ -436,7 +467,7 @@ palette. **These exact values live in *both* `styles/alu.css` and
 |---|---|---|
 | `.tok-kw` | keywords — `input` `output` `wire` `reg` `assign` `module` `always` `if`… | `#569cd6` blue |
 | `.tok-cm` | comments (`//…`, `/*…*/`) | `#6a9955` green |
-| `.tok-num` | numeric literals — `42`, `1'b0`, `4'hF` | `#b5cea8` light green |
+| `.tok-num` | **every** numeric literal — `42`, `1'b0`, `4'hF`, **and each index digit inside a bit range/select** such as the `31` and `0` in `[31:0]` (the brackets and colon stay plain) | `#b5cea8` light green |
 | `.tok-type` | module names — **declared** (`module <name>`) *or* **instantiated** (the type in `<type> [#(…)] <inst> (…)`) | `#4ec9b0` teal |
 | `.tok-inst` | the **instance name** in an instantiation | `#dcdcaa` pale yellow |
 | `.tok-paren` | parentheses `(` `)` | `#ffd700` gold |
@@ -449,6 +480,16 @@ class**, so they stay the default editor foreground `#d4d4d4`. The `.tok-type` /
 (a bare identifier's type alone can't tell a signal from a module/instance name),
 so if you change the lexer or add a token type, update `highlight` **and** add the
 matching `.tok-*` rule to both stylesheets.
+
+### Comment style in code blocks
+
+**Always put exactly one space after `//`.** Write `// read word from memory`, never
+`//read word from memory`. This holds for **every** Verilog block on the site —
+static hand-authored blocks (the `.tok-cm` spans) *and* live editors (the
+`<textarea>` source and its `<pre>` underlay, which must match). It's the one
+comment convention we enforce; keep it consistent so the Copy button hands the
+reader clean, uniform source. (`//` inside a URL like `https://…` is unaffected —
+it isn't a comment.)
 
 ### To add a card
 
@@ -469,6 +510,22 @@ Copy a `.gate-card` block from a reference page. The moving parts:
   reader will edit and needs a way back) and is **required** on every editable card —
   copy the whole titlebar verbatim from the full adder (`alu/full-adder/index.html`).
   Keep this `</> Verilog HDL`-on-the-left layout identical across every code card.
+- **Copy button — automatic, don't hand-add it.** `main.js` injects a
+  `.code-editor__copy` button (a Windows-Explorer two-sheets glyph) into **every**
+  `.code-editor__bar` on the page — editable *and* static blocks alike — and wires
+  the clipboard. It lands **to the left of Reset** when a block has one, otherwise at
+  the far right of the bar. Clicking copies the block's exact text (the `<textarea>`
+  source when present, else the highlighted `<pre>`'s `textContent`, so spacing and
+  indentation are preserved) and the glyph flips to a green checkmark for ~1.5 s.
+  The styles live in `styles/alu.css` **and** `styles/main.css` (keep the two copies
+  in sync, like the other `.code-editor__*` rules). Because it's injected globally,
+  new code blocks get a working Copy button for free — no markup needed.
+- **Editor footer note (`.code-editor__note`) — optional.** A one-line caption bar
+  *inside* the editor, below the body, mirroring the titlebar's VS Code greys so it
+  reads as part of the widget (clipped to the rounded corners by the figure's
+  `overflow: hidden`). Use it for a short "the Verilog above shows…" note. Set in
+  `var(--font-display)` (readable prose, not mono); reference: the `sc_cpu_control`
+  block in `single-cycle-cpu/control-unit/index.html`.
 - Back: the `.code-editor` (highlighted `<pre class="code-editor__hl">` underlay
   + editable `<textarea class="code-editor__ta">` with the same code) and a
   `.gate-card__backrow`.
@@ -1037,3 +1094,97 @@ two copies in sync.
 > **with** the Interactive Waveforms widget: `index.html`'s waveform-relocation
 > script moves the `.code-card` alongside `.aluwave` so it stays directly beneath
 > the diagram in both the two-column and the narrow full-width layouts.
+
+---
+
+## "Go back / revisit" card
+
+A callout that points the reader **back to an earlier lesson** ("Forgot how the
+ALU works? …"). Deliberately a **different shape from the GitHub `.code-card`** so
+the two never read as the same control: a faint accent wash with an **accent spine
+down the left edge**, a **return-arrow icon on the left** (the "undo" glyph) that
+nudges *left* on hover, and a small mono **eyebrow** ("Go back") over the
+title/subtitle. There is **no right-hand arrow** — the leftward motion is the whole
+"go back" signal. Reference implementation: the end of the ALU Control section in
+`single-cycle-cpu/control-unit/index.html` (links back to the complete 32-bit ALU).
+
+The whole card is one `<a>`, so all of it is clickable. It links **internally**
+(same tab — no `target="_blank"`), unlike the GitHub card.
+
+### Markup
+
+```html
+<a class="recall-card" href="../../alu/complete-alu/">
+  <svg class="recall-card__icon" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2" stroke-linecap="round"
+       stroke-linejoin="round" aria-hidden="true">
+    <path d="M9 14 4 9l5-5" />
+    <path d="M4 9h11a5 5 0 0 1 0 10h-1" />
+  </svg>
+  <span class="recall-card__text">
+    <span class="recall-card__eyebrow">Go back</span>
+    <span class="recall-card__title">Forgot how the ALU works?</span>
+    <span class="recall-card__sub">See how the ALUControl bits decide which operation it performs.</span>
+  </span>
+</a>
+```
+
+Rules:
+- The icon is **stroke-based** (`fill: none; stroke: currentColor`), and
+  `.recall-card__icon` sets `color: var(--accent)`, so the glyph is the accent
+  purple — don't hard-code a colour or add a `fill`.
+- Keep the phrasing split across the three lines: the **eyebrow** carries the
+  "Go back" intent, the **title** asks the question, the **subtitle** is one short
+  line naming what's on the other end.
+- Point `href` at the earlier lesson being recalled.
+
+### CSS
+
+The rules live in `styles/alu.css` (ALU-section pages). If the widget is ever used
+on the homepage, duplicate them into `styles/main.css` the same way the
+`.code-card` rules are, and keep the copies in sync.
+
+```css
+.recall-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  background: rgba(183, 148, 246, 0.10);   /* faint accent wash — not plain paper */
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--accent);    /* accent spine = "back to earlier" */
+  border-radius: var(--radius);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease),
+              border-color 0.18s var(--ease), background 0.18s var(--ease);
+}
+.recall-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--accent);
+  background: rgba(183, 148, 246, 0.16);
+}
+.recall-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.recall-card__icon {
+  flex: none; width: 2rem; height: 2rem;
+  color: var(--accent);
+  transition: transform 0.18s var(--ease);
+}
+.recall-card:hover .recall-card__icon { transform: translateX(-3px); }  /* nudges LEFT */
+.recall-card__text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.recall-card__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.recall-card__title {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+.recall-card__sub { color: var(--soft-ink); font-size: 0.9rem; }
+```

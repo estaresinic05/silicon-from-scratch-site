@@ -136,7 +136,7 @@
         ["Fetch, Decode, Execute", "single-cycle-cpu/fetch-decode-execute/"],
         ["Constructing a Datapath", "single-cycle-cpu/constructing-a-datapath/"],
         ["The Control Unit", "single-cycle-cpu/control-unit/"],
-        "Testing"
+        "Testing Your Single Cycle CPU"
       ]],
       ["Floating Point Adder", ["Coming Soon"]]
     ]],
@@ -408,5 +408,91 @@
   if (nav) {
     nav.innerHTML = "";
     QUICK.forEach(function (q) { nav.appendChild(quickNode(q[0], q[1])); });
+  }
+
+  /* ---- 3. Copy button on every code block -------------------------------
+     Each .code-editor gets a Copy button in its titlebar, at the far right —
+     to the LEFT of the Reset button when the block has one. It copies the code
+     exactly as shown (all spacing and indentation preserved): the editable
+     <textarea> source when present, otherwise the highlighted <pre>'s text.
+     On success the copy glyph briefly becomes a checkmark. */
+  var COPY_GLYPH =
+    '<svg class="code-editor__copy-ico code-editor__copy-ico--copy" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<rect x="8" y="8" width="13" height="13" rx="2" />' +
+    '<path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />' +
+    '</svg>' +
+    '<svg class="code-editor__copy-ico code-editor__copy-ico--done" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M5 13l4 4L19 7" />' +
+    '</svg>' +
+    '<span class="code-editor__copy-txt code-editor__copy-txt--copy">Copy</span>' +
+    '<span class="code-editor__copy-txt code-editor__copy-txt--done">Copied</span>';
+
+  // The exact text of a block: the textarea source if editable, else the
+  // highlighted <pre>'s textContent (which keeps every newline and space).
+  function codeText(editor) {
+    var ta = editor.querySelector(".code-editor__ta");
+    if (ta) return ta.value;
+    var code = editor.querySelector(".code-editor__hl code") ||
+               editor.querySelector(".code-editor__hl");
+    return code ? code.textContent : "";
+  }
+
+  // Copy with the async Clipboard API when available, falling back to a hidden
+  // textarea + execCommand (needed in non-secure contexts such as file://).
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      try {
+        var tmp = document.createElement("textarea");
+        tmp.value = text;
+        tmp.setAttribute("readonly", "");
+        tmp.style.position = "fixed";
+        tmp.style.top = "-1000px";
+        tmp.style.opacity = "0";
+        document.body.appendChild(tmp);
+        tmp.select();
+        var ok = document.execCommand("copy");
+        document.body.removeChild(tmp);
+        if (ok) resolve(); else reject();
+      } catch (err) { reject(err); }
+    });
+  }
+
+  var editors = document.querySelectorAll(".code-editor");
+  for (var ei = 0; ei < editors.length; ei++) {
+    (function (editor) {
+      var bar = editor.querySelector(".code-editor__bar");
+      if (!bar || bar.querySelector(".code-editor__copy")) return;
+
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "code-editor__copy";
+      btn.setAttribute("aria-label", "Copy the code to the clipboard");
+      btn.title = "Copy";
+      btn.innerHTML = COPY_GLYPH;
+
+      // Sit to the left of Reset when the block has one; otherwise at the far
+      // right of the bar (margin-right:auto on .code-editor__lang pushes it over).
+      var reset = bar.querySelector(".code-editor__reset");
+      if (reset) bar.insertBefore(btn, reset);
+      else bar.appendChild(btn);
+
+      var revert;
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();            // never flip the card underneath
+        copyText(codeText(editor)).then(function () {
+          btn.classList.add("is-copied");
+          btn.title = "Copied!";
+          clearTimeout(revert);
+          revert = setTimeout(function () {
+            btn.classList.remove("is-copied");
+            btn.title = "Copy";
+          }, 1500);
+        }).catch(function () { /* clipboard blocked — nothing to do */ });
+      });
+    })(editors[ei]);
   }
 })();

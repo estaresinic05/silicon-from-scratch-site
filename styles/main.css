@@ -2861,6 +2861,42 @@ code.ctrl-sig,
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* Copy action in the titlebar — a Windows-Explorer-style two-sheets glyph plus a
+   "Copy" label (injected by main.js) that copies the block's exact code. Shares
+   the Reset button's chrome (icon + uppercase text). Sits at the far right, or to
+   the left of Reset when a block has one. Kept in sync with styles/alu.css. */
+.code-editor__copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.12rem 0.4rem;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  background: none;
+  color: #cccccc;
+  font-family: inherit;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.code-editor__copy:hover { background: #37373d; color: #fff; border-color: #4a4a4a; }
+.code-editor__copy svg {
+  width: 0.8rem;
+  height: 0.8rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.code-editor__copy .code-editor__copy-ico--done,
+.code-editor__copy .code-editor__copy-txt--done { display: none; color: #6ec06e; }
+.code-editor__copy.is-copied { border-color: #3a6a3a; color: #6ec06e; }
+.code-editor__copy.is-copied .code-editor__copy-ico--copy,
+.code-editor__copy.is-copied .code-editor__copy-txt--copy { display: none; }
+.code-editor__copy.is-copied .code-editor__copy-ico--done { display: inline; }
+.code-editor__copy.is-copied .code-editor__copy-txt--done { display: inline; }
 .code-editor__body { position: relative; flex: 1; min-height: 5.5rem; overflow: hidden; }
 .code-editor__hl,
 .code-editor__ta {

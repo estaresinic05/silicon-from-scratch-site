@@ -467,16 +467,12 @@
 }
 .split .prose { margin: 0; }
 .split .figure { margin: 0; }
-/* Numbered / bulleted lists set inside prose (e.g. the Final Upgrade "two
-   tricks"): give the items breathing room and align them under the text. */
+/* Lists inside prose — numbered (e.g. the Final Upgrade "two tricks") or
+   bulleted — always ride a shaded card: the same raised surface as the picture
+   frames, so each list reads as a distinct block rather than plain body text.
+   The extra left padding keeps the (accent-coloured) markers inside the frame. */
 .prose ol,
-.prose ul { margin: 0 0 var(--space-3); padding-left: 1.5rem; }
-.prose li { margin-bottom: var(--space-2); }
-.prose li:last-child { margin-bottom: 0; }
-/* Numbered lists ride a shaded card — the same raised surface as the picture
-   frames — so the steps read as a distinct block, not plain body text. The
-   extra left padding keeps the (accent-coloured) numbers inside the frame. */
-.prose ol {
+.prose ul {
   margin: var(--space-4) 0;
   padding: clamp(var(--space-3), 3vw, var(--space-4));
   padding-left: calc(clamp(var(--space-3), 3vw, var(--space-4)) + 1.6rem);
@@ -485,10 +481,25 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
 }
-.prose ol li::marker {
+.prose li { margin-bottom: var(--space-2); }
+.prose li:last-child { margin-bottom: 0; }
+.prose ol li::marker,
+.prose ul li::marker {
   color: var(--accent);
   font-family: var(--font-mono);
   font-weight: 600;
+}
+/* A list already sitting inside a card (e.g. the edge-card) must not become a
+   card-within-a-card — drop the frame and let the parent card hold it. */
+.edge-card ol,
+.edge-card ul {
+  margin: 0;
+  padding: 0;
+  padding-left: 1.35rem;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 /* Addition Incoming: pull the heading nearer the copy, and top-align the text
    with the top of the timing widget instead of vertically centering it. */
@@ -520,6 +531,47 @@
 .split--media-right { grid-template-columns: minmax(0, 1fr) auto; }
 .split--media-right .figure { order: 2; }
 .split--media-right .prose { order: 1; max-width: none; }
+/* Main Control (control-unit lesson): the sc_cpu_control module sits on the left,
+   the signal table on the right. Top-align them so both start level, and let the
+   code take the flexible column while the table caps at its right track. The note
+   sits directly under the code as a caption. */
+/* The code sits on the left; the right column holds the explanatory paragraphs
+   with the signal table stacked beneath them. Top-align the two columns. */
+#main-control .mc-split {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+  align-items: start;
+  margin-block: var(--space-4);
+}
+#main-control .mc-code { min-width: 0; }
+#main-control .mc-side { min-width: 0; }
+#main-control .mc-side .prose { max-width: none; margin: 0; }
+#main-control .mc-table { max-width: none; margin: var(--space-4) 0 0; }
+@media (max-width: 768px) {
+  /* Stack: code + note first, then the paragraphs, then the table. */
+  #main-control .mc-split { grid-template-columns: 1fr; }
+}
+
+/* Branch Logic (control-unit lesson): the explanatory paragraphs sit on the
+   left, the branch-decode case block on the right. Top-align the two columns. */
+#branch-logic .bl-split {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  margin-block: var(--space-4);
+}
+#branch-logic .bl-text { min-width: 0; max-width: none; margin: 0; }
+#branch-logic .bl-code { min-width: 0; }
+@media (max-width: 768px) {
+  /* Stack: the text first, then the code block below it. */
+  #branch-logic .bl-split { grid-template-columns: 1fr; }
+}
+
+/* ALU Control (control-unit lesson): the ALUOp table sits beside the list card.
+   Keep the block's spacing above and below equal — drop the trailing margin of
+   the intro paragraph and the list card's own margins so the only gap on each
+   side is the split's symmetric --space-4. */
+#alu-control .split { margin-block: var(--space-4); }
+#alu-control .prose--flow > p:last-child { margin-bottom: 0; }
+#alu-control .split .prose ul { margin: 0; }
 /* Control Flow diagrams: top-align the text and image (rather than centring the
    shorter one), so each paragraph starts level with its diagram. Keep every gap
    between blocks at the page's standard one-paragraph rhythm (--space-3). */
@@ -689,6 +741,57 @@
   transition: transform 0.18s var(--ease);
 }
 .code-card:hover .code-card__arrow { transform: translateX(3px); }
+
+/* "Go back / revisit" card — a deliberately DIFFERENT shape from the GitHub
+   .code-card: a faint accent wash with an accent spine down the left edge, and a
+   return-arrow icon on the left that nudges *left* on hover (the code-card's
+   arrow lives on the right and nudges right). Use it to point the reader back to
+   an earlier lesson. */
+.recall-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  background: rgba(183, 148, 246, 0.10);
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease),
+              border-color 0.18s var(--ease), background 0.18s var(--ease);
+}
+.recall-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--accent);
+  background: rgba(183, 148, 246, 0.16);
+}
+.recall-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.recall-card__icon {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  color: var(--accent);
+  transition: transform 0.18s var(--ease);
+}
+.recall-card:hover .recall-card__icon { transform: translateX(-3px); }
+.recall-card__text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.recall-card__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.recall-card__title {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+.recall-card__sub { color: var(--soft-ink); font-size: 0.9rem; }
+
 /* Landscape card: image hung to the left, caption to its right, laid out as a
    wide panel about twice as wide as it is tall (the Sum-circuit XOR sketch). */
 .figure--media-row {
@@ -1027,6 +1130,58 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* Copy action in the titlebar — a Windows-Explorer-style two-sheets glyph plus a
+   "Copy" label (injected by main.js) that copies the block's exact code. Shares
+   the Reset button's chrome (icon + uppercase text). Sits at the far right, or to
+   the left of Reset when a block has one. On success the glyph flips to a green
+   checkmark and the label reads "Copied". */
+.code-editor__copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.12rem 0.4rem;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  background: none;
+  color: #cccccc;
+  font-family: inherit;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.code-editor__copy:hover { background: #37373d; color: #fff; border-color: #4a4a4a; }
+.code-editor__copy svg {
+  width: 0.8rem;
+  height: 0.8rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.code-editor__copy .code-editor__copy-ico--done,
+.code-editor__copy .code-editor__copy-txt--done { display: none; color: #6ec06e; }
+.code-editor__copy.is-copied { border-color: #3a6a3a; color: #6ec06e; }
+.code-editor__copy.is-copied .code-editor__copy-ico--copy,
+.code-editor__copy.is-copied .code-editor__copy-txt--copy { display: none; }
+.code-editor__copy.is-copied .code-editor__copy-ico--done { display: inline; }
+.code-editor__copy.is-copied .code-editor__copy-txt--done { display: inline; }
+/* A caption strip belonging to the editor itself — a footer bar mirroring the
+   titlebar (same VS Code greys), so a one-line note reads as part of the widget
+   rather than floating text below it. Clipped to the editor's rounded corners by
+   the figure's overflow:hidden. */
+.code-editor__note {
+  padding: 0.45rem 0.7rem;
+  background: #252526;                    /* same grey as the titlebar */
+  border-top: 1px solid #333;
+  color: #a8a8a8;
+  font-family: var(--font-display);       /* readable, not mono — it's prose */
+  font-size: 0.78rem;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+.code-editor__note em { color: #cfcfcf; font-style: italic; }
 /* Editable body: a highlighted <pre> underlay with a transparent-text
    <textarea> layered on top, sharing identical metrics so the caret lines up
    over the coloured tokens. */
@@ -2030,6 +2185,35 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .quiz__opt.is-wrong { background: #e57373; border-color: #e57373; color: #3d0a0a; }
 /* Once solved, lock the buttons so the answered state stays put. */
 .quiz.is-solved .quiz__opt { pointer-events: none; }
+
+/* Trim the focal image down a touch from the standard quiz figure. */
+#check .quiz__figure { max-width: 37rem; }
+
+/* Code-answer variant: each choice holds a small, syntax-coloured Verilog
+   snippet instead of prose. It sits in the standard two-column .quiz__options
+   grid (same as the Fetch/Decode/Execute quiz), so the snippet is written across
+   a few lines to fit the box. Tighter padding keeps each box a hair shorter. */
+.quiz__opt--code { align-items: center; padding: 0.35rem 0.9rem; }
+.quiz-code {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.7rem;
+  font-family: Consolas, "Courier New", ui-monospace, monospace;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #d4d4d4;
+  white-space: pre;
+  text-align: left;
+}
+/* The green/red result fill lands on the bubble; the dark code chip stays dark
+   inside it, so keep the counter prefix readable against either. */
+.quiz__opt--code.is-correct .quiz-code,
+.quiz__opt--code.is-wrong .quiz-code { border-color: rgba(0, 0, 0, 0.35); }
 
 .quiz__feedback {
   min-height: 1.5em;

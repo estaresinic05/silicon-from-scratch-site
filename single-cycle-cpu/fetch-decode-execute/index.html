@@ -192,7 +192,7 @@
     output wire [31:0] instruction
 );
 
-  reg [31:0] memory[0:DEPTH-1];  //create 32-bit registers
+  reg [31:0] memory[0:DEPTH-1];  // create 32-bit registers
   integer i;
   initial begin
     for (i = 0; i &lt; DEPTH; i = i + 1) begin
@@ -211,7 +211,7 @@ endmodule</code></pre>
     output wire [31:0] instruction
 );
 
-  reg [31:0] memory[0:DEPTH-1];  //create 32-bit registers
+  reg [31:0] memory[0:DEPTH-1];  // create 32-bit registers
   integer i;
   initial begin
     for (i = 0; i &lt; DEPTH; i = i + 1) begin
@@ -319,7 +319,7 @@ endmodule</textarea>
     output wire [31:0] readData
 );
 
-  reg [31:0] memory[0:DEPTH-1];  //create 32-bit registers
+  reg [31:0] memory[0:DEPTH-1];  // create 32-bit registers
 
   integer i;
   initial begin
@@ -347,7 +347,7 @@ endmodule</code></pre>
     output wire [31:0] readData
 );
 
-  reg [31:0] memory[0:DEPTH-1];  //create 32-bit registers
+  reg [31:0] memory[0:DEPTH-1];  // create 32-bit registers
 
   integer i;
   initial begin
@@ -536,13 +536,13 @@ endmodule</textarea>
   reg [31:0] RF[0:31];  // 32 registers each 32 bits long
   integer i;
   initial begin
-    for (i = 0; i &lt; 32; i = i + 1) RF[i] = 32'b0;  //initialize
+    for (i = 0; i &lt; 32; i = i + 1) RF[i] = 32'b0;  // initialize
   end
 
   assign data1 = (readAddress1 == 5'd0) ? 32'd0 : RF[readAddress1];
   assign data2 = (readAddress2 == 5'd0) ? 32'd0 : RF[readAddress2];
 
-  always @(posedge clk) begin  //write register on posedge of clk
+  always @(posedge clk) begin  // write register on posedge of clk
     if (writeEnable &amp;&amp; (writeAddress != 5'd0))
       RF[writeAddress] &lt;= writeData;  // when writeEnable is high
   end
@@ -562,13 +562,13 @@ endmodule</code></pre>
   reg [31:0] RF[0:31];  // 32 registers each 32 bits long
   integer i;
   initial begin
-    for (i = 0; i &lt; 32; i = i + 1) RF[i] = 32'b0;  //initialize
+    for (i = 0; i &lt; 32; i = i + 1) RF[i] = 32'b0;  // initialize
   end
 
   assign data1 = (readAddress1 == 5'd0) ? 32'd0 : RF[readAddress1];
   assign data2 = (readAddress2 == 5'd0) ? 32'd0 : RF[readAddress2];
 
-  always @(posedge clk) begin  //write register on posedge of clk
+  always @(posedge clk) begin  // write register on posedge of clk
     if (writeEnable &amp;&amp; (writeAddress != 5'd0))
       RF[writeAddress] &lt;= writeData;  // when writeEnable is high
   end

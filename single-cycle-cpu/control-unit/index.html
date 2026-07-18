@@ -85,15 +85,15 @@
       <div class="doc-hero__text">
         <h1 id="cu-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">The Control</span> <span class="title-eyebrow__group">Unit</span></span></h1>
         <p class="doc-hero__lead">
-          Our datapath is built &mdash; but right now it is a tangle of idle wires
-          with no idea what to do. The piece that brings it to life is the
-          <strong>control unit</strong>, the brain that reads each instruction&rsquo;s
-          <code class="fld-opcode">opcode</code> and, from that alone, throws every
-          switch the datapath needs: whether a register is written, which operand the
-          <strong>ALU</strong> takes, whether memory is read or written, and where the
-          program counter goes next. In this lesson we watch that decoding happen, one
-          <code>case</code> at a time.
+          A control unit is the CPU&rsquo;s decision-maker. It interprets each
+          instruction and generates the control signals needed to execute it. These
+          signals tell the processor&rsquo;s components what to do and when to do it.
+          Without the control unit, the CPU is nothing but a tangle of wires.
         </p>
+        <div class="doc-hero__actions">
+          <span class="doc-hero__prompt">Think you got this already?</span>
+          <a class="btn btn--primary" href="#check">Skip to Check Yourself</a>
+        </div>
       </div>
 
       <figure class="doc-hero__art">
@@ -103,32 +103,194 @@
       </figure>
     </section>
 
-    <!-- ===================== DECODING BY OPCODE ========================= -->
-    <section class="section" id="decode" aria-labelledby="decode-title">
+    <!-- ===================== THE ALU CONTROL ============================ -->
+    <section class="section" id="alu-control" aria-labelledby="alu-control-title">
       <div class="container container--wide">
         <div class="section__head">
-          <h2 id="decode-title">Decoding by Opcode</h2>
+          <h2 id="alu-control-title">The ALU Control</h2>
         </div>
 
         <div class="prose prose--flow">
           <p>
-            At its heart, the control unit is one big lookup: it takes the
-            instruction&rsquo;s <code class="fld-opcode">opcode</code> (and, when it
-            needs to tell two similar instructions apart, the
-            <code class="fld-funct3">funct3</code> field) and produces the exact set of
-            control signals that steers this instruction through the datapath. A single
-            <code>case</code> statement captures the whole idea &mdash; each opcode
-            lights up its own handful of switches and leaves the rest at their default
-            of 0.
+            Before we can dive into how the main control unit works, it&rsquo;s
+            important that we have our ALU operating smoothly. Luckily for us,
+            we&rsquo;ve already constructed the ALU&rsquo;s datapath, but for it to
+            actually perform the tasks we want, we need to <em>control</em> it. While
+            we could theoretically build a single control unit that decodes every
+            instruction bit directly into ALU commands, it&rsquo;s better to abstract
+            the ALU&rsquo;s logic away from the rest of the datapath so each control
+            unit answers just one question, potentially making it easier to catch bugs
+            in the future.
           </p>
 
-          <figure class="code-editor code-editor--static code-editor--full" style="max-width: 44rem; margin-inline: auto;">
+          <p>
+            The CPU datapath we built in the last lesson can handle a variety of
+            instructions. Instead of asking the ALU Control Unit to decode an entire
+            32-bit instruction, the main control unit gives it a simple two-bit signal
+            called <code class="ctrl-sig">ALUOp</code>. This signal tells the ALU Control Unit what
+            class of instruction it&rsquo;s dealing with:
+          </p>
+        </div>
+
+        <div class="split split--media-right">
+          <figure class="figure figure--diagram" style="max-width: 28rem;">
+            <img src="../../assets/single-cycle-cpu/ALUOp-table.jpg"
+                 alt="A table mapping the two-bit ALUOp signal to the ALU's action: 00 for load/store address calculation (add), 01 for branch comparison (subtract), and 10 for arithmetic and logical instructions, whose exact operation is decoded from the funct3 and funct7 fields."
+                 decoding="async" />
+          </figure>
+
+          <div class="prose">
+            <ul>
+              <li>
+                00 &rarr; Memory instructions (<em>lw</em>/<em>sw</em>)
+                always require an address calculation, so perform addition.
+              </li>
+              <li>
+                01 &rarr; Branch instructions (<em>beq</em>/<em>bne</em>)
+                compare two registers by subtracting them.
+              </li>
+              <li>
+                10 &rarr; Arithmetic and logical instructions require a
+                closer inspection of the instruction&rsquo;s
+                <code class="fld-funct3">funct3</code> (and sometimes
+                <code class="fld-funct7">funct7</code>) fields to determine the exact
+                operation.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="split split--media-left">
+          <figure class="code-editor code-editor--static" style="width: 44rem; max-width: 100%;">
             <figcaption class="code-editor__bar">
               <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
               <span class="code-editor__lang">Verilog HDL</span>
             </figcaption>
             <div class="code-editor__body">
-              <pre class="code-editor__hl"><code><span class="tok-kw">case</span> (opcode)
+              <pre class="code-editor__hl"><code><span class="tok-kw">module</span> <span class="tok-type">alu_control</span> (
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">2</span>:<span class="tok-num">0</span>] funct3,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span>       funct7Bit5,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">6</span>:<span class="tok-num">0</span>] opcode,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">1</span>:<span class="tok-num">0</span>] ALUOp,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>  [<span class="tok-num">3</span>:<span class="tok-num">0</span>] ALUControl
+);
+  <span class="tok-kw">wire</span> isRtype;
+  <span class="tok-kw">assign</span> isRtype <span class="tok-op">=</span> (opcode <span class="tok-op">==</span> <span class="tok-num">7'b0110011</span>);
+
+  <span class="tok-kw">always</span> @(*) <span class="tok-kw">begin</span>
+    <span class="tok-kw">case</span> (ALUOp)
+      <span class="tok-num">2'b00</span>:   ALUControl <span class="tok-op">=</span> <span class="tok-num">4'b0010</span>;  <span class="tok-cm">// addition (lw/sw)</span>
+      <span class="tok-num">2'b01</span>:   ALUControl <span class="tok-op">=</span> <span class="tok-num">4'b0110</span>;  <span class="tok-cm">// subtraction (beq/bne)</span>
+      <span class="tok-num">2'b10</span>: <span class="tok-kw">begin</span>  <span class="tok-cm">// R-type and I-type decode (and blt)</span>
+        <span class="tok-kw">case</span> (funct3)
+          <span class="tok-num">3'b000</span>:  ALUControl <span class="tok-op">=</span> (funct7Bit5 <span class="tok-op">&amp;&amp;</span> isRtype) <span class="tok-op">?</span> <span class="tok-num">4'b0110</span> :  <span class="tok-cm">// sub</span>
+                                                          <span class="tok-num">4'b0010</span>;  <span class="tok-cm">// add/addi</span>
+          <span class="tok-num">3'b111</span>:  ALUControl <span class="tok-op">=</span> <span class="tok-num">4'b0000</span>;  <span class="tok-cm">// and/andi</span>
+          <span class="tok-num">3'b110</span>:  ALUControl <span class="tok-op">=</span> <span class="tok-num">4'b0001</span>;  <span class="tok-cm">// or/ori</span>
+          <span class="tok-num">3'b010</span>:  ALUControl <span class="tok-op">=</span> <span class="tok-num">4'b0111</span>;  <span class="tok-cm">// slt</span>
+          <span class="tok-num">3'b100</span>:  ALUControl <span class="tok-op">=</span> <span class="tok-num">4'b0111</span>;  <span class="tok-cm">// blt</span>
+          <span class="tok-kw">default</span>: ALUControl <span class="tok-op">=</span> <span class="tok-num">4'b0000</span>;
+        <span class="tok-kw">endcase</span>
+      <span class="tok-kw">end</span>
+      <span class="tok-kw">default</span>: ALUControl <span class="tok-op">=</span> <span class="tok-num">4'b0000</span>;
+    <span class="tok-kw">endcase</span>
+  <span class="tok-kw">end</span>
+
+<span class="tok-kw">endmodule</span></code></pre>
+            </div>
+          </figure>
+
+          <div class="prose">
+            <p>
+              When <code class="ctrl-sig">ALUOp</code> equals 10, the ALU Control Unit
+              becomes a small decoder. It examines the instruction&rsquo;s function
+              fields and translates them into the four-bit control signal that drives
+              the ALU. For example, a <code class="fld-funct3">funct3</code> value of
+              111 selects a bitwise AND operation, 110 selects OR, 010 selects
+              set-less-than, and 000 could mean either ADD or SUB. In that final case,
+              the control unit checks bit 5 of <code class="fld-funct7">funct7</code>;
+              if it&rsquo;s an R-type instruction with that bit set, the ALU performs
+              subtraction. Otherwise, it performs addition.
+            </p>
+
+            <p>
+              This layered approach keeps responsibilities clean. The main control unit
+              decides what kind of instruction is executing, while the ALU Control Unit
+              decides which arithmetic or logical operation the ALU should perform. Each
+              module stays small, focused, and much easier to test than one giant
+              decoder.
+            </p>
+
+            <a class="recall-card" href="../../alu/complete-alu/" style="margin-top: var(--space-3);">
+              <svg class="recall-card__icon" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 14 4 9l5-5" />
+                <path d="M4 9h11a5 5 0 0 1 0 10h-1" />
+              </svg>
+              <span class="recall-card__text">
+                <span class="recall-card__eyebrow">Go back</span>
+                <span class="recall-card__title">Forgot how the ALU works?</span>
+                <span class="recall-card__sub">See how the ALUControl bits decide which operation it performs.</span>
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== THE MAIN CONTROL UNIT ====================== -->
+    <section class="section" id="main-control" aria-labelledby="main-control-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="main-control-title">The Main Control Unit</h2>
+        </div>
+
+        <div class="prose prose--flow">
+          <p>
+            In the last section we saw how the ALU learns which operation to perform.
+            The main control classifies each instruction into a coarse
+            <code class="ctrl-sig">ALUOp</code> category, and a dedicated ALU control
+            module refines that category into an exact operation code. But that raises
+            a natural question: where does <code class="ctrl-sig">ALUOp</code> come
+            from in the first place, and who is steering everything else? After all,
+            the ALU is only one piece of the datapath. Memory needs to know whether it
+            is being read or written, the register file needs to know whether to save
+            a result, and the multiplexers need to know which inputs to pass along.
+          </p>
+        </div>
+
+        <div class="split mc-split">
+          <div class="mc-code">
+            <figure class="code-editor code-editor--static">
+              <figcaption class="code-editor__bar">
+                <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+                <span class="code-editor__lang">Verilog HDL</span>
+              </figcaption>
+              <div class="code-editor__body">
+            <pre class="code-editor__hl"><code><span class="tok-kw">module</span> <span class="tok-type">sc_cpu_control</span> (
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">6</span>:<span class="tok-num">0</span>] opcode,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">2</span>:<span class="tok-num">0</span>] funct3,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>  [<span class="tok-num">2</span>:<span class="tok-num">0</span>] branch,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>        memRead,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>        memToReg,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>  [<span class="tok-num">1</span>:<span class="tok-num">0</span>] ALUOp,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>        memWrite,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>        ALUsrc,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>        regWrite
+);
+
+  <span class="tok-kw">always</span> @(*) <span class="tok-kw">begin</span>
+
+    branch   <span class="tok-op">=</span> <span class="tok-num">3'b000</span>;
+    memRead  <span class="tok-op">=</span> <span class="tok-num">1'b0</span>;
+    memToReg <span class="tok-op">=</span> <span class="tok-num">1'b0</span>;
+    ALUOp    <span class="tok-op">=</span> <span class="tok-num">2'b00</span>;
+    memWrite <span class="tok-op">=</span> <span class="tok-num">1'b0</span>;
+    ALUsrc   <span class="tok-op">=</span> <span class="tok-num">1'b0</span>;
+    regWrite <span class="tok-op">=</span> <span class="tok-num">1'b0</span>;
+
+    <span class="tok-kw">case</span> (opcode)
       <span class="tok-num">7'b0000011</span>: <span class="tok-kw">begin</span>   <span class="tok-cm">// lw</span>
         memRead <span class="tok-op">=</span> <span class="tok-num">1'b1</span>;   <span class="tok-cm">// read word from memory</span>
         memToReg <span class="tok-op">=</span> <span class="tok-num">1'b1</span>;  <span class="tok-cm">// send word to register</span>
@@ -138,28 +300,195 @@
       <span class="tok-kw">end</span>
       <span class="tok-num">7'b0100011</span>: <span class="tok-kw">begin</span>  <span class="tok-cm">// sw</span>
         memWrite <span class="tok-op">=</span> <span class="tok-num">1'b1</span>; <span class="tok-cm">// write word to memory</span>
-        ALUOp <span class="tok-op">=</span> <span class="tok-num">2'b00</span>;   <span class="tok-cm">//addition</span>
+        ALUOp <span class="tok-op">=</span> <span class="tok-num">2'b00</span>;   <span class="tok-cm">// addition</span>
         ALUsrc <span class="tok-op">=</span> <span class="tok-num">1'b1</span>;   <span class="tok-cm">// use immediate as offset</span>
       <span class="tok-kw">end</span>
+    <span class="tok-kw">endcase</span>
+  <span class="tok-kw">end</span>
+
+<span class="tok-kw">endmodule</span></code></pre>
+              </div>
+              <div class="code-editor__note">The Verilog above shows how the <em>lw</em> and <em>sw</em> instructions are decoded in the control unit.</div>
+            </figure>
+          </div>
+
+          <div class="mc-side">
+            <div class="prose">
+              <p>
+                The main control is the unit that answers all of these questions at once.
+                By examining nothing more than the instruction&rsquo;s
+                <code class="fld-opcode">opcode</code>, it produces the complete set of
+                signals that configure the datapath for a single instruction:
+                <code class="ctrl-sig">memRead</code> and
+                <code class="ctrl-sig">memWrite</code> for memory access,
+                <code class="ctrl-sig">ALUsrc</code> to choose between a register and the
+                immediate, <code class="ctrl-sig">memToReg</code> to choose what gets
+                written back, <code class="ctrl-sig">regWrite</code> to permit that
+                writeback, <code class="ctrl-sig">ALUOp</code> for the ALU, and
+                <code class="ctrl-sig">branch</code> for anything that might redirect the
+                program counter.
+              </p>
+
+              <p>
+                Conceptually, the main control works like a lookup table. It holds no
+                state and performs no computation of its own. Given an instruction class,
+                it simply recalls the recipe of signals that class requires and asserts
+                them, leaving everything else quiet. A helpful way to think about it is
+                that the datapath is a machine full of switches, and each instruction
+                comes with a wiring diagram for which switches should be flipped. The main
+                control is the component that reads the diagram and flips them. Because
+                every signal starts from a safe, do-nothing baseline and is only raised
+                when an instruction calls for it, no instruction can inherit stray
+                behavior from another, and anything the unit does not recognize passes
+                through harmlessly.
+              </p>
+            </div>
+
+            <figure class="figure figure--diagram mc-table">
+              <img src="../../assets/single-cycle-cpu/main-control-table.jpg"
+                   alt="A table listing each instruction type and the main control signals it asserts — memRead, memWrite, ALUsrc, memToReg, regWrite, ALUOp, and branch — showing which are set to 1 and which stay 0 for each instruction class."
+                   decoding="async" />
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== THE BRANCH LOGIC ========================== -->
+    <section class="section" id="branch-logic" aria-labelledby="branch-logic-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="branch-logic-title">The Branch Logic</h2>
+        </div>
+
+        <div class="prose prose--flow">
+          <p>
+            In the table above, we hinted at some of the ideas behind the branch logic
+            block in our datapath. It turns out this logic is actually quite simple, and
+            doesn&rsquo;t need more than a Verilog <em>case</em> statement to work.
+          </p>
+        </div>
+
+        <div class="split bl-split">
+          <div class="prose bl-text">
+            <p>
+              In this CPU, we want to be able to handle the <em>beq</em>, <em>bne</em>, and
+              <em>blt</em> instructions, all of which use the same
+              <code class="fld-opcode">opcode</code>, 1100011. Our control unit
+              differentiates these instructions by taking a closer look at their
+              <code class="fld-funct3">funct3</code> bits. Together, the
+              <code class="fld-opcode">opcode</code> and
+              <code class="fld-funct3">funct3</code> fields can uniquely identify which
+              branch is being executed. Each instruction carries its own
+              <code class="fld-funct3">funct3</code> code: <em>beq</em> uses 000,
+              <em>bne</em> uses 001, and <em>blt</em> uses 100.
+            </p>
+
+            <p>
+              Since there are three different branch instructions, one simple way to encode
+              which operation to perform is with a one-hot encoded signal. In our design,
+              this signal is called <code class="ctrl-sig">branch</code>, and it helps the
+              datapath choose whether it should increment the PC by 4, or increment it by
+              an immediate specified in a branch instruction.
+            </p>
+          </div>
+
+          <figure class="code-editor code-editor--static bl-code">
+            <figcaption class="code-editor__bar">
+              <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+              <span class="code-editor__lang">Verilog HDL</span>
+            </figcaption>
+            <div class="code-editor__body">
+              <pre class="code-editor__hl"><code>  <span class="tok-kw">always</span> @(*) <span class="tok-kw">begin</span>
+
+    branch   <span class="tok-op">=</span> <span class="tok-num">3'b000</span>;
+    <span class="tok-kw">case</span> (opcode)
       <span class="tok-num">7'b1100011</span>: <span class="tok-kw">begin</span>
         <span class="tok-kw">case</span> (funct3)
           <span class="tok-num">3'b000</span>: <span class="tok-kw">begin</span>      <span class="tok-cm">// beq</span>
             branch <span class="tok-op">=</span> <span class="tok-num">3'b100</span>;
-            ALUOp  <span class="tok-op">=</span> <span class="tok-num">2'b01</span>;  <span class="tok-cm">//subtraction</span>
+            ALUOp  <span class="tok-op">=</span> <span class="tok-num">2'b01</span>;  <span class="tok-cm">// subtraction</span>
           <span class="tok-kw">end</span>
           <span class="tok-num">3'b001</span>: <span class="tok-kw">begin</span>      <span class="tok-cm">// bne</span>
             branch <span class="tok-op">=</span> <span class="tok-num">3'b010</span>;
-            ALUOp  <span class="tok-op">=</span> <span class="tok-num">2'b01</span>;  <span class="tok-cm">//subtraction</span>
+            ALUOp  <span class="tok-op">=</span> <span class="tok-num">2'b01</span>;  <span class="tok-cm">// subtraction</span>
           <span class="tok-kw">end</span>
           <span class="tok-num">3'b100</span>: <span class="tok-kw">begin</span>      <span class="tok-cm">// blt</span>
             branch <span class="tok-op">=</span> <span class="tok-num">3'b001</span>;
-            ALUOp  <span class="tok-op">=</span> <span class="tok-num">2'b10</span>;  <span class="tok-cm">//determined by funct3/7</span>
+            ALUOp  <span class="tok-op">=</span> <span class="tok-num">2'b10</span>;  <span class="tok-cm">// later decoded to slt</span>
           <span class="tok-kw">end</span>
           <span class="tok-kw">default</span>: branch <span class="tok-op">=</span> <span class="tok-num">3'b000</span>;
         <span class="tok-kw">endcase</span>
-      <span class="tok-kw">end</span></code></pre>
+      <span class="tok-kw">end</span>
+    <span class="tok-kw">endcase</span>
+  <span class="tok-kw">end</span></code></pre>
             </div>
           </figure>
+        </div>
+
+        <div class="prose prose--flow">
+          <p>
+            Each branch instruction lights up its own bit of
+            <code class="ctrl-sig">branch</code>, while every non-branch instruction
+            leaves it at its default of 000 &mdash; telling the datapath to simply move on
+            to the next instruction at PC&nbsp;+&nbsp;4. When one of those bits is set, the
+            datapath checks the matching condition against the ALU&rsquo;s result, and if
+            it holds, redirects the program counter by the branch&rsquo;s immediate
+            instead.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== CHECK YOURSELF ===================== -->
+    <section class="section section--tight" id="check" aria-labelledby="check-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="check-title">Check Yourself</h2>
+        </div>
+
+        <div class="quiz quiz--wide" id="quiz">
+          <p class="quiz__q">
+            Given the one-hot coding for the branch signal above, what would be the
+            correct Verilog assign statement for the Sel signal below?
+          </p>
+
+          <figure class="figure figure--photo quiz__figure">
+            <img src="../../assets/single-cycle-cpu/branch-check.jpg"
+                 alt="A multiplexer in the datapath whose select line, Sel, chooses whether the program counter advances by 4 or takes the branch target; its Sel input is driven by the branch one-hot signal together with the ALU's zero and lessThan status outputs."
+                 decoding="async" />
+          </figure>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt quiz__opt--code" type="button">
+              <pre class="quiz-code"><span class="tok-kw">assign</span> Sel <span class="tok-op">=</span> (branch[<span class="tok-num">2</span>] <span class="tok-op">&amp;</span> <span class="tok-op">~</span>zero) <span class="tok-op">|</span>
+             (branch[<span class="tok-num">1</span>] <span class="tok-op">&amp;</span> zero) <span class="tok-op">|</span>
+             (branch[<span class="tok-num">0</span>] <span class="tok-op">&amp;</span> lessThan);</pre>
+            </button>
+            <button class="quiz__opt quiz__opt--code" type="button" data-correct="true">
+              <pre class="quiz-code"><span class="tok-kw">assign</span> Sel <span class="tok-op">=</span> (branch[<span class="tok-num">2</span>] <span class="tok-op">&amp;</span> zero) <span class="tok-op">|</span>
+             (branch[<span class="tok-num">1</span>] <span class="tok-op">&amp;</span> <span class="tok-op">~</span>zero) <span class="tok-op">|</span>
+             (branch[<span class="tok-num">0</span>] <span class="tok-op">&amp;</span> lessThan);</pre>
+            </button>
+            <button class="quiz__opt quiz__opt--code" type="button">
+              <pre class="quiz-code"><span class="tok-kw">assign</span> Sel <span class="tok-op">=</span> (branch[<span class="tok-num">0</span>] <span class="tok-op">&amp;</span> zero) <span class="tok-op">|</span>
+             (branch[<span class="tok-num">1</span>] <span class="tok-op">&amp;</span> <span class="tok-op">~</span>zero) <span class="tok-op">|</span>
+             (branch[<span class="tok-num">2</span>] <span class="tok-op">&amp;</span> lessThan);</pre>
+            </button>
+            <button class="quiz__opt quiz__opt--code" type="button">
+              <pre class="quiz-code"><span class="tok-kw">assign</span> Sel <span class="tok-op">=</span> (branch[<span class="tok-num">2</span>] <span class="tok-op">&amp;</span> zero) <span class="tok-op">&amp;</span>
+             (branch[<span class="tok-num">1</span>] <span class="tok-op">&amp;</span> <span class="tok-op">~</span>zero) <span class="tok-op">&amp;</span>
+             (branch[<span class="tok-num">0</span>] <span class="tok-op">&amp;</span> lessThan);</pre>
+            </button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <div class="quiz__next">
+            <a class="btn btn--primary" href="../testing/">
+              Continue to Testing Your Single Cycle CPU <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
         </div>
       </div>
     </section>
@@ -193,5 +522,33 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
   <script src="../../scripts/scroll.js" defer></script>
+
+  <!-- Check Yourself: mark the chosen option correct/wrong and reveal Continue. -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          if (next) next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+        } else {
+          btn.classList.add("is-wrong");
+          feedback.textContent = "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>
