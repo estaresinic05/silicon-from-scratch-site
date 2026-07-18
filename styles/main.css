@@ -338,6 +338,12 @@ body::before {
   background: var(--accent);
   flex: none;
 }
+/* Symbol mark stands in for the dot in the top bar. */
+.wordmark__mark {
+  width: 26px; height: 26px;
+  object-fit: contain;
+  flex: none;
+}
 
 .nav {
   display: flex;
@@ -661,9 +667,10 @@ main section[id] { scroll-margin-top: 5rem; }
   text-align: center;
 }
 .hero__logo {
-  width: min(620px, 90%);
-  margin: 0 auto var(--space-2);
-  /* Logo has a baked-in #F7F8F3 background; page bg matches so no visible box */
+  width: min(700px, 92%);
+  /* Negative bottom margin trims the transparent padding baked into the PNG,
+     pulling the headline up closer to the wordmark. */
+  margin: 0 auto -1.5rem;
 }
 .hero h1 {
   max-width: 18ch;
@@ -2231,13 +2238,6 @@ code.ctrl-sig,
 
 /* Skip link stays visible when focused on dark. */
 .theme-dark .skip-link { background: var(--accent); color: #15151b; }
-
-/* The logo art has a baked-in light background; frame it so it reads as an
-   intentional plate rather than a stray light box on the dark hero. */
-.theme-dark .hero__logo {
-  border-radius: var(--radius);
-  box-shadow: 0 0 0 1px var(--hairline), var(--shadow-soft);
-}
 
 /* One continuous surface: a single ambient glow fixed to the viewport, with the
    section dividers removed so the whole homepage reads as one big page. */

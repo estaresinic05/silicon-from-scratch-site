@@ -345,7 +345,10 @@
               Branches are perfect for the small, nearby hops of an <em>if</em> or a
               loop, but their offset is only wide enough to reach a limited range of
               addresses. Calling a function may mean leaping much farther across the
-              program, so RISC-V provides <em>jal</em> (jump and link). A
+              program, so RISC-V provides <em>jal</em> (jump and link). Where a
+              branch is conditional and only redirects the processor when its test
+              comes out true, a <em>jal</em> is an <strong>unconditional branch</strong>: it always
+              takes the jump, no comparison required. A
               <em>jal</em> does two things at once: it jumps to a far-off target, and
               it &ldquo;links&rdquo; by saving the address of the following
               instruction into a destination register, leaving a breadcrumb the
