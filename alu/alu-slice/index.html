@@ -268,7 +268,7 @@
           </p>
         </div>
 
-        <figure class="figure slice-figure">
+        <figure class="figure slice-figure" data-no-enlarge>
           <img src="../../assets/ALU/slice-architecture.jpg"
                alt="The finished ALU slice shown two ways side by side: on the left the generic slice, where a and b pass through their invert muxes into an AND gate, an OR gate, and an adder, and a 4-to-1 Operation mux selects among AND, OR, the adder sum, and a 'less' input to produce the Result with a carry-out Cout; on the right the most-significant slice, which adds overflow-detection logic and a 'set' output that is routed back down to the least-significant slice's 'less' input."
                decoding="async" />
@@ -312,7 +312,7 @@
         </div>
 
         <div class="split split--media-left">
-          <figure class="figure" style="max-width: 30rem;">
+          <figure class="figure enlarge-lg" style="max-width: 30rem;">
             <img src="../../assets/ALU/one-last-thing.jpg"
                  alt="Hand-worked arithmetic comparing -7 with 6 in 4-bit two's complement: on the left, -7 - 6 written as 1001 - 0110; on the right, the same computation as -7 + (-6), i.e. 1001 + 1010 = 10011, whose low four bits read 0011 = 3."
                  decoding="async" />

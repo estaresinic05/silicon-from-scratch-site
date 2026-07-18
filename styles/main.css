@@ -2999,6 +2999,13 @@ code.ctrl-sig,
 .gate-sim__outs { display: flex; align-items: center; gap: 0.15rem 0.85rem; flex-wrap: wrap; }
 .gate-sim__val { font-weight: 600; font-size: 1rem; color: var(--accent-deep); }
 .gate-sim__val[data-bad="1"] { color: var(--soft-ink); }
+/* The instruction-memory sim is short, so its return arrow was stubby next to the
+   taller data-memory one. Match the data-memory arrow's height for consistency. */
+.mem-card--imem .gate-card__return { min-height: 7.5rem; }
+/* The taller arrow steals height from the code editor; grow the card a touch so
+   the Verilog block fits without a scrollbar. */
+.mem-card--imem .code-editor { min-height: 26rem; }
+
 .gate-card__return {
   flex: none;
   display: inline-flex;
@@ -3115,6 +3122,21 @@ code.ctrl-sig,
   max-width: 100%;
   max-height: 78vh;
 }
+
+/* flow-figure has no in-page card; give it the standard card look when enlarged
+   so it matches the other lightbox images (paper background, border, radius). */
+.enlarge-overlay .flow-figure {
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: clamp(var(--space-2), 3vw, var(--space-4));
+}
+.enlarge-overlay .flow-figure img { border-radius: var(--radius-sm); }
+
+/* Opt-in: figures marked .enlarge-lg open larger in the lightbox. The
+   !important overrides any in-page inline max-width the clone carries over. */
+.enlarge-overlay .enlarge-lg { max-width: min(94vw, 820px) !important; }
+.enlarge-overlay .enlarge-lg img { max-height: 86vh; }
 
 @media (prefers-reduced-motion: reduce) {
   .enlargeable,
