@@ -1819,15 +1819,21 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   gap: clamp(var(--space-3), 3vw, var(--space-4));
   margin-top: var(--space-2);
 }
-/* Stretch the card to fill the row and drop its top by the same space-4 the
-   intro paragraph uses, so the card's top edge stays flush with the top of the
-   "But a program is not just…" paragraph at every desktop width, while its
-   bottom keeps tracking the waveform's lower edge. */
-.dmem-layout .mem-card { flex: 0 0 36rem; width: auto; max-width: 36rem; margin: var(--space-4) 0 0; align-self: stretch; }
-/* Let the two flip faces fill that stretched height (they share this grid
-   footprint), so the extra room becomes breathing space around the diagram
-   rather than leaving the card content floating. */
-.dmem-layout .mem-card .gate-card__inner { height: 100%; }
+/* Drop the card's top by the same space-4 the intro paragraph uses, so its top
+   edge stays flush with the "But a program is not just…" paragraph. The card
+   takes its OWN natural height (align-self: flex-start) instead of stretching to
+   match the waveform column — otherwise toggling signals off shrinks the flex
+   row and squeezes this card, forcing a scrollbar. */
+.dmem-layout .mem-card { flex: 0 0 36rem; width: auto; max-width: 36rem; margin: var(--space-4) 0 0; align-self: flex-start; }
+.dmem-layout .mem-card .gate-card__inner { height: auto; }
+/* The editor's <pre>/<textarea> are normally absolutely positioned, so the body
+   has no height of its own and only shows all the code when the card is stretched
+   tall (which coupled it to the waveform). Float the highlighted <pre> back into
+   normal flow so the body grows to fit the whole module; the transparent
+   <textarea> still overlays it (the body stays position:relative). Now the card
+   is sized by its code, and the waveform's height can't change it. */
+.dmem-layout .code-editor__body { min-height: 0; }
+.dmem-layout .code-editor__hl { position: static; height: auto; }
 /* The front face is a `.figure` (top margin: space-5) while the back is a plain
    div, so the front's card used to sit ~48px lower than the back and broke the
    flush-with-paragraph alignment. Zero that margin and let the front stretch to
