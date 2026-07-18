@@ -127,8 +127,7 @@
         ["Testing Your ALU", "alu/testing/"],
         "Bonus: Carry Lookahead"
       ]],
-      ["Multiplier", ["Coming Soon"]],
-      ["Divider", ["Coming Soon"]]
+      ["Multiplier & Divider", ["Coming Soon"]]
     ]],
     ["Intermediate", [
       ["Single Cycle CPU", [

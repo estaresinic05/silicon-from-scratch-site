@@ -3138,6 +3138,11 @@ code.ctrl-sig,
 .enlarge-overlay .enlarge-lg { max-width: min(94vw, 820px) !important; }
 .enlarge-overlay .enlarge-lg img { max-height: 86vh; }
 
+/* Wide images (e.g. the full waveform) fill nearly the whole viewport width
+   when enlarged, since the default 1000px cap leaves them small. */
+.enlarge-overlay .enlarge-wide { max-width: 96vw !important; }
+.enlarge-overlay .enlarge-wide img { max-width: 100%; max-height: 90vh; }
+
 @media (prefers-reduced-motion: reduce) {
   .enlargeable,
   .enlarge-overlay,

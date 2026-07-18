@@ -85,19 +85,21 @@
       <div class="doc-hero__text">
         <h1 id="tst-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">Testing Your</span> <span class="title-eyebrow__group">Single-Cycle CPU</span></span></h1>
         <p class="doc-hero__lead">
-          We have assembled every piece into a working single-cycle CPU, but a design
-          that <em>looks</em> right on paper is not the same as one that <em>is</em>
-          right. Before we can trust it, we have to prove it. In this lesson we build a
-          self checking <strong>testbench</strong>. It runs real instructions through
-          the processor and compares every result against an independent reference, so
-          that any mismatch is caught the instant it happens, whether it is a stray
-          control signal, an off by one immediate, or a branch that goes the wrong way.
+          We already tested our ALU, but a whole CPU is a different challenge. It
+          remembers values and runs a complete program one clock at a time, so proving
+          it correct takes far more than a single check. In this lesson we build a self
+          checking <strong>testbench</strong> for the processor, and prove it works down
+          to the very last bit.
         </p>
+        <div class="doc-hero__actions">
+          <span class="doc-hero__prompt">Think you got this already?</span>
+          <a class="btn btn--primary" href="#check">Skip to Check Yourself</a>
+        </div>
       </div>
 
       <figure class="doc-hero__art">
-        <img src="../../assets/single-cycle-cpu/sc-cpu-architecture.jpg"
-             alt="The complete single-cycle RISC-V datapath — program counter, instruction and data memories, register file, immediate generator, ALU, control unit, and the muxes that steer each instruction — the whole design that the testbench exercises end to end."
+        <img src="../../assets/single-cycle-cpu/waveform-crop.jpg"
+             alt="A waveform viewer showing the single-cycle CPU testbench running its program. The left panel lists the signals — clk, reset, pc, fetchedInstr, opcode, funct3, immediate, the control lines, ALUresult, readData1 and 2, and the lessThan and equalsZero flags — and the right panel plots each one across time as the processor steps from one instruction to the next."
              decoding="async" />
       </figure>
     </section>
@@ -110,66 +112,65 @@
         </div>
 
         <div class="prose prose--flow">
+          <a class="code-card code-card--doc code-card--aside"
+             href="https://github.com/estaresinic05/Silicon-From-Scratch/blob/main/single-cycle-cpu/docs/design-verification-report.pdf"
+             target="_blank" rel="noopener">
+            <span class="code-card__thumbwrap">
+              <img class="code-card__thumb"
+                   src="../../assets/single-cycle-cpu/design-verification-report-thumb.jpg"
+                   alt="The first page of the Design Verification Report for the RISC-V single-cycle CPU, showing the title, a verification result of PASS with zero errors, and the Silicon From Scratch logo."
+                   decoding="async" />
+            </span>
+            <span class="code-card__row">
+              <svg class="code-card__logo" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+              </svg>
+              <span class="code-card__text">
+                <span class="code-card__title">See the full report on GitHub</span>
+                <span class="code-card__sub">The complete testbench, results, and coverage</span>
+              </span>
+              <span class="code-card__arrow" aria-hidden="true">&rarr;</span>
+            </span>
+          </a>
           <p>
-            When we tested the ALU, we already met the core idea behind good
-            verification. We built a self checking testbench that fed the design a set of
-            carefully chosen inputs, worked out the correct answer a second way using an
-            independent model, and compared the two. If they ever disagreed, the
-            testbench told us at once. We use that very same idea here. What changes is
-            the size of the thing we are checking. The ALU is a single combinational
-            block with no memory, while the CPU is a complete machine that runs a program
-            over time. Testing a machine that remembers values and changes from one clock
-            to the next asks for three new ideas.
+            When we tested the ALU, we built a self checking testbench that fed the design
+            chosen inputs, worked out the right answer a second way with an independent
+            model, and compared the two. The same idea carries over here. What changes is
+            the scale. The ALU was a single combinational block, while the CPU is a whole
+            machine that runs a program over time, and that asks for two new ideas.
           </p>
 
           <p>
-            The first idea is that we now test time and state rather than a single
-            snapshot. The ALU has no memory, so its test could hand it one pair of inputs,
-            wait a moment for the logic to settle, and check the result once. The CPU is
-            different. It holds values in its registers and its data memory, and it works
-            through its program one clock at a time. To keep up with it, our reference
-            model runs alongside the processor in lockstep. It carries out the same
-            instruction the CPU is about to carry out, and after every clock edge we pause
-            and compare. Instead of one check at the end, we perform a fresh check on
-            every cycle of the whole program.
+            The first idea is that we check the entire state of the machine on every cycle,
+            not just one number at the end. Our reference model runs alongside the
+            processor in <strong>lockstep</strong>, advancing one instruction for every
+            instruction the CPU executes so the two never drift apart in time. After each
+            clock edge we compare everything, the program counter, all thirty two
+            registers, and every word of data memory, and the testbench flags the smallest
+            disagreement at once.
           </p>
 
           <p>
-            The second idea is how much we look at. When we tested the ALU, we watched one
-            result bus along with the overflow and zero flags, and that was the entire
-            visible output of the block. A processor has far more state worth checking.
-            After each instruction we compare the program counter, all thirty two
-            registers, and every word of data memory against the reference model. If any
-            one of them drifts from the expected value, even in a corner of memory the
-            current instruction never touched, the testbench notices. We are no longer
-            checking a single number. We are checking the entire state of the machine.
+            The second idea is that we check against two independent references instead of
+            one. Alongside the lockstep model we work out the expected final state by hand
+            and write it into a table. When the hardware, the lockstep model, and that hand
+            worked table all agree, we can trust the design is right and that our test did
+            not simply miss the problem.
           </p>
 
-          <p>
-            The third idea is that we check the design against two independent references
-            instead of one. The ALU test trusted a single behavioral model, and for a
-            small block that was reasonable. For a whole processor we want more assurance,
-            because a mistake could hide just as easily in our checking code as in the
-            design itself. So alongside the lockstep model we add a second reference that
-            is built in a completely different way. We work out the expected final state
-            of the registers and memory by hand, write it into a table, and compare the
-            processor against that table once the program finishes. When the hardware, the
-            lockstep model, and the hand worked table all agree, we can be confident that
-            the design is correct and that our test did not simply fail to notice a
-            problem.
-          </p>
-
-          <p>
-            These three ideas, checking over time, checking the full state, and checking
-            against two independent references, are what set a processor testbench apart
-            from a unit test of the ALU. Everything else carries straight over from the
-            work we already did, from the self checking structure to the curated inputs to
-            the pass or fail banner at the end. If you would like to see the full
-            testbench, including every task and the complete set of results, the entire
-            <a href="https://github.com/estaresinic05/Silicon-From-Scratch/blob/main/single-cycle-cpu/docs/design-verification-report.pdf"
-               target="_blank" rel="noopener">design verification report</a>
-            is available on GitHub.
-          </p>
+          <a class="recall-card" href="../../alu/testing/" style="margin-top: 2.7rem; max-width: 46rem;">
+            <svg class="recall-card__icon" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 14 4 9l5-5" />
+              <path d="M4 9h11a5 5 0 0 1 0 10h-1" />
+            </svg>
+            <span class="recall-card__text">
+              <span class="recall-card__eyebrow">Go back</span>
+              <span class="recall-card__title">Forgot how we tested the ALU?</span>
+              <span class="recall-card__sub">Revisit the self checking testbench we built for the ALU.</span>
+            </span>
+          </a>
         </div>
       </div>
     </section>
@@ -184,61 +185,41 @@
         <div class="split ct-split">
           <div class="prose">
             <p>
-              To test the processor we hand it a short program and let it run from
-              beginning to end. The program is only about thirty instructions long, but it
-              is written with care. Rather than a random pile of operations, it reads like
-              a small computation. The early instructions load a few starting values into
-              registers, and the later instructions build on those values, so each result
-              feeds naturally into the next. This gives the test a real program flow, which
-              matters because a processor is not just a set of instructions but a machine
-              that carries values forward from one step to the next.
+              To test the processor we hand it a short program, about thirty instructions,
+              and let it run from start to finish. It is written like a small computation
+              rather than a random pile of operations: early instructions load a few
+              starting values and later ones build on them, so each result feeds naturally
+              into the next.
             </p>
 
             <p>
-              The first job of the program is to use every kind of instruction the
-              processor supports. It performs register to register arithmetic and logic
-              with <em>add</em>, <em>sub</em>, <em>and</em>, <em>or</em>, and <em>slt</em>.
-              It repeats those operations against immediate values with <em>addi</em>,
-              <em>andi</em>, <em>ori</em>, and <em>slti</em>. It moves data to and from
-              memory with <em>lw</em> and <em>sw</em>. And it steers the flow of control
-              with the three branches, <em>beq</em>, <em>bne</em>, and <em>blt</em>. By the
-              time the program finishes, every instruction the design claims to support has
-              actually run on the hardware.
+              The program is built for coverage. It exercises every instruction the design
+              supports, from register arithmetic and logic with <em>add</em>, <em>sub</em>,
+              <em>and</em>, <em>or</em>, and <em>slt</em>, to their immediate forms
+              <em>addi</em>, <em>andi</em>, <em>ori</em>, and <em>slti</em>, to memory
+              access with <em>lw</em> and <em>sw</em>, and the branches <em>beq</em>,
+              <em>bne</em>, and <em>blt</em>. But running each one once is not enough, since
+              many behave differently depending on their inputs. So a set less than is tried
+              both true and false, an immediate add is given a positive value and a negative
+              one, a load uses a negative offset, and a write to <em>x0</em> checks that the
+              processor quietly ignores it.
             </p>
 
             <p>
-              Simply running each instruction once is not enough, because many instructions
-              behave differently depending on their inputs. A set less than has to be tried
-              when the comparison is true and again when it is false, so the program does
-              both. An immediate add is given a positive immediate in one place and a
-              negative immediate in another. A load is performed with a negative offset
-              rather than only a positive one. There is even an instruction that writes to
-              register <em>x0</em>, which the processor must quietly ignore, since
-              <em>x0</em> is permanently zero. Each of these is a separate case, and the
-              program is arranged to reach all of them.
-            </p>
-
-            <p>
-              Branches receive the most attention, because a branch has two outcomes that
-              travel through different logic. If we only ever tested a branch that was
-              taken, we would never confirm what happens when its condition is false, and
-              the reverse is just as true. So each branch appears more than once. In one
-              place the values are set up so the condition holds and the processor jumps to
-              a new address, and in another the condition fails and the processor simply
-              continues to the next instruction. A few instructions in the listing sit
-              directly after a taken branch and are never meant to run at all. When the
-              processor skips over them exactly as planned, that too is evidence that the
-              branch did its job.
-            </p>
-
-            <p>
-              Taken together, these choices form a coverage checklist. It names every
-              instruction and every case we intend to reach, and as we write the program we
-              make sure each item is accounted for. Anything left unchecked at the end is a
-              gap we know about and can come back to fill. This is how a program of only
-              thirty instructions can give us honest confidence in a processor that could
+              Branches get the most attention, since each has a taken and a not-taken path
+              through different logic, so every branch appears more than once, and a few
+              instructions sit right after a taken branch to confirm they are skipped.
+              Together these choices form a coverage checklist: every instruction and case
+              we mean to reach, with anything left unchecked a gap we know about. That is
+              how thirty instructions can give honest confidence in a processor that could
               one day run billions.
             </p>
+
+            <figure class="figure enlarge-wide" style="margin-top: var(--space-4);">
+              <img src="../../assets/single-cycle-cpu/waveform.jpg"
+                   alt="The full testbench waveform: the left panel lists every signal in the datapath — clk, reset, pc, fetchedInstr, opcode, funct3, immediate, the control lines, ALUControl, readData1 and 2, ALUresult, dataToWrite, and the lessThan and equalsZero flags — and the right panel plots each one across time as the thirty instruction program runs one clock at a time."
+                   decoding="async" />
+            </figure>
           </div>
 
           <figure class="code-editor code-editor--static prog-card">
@@ -283,29 +264,46 @@ FE1048E3  <span class="tok-cm">// blt x0, x1, -16</span>
       </div>
     </section>
 
-    <!-- ===================== REPORT SENDOFF ============================= -->
-    <section class="section section--tight" id="report-sendoff" aria-label="Read the full report">
-      <div class="container">
-        <a class="code-card code-card--doc"
-           href="https://github.com/estaresinic05/Silicon-From-Scratch/blob/main/single-cycle-cpu/docs/design-verification-report.pdf"
-           target="_blank" rel="noopener">
-          <span class="code-card__thumbwrap">
-            <img class="code-card__thumb"
-                 src="../../assets/single-cycle-cpu/design-verification-report-thumb.jpg"
-                 alt="The first page of the Design Verification Report for the RISC-V single-cycle CPU, showing the title, a verification result of PASS with zero errors, and the Silicon From Scratch logo."
-                 decoding="async" />
-          </span>
-          <span class="code-card__row">
-            <svg class="code-card__logo" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-            </svg>
-            <span class="code-card__text">
-              <span class="code-card__title">See the full report on GitHub</span>
-              <span class="code-card__sub">The complete testbench, results, and coverage</span>
-            </span>
-            <span class="code-card__arrow" aria-hidden="true">&rarr;</span>
-          </span>
-        </a>
+    <!-- ============================== CHECK YOURSELF ===================== -->
+    <section class="section section--tight" id="check" aria-labelledby="check-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="check-title">Check Yourself</h2>
+        </div>
+
+        <div class="quiz" id="quiz" style="max-width: 60rem;">
+          <p class="quiz__q">The short program below is meant to test the
+            <em>beq</em> instruction. Which case does it fail to cover?</p>
+
+          <div class="quiz__reveal">
+            <figure class="figure figure--photo quiz__figure" style="max-width: 52rem;">
+              <img src="../../assets/single-cycle-cpu/test-program.jpg"
+                   alt="A hand-drawn test program titled Test Program: addi x1, x0, 4; addi x2, x0, 4; beq x1, x2, 8; addi x3, x0, 1; addi x4, x1, x2. Because x1 and x2 are both set to 4, the beq condition is always true, so the branch is always taken and the addi x3 instruction is skipped."
+                   decoding="async" />
+            </figure>
+          </div>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button"><span>Nothing important is missing &mdash; testing the taken branch is enough, since the not-taken path runs through the same logic anyway.</span></button>
+            <button class="quiz__opt" type="button"><span>The case where <em>x1</em> and <em>x2</em> are equal, so the branch is taken and skips the following instruction.</span></button>
+            <button class="quiz__opt" type="button"><span>The case where <em>beq</em> compares one of its registers against <em>x0</em>.</span></button>
+            <button class="quiz__opt" type="button" data-correct="true"><span>The case where <em>x1</em> and <em>x2</em> hold different values, so the branch is <em>not</em> taken and execution falls through to the next instruction.</span></button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <div class="quiz__next quiz__next--done">
+            <p class="quiz__done">Congratulations! You have completed the Single Cycle CPU! &#128079;</p>
+            <div class="quiz__done-actions">
+              <a class="btn btn--primary" href="../../coming-soon/">
+                Start the Pipelined CPU <span aria-hidden="true">&rarr;</span>
+              </a>
+              <a class="btn btn--primary" href="../../coming-soon/">
+                Learn the Memory Hierarchy <span aria-hidden="true">&rarr;</span>
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -321,13 +319,6 @@ FE1048E3  <span class="tok-cm">// blt x0, x1, -16</span>
       <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
          target="_blank" rel="noopener">GitHub Repository</a>
     </div>
-    <p class="container footer__credit">
-      Based on the author&rsquo;s
-      <a href="../../assets/single-cycle-cpu/design-verification-report.pdf"
-         target="_blank" rel="noopener">Design Verification Report</a>
-      for the RISC-V single-cycle CPU, a top-level integration testbench of the
-      <em>sc_cpu_top_level</em> module.
-    </p>
   </footer>
 
   <!-- Mobile nav toggle + project directory drawer -->
@@ -342,5 +333,115 @@ FE1048E3  <span class="tok-cm">// blt x0, x1, -16</span>
   <!-- Enlarge: static figure images pop on hover and open enlarged on a
        blurred backdrop when clicked (see scripts/enlarge.js). -->
   <script src="../../scripts/enlarge.js" defer></script>
+
+  <!-- Confetti celebration for finishing the module: a self-contained canvas
+       burst that rains from the top of the screen under gravity, with drift and
+       spin. No external library, so nothing can fail to load. Skipped entirely
+       for users who prefer reduced motion. -->
+  <script>
+  (function () {
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.launchConfetti = function () {
+      if (reduce) return;
+      var colors = ["#b794f6", "#6B2FC9", "#86efac", "#4ec9b0", "#f4a5d0", "#ffd166", "#63c7ff"];
+      var canvas = document.createElement("canvas");
+      canvas.setAttribute("aria-hidden", "true");
+      canvas.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999";
+      document.body.appendChild(canvas);
+      var ctx = canvas.getContext("2d");
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      function W() { return window.innerWidth; }
+      function H() { return window.innerHeight; }
+      function resize() {
+        canvas.width = W() * dpr;
+        canvas.height = H() * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      resize();
+      window.addEventListener("resize", resize);
+      function rand(a, b) { return a + Math.random() * (b - a); }
+      var parts = [];
+      for (var i = 0; i < 220; i++) {
+        parts.push({
+          x: rand(0, W()),
+          y: rand(-H() * 2, -10),          // staggered well above the top -> a longer, sustained fall
+          vx: rand(-1.4, 1.4),
+          vy: rand(1, 3),
+          size: rand(6, 12),
+          ratio: rand(0.45, 1),            // rectangles of varying aspect
+          round: Math.random() < 0.22,     // a few round pieces
+          color: colors[(Math.random() * colors.length) | 0],
+          rot: rand(0, Math.PI * 2),
+          vr: rand(-0.22, 0.22)
+        });
+      }
+      var gravity = 0.1, drag = 0.995, last = null;
+      function frame(t) {
+        if (last === null) last = t;
+        var dt = Math.min((t - last) / 16.67, 2);   // normalize to ~60fps steps
+        last = t;
+        ctx.clearRect(0, 0, W(), H());
+        for (var i = parts.length - 1; i >= 0; i--) {
+          var p = parts[i];
+          p.vy += gravity * dt;
+          p.vx *= Math.pow(drag, dt);
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.rot += p.vr * dt;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          if (p.round) {
+            ctx.beginPath();
+            ctx.arc(0, 0, p.size * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillRect(-p.size / 2, -p.size * p.ratio / 2, p.size, p.size * p.ratio);
+          }
+          ctx.restore();
+          if (p.y > H() + 40) parts.splice(i, 1);
+        }
+        if (parts.length) {
+          requestAnimationFrame(frame);
+        } else {
+          window.removeEventListener("resize", resize);
+          canvas.remove();
+        }
+      }
+      requestAnimationFrame(frame);
+    };
+  })();
+  </script>
+
+  <!-- "Check yourself" quiz: colour the chosen answer, show feedback, and reveal
+       the continue button once the correct answer is picked. -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          if (next) next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+          if (window.launchConfetti) window.launchConfetti();
+        } else {
+          btn.classList.add("is-wrong");
+          feedback.textContent = "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>
