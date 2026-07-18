@@ -20,7 +20,8 @@
       ".gate-card", ".code-editor", ".datapath", ".reveal-hint",
       '[class*="-reveal"]', '[class*="reveal-fig"]', '[class*="wave"]',
       '[class*="alu-widget"]', ".alu-panel",
-      '[role="button"]', "a", "button"
+      '[role="button"]', "a", "button",
+      "[data-no-enlarge]"   // explicit opt-out on a figure or image
     ].join(", ");
 
     // The card (the enclosing <figure>) is the enlarge target, so its
