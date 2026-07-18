@@ -3054,3 +3054,74 @@ code.ctrl-sig,
   .gate-card__face--back,
   .latch-swap__img { transition: none; }
 }
+
+/* ==========================================================================
+   ENLARGE — static figure images pop on hover and open enlarged on a blurred
+   backdrop when clicked (see scripts/enlarge.js, which tags .enlargeable and
+   builds the .enlarge-overlay). The whole card scales, not just the image.
+   ========================================================================== */
+.enlargeable {
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease;
+  transform-origin: center;
+}
+.enlargeable:hover,
+.enlargeable:focus-visible {
+  transform: scale(1.03);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .45);
+}
+.enlargeable:focus-visible { outline: none; }
+
+.enlarge-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5vmin;
+  background: rgba(12, 12, 18, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  transition: opacity .22s ease;
+  cursor: pointer;
+}
+.enlarge-overlay.is-open { opacity: 1; }
+
+/* The cloned card, enlarged and centred — keeps its own background, border and
+   radius, but scaled up and free of its in-page layout limits. */
+.enlarge-overlay .figure,
+.enlarge-overlay .doc-hero__art,
+.enlarge-overlay .flow-figure,
+.enlarge-overlay .aboutme__photo {
+  margin: 0;
+  width: auto;
+  max-width: min(92vw, 1000px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .5);
+  transform: scale(.94);
+  transition: transform .22s ease;
+}
+.enlarge-overlay.is-open .figure,
+.enlarge-overlay.is-open .doc-hero__art,
+.enlarge-overlay.is-open .flow-figure,
+.enlarge-overlay.is-open .aboutme__photo { transform: scale(1); }
+.enlarge-overlay .figure img,
+.enlarge-overlay .doc-hero__art img,
+.enlarge-overlay .flow-figure img,
+.enlarge-overlay .aboutme__photo img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 78vh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enlargeable,
+  .enlarge-overlay,
+  .enlarge-overlay .figure,
+  .enlarge-overlay .doc-hero__art,
+  .enlarge-overlay .flow-figure,
+  .enlarge-overlay .aboutme__photo { transition: none; }
+  .enlargeable:hover, .enlargeable:focus-visible { transform: none; }
+}
