@@ -102,8 +102,8 @@
       </div>
 
       <figure class="doc-hero__art">
-        <img src="../../assets/pipelined-cpu/pipelining.jpg"
-             alt="A hand-drawn pipeline timing diagram. A Time axis runs from 0 to 700 picoseconds in 100 ps steps. Three instructions move through five stages — Instruction Fetch, Reg, ALU, Data Access, and Reg — each stage taking 100 ps. The instructions are staggered by 100 ps so that at any moment several of them occupy different stages at the same time, overlapping like an assembly line."
+        <img src="../../assets/pipelined-cpu/pipelining-sketch.jpg"
+             alt="A hand-drawn illustration of a winding pipe made of alternating purple and teal segments, with the word Pipelining written beside it."
              decoding="async" />
       </figure>
     </section>
@@ -212,7 +212,7 @@
           </p>
           <ol>
             <li>
-              <strong>Instruction Fetch</strong>: we grab the next
+              <strong>Fetch</strong>: we grab the next
               instruction from instruction memory, using the program counter to know
               which one to read.
             </li>
@@ -236,12 +236,38 @@
           </ol>
         </div>
 
-        <figure class="figure" style="max-width: 62rem; margin-inline: auto;">
-          <img src="../../assets/pipelined-cpu/pipelining.jpg"
-               alt="A hand-drawn pipeline timing diagram. A Time axis runs from 0 to 700 picoseconds in 100 ps steps. Three instructions move through five stages, labelled Instruction Fetch, Reg, ALU, Data Access, and Reg, each stage taking 100 ps. Each instruction starts 100 ps after the one before it, so at any moment several of them occupy different stages at once."
-               decoding="async" />
-          <figcaption>It is assumed that the write to the register file occurs in the first half of the clock cycle while the read occurs in the second half.</figcaption>
-        </figure>
+        <div class="split split--media-left">
+          <figure class="figure" style="max-width: 38rem;">
+            <img src="../../assets/pipelined-cpu/pipelining.jpg"
+                 alt="A hand-drawn pipeline timing diagram. A Time axis runs from 0 to 700 picoseconds in 100 ps steps. Three instructions move through five stages, labelled Instruction Fetch, Reg, ALU, Data Access, and Reg, each stage taking 100 ps. Each instruction starts 100 ps after the one before it, so at any moment several of them occupy different stages at once."
+                 decoding="async" />
+            <figcaption>It is assumed that the write to the register file occurs in the first half of the clock cycle while the read occurs in the second half.</figcaption>
+          </figure>
+
+          <div class="prose">
+          <p>
+            Splitting the work this way also changes what sets our clock speed. In
+            the single cycle CPU, every instruction had to finish all of its work
+            inside a single clock cycle, so the clock had to be slow enough for the
+            slowest instruction to make it from start to end. In the pipelined
+            design each clock cycle only has to be long enough for the slowest
+            single stage to do its part, since that is all any one instruction
+            advances in a cycle. Our clock is now bottlenecked by the slowest
+            <strong>stage</strong> rather than the slowest instruction.
+          </p>
+          <p>
+            This does not make an individual instruction any quicker. A single
+            instruction still has to travel through all five stages, so the time
+            from when it enters the pipeline to when it comes out the other end is
+            just the same as before. What changes is that we now keep five
+            instructions in flight at once, each sitting in a different stage. Once
+            the pipeline is full, a finished instruction comes out every clock cycle
+            instead of every five, which dramatically raises our
+            <strong>throughput</strong>, the number of instructions the processor
+            completes in a given amount of time.
+          </p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -271,6 +297,13 @@
           </div>
 
           <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <!-- Revealed by the quiz script once the correct answer is chosen. -->
+          <div class="quiz__next">
+            <a class="btn btn--primary" href="../../coming-soon/?topic=Pipelined%20Datapath">
+              Continue to the Pipelined Datapath <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
         </div>
       </div>
     </section>
@@ -328,86 +361,6 @@
   })();
   </script>
 
-  <!-- Confetti celebration for finishing the module: a self-contained canvas
-       burst that rains from the top of the screen under gravity, with drift and
-       spin. No external library, so nothing can fail to load. Skipped entirely
-       for users who prefer reduced motion. -->
-  <script>
-  (function () {
-    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    window.launchConfetti = function () {
-      if (reduce) return;
-      var colors = ["#b794f6", "#6B2FC9", "#86efac", "#4ec9b0", "#f4a5d0", "#ffd166", "#63c7ff"];
-      var canvas = document.createElement("canvas");
-      canvas.setAttribute("aria-hidden", "true");
-      canvas.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999";
-      document.body.appendChild(canvas);
-      var ctx = canvas.getContext("2d");
-      var dpr = Math.min(window.devicePixelRatio || 1, 2);
-      function W() { return window.innerWidth; }
-      function H() { return window.innerHeight; }
-      function resize() {
-        canvas.width = W() * dpr;
-        canvas.height = H() * dpr;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      }
-      resize();
-      window.addEventListener("resize", resize);
-      function rand(a, b) { return a + Math.random() * (b - a); }
-      var parts = [];
-      for (var i = 0; i < 220; i++) {
-        parts.push({
-          x: rand(0, W()),
-          y: rand(-H() * 2, -10),          // staggered well above the top -> a longer, sustained fall
-          vx: rand(-1.4, 1.4),
-          vy: rand(1, 3),
-          size: rand(6, 12),
-          ratio: rand(0.45, 1),            // rectangles of varying aspect
-          round: Math.random() < 0.22,     // a few round pieces
-          color: colors[(Math.random() * colors.length) | 0],
-          rot: rand(0, Math.PI * 2),
-          vr: rand(-0.22, 0.22)
-        });
-      }
-      var gravity = 0.1, drag = 0.995, last = null;
-      function frame(t) {
-        if (last === null) last = t;
-        var dt = Math.min((t - last) / 16.67, 2);   // normalize to ~60fps steps
-        last = t;
-        ctx.clearRect(0, 0, W(), H());
-        for (var i = parts.length - 1; i >= 0; i--) {
-          var p = parts[i];
-          p.vy += gravity * dt;
-          p.vx *= Math.pow(drag, dt);
-          p.x += p.vx * dt;
-          p.y += p.vy * dt;
-          p.rot += p.vr * dt;
-          ctx.save();
-          ctx.translate(p.x, p.y);
-          ctx.rotate(p.rot);
-          ctx.fillStyle = p.color;
-          if (p.round) {
-            ctx.beginPath();
-            ctx.arc(0, 0, p.size * 0.5, 0, Math.PI * 2);
-            ctx.fill();
-          } else {
-            ctx.fillRect(-p.size / 2, -p.size * p.ratio / 2, p.size, p.size * p.ratio);
-          }
-          ctx.restore();
-          if (p.y > H() + 40) parts.splice(i, 1);
-        }
-        if (parts.length) {
-          requestAnimationFrame(frame);
-        } else {
-          window.removeEventListener("resize", resize);
-          canvas.remove();
-        }
-      }
-      requestAnimationFrame(frame);
-    };
-  })();
-  </script>
-
   <!-- "Check yourself" quiz: colour the chosen answer, show feedback, and reveal
        the continue button once the correct answer is picked. -->
   <script>
@@ -426,7 +379,6 @@
           feedback.classList.add("is-correct");
           if (next) next.classList.add("is-shown");
           quiz.classList.add("is-solved");
-          if (window.launchConfetti) window.launchConfetti();
         } else {
           btn.classList.add("is-wrong");
           feedback.textContent = "Incorrect, try again.";

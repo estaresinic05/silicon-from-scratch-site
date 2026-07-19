@@ -141,7 +141,7 @@
     ["Advanced", [
       ["Pipelined CPU", [
         ["Pipelining", "pipelined-cpu/pipelining/"],
-        "Constructing a Datapath",
+        "The Pipelined Datapath",
         "Control Unit",
         "Data Hazards",
         "Control Hazards",
