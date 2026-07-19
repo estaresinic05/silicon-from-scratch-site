@@ -325,17 +325,18 @@
             wait until the value it needs actually exists.
           </p>
           <p>
-            Back in the laundry, imagine the setting for your next wash depends on
-            how dirty the previous load turns out to be, something you only learn
-            once that load has come out of the washer. Even with a machine sitting
-            empty, you cannot start the next load until the earlier one has run far
-            enough to give you that answer. This time the next load is not waiting
-            for a machine; it is waiting for a result from the load ahead of it.
+            Back in the laundry, imagine your next task is to iron a particular
+            shirt, but that shirt is part of the load still churning in the washer.
+            The iron is hot and the board is set up, yet there is nothing for you to
+            do, because the shirt you need has not been washed and dried yet. You are
+            not waiting for a machine to free up this time; you are waiting for a
+            specific item that the load ahead of you has to finish producing before
+            your step can use it.
           </p>
         </div>
 
         <div class="split split--media-left" style="margin-top: var(--space-3);">
-          <figure class="figure" style="max-width: 34rem;">
+          <figure class="figure enlarge-wide--sm" style="max-width: 34rem;">
             <img src="../../assets/pipelined-cpu/data-hazard.jpg"
                  alt="Two RISC-V instructions. The first, add x20, x0, x1, writes its result into register x20. The second, sub x2, x20, x3, reads x20 as a source, so it depends on the result of the add just ahead of it."
                  decoding="async" />
@@ -428,6 +429,89 @@
 
         <div class="prose prose--flow" style="margin-top: var(--space-5);">
           <h3 style="margin-top: 0;">Control Hazards</h3>
+          <p>
+            A <strong>control hazard</strong>, sometimes called a
+            <strong>branch hazard</strong>, is the last of our three. It comes up
+            whenever the processor has to make a decision about what to do next based
+            on the result of an instruction that is still working its way through the
+            pipeline. Remember that the pipeline fetches a fresh instruction on every
+            single cycle, one after another, and to do that it has to assume it
+            already knows which instruction comes next. Most of the time it does,
+            because instructions simply run in order. Some instructions, though,
+            change that order, and until one of them finishes the processor cannot be
+            certain which instruction it ought to be fetching.
+          </p>
+          <p>
+            Back at the laundry, imagine that what you wash next depends on how the
+            load currently in the machine turns out. If it comes out still stained
+            you will run it again, and if it comes out clean you will move on to the
+            towels instead. You cannot know which pile to reach for until the current
+            load has finished, yet the whole point of a smooth laundry day was to
+            always have the next load ready to go. The line is stuck waiting on a
+            decision before it can keep moving.
+          </p>
+          <p>
+            In a processor this situation comes from <strong>branch
+            instructions</strong>, the instructions that let a program make choices
+            and repeat work, the jumps that sit behind an if statement or a loop. A
+            branch asks a question, such as whether two values are equal, and then
+            either carries straight on or jumps somewhere else depending on the
+            answer. The trouble is that the branch does not know its own answer until
+            it reaches the <em>Execute</em> stage, several cycles after it was
+            fetched. By then the pipeline has already gone ahead and fetched the
+            instructions sitting right behind it, and if the branch ends up jumping,
+            those were the wrong instructions to load.
+          </p>
+          <p>
+            There are two ways to deal with this: <strong>stalling</strong> and
+            <strong>predicting</strong>.
+          </p>
+        </div>
+
+        <div class="split split--media-right" style="margin-top: var(--space-4);">
+          <figure class="figure enlarge-wide" style="max-width: 40rem;">
+            <img src="../../assets/pipelined-cpu/branch-stall.jpg"
+                 alt="A pipeline timing diagram of a branch stall. The beq x1, x2, 36 branch instruction moves through Instruction Fetch, Instruction Decode, Execute, Mem, and Write Back, while the and x2, x20, x3 instruction behind it is held back by a row of Stall bubbles until the branch has resolved."
+                 decoding="async" />
+          </figure>
+
+          <div class="prose">
+            <div class="term-card">
+              <p class="term-card__title">Stalling</p>
+              <p>
+                Stalling is the simplest. We hold the pipeline still on every branch
+                until it has computed its answer and we know for certain which
+                instruction comes next. This is always correct, but it is slow,
+                because branches are common and every one of them would cost us
+                several idle cycles while the rest of the processor sits and waits.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="prose prose--flow" style="margin-top: var(--space-4);">
+          <div class="term-card">
+            <p class="term-card__title">Predicting</p>
+            <p>
+              Predicting is the faster approach. Rather than wait, the processor makes
+              a prediction about which way the branch will go and keeps fetching from
+              there as though the guess were already known to be right. This is called
+              <strong>branch prediction</strong>. A predictor can be as simple as
+              always assuming a branch is not taken, or it can watch how each branch
+              behaved in the past and bet that it will do the same again, which works
+              remarkably well for something like a loop that repeats many times.
+            </p>
+            <p>
+              A guess, of course, can be wrong. When the branch finally resolves and we
+              find that we predicted incorrectly, we have to throw away the instructions
+              we fetched by mistake and start again down the correct path, which costs
+              us exactly the stall we were trying to avoid. The key insight is that a
+              good predictor is right far more often than it is wrong. A correct guess
+              costs us nothing at all, and only the occasional wrong guess costs us a
+              stall, so predicting comes out much faster on average than stalling on
+              every branch, even though we pay a penalty each time we miss.
+            </p>
+          </div>
         </div>
       </div>
     </section>
@@ -444,7 +528,7 @@
             can avoid stalls using only forwarding, or can execute without
             stalling or forwarding.</p>
 
-          <figure class="figure figure--photo quiz__figure" style="max-width: 56rem;">
+          <figure class="figure figure--photo quiz__figure enlarge-wide" style="max-width: 56rem;">
             <img src="../../assets/home/check-yourself.jpg"
                  alt="Three short RISC-V instruction sequences (A, B, and C) that each set up a data hazard between successive instructions in the pipeline."
                  decoding="async" />

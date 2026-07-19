@@ -3183,7 +3183,15 @@ code.ctrl-sig,
 
 /* Wide images (e.g. the full waveform) fill nearly the whole viewport width
    when enlarged, since the default 1000px cap leaves them small. */
-.enlarge-overlay .enlarge-wide { max-width: 96vw !important; }
+/* width/float/margin !important neutralise any inline float-layout sizing the
+   clone carries over (e.g. the forwarding diagram floated at width: 40rem), so a
+   wide figure expands to the full 96vw when enlarged regardless of its in-page size. */
+.enlarge-overlay .enlarge-wide {
+  max-width: 96vw !important;
+  width: auto !important;
+  float: none !important;
+  margin: 0 !important;
+}
 .enlarge-overlay .enlarge-wide img { max-width: 100%; max-height: 90vh; }
 
 /* A touch smaller than enlarge-wide (used by the pipeline timing diagram). */

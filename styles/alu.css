@@ -489,6 +489,28 @@
   font-family: var(--font-mono);
   font-weight: 600;
 }
+/* Titled prose card: the same shaded surface as the list card, wrapping a short
+   passage under a mono accent kicker (e.g. the Stalling / Predicting approaches
+   under Control Hazards). */
+.term-card {
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  margin: var(--space-4) 0;
+}
+/* p.term-card__title so the accent colour outranks the base `.prose p` soft-ink. */
+.term-card p.term-card__title {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.82rem;
+  color: var(--accent);
+  margin: 0 0 var(--space-2);
+}
+.term-card p:not(.term-card__title) { margin: 0; }
+.term-card p:not(.term-card__title) + p { margin-top: var(--space-3); }
 /* A list already sitting inside a card (e.g. the edge-card) must not become a
    card-within-a-card — drop the frame and let the parent card hold it. */
 .edge-card ol,
