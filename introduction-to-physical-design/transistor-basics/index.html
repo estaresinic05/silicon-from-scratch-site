@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. Without JS this
+       never runs and the full page stays visible. -->
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>Transistor Basics</title>
+  <meta name="description"
+        content="A transistor is nothing more than a switch, and it is the building block of every modern computer. Learn how a transistor works and how a handful of them wire together into the logic gates behind every circuit." />
+
+  <!-- Social link previews: shared logo + "Silicon From Scratch" card (see index.html). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Silicon From Scratch" />
+  <meta property="og:title" content="Silicon From Scratch" />
+  <meta property="og:url" content="https://siliconfromscratch.com/introduction-to-physical-design/transistor-basics/" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+  <meta property="og:image:width" content="1408" />
+  <meta property="og:image:height" content="768" />
+  <meta property="og:image:alt" content="Silicon From Scratch logo" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Silicon From Scratch" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+
+  <!-- Favicon follows the browser colour scheme: the grey/purple mark on
+       light tab bars, the dark-theme symbol on dark ones. -->
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="/assets/home/logo-symbol-light.png" />
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="/assets/home/logo-symbol.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles, then the ALU project components (this page lives at
+       /introduction-to-physical-design/transistor-basics/, two levels down). -->
+  <link rel="stylesheet" href="../../styles/main.css" />
+  <link rel="stylesheet" href="../../styles/alu.css" />
+</head>
+<body class="theme-dark page-logic">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../../" aria-label="Silicon From Scratch — home">
+        <img class="wordmark__mark" src="../../assets/home/logo-symbol.png" alt="" aria-hidden="true" />
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="../../">Home</a>
+        <a href="../../meet-the-processor/">Meet the Processor</a>
+        <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+           target="_blank" rel="noopener">GitHub</a>
+        <a href="../../about/">About</a>
+        <a href="../../#tools">Tools</a>
+      </nav>
+
+      <div class="topbar__right">
+        <!-- Section index (desktop only): hover the ☰ to open the project directory -->
+        <div class="toc" id="page-toc">
+          <button class="toc__btn" type="button" aria-haspopup="true"
+                  aria-expanded="false" aria-label="Open the project directory">
+            <span class="nav-toggle__bars" aria-hidden="true"></span>
+          </button>
+          <ul class="toc__menu" aria-label="Project directory"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================== DOC HERO ============================ -->
+    <section class="doc-hero doc-hero--balanced container" aria-labelledby="tb-title">
+      <div class="doc-hero__text">
+        <h1 id="tb-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">Transistor</span> <span class="title-eyebrow__group">Basics</span></span></h1>
+        <p class="doc-hero__lead">
+          <strong>Transistors</strong> are the building blocks of every modern
+          computer, and yet each one is nothing more than a <strong>switch</strong>.
+          In this lesson we will look at how that switch actually works, and how just
+          a handful of them, wired together, build the very logic gates we met
+          earlier.
+        </p>
+      </div>
+
+      <figure class="doc-hero__art">
+        <img src="../../assets/introduction-to-physical-design/transistor-basics.jpg"
+             alt="A hand-drawn three-dimensional sketch of a transistor: a grey base with a green fin rising through a red gate slab, and two grey metal contacts standing above it, labelled Transistor Basics."
+             decoding="async" />
+      </figure>
+    </section>
+
+    <!-- ========================= ANATOMY OF A TRANSISTOR ================ -->
+    <section class="section" id="anatomy" aria-labelledby="anatomy-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="anatomy-title">The Anatomy of a Transistor</h2>
+        </div>
+
+        <div class="split split--media-right">
+          <figure class="figure" style="max-width: 26rem;">
+            <img src="../../assets/introduction-to-physical-design/finfet-exploded.jpg"
+                 alt="An exploded three-dimensional sketch of a transistor with its layers pulled apart: a grey silicon substrate at the bottom, a green fin standing on it that carries the source, channel, and drain, a thin yellow gate-oxide layer above it, and a red gate that sits across the channel."
+                 decoding="async" />
+          </figure>
+
+          <div class="prose">
+            <p>
+              Every transistor is built on a base of silicon called the
+              <strong>substrate</strong>, drawn here in grey. Rising out of it is the
+              part that actually does the work. Current enters at one end, called the
+              <strong>source</strong>, and leaves at the other, called the
+              <strong>drain</strong>. In the sketch these sit at the two ends of the
+              green block. Between them lies the <strong>channel</strong>, the stretch
+              of silicon that current has to cross to get from the source to the
+              drain.
+            </p>
+            <p>
+              Sitting over the channel is the <strong>gate</strong>, shown in red, and
+              this is the piece that gives a transistor its power. The gate never
+              actually touches the channel. A wafer-thin layer of insulating glass
+              called the <strong>gate oxide</strong>, drawn in yellow, keeps the two
+              apart, so the gate cannot pass any current of its own into the channel.
+              Instead it controls the channel from a distance, purely through the
+              electric field it creates when we place a voltage on it.
+            </p>
+          </div>
+        </div>
+
+        <div class="prose prose--flow" style="margin-top: var(--space-4);">
+          <p>
+            This is the whole trick. When we put the right voltage on the gate, its
+            electric field reaches through the oxide and pulls the channel into a
+            conducting state, opening a path so that current flows freely from the
+            source to the drain. Take the voltage away and the channel closes again,
+            and no current can cross. The gate is the lever, and the source and drain
+            are the two contacts it connects or separates. A transistor, for all its
+            tiny complexity, really is just a switch that another wire gets to flip.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+    <p class="container footer__credit">
+      Adapted from: David A. Patterson and John L. Hennessy,
+      <em>Computer Organization and Design RISC-V Edition: The Hardware/Software
+      Interface</em>, Second Edition, Appendix A, &ldquo;The Basics of Logic
+      Design&rdquo; (Morgan Kaufmann, 2021).
+    </p>
+  </footer>
+
+  <!-- Mobile nav toggle + project directory drawer -->
+  <script src="../../scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger from CDN for the same scroll-reveal feel as the rest
+       of the site. If they fail to load, scroll.js removes the `js` class and
+       the page is simply fully visible. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
+  <script src="../../scripts/scroll.js" defer></script>
+  <!-- Enlarge: static figure images pop on hover and open enlarged on a
+       blurred backdrop when clicked (see scripts/enlarge.js). -->
+  <script src="../../scripts/enlarge.js" defer></script>
+</body>
+</html>

@@ -148,7 +148,9 @@
         "Control Hazards",
         "Testing"
       ]],
-      ["Introduction to Physical Design", ["Coming Soon"]]
+      ["Introduction to Physical Design", [
+        ["Transistor Basics", "introduction-to-physical-design/transistor-basics/"]
+      ]]
     ]],
     ["Very Advanced", [
       ["Pipelined CPU Physical Design", ["Coming Soon"]],
