@@ -9,7 +9,7 @@
        never runs and the full page stays visible. -->
   <script>document.documentElement.classList.add("js");</script>
 
-  <title>Testing Your Single-Cycle CPU — Silicon From Scratch</title>
+  <title>Testing Your Single Cycle CPU</title>
   <meta name="description"
         content="A design that looks right on paper is not the same as one that is right. Build a self-checking testbench that runs a real program through the CPU and compares every result against an independent reference." />
 
@@ -83,7 +83,7 @@
     <!-- ============================== DOC HERO ============================ -->
     <section class="doc-hero doc-hero--balanced container" aria-labelledby="tst-title">
       <div class="doc-hero__text">
-        <h1 id="tst-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">Testing Your</span> <span class="title-eyebrow__group">Single-Cycle CPU</span></span></h1>
+        <h1 id="tst-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">Testing Your</span> <span class="title-eyebrow__group">Single Cycle CPU</span></span></h1>
         <p class="doc-hero__lead">
           We already tested our ALU, but a whole CPU is a different challenge. It
           remembers values and runs a complete program one clock at a time, so proving
@@ -98,8 +98,8 @@
       </div>
 
       <figure class="doc-hero__art">
-        <img src="../../assets/single-cycle-cpu/waveform-crop.jpg"
-             alt="A waveform viewer showing the single-cycle CPU testbench running its program. The left panel lists the signals — clk, reset, pc, fetchedInstr, opcode, funct3, immediate, the control lines, ALUresult, readData1 and 2, and the lessThan and equalsZero flags — and the right panel plots each one across time as the processor steps from one instruction to the next."
+        <img src="../../assets/single-cycle-cpu/testing.jpg"
+             alt="A hand-drawn illustration of two multimeter probes, one black and one red, touching the pins of a chip labelled CPU on a circuit board, as if testing it."
              decoding="async" />
       </figure>
     </section>
@@ -118,7 +118,7 @@
             <span class="code-card__thumbwrap">
               <img class="code-card__thumb"
                    src="../../assets/single-cycle-cpu/design-verification-report-thumb.jpg"
-                   alt="The first page of the Design Verification Report for the RISC-V single-cycle CPU, showing the title, a verification result of PASS with zero errors, and the Silicon From Scratch logo."
+                   alt="The first page of the Design Verification Report for the RISC-V single cycle CPU, showing the title, a verification result of PASS with zero errors, and the Silicon From Scratch logo."
                    decoding="async" />
             </span>
             <span class="code-card__row">
@@ -295,7 +295,7 @@ FE1048E3  <span class="tok-cm">// blt x0, x1, -16</span>
           <div class="quiz__next quiz__next--done">
             <p class="quiz__done">Congratulations! You have completed the Single Cycle CPU! &#128079;</p>
             <div class="quiz__done-actions">
-              <a class="btn btn--primary" href="../../coming-soon/">
+              <a class="btn btn--primary" href="../../pipelined-cpu/pipelining/">
                 Start the Pipelined CPU <span aria-hidden="true">&rarr;</span>
               </a>
               <a class="btn btn--primary" href="../../coming-soon/">

@@ -1460,7 +1460,9 @@ main section[id] { scroll-margin-top: 5rem; }
   font-size: clamp(1.15rem, 1.6vw, 1.35rem);
   line-height: 1.65;
 }
-.journey__step strong { color: var(--ink); font-weight: 600; }
+/* Match the muted grey bold used in lesson .prose: strong inherits the
+   paragraph's --soft-ink colour with the browser's bold weight. */
+.journey__step strong { color: var(--soft-ink); }
 /* "Learn more about pipelining" link: pulled up snug under the paragraph it
    follows, with a normal gap restored before the next paragraph. Scoped under
    .journey__step so it beats .step__more's later margin-top. */
@@ -3142,6 +3144,12 @@ code.ctrl-sig,
    when enlarged, since the default 1000px cap leaves them small. */
 .enlarge-overlay .enlarge-wide { max-width: 96vw !important; }
 .enlarge-overlay .enlarge-wide img { max-width: 100%; max-height: 90vh; }
+
+/* Laundry figure: opens larger than default but not full-bleed. width/height:auto
+   !important neutralise the inline flush-layout sizing (height + object-fit) the
+   clone carries over, so it shows at natural size within the caps. */
+.enlarge-overlay .enlarge-laundry { max-width: min(88vw, 1000px) !important; height: auto !important; }
+.enlarge-overlay .enlarge-laundry img { width: auto !important; height: auto !important; max-width: 100%; max-height: 78vh; }
 
 @media (prefers-reduced-motion: reduce) {
   .enlargeable,
