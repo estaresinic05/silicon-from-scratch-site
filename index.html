@@ -124,6 +124,13 @@
       </div>
     </section>
 
+    <!-- Scroll cue: a gently bobbing chevron pinned to the foot of the first
+         screen, inviting the reader to scroll. It fades out once they start
+         scrolling (toggled by the inline script near the bottom of this page). -->
+    <a class="hero__scroll" href="#path-title" aria-label="Scroll to explore">
+      <svg class="hero__scroll-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg>
+    </a>
+
     <!-- ===================== THE BUILD PATH ============================= -->
     <!-- Gate -> chip as a vertical sequence: a large line-art icon on the left,
          copy on the right, downward arrows between. Each step fades in as it
@@ -682,5 +689,16 @@ endmodule</textarea>
   <!-- Enlarge: static figure images pop on hover and open enlarged on a
        blurred backdrop when clicked (see scripts/enlarge.js). -->
   <script src="scripts/enlarge.js" defer></script>
+
+  <!-- Hero scroll cue: fade it out as soon as the reader starts scrolling. -->
+  <script>
+  (function () {
+    var cue = document.querySelector(".hero__scroll");
+    if (!cue) return;
+    function update() { cue.classList.toggle("is-hidden", window.scrollY > 40); }
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+  })();
+  </script>
 </body>
 </html>

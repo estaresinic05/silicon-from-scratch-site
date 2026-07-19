@@ -663,14 +663,55 @@ main section[id] { scroll-margin-top: 5rem; }
    8. HERO
  * ------------------------------------------------------------------ */
 .hero {
-  padding-block: clamp(var(--space-5), 8vw, var(--space-7));
+  position: relative;
+  padding-block: clamp(var(--space-4), 5.5vw, var(--space-6)) clamp(var(--space-5), 8vw, var(--space-7));
   text-align: center;
 }
+/* Scroll cue pinned to the foot of the first screen; the inline script on the
+   home page fades it out (adds .is-hidden) once the reader starts scrolling. */
+.hero__scroll {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(1.5rem, 4vh, 2.75rem);
+  transform: translateX(-50%);
+  z-index: 40;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  text-decoration: none;
+  color: var(--soft-ink);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition: opacity 0.4s ease, color 0.2s ease;
+}
+.hero__scroll.is-hidden { opacity: 0; pointer-events: none; }
+.hero__scroll:hover,
+.hero__scroll:focus-visible { color: var(--accent); }
+.hero__scroll-chev {
+  width: 1.9rem;
+  height: 1.9rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: hero-scroll-bob 1.8s ease-in-out infinite;
+}
+@keyframes hero-scroll-bob {
+  0%, 100% { transform: translateY(0); opacity: 0.65; }
+  50% { transform: translateY(5px); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero__scroll-chev { animation: none; }
+}
 .hero__logo {
-  width: min(700px, 92%);
+  width: min(800px, 92%);
   /* Negative bottom margin trims the transparent padding baked into the PNG,
-     pulling the headline up closer to the wordmark. */
-  margin: 0 auto -1.5rem;
+     pulling the headline (and the copy below it) up closer to the wordmark. */
+  margin: 0 auto -4rem;
 }
 .hero h1 {
   max-width: 18ch;
