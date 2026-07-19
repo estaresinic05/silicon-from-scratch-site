@@ -148,7 +148,7 @@
                stretch). The image is centred with object-fit: contain, and its
                own white background fills the spare space so the whitespace is
                seamless while the even border and rounded corners are preserved. -->
-          <figure class="figure figure--diagram enlarge-laundry" style="max-width: 44rem;">
+          <figure class="figure figure--diagram enlarge-laundry" style="max-width: 52rem;">
             <img src="../../assets/pipelined-cpu/laundary.jpg"
                  alt="A hand-drawn timing diagram of pipelined laundry. A Time axis runs from 5pm to 10pm in one-hour steps. Four loads move through three stages, a washer, a dryer, and a folded stack, each stage taking one hour. Each load starts an hour after the one before it, so at any moment one load is washing while another is drying and another is being folded, all overlapping like an assembly line."
                  decoding="async"
@@ -164,7 +164,7 @@
             so far more work finishes in the same amount of time.
           </p>
           <p>
-            Notice how at the very beginning and the very end of the workflow only
+            Notice how at the very beginning and the very end of the workflow, only
             one task is happening at a single moment in time. This is the pipeline
             <strong>filling and draining</strong>, and it is why the speedup is
             never quite as large as you might hope when there are only a few loads
@@ -181,9 +181,9 @@
             This same regularity is why the RISC-V instruction set was designed
             with pipelining in mind. Every instruction is exactly the same length,
             so the processor always knows where one instruction ends and the next
-            begins and can fetch them in a steady rhythm. The fields inside an
+            begins, and can fetch them in a steady rhythm. The fields inside an
             instruction, like the registers it reads and writes, almost always sit
-            in the same bit positions, so the decode stage can start pulling them
+            in the same bit positions, so the <em>Decode</em> stage can start pulling them
             out right away instead of first working out the instruction's shape.
             And unlike x86, RISC-V never operates directly on values still sitting
             in memory. Arithmetic happens only on registers, and memory is reached
@@ -205,7 +205,7 @@
 
         <div class="prose prose--flow">
           <p>
-            In our pipelined processor we break the work each instruction has to do
+            In our pipelined processor, we break the work each instruction has to do
             into five smaller stages, and we let a different instruction sit in each
             one at the same time. From start to finish, every instruction moves
             through the same five steps:
@@ -247,10 +247,10 @@
           <div class="prose">
           <p>
             Splitting the work this way also changes what sets our clock speed. In
-            the single cycle CPU, every instruction had to finish all of its work
+            the single-cycle CPU, every instruction had to finish all of its work
             inside a single clock cycle, so the clock had to be slow enough for the
             slowest instruction to make it from start to end. In the pipelined
-            design each clock cycle only has to be long enough for the slowest
+            design, each clock cycle only has to be long enough for the slowest
             single stage to do its part, since that is as far as any one
             instruction advances in a cycle. Our clock is now bottlenecked by the
             slowest <em>stage</em> rather than the slowest instruction.
@@ -284,31 +284,43 @@
             entirely for free. Because several instructions are now flowing through
             the processor at once, moments come up where the next instruction
             cannot safely begin on the very next clock cycle. We call these moments
-            <strong>hazards</strong>, and if we ignore them the pipeline will
+            <strong>hazards</strong>, and if we ignore them, the pipeline will
             happily compute the wrong answer.
           </p>
+        </div>
 
-          <h3 style="margin-top: var(--space-5);">Structural Hazards</h3>
-          <p>
-            A <strong>structural hazard</strong> is a hardware limitation. It
-            happens when the hardware simply cannot support the combination of
-            instructions we want to run in the same clock cycle, because two of
-            them need the same piece of hardware at the same moment. Think back to
-            the laundry: imagine your washer and dryer both have to be plugged into
-            a single power outlet, so only one of them can run at any given moment.
-            Even with two separate machines, a fresh load cannot start washing
-            while an earlier load is still drying, and the line stalls until the
-            outlet frees up.
-          </p>
+        <div class="split split--media-right" style="margin-top: var(--space-5);">
+          <figure class="figure" style="max-width: 15rem;">
+            <img src="../../assets/pipelined-cpu/structural-hazard.jpg"
+                 alt="A hand-drawn wall outlet with a single plug pushed into the top socket, illustrating that only one machine can draw power at a time."
+                 decoding="async" />
+          </figure>
 
-          <h3 style="margin-top: var(--space-5);">Data Hazards</h3>
+          <div class="prose">
+            <h3 style="margin-top: 0;">Structural Hazards</h3>
+            <p>
+              A <strong>structural hazard</strong> is a hardware limitation. It
+              happens when the hardware simply cannot support the combination of
+              instructions we want to run in the same clock cycle, because two of
+              them need the same piece of hardware at the same moment. Think back to
+              the laundry: imagine your washer and dryer both have to be plugged into
+              a single power outlet, so only one of them can run at any given moment.
+              Even with two separate machines, a fresh load cannot start washing
+              while an earlier load is still drying, and the line stalls until the
+              outlet frees up.
+            </p>
+          </div>
+        </div>
+
+        <div class="prose prose--flow" style="margin-top: var(--space-5);">
+          <h3 style="margin-top: 0;">Data Hazards</h3>
           <p>
             <strong>Data hazards</strong> are a little more interesting. They happen
-            when a step has to be stalled because it must wait for an earlier step
-            to complete before it can move on. In our pipeline an instruction reads
-            the values it needs during Decode, but the instruction just ahead of it
-            may not have written its own result back to the register file yet, since
-            that does not happen until Writeback several stages later. If the second
+            when one step depends on a result that an earlier step has not finished
+            producing yet, so it cannot safely move on. In our pipeline, an instruction reads
+            the values it needs during <em>Decode</em>, while the instruction just ahead of it
+            is often still in flight and will not write its own result back to the
+            register file until <em>Writeback</em>, several stages later. If the second
             instruction depends on that result, it cannot simply carry on; it has to
             wait until the value it needs actually exists.
           </p>
@@ -318,10 +330,104 @@
             once that load has come out of the washer. Even with a machine sitting
             empty, you cannot start the next load until the earlier one has run far
             enough to give you that answer. This time the next load is not waiting
-            for a machine, it is waiting for a result from the load ahead of it.
+            for a machine; it is waiting for a result from the load ahead of it.
           </p>
+        </div>
 
-          <h3 style="margin-top: var(--space-5);">Control Hazards</h3>
+        <div class="split split--media-left" style="margin-top: var(--space-3);">
+          <figure class="figure" style="max-width: 34rem;">
+            <img src="../../assets/pipelined-cpu/data-hazard.jpg"
+                 alt="Two RISC-V instructions. The first, add x20, x0, x1, writes its result into register x20. The second, sub x2, x20, x3, reads x20 as a source, so it depends on the result of the add just ahead of it."
+                 decoding="async" />
+          </figure>
+
+          <div class="prose">
+          <p>
+            An example of how we might encounter a data hazard in our RISC-V
+            pipelined processor is shown here. The first instruction, <em>add</em>,
+            takes the values sitting in <em>x0</em> and <em>x1</em> and writes their
+            sum into <em>x20</em>. The very next instruction, <em>sub</em>, then
+            needs that same <em>x20</em> as one of the values it works with. This is
+            exactly where the trouble appears. The <em>add</em> instruction does not
+            write its result back into <em>x20</em> until its <em>Writeback</em> stage, yet
+            <em>sub</em> tries to read <em>x20</em> several stages earlier, during its
+            own <em>Decode</em>. The value that <em>sub</em> is counting on simply does not
+            exist in the register file yet, so if we do nothing, the processor will
+            read a stale <em>x20</em> and quietly compute the wrong answer.
+          </p>
+          </div>
+        </div>
+
+        <div class="prose prose--flow" style="margin-top: var(--space-5);">
+          <p>
+            Fortunately, we can get around this without ever stalling the pipeline.
+            The key realization is that we do not actually need to wait for the
+            entire <em>add</em> instruction to finish before we can make use of its
+            result. By the time <em>add</em> reaches the end of its <em>Execute</em> stage,
+            the ALU has already computed the sum that belongs in <em>x20</em>, even
+            though that value has not yet been written back. Rather than let it sit
+            idle, we can route that freshly computed result straight from the output
+            of the <em>Execute</em> stage of <em>add</em> into the input of the <em>Execute</em> stage
+            of <em>sub</em>, arriving precisely when <em>sub</em> needs it. This
+            technique is called <strong>forwarding, or bypassing</strong>, and it
+            lets the dependent instruction carry on without losing a single cycle. In
+            the diagram below, you can follow the purple Forward arrow as it carries
+            the ALU result of <em>add</em> directly down into the <em>Execute</em> stage of
+            <em>sub</em>, skipping the long wait for the register file.
+          </p>
+        </div>
+
+        <div class="prose prose--flow" style="margin-top: var(--space-2);">
+          <figure class="figure enlarge-wide" style="float: left; width: 40rem; max-width: 100%; margin: 0 var(--space-4) var(--space-2) 0;">
+            <img src="../../assets/pipelined-cpu/forwarding.jpg"
+                 alt="A pipeline timing diagram of the two instructions. The add instruction and the sub instruction each move through Instruction Fetch, Instruction Decode, Execute, Mem, and Write Back. A purple arrow labelled Forward runs from the output of the add instruction's Execute stage down into the input of the sub instruction's Execute stage, delivering the ALU result before it is written back to the register file."
+                 decoding="async" />
+          </figure>
+
+          <p>
+            This trick works only because an arithmetic instruction like
+            <em>add</em> produces its result in the <em>Execute</em> stage, one step
+            ahead of where the instruction behind it needs that value. Things change
+            if the value comes from memory. Suppose the first instruction were instead
+            <em>lw x20, 8(x10)</em>, a load that reads <em>x20</em> from data memory.
+            A load does not have its result ready at the end of <em>Execute</em>; it
+            only pulls the value out one step later, in the <em>Memory</em> stage. But
+            <em>sub</em> needs <em>x20</em> at its own <em>Execute</em> stage, which
+            lines up with the <em>lw</em> instruction's <em>Memory</em> stage, so the
+            value is simply not ready in time.
+          </p>
+          <p>
+            This is why it is not really forwarding anymore. Forwarding can only
+            pass a result sideways or forward in time, from a stage that has already
+            finished into one that has not started yet. Here the producing stage,
+            <em>Memory</em>, comes after the stage that needs the value, so sending
+            <em>x20</em> across would mean pushing it backward in time into an
+            <em>Execute</em> stage that has already happened, which is impossible.
+          </p>
+        </div>
+
+        <div class="split split--media-right" style="margin-top: var(--space-4);">
+          <figure class="figure enlarge-wide" style="max-width: 40rem;">
+            <img src="../../assets/pipelined-cpu/stall.jpg"
+                 alt="A pipeline timing diagram of the load-use hazard with a stall. The lw x20, 8(x10) instruction moves through Instruction Fetch, Instruction Decode, Execute, Mem, and Write Back. The sub x2, x20, x3 instruction below is held back by a row of Stall bubbles for one cycle, and a purple arrow then forwards the loaded value from the lw instruction's Mem stage into the sub instruction's Execute stage."
+                 decoding="async" />
+          </figure>
+
+          <div class="prose">
+            <p>
+              The best we can do is <strong>stall</strong> the <em>sub</em> instruction for a single
+              cycle, letting <em>lw</em> reach the end of its <em>Memory</em> stage
+              first. Once the loaded value exists, we forward it from there into the
+              now delayed <em>Execute</em> stage of <em>sub</em>. This particular case,
+              where a load feeds an instruction right behind it, is common enough to
+              earn its own name, the <strong>load-use hazard</strong>, and it is the
+              one data hazard that forwarding alone cannot fully hide.
+            </p>
+          </div>
+        </div>
+
+        <div class="prose prose--flow" style="margin-top: var(--space-5);">
+          <h3 style="margin-top: 0;">Control Hazards</h3>
         </div>
       </div>
     </section>
@@ -407,7 +513,10 @@
       var ol = document.querySelector("#what-is-pipelining .split .prose ol");
       var fig = document.querySelector("#what-is-pipelining .split figure");
       if (!ol || !fig) return;
-      fig.style.height = mq.matches ? ol.offsetHeight + "px" : "";
+      // Match the list height so the two cards sit flush, but never let the
+      // figure get so short that the laundry diagram shrinks; keep a comfortable
+      // floor so the drawing reads at a good size.
+      fig.style.height = mq.matches ? Math.max(ol.offsetHeight, 560) + "px" : "";
     }
     window.addEventListener("load", sync);
     window.addEventListener("resize", sync);

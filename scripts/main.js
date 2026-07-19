@@ -136,7 +136,8 @@
         ["The Control Unit", "single-cycle-cpu/control-unit/"],
         ["Testing Your Single Cycle CPU", "single-cycle-cpu/testing/"]
       ]],
-      ["Floating Point Adder", ["Coming Soon"]]
+      ["Floating Point Adder", ["Coming Soon"]],
+      ["Memory Hierarchy", ["Coming Soon"]]
     ]],
     ["Advanced", [
       ["Pipelined CPU", [
@@ -147,8 +148,7 @@
         "Control Hazards",
         "Testing"
       ]],
-      ["ALU Physical Design", ["Coming Soon"]],
-      ["Memory Hierarchy", ["Coming Soon"]]
+      ["Introduction to Physical Design", ["Coming Soon"]]
     ]],
     ["Very Advanced", [
       ["Pipelined CPU Physical Design", ["Coming Soon"]],

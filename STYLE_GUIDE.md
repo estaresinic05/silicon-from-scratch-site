@@ -157,6 +157,14 @@ Reference implementation: `single-cycle-cpu/basics-of-instructions/index.html`.
   `<em>x10</em>`). They read as italic body text, the same face as light `<em>` stress.
 - **Numbers are never in `<code>`** — bit patterns (`0110011`), field values
   (`000`), and decimal literals (offsets like 8 or 12) are all plain body text.
+- **Pipeline-stage names go in `<em>` (italic) on every reference in body prose** —
+  *Fetch*, *Decode*, *Execute*, *Memory*, *Writeback*. Capitalize them and italicize
+  each time they appear (`the values it needs during <em>Decode</em>`, `its
+  <em>Writeback</em> stage`, `the end of its <em>Execute</em> stage`), so a named
+  stage reads the same wherever it shows up. The **one exception** is the ordered
+  list that first *introduces* the five stages: there each stage name is the term
+  being defined, so it takes the standard `<strong>` treatment (see *Bolding key
+  terms*), not `<em>`.
 
 ### Instruction-field colours
 
