@@ -3186,6 +3186,10 @@ code.ctrl-sig,
 .enlarge-overlay .enlarge-wide { max-width: 96vw !important; }
 .enlarge-overlay .enlarge-wide img { max-width: 100%; max-height: 90vh; }
 
+/* A touch smaller than enlarge-wide (used by the pipeline timing diagram). */
+.enlarge-overlay .enlarge-wide--sm { max-width: min(92vw, 1250px) !important; }
+.enlarge-overlay .enlarge-wide--sm img { max-width: 100%; max-height: 86vh; }
+
 /* Laundry figure: opens larger than default but not full-bleed. width/height:auto
    !important neutralise the inline flush-layout sizing (height + object-fit) the
    clone carries over, so it shows at natural size within the caps. */

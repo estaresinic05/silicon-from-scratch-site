@@ -237,7 +237,7 @@
         </div>
 
         <div class="split split--media-left">
-          <figure class="figure" style="max-width: 38rem;">
+          <figure class="figure enlarge-wide--sm" style="max-width: 38rem;">
             <img src="../../assets/pipelined-cpu/pipelining.jpg"
                  alt="A hand-drawn pipeline timing diagram. A Time axis runs from 0 to 700 picoseconds in 100 ps steps. Three instructions move through five stages, labelled Instruction Fetch, Reg, ALU, Data Access, and Reg, each stage taking 100 ps. Each instruction starts 100 ps after the one before it, so at any moment several of them occupy different stages at once."
                  decoding="async" />
@@ -251,9 +251,9 @@
             inside a single clock cycle, so the clock had to be slow enough for the
             slowest instruction to make it from start to end. In the pipelined
             design each clock cycle only has to be long enough for the slowest
-            single stage to do its part, since that is all any one instruction
-            advances in a cycle. Our clock is now bottlenecked by the slowest
-            <strong>stage</strong> rather than the slowest instruction.
+            single stage to do its part, since that is as far as any one
+            instruction advances in a cycle. Our clock is now bottlenecked by the
+            slowest <em>stage</em> rather than the slowest instruction.
           </p>
           <p>
             This does not make an individual instruction any quicker. A single
@@ -267,6 +267,61 @@
             completes in a given amount of time.
           </p>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================= PIPELINING HAZARDS ===================== -->
+    <section class="section" id="pipelining-hazards" aria-labelledby="haz-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="haz-title">Pipelining Hazards</h2>
+        </div>
+
+        <div class="prose prose--flow">
+          <p>
+            Pipelining gives us a big jump in throughput, but it does not come
+            entirely for free. Because several instructions are now flowing through
+            the processor at once, moments come up where the next instruction
+            cannot safely begin on the very next clock cycle. We call these moments
+            <strong>hazards</strong>, and if we ignore them the pipeline will
+            happily compute the wrong answer.
+          </p>
+
+          <h3 style="margin-top: var(--space-5);">Structural Hazards</h3>
+          <p>
+            A <strong>structural hazard</strong> is a hardware limitation. It
+            happens when the hardware simply cannot support the combination of
+            instructions we want to run in the same clock cycle, because two of
+            them need the same piece of hardware at the same moment. Think back to
+            the laundry: imagine your washer and dryer both have to be plugged into
+            a single power outlet, so only one of them can run at any given moment.
+            Even with two separate machines, a fresh load cannot start washing
+            while an earlier load is still drying, and the line stalls until the
+            outlet frees up.
+          </p>
+
+          <h3 style="margin-top: var(--space-5);">Data Hazards</h3>
+          <p>
+            <strong>Data hazards</strong> are a little more interesting. They happen
+            when a step has to be stalled because it must wait for an earlier step
+            to complete before it can move on. In our pipeline an instruction reads
+            the values it needs during Decode, but the instruction just ahead of it
+            may not have written its own result back to the register file yet, since
+            that does not happen until Writeback several stages later. If the second
+            instruction depends on that result, it cannot simply carry on; it has to
+            wait until the value it needs actually exists.
+          </p>
+          <p>
+            Back in the laundry, imagine the setting for your next wash depends on
+            how dirty the previous load turns out to be, something you only learn
+            once that load has come out of the washer. Even with a machine sitting
+            empty, you cannot start the next load until the earlier one has run far
+            enough to give you that answer. This time the next load is not waiting
+            for a machine, it is waiting for a result from the load ahead of it.
+          </p>
+
+          <h3 style="margin-top: var(--space-5);">Control Hazards</h3>
         </div>
       </div>
     </section>
