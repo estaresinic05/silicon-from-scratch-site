@@ -3391,6 +3391,15 @@ code.ctrl-sig,
 .enlarge-overlay .enlarge-lg { max-width: min(94vw, 820px) !important; }
 .enlarge-overlay .enlarge-lg img { max-height: 86vh; }
 
+/* Opt-in: .enlarge-xl fills the window. For a tall or square image the height
+   cap, not the width, is what limits it, so this trims the card's padding too
+   and hands that space to the image. */
+.enlarge-overlay .enlarge-xl {
+  max-width: 96vw !important;
+  padding: 0.6rem !important;
+}
+.enlarge-overlay .enlarge-xl img { max-height: 94vh; }
+
 /* Wide images (e.g. the full waveform) fill nearly the whole viewport width
    when enlarged, since the default 1000px cap leaves them small. */
 /* width/float/margin !important neutralise any inline float-layout sizing the
