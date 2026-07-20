@@ -373,6 +373,23 @@ body::before {
 .nav a:hover::after,
 .nav a:focus-visible::after { transform: scaleX(1); }
 
+/* GitHub mark, hard right in the top bar. Shown at every width. */
+.ghlink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  color: var(--soft-ink);
+  transition: color 0.18s var(--ease);
+}
+.ghlink svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  fill: currentColor;
+}
+.ghlink:hover { color: var(--ink); }
+
 /* Mobile menu toggle — hidden on desktop */
 .nav-toggle {
   display: none;
@@ -416,38 +433,14 @@ body::before {
 }
 
 /* ------------------------------------------------------------------ *
-   PAGE SECTION INDEX — desktop only. A ☰ button (styled like the mobile
-   nav toggle) sits in the top bar and reveals this page's sections on
-   hover. It lives inside the bar, so it slides away with it.
+   PROJECT MENU DRAWER. `.toc` is just the empty host the panel starts in
+   before JS moves it to <body>; the drawer is opened by the top bar's
+   "Project Directory" nav item on desktop and the hamburger on mobile.
  * ------------------------------------------------------------------ */
-.toc {
-  position: relative;
-  display: inline-flex; /* desktop-only — hidden on mobile (see media query) */
-  /* nudge the ☰ toward the right edge of the bar */
-  margin-right: -0.75rem;
-}
-/* Button matches the mobile nav toggle exactly (same bars, size, border) */
-.toc__btn {
-  width: 2.6rem; height: 2.6rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius-sm);
-  /* click target — opens/closes the drawer and flips to an X */
-  cursor: pointer;
-  /* The bar is now full-width and this button already rides at the right edge via
-     the grid (.topbar__right is justify-self:end), so no extra offset is needed —
-     the old translateX hack would shove it off-screen. */
-}
-/* The ☰ flips to an X while the drawer is open (same as the mobile hamburger). */
-.toc__btn[aria-expanded="true"] .nav-toggle__bars { background: transparent; }
-.toc__btn[aria-expanded="true"] .nav-toggle__bars::before { transform: translateY(0) rotate(45deg); }
-.toc__btn[aria-expanded="true"] .nav-toggle__bars::after  { transform: translateY(-2px) rotate(-45deg); }
-/* Panel that slides in from the right edge of the screen (a full-height drawer).
-   It's moved to <body> in JS so it fills the viewport height regardless of the
-   top bar's transform. Toggled open by the ☰ via the .is-open class. */
+.toc { display: none; }
+/* Panel that slides in from the edge of the screen. It's moved to <body> in JS
+   so its height is measured against the viewport, not the transformed top bar.
+   Full height on mobile; on desktop it stops level with the band (see below). */
 .toc__menu {
   position: fixed;
   top: 0;
@@ -465,7 +458,7 @@ body::before {
   box-shadow: var(--shadow-lift);
   visibility: hidden;
   transform: translateX(100%);
-  transition: transform 0.28s var(--ease), visibility 0.28s var(--ease);
+  transition: transform 0.34s var(--ease), visibility 0.34s var(--ease);
   z-index: 60;
 }
 .toc__menu.is-open {
@@ -510,18 +503,6 @@ body::before {
    white leaf. Rows go edge-to-edge, so the panel drops its side padding. */
 .toc__menu--proj {
   padding: calc(4rem + var(--space-2)) 0 var(--space-3);
-}
-
-/* "Projects" heading at the top of the drawer's project list. */
-.toc__heading {
-  margin: 0;
-  list-style: none;
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-  padding: 0.3rem var(--space-4) 0.7rem;
 }
 
 .toc__menu .menu__sub { list-style: none; margin: 0; padding: 0; }
@@ -606,6 +587,236 @@ body::before {
 }
 .toc__menu .menu__item.is-open > .menu__panel { grid-template-rows: 1fr; }
 .toc__menu .menu__panel > .menu__sub { overflow: hidden; min-height: 0; }
+
+/* ---- Desktop flyout sheets ------------------------------------------------
+   On wide screens the drawer stays a short list of difficulties; pressing one
+   slides a white sheet out to its left, over the page, holding that
+   difficulty's projects (bold headings) and their lessons. It is a horizontal
+   band: it runs from the drawer's left edge across the rest of the viewport,
+   only as tall as its contents, with the projects sitting side by side. The
+   container's right edge is pinned to the drawer's left edge, so a sheet at
+   translateX(100%) rests hidden underneath the drawer and travels leftward as
+   it opens. */
+.navsheets {
+  position: fixed;
+  top: 0;
+  right: min(360px, 86vw);   /* == the drawer's width */
+  left: 0;
+  max-height: 100dvh;
+  z-index: 58;               /* under the drawer (60), over the backdrop (55) */
+  pointer-events: none;
+  /* Every sheet is stacked in one grid cell, so the cell (and therefore each
+     sheet) takes the height of the tallest one. All four then open to the same
+     height instead of the band jumping as you move between difficulties. */
+  display: grid;
+}
+.navsheet {
+  grid-area: 1 / 1;
+  max-height: 100dvh;
+  overflow: auto;
+  padding: calc(4rem + var(--space-3)) var(--space-5) var(--space-5);
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(35, 35, 42, 0.22);
+  /* The band unrolls leftward out from under the drawer: the clip starts fully
+     inset from the left (nothing showing) and opens to the full width. The
+     negative bottom/right insets let the drop shadow escape the clip. */
+  visibility: hidden;
+  clip-path: inset(0 -40px -40px 100%);
+  transition: clip-path 0.36s var(--ease), visibility 0.36s var(--ease);
+  pointer-events: auto;
+}
+.navsheet.is-open {
+  visibility: visible;
+  clip-path: inset(0 -40px -40px 0);
+}
+
+/* Swapping difficulties while the band is already out: the band itself doesn't
+   move (no wipe either way) and only its contents animate in. */
+.navsheet.is-swap { transition: none; }
+.navsheet.is-swap.is-open .navsheet__group {
+  animation: navsheet-swap 0.3s var(--ease) both;
+}
+/* Each column follows the one before it, so the change reads left to right. */
+.navsheet.is-swap.is-open .navsheet__group:nth-child(2) { animation-delay: 0.04s; }
+.navsheet.is-swap.is-open .navsheet__group:nth-child(3) { animation-delay: 0.08s; }
+.navsheet.is-swap.is-open .navsheet__group:nth-child(4) { animation-delay: 0.12s; }
+@keyframes navsheet-swap {
+  from { opacity: 0; transform: translateY(0.4rem); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .navsheet.is-swap.is-open .navsheet__group { animation: none; }
+}
+
+/* Projects sit side by side across the band, each its own column of lessons.
+   Columns size to their contents so no lesson name has to wrap. */
+.navsheet__cols {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+}
+.navsheet__group { flex: 0 0 auto; }
+
+/* Project name: bold black. */
+.navsheet__title {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: #000;
+  white-space: nowrap;
+}
+
+/* Lessons: plain black, with the drawer's purple as the hover highlight. */
+.navsheet__links { list-style: none; margin: 0; padding: 0; }
+.navsheet__links li { margin: 0; }
+.navsheet__links a {
+  display: block;
+  padding: 0.42rem 0.55rem;
+  margin-left: -0.55rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1.35;
+  color: #000;
+  white-space: nowrap;   /* every lesson name stays on one line */
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+.navsheet__links a:hover,
+.navsheet__links a:focus-visible {
+  background: #4f1f9e;   /* same purple the drawer's white leaves use */
+  color: #fff;
+}
+
+/* The difficulty rows themselves: taller than a plain drawer row, so the four
+   of them carry the panel. Scoped to .menu__cat, leaving the mobile drawer's
+   level-1 rows at their own height. */
+.toc__menu .menu__cat > .menu__toggle {
+  position: relative;
+  padding-top: 1.15rem;
+  padding-bottom: 1.15rem;
+  font-size: 1rem;
+}
+.toc__menu .menu__cat.is-active > .menu__toggle {
+  color: #fff;
+  background: rgba(107, 47, 201, 0.22);
+}
+.toc__menu .menu__cat.is-active > .menu__toggle::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+}
+/* This chevron points left, toward the sheet it pulls out. */
+.toc__menu .menu__chev--flyout { transform: rotate(90deg); }
+
+/* ---- "Project Directory" nav item + the mirrored (left-hand) drawer --------
+   It sits in the nav row where "Home" used to and opens this same menu docked
+   to the LEFT edge, with its sheets unrolling left-to-right. Everything below
+   is the mirror of the right-hand arrangement above. */
+
+/* A <button>, but indistinguishable from its sibling links: same type, colour,
+   padding, and sliding hairline underline as `.nav a`. */
+.projtab {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: var(--soft-ink);
+  position: relative;
+  padding: 0.25rem 0;
+}
+.projtab:hover { color: var(--accent-deep); }
+.projtab::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -2px;
+  width: 100%; height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s var(--ease);
+}
+.projtab:hover::after,
+.projtab:focus-visible::after,
+/* The underline stays drawn while its menu is out. */
+.projtab[aria-expanded="true"]::after { transform: scaleX(1); }
+.projtab[aria-expanded="true"] { color: var(--accent-deep); }
+
+/* Drawer mirrored to the left edge. It doesn't slide in from that edge, though:
+   the desktop menu drops straight down out from behind the top bar, drawer and
+   band moving as one piece. */
+.toc__menu.is-left {
+  right: auto;
+  left: 0;
+  border-left: 0;
+  border-right: 1px solid var(--hairline);
+  transform: translateY(-100%);
+}
+.toc__menu.is-left.is-open { transform: translateY(0); }
+/* Its chevrons point right, toward the sheets that now open that way. */
+.toc__menu.is-left .menu__chev--flyout { transform: rotate(-90deg); }
+/* The active row's purple bar moves to the edge facing its sheet. */
+.toc__menu.is-left .menu__cat.is-active > .menu__toggle::before {
+  left: auto;
+  right: 0;
+}
+
+/* Sheets mirrored: pinned to the drawer's right edge. They drop down in step
+   with the drawer rather than wiping sideways, so the two read as one panel
+   coming out from behind the bar. */
+.navsheets.is-left { right: 0; left: min(360px, 86vw); }  /* == drawer width */
+.navsheets.is-left .navsheet {
+  box-shadow: 0 12px 30px rgba(35, 35, 42, 0.22);
+  clip-path: none;
+  transform: translateY(-100%);
+  transition: transform 0.34s var(--ease), visibility 0.34s var(--ease);
+}
+.navsheets.is-left .navsheet.is-open { transform: translateY(0); }
+/* Swapping difficulties is the exception: the band holds still and only its
+   columns animate. Repeated here because the rule above out-specifies the
+   plain .navsheet.is-swap one and would otherwise re-drop the band each time. */
+.navsheets.is-left .navsheet.is-swap { transition: none; }
+
+/* The drawer ends level with the bottom of the band instead of running to the
+   foot of the screen. --navsheet-h is the band's measured height, published by
+   main.js; it falls back to full height if that measurement never ran. */
+@media (min-width: 769px) {
+  .toc__menu {
+    height: var(--navsheet-h, 100dvh);
+    border-bottom: 1px solid var(--hairline);
+    /* The four rows share whatever height is left below the top bar, in equal
+       parts, so they fill the drawer exactly — snug top to bottom, never a
+       scrollbar, whatever the band's height works out to. */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* First row starts flush against the bar's bottom hairline, last row runs
+       to the drawer's bottom edge — no dark gap at either end. */
+    padding-top: calc(4rem + 1px);
+    padding-bottom: 0;
+  }
+  .toc__menu .menu__cat { display: flex; flex: 1 1 0; }
+  .toc__menu .menu__cat > .menu__toggle {
+    flex: 1;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+/* Sheets and the tab are a desktop arrangement only. */
+@media (max-width: 768px) {
+  .navsheets { display: none; }
+  .projtab { display: none; }
+}
 
 /* ---- Mobile drawer extras -------------------------------------------------
    On narrow screens the top-bar links collapse into this drawer. Two things
@@ -2202,10 +2413,9 @@ html.js .buildpath-intro { --rail-progress: 0; }
  * ------------------------------------------------------------------ */
 
 /* Tablet and below: the hamburger replaces the inline links and opens the
-   project drawer (which is shared with the desktop ☰). */
+   project drawer (the same panel the desktop nav item opens). */
 @media (max-width: 768px) {
   .nav-toggle { display: inline-flex; }   /* hamburger appears */
-  .toc { display: none; }                 /* ☰ button is desktop-only */
   .nav { display: none; }                 /* inline links collapse into the drawer */
   /* With the centre nav gone, drop back to a simple two-end layout so the toggle
      group doesn't slide into the middle grid track. */

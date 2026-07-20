@@ -109,13 +109,16 @@
   // Top-bar quick links (desktop inline nav, and the top of the mobile drawer).
   // An absolute http(s) href opens in a new tab; a null href renders as an inert
   // "Coming soon" placeholder.
+  // "Home" used to lead this list; the "Project Directory" tab now sits in its
+  // place at the head of the bar (the wordmark still links home).
   var QUICK = [
-    ["Home", "#top"],
     ["Meet the Processor", "meet-the-processor/"],
-    ["GitHub", "https://github.com/estaresinic05/Silicon-From-Scratch"],
     ["About", "about/"],
     ["Tools", "#tools"]
   ];
+
+  // GitHub left the link row and rides in the top-right corner as its mark.
+  var GITHUB_URL = "https://github.com/estaresinic05/Silicon-From-Scratch";
 
   var MENU = [
     ["Beginner", [
@@ -145,8 +148,7 @@
         "The Pipelined Datapath",
         "Control Unit",
         "Data Hazards",
-        "Control Hazards",
-        "Testing"
+        "Control Hazards"
       ]],
       ["Introduction to Physical Design", [
         ["Transistor Basics", "introduction-to-physical-design/transistor-basics/"]
@@ -233,19 +235,9 @@
             proj[1].forEach(function (sub) {
               var leaf = document.createElement("li");
               leaf.className = "menu__leaf";
-              var a = document.createElement("a");
-              if (Array.isArray(sub)) {
-                // A [label, path] leaf is a published lesson: link straight to
-                // it (path is relative to the site root, like the menu links).
-                a.href = PREFIX + sub[1];
-                a.textContent = sub[0];
-              } else {
-                // A leaf that isn't a published lesson points at the generic
-                // placeholder page.
-                a.href = SOON;
-                a.textContent = sub;
-              }
-              leaf.appendChild(a);
+              // A [label, path] leaf is a published lesson and links straight to
+              // it; anything else points at the generic placeholder page.
+              leaf.appendChild(leafLink(sub));
               projUl.appendChild(leaf);
             });
           }));
@@ -256,11 +248,72 @@
     });
   }
 
+  // One leaf link (a published lesson, or the "coming soon" placeholder).
+  function leafLink(sub) {
+    var a = document.createElement("a");
+    if (Array.isArray(sub)) {
+      a.href = PREFIX + sub[1];
+      a.textContent = sub[0];
+    } else {
+      a.href = SOON;
+      a.textContent = sub;
+    }
+    return a;
+  }
+
+  /* Desktop flyout sheets ---------------------------------------------------
+     One white sheet per difficulty, held in a fixed container that sits just
+     left of the drawer. Pressing a difficulty row slides its sheet out over the
+     page; inside, each project is a bold heading with its lessons listed under
+     it. Returns the container so the drawer can hand it to the open/close
+     handlers. */
+  function buildSheets() {
+    var wrap = document.createElement("div");
+    wrap.className = "navsheets";
+
+    MENU.forEach(function (cat) {
+      var sheet = document.createElement("div");
+      sheet.className = "navsheet";
+      sheet.setAttribute("aria-hidden", "true");
+
+      // No heading: the highlighted row in the drawer already names the
+      // difficulty, and dropping it keeps the band shallow.
+      var cols = document.createElement("div");
+      cols.className = "navsheet__cols";
+      cat[1].forEach(function (proj) {
+        var group = document.createElement("section");
+        group.className = "navsheet__group";
+
+        var h = document.createElement("h3");
+        h.className = "navsheet__title";
+        h.textContent = proj[0];
+        group.appendChild(h);
+
+        var ul = document.createElement("ul");
+        ul.className = "navsheet__links";
+        proj[1].forEach(function (sub) {
+          var li = document.createElement("li");
+          li.appendChild(leafLink(sub));
+          ul.appendChild(li);
+        });
+        group.appendChild(ul);
+        cols.appendChild(group);
+      });
+      sheet.appendChild(cols);
+      wrap.appendChild(sheet);
+    });
+
+    document.body.appendChild(wrap);
+    return wrap;
+  }
+
   // Build the drawer. One panel is shared by the desktop ☰ and the mobile
   // hamburger, so it holds both arrangements and CSS reveals the right one per
   // width:
-  //   - Desktop (>=769px): a flat "Project Directory" heading with the tree at
-  //     level 1 (unchanged). Home/About/Tools stay in the top-bar inline nav.
+  //   - Desktop (>=769px): a flat "Project Directory" heading over the four
+  //     difficulty rows. Pressing one slides a white sheet out to the left of
+  //     the drawer (AMD-style) holding that difficulty's projects and lessons.
+  //     Home/About/Tools stay in the top-bar inline nav.
   //   - Mobile (<=768px): the top-bar quick links (which the inline nav hides at
   //     this width) ride at the top, then a collapsible "Project Directory"
   //     dropdown nests the same tree one level deeper.
@@ -277,33 +330,47 @@
     projDir.classList.add("is-mobile-only");
     projDir.classList.add("menu__projdir");   // tagged so openToc can auto-expand it
 
-    // Mobile-only: the top-bar quick links (Home / Meet the Processor / GitHub /
-    // About / Tools), styled to match the drawer's flat rows, with the
-    // "Project Directory" dropdown inserted right after "Home".
-    QUICK.forEach(function (q, i) {
+    // Mobile-only: the "Project Directory" dropdown leads, then the top-bar
+    // quick links (Meet the Processor / GitHub / About / Tools), styled to
+    // match the drawer's flat rows.
+    tocMenu.appendChild(projDir);
+    QUICK.forEach(function (q) {
       var li = document.createElement("li");
       li.className = "menu__quick is-mobile-only";
       li.appendChild(quickNode(q[0], q[1]));
       tocMenu.appendChild(li);
-      if (i === 0) tocMenu.appendChild(projDir);
     });
 
-    // Desktop-only: flat heading + the directory tree at level 1.
-    var heading = document.createElement("li");
-    heading.className = "toc__heading is-desktop-only";
-    heading.textContent = "Project Directory";
-    tocMenu.appendChild(heading);
-    buildProjectTree(tocMenu, 1, "is-desktop-only");
+    // Desktop-only: one row per difficulty, straight at the top of the drawer.
+    // Each opens its white flyout sheet rather than expanding in place. There's
+    // no heading — the nav item that opened the drawer already names it.
+    MENU.forEach(function (cat, i) {
+      var li = document.createElement("li");
+      li.className = "menu__item menu__item--l1 menu__cat is-desktop-only";
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "menu__toggle";
+      btn.setAttribute("aria-expanded", "false");
+      btn.dataset.sheet = String(i);
+      var name = document.createElement("span");
+      name.className = "menu__label";
+      name.textContent = cat[0];
+      btn.appendChild(name);
+      // Points left, toward the sheet it opens.
+      btn.insertAdjacentHTML("beforeend", CHEVRON.replace(
+        'class="menu__chev"', 'class="menu__chev menu__chev--flyout"'));
+      li.appendChild(btn);
+      tocMenu.appendChild(li);
+    });
   }
 
-  /* ---- 1.6 Project menu drawer (☰ on desktop, hamburger on mobile) ------
-     Reuses the dark slide-in panel. The ☰ opens it on hover (desktop); the
-     hamburger opens it on click (mobile). Clicking a link, the backdrop, or
-     pressing Escape closes it. */
+  /* ---- 1.6 Project menu drawer -----------------------------------------
+     One slide-in panel, opened by the top bar's "Project Directory" nav item
+     on desktop and by the hamburger on mobile. Clicking a link, the backdrop,
+     or pressing Escape closes it. */
   var toc = document.getElementById("page-toc");
   var navToggle = document.getElementById("nav-toggle");
   if (toc) {
-    var tocBtn = toc.querySelector(".toc__btn");
     var tocMenu = toc.querySelector(".toc__menu");
 
     // Move the panel to <body>: the top bar uses transform/will-change, which
@@ -315,18 +382,117 @@
     document.body.appendChild(backdrop);
 
     buildDrawer(tocMenu);
+    var sheets = buildSheets();
+
+    // On desktop the drawer stops flush with the bottom of the band rather than
+    // running the full height of the screen. The band's height is content-driven
+    // (the tallest difficulty), so publish it as a custom property the drawer's
+    // stylesheet can size itself from, and keep it current as the window resizes.
+    function syncDrawerHeight() {
+      document.documentElement.style.setProperty(
+        "--navsheet-h", sheets.getBoundingClientRect().height + "px");
+    }
+    syncDrawerHeight();
+    window.addEventListener("resize", syncDrawerHeight);
+    if (document.fonts && document.fonts.ready) {
+      // Web fonts land after first paint and change the band's height.
+      document.fonts.ready.then(syncDrawerHeight);
+    }
+
+    // Close whichever flyout sheet is out, and un-highlight its difficulty row.
+    // `instant` skips the wipe: used when swapping difficulties, where the band
+    // itself should hold still and only its contents change.
+    function closeSheet(instant) {
+      var open = sheets.querySelector(".navsheet.is-open");
+      if (open) {
+        open.classList.toggle("is-swap", !!instant);
+        open.classList.remove("is-open");
+        open.setAttribute("aria-hidden", "true");
+      }
+      // Any sheet still carrying the swap flag goes back to wiping next time.
+      if (!instant) {
+        var swapped = sheets.querySelectorAll(".navsheet.is-swap");
+        for (var s = 0; s < swapped.length; s++) swapped[s].classList.remove("is-swap");
+      }
+      var rows = tocMenu.querySelectorAll(".menu__cat > .menu__toggle");
+      for (var i = 0; i < rows.length; i++) {
+        rows[i].setAttribute("aria-expanded", "false");
+        rows[i].parentNode.classList.remove("is-active");
+      }
+      document.body.classList.remove("nav-sheet-open");
+    }
+
+    // Show one difficulty's sheet, replacing whichever was out before, so only
+    // one is ever showing.
+    function selectCat(btn) {
+      if (!btn || btn.getAttribute("aria-expanded") === "true") return;
+      // Swapping between difficulties with the band already out: hold the band
+      // still and let only the text animate. A first open still wipes open.
+      var swapping = !!sheets.querySelector(".navsheet.is-open");
+      closeSheet(swapping);
+      var sheet = sheets.children[Number(btn.dataset.sheet)];
+      if (!sheet) return;
+      sheet.classList.toggle("is-swap", swapping);
+      sheet.classList.add("is-open");
+      sheet.setAttribute("aria-hidden", "false");
+      btn.setAttribute("aria-expanded", "true");
+      btn.parentNode.classList.add("is-active");
+      document.body.classList.add("nav-sheet-open");
+    }
+
+    // Pressing the row that is already showing does nothing — the sheet is
+    // dismissed from the nav item alone.
+    tocMenu.addEventListener("click", function (e) {
+      selectCat(e.target.closest(".menu__cat > .menu__toggle"));
+    });
+
+    /* The "Project Directory" tab. It leads the top-bar nav, in the slot "Home"
+       used to hold, and opens this same drawer mirrored: docked to the LEFT
+       edge, its sheets unrolling left-to-right. Built here so every page gets
+       it without touching each page's markup; section 2 places it in the nav
+       (which it rebuilds, so it has to go in afterwards). */
+    var tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "projtab";
+    tab.setAttribute("aria-expanded", "false");
+    tab.textContent = "Project Directory";
+    tab.addEventListener("click", function () {
+      if (tocMenu.classList.contains("is-open")) closeToc();
+      else openToc();
+    });
+
+    /* Which edge the menu docks to is a property of the viewport, not of the
+       opening: desktop drops down from behind the bar, mobile slides in from
+       the right. It is set once here (and on resize) rather than at open time,
+       so the closed state is always already rendered — a transform applied in
+       the same tick as .is-open would have no "from" frame to animate out of. */
+    function syncSide() {
+      var wide = !(window.matchMedia &&
+                   window.matchMedia("(max-width: 768px)").matches);
+      tocMenu.classList.toggle("is-left", wide);
+      sheets.classList.toggle("is-left", wide);
+    }
+    syncSide();
+    window.addEventListener("resize", syncSide);
 
     function openToc(expandProjDir) {
+      closeSheet();          // never inherit a sheet from the previous opening
+      var isLeft = tocMenu.classList.contains("is-left");
+      if (tab) tab.setAttribute("aria-expanded", isLeft ? "true" : "false");
       tocMenu.classList.add("is-open");
       backdrop.classList.add("is-open");
-      tocBtn.setAttribute("aria-expanded", "true");
-      if (navToggle) navToggle.setAttribute("aria-expanded", "true");
+      // The mobile hamburger flips to an X only when it is the one holding the
+      // drawer open.
+      if (navToggle) navToggle.setAttribute("aria-expanded", isLeft ? "false" : "true");
       document.body.classList.add("nav-open");
       // On mobile the collapsible "Project Directory" dropdown rides inside this
       // drawer. Only auto-expand it when the reader explicitly asked for the
       // project directory (the "Open Project Directory" CTAs) — opening from the
-      // hamburger should land on the collapsed top folder (Home / Project
-      // Directory / GitHub / About / Tools), not jump straight into the tree.
+      // hamburger should land on the collapsed top folder (Project Directory /
+      // Meet the Processor / GitHub / About / Tools), not jump into the tree.
+      // Desktop opens with the first difficulty already showing, so the menu is
+      // never a bare column of rows waiting to be pressed.
+      if (isLeft) selectCat(tocMenu.querySelector(".menu__cat > .menu__toggle"));
       if (expandProjDir &&
           window.matchMedia && window.matchMedia("(max-width: 768px)").matches) {
         var pd = tocMenu.querySelector(".menu__projdir");
@@ -338,20 +504,26 @@
       }
     }
     function closeToc() {
+      // The band rises back up in step with the drawer, so closing is just the
+      // opening move in reverse — no separate fade to sequence.
+      closeSheet();
       tocMenu.classList.remove("is-open");
+      if (tab) tab.setAttribute("aria-expanded", "false");
       backdrop.classList.remove("is-open");
-      tocBtn.setAttribute("aria-expanded", "false");
       if (navToggle) navToggle.setAttribute("aria-expanded", "false");
       document.body.classList.remove("nav-open");
     }
-    // Click the ☰ to toggle the drawer (it flips to an X while open) — same
-    // click behaviour as the mobile hamburger.
-    tocBtn.addEventListener("click", function () {
-      if (tocMenu.classList.contains("is-open")) closeToc();
-      else openToc();
-    });
 
     backdrop.addEventListener("click", closeToc);
+    // Following a lesson from a sheet dismisses the whole nav behind it.
+    sheets.addEventListener("click", function (e) {
+      if (e.target.closest("a")) closeToc();
+    });
+    // Below the desktop breakpoint the sheets don't apply — the drawer's own
+    // nested tree takes over, so drop any sheet left open by a resize.
+    window.addEventListener("resize", function () {
+      if (window.innerWidth <= 768) closeSheet();
+    });
     tocMenu.addEventListener("click", function (e) {
       var a = e.target.closest("a");
       if (!a) return;
@@ -379,8 +551,8 @@
       if (e.key === "Escape") closeToc();
     });
 
-    // Mobile: the hamburger opens/closes this same drawer (the ☰ is hidden on
-    // mobile; on desktop the hamburger is hidden and the ☰ hover-opens).
+    // Mobile: the hamburger opens/closes this same drawer, docked right. It is
+    // hidden on desktop, where the "Project Directory" nav item takes over.
     if (navToggle) {
       navToggle.addEventListener("click", function () {
         if (tocMenu.classList.contains("is-open")) closeToc();
@@ -390,13 +562,15 @@
 
     // "Open Project Directory" buttons (home hero CTAs, the About page, etc.) open
     // this same drawer. Un-hide the (auto-hiding) top bar first so it doesn't
-    // slide away, then open with expandProjDir so the mobile Project Directory
-    // dropdown is auto-expanded and a tap lands straight on the project tree.
+    // slide away. On desktop they open the left-docked drawer the nav item owns;
+    // on mobile they open the right one with expandProjDir, so the Project
+    // Directory dropdown is expanded and a tap lands straight on the tree.
     var openers = document.querySelectorAll(".js-open-proj-dir");
     for (var oi = 0; oi < openers.length; oi++) {
       openers[oi].addEventListener("click", function () {
         if (topbar) topbar.classList.remove("is-hidden");
-        if (!tocMenu.classList.contains("is-open")) openToc(true);
+        if (tocMenu.classList.contains("is-open")) return;
+        openToc(true);
       });
     }
   }
@@ -404,9 +578,34 @@
   /* ---- 2. Top-bar quick links (desktop inline nav) ----------------------
      Home / About / Meet the Processor / Tools / Help. Inline on desktop;
      hidden on mobile, where they ride at the top of the drawer instead. */
+  /* The GitHub mark, hard right in the bar (before the mobile hamburger). The
+     official Octocat glyph, so it reads as GitHub at icon size. */
+  var topRight = document.querySelector(".topbar__right");
+  if (topRight) {
+    var gh = document.createElement("a");
+    gh.className = "ghlink";
+    gh.href = GITHUB_URL;
+    gh.target = "_blank";
+    gh.rel = "noopener";
+    gh.setAttribute("aria-label", "Silicon From Scratch on GitHub");
+    gh.title = "GitHub";
+    gh.innerHTML =
+      '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">' +
+      '<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 ' +
+      '0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 ' +
+      '1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 ' +
+      '0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 ' +
+      '2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 ' +
+      '2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 ' +
+      '.21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" /></svg>';
+    topRight.insertBefore(gh, topRight.firstChild);
+  }
+
   var nav = document.getElementById("primary-nav");
   if (nav) {
     nav.innerHTML = "";
+    // The Project Directory tab leads, where "Home" used to sit.
+    if (typeof tab !== "undefined" && tab) nav.appendChild(tab);
     QUICK.forEach(function (q) { nav.appendChild(quickNode(q[0], q[1])); });
   }
 
