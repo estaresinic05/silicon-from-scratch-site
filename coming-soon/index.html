@@ -25,10 +25,10 @@
   <meta name="twitter:title" content="Silicon From Scratch" />
   <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
 
-  <!-- Favicon follows the browser colour scheme: the grey/purple mark on
+  <!-- Favicon follows the browser color scheme: the gray/purple mark on
        light tab bars, the dark-theme symbol on dark ones. -->
-  <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="/assets/home/logo-symbol-light.png" />
-  <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="/assets/home/logo-symbol.png" />
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="../assets/home/logo-symbol-light.png" />
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="../assets/home/logo-symbol.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -53,8 +53,8 @@
     .coming-soon h1 { margin: var(--space-2) 0 var(--space-3); }
     .coming-soon .kicker { margin-bottom: 0; }
     .coming-soon p { max-width: 42ch; margin-inline: auto; color: var(--soft-ink); }
-    /* The shared .about__actions is a left-aligned flex row; centre it here so the
-       button sits under the centred "Coming Soon" text. */
+    /* The shared .about__actions is a left-aligned flex row; center it here so the
+       button sits under the centered "Coming Soon" text. */
     .coming-soon .about__actions { justify-content: center; }
 
     /* Two "keep learning" stubs: each a link with a little photo-collage of the
@@ -92,7 +92,7 @@
     .learn-card:focus-visible { outline: none; }
 
     /* A "brick wall" of the project's diagrams — bricks of varying size, each
-       image shown whole and centred in its brick. Both walls are the same
+       image shown whole and centered in its brick. Both walls are the same
        height so the two cards line up. */
     .learn-card__collage {
       display: grid;
@@ -110,7 +110,7 @@
       box-sizing: border-box;
       padding: 10px;
       object-fit: contain;      /* whole diagram, never cropped */
-      object-position: center;  /* centred in its brick */
+      object-position: center;  /* centered in its brick */
       background: #fff;
     }
     /* Default wall shape: the first image is the large brick across the top, and
@@ -129,7 +129,7 @@
     .learn-card[href*="alu"] .learn-card__collage img:nth-child(3) { grid-column: 2; grid-row: 2; padding: 0; }
     /* Single Cycle CPU brick tweaks: widen the R-type brick and let it sit high
        and large (its own whitespace is already trimmed), and shrink the
-       fetch-decode-execute circle so it sits centred and fully inside its brick. */
+       fetch-decode-execute circle so it sits centered and fully inside its brick. */
     .learn-card[href*="single-cycle-cpu"] .learn-card__collage { grid-template-columns: 1.4fr 1fr; }
     .learn-card[href*="single-cycle-cpu"] .learn-card__collage img:nth-child(2) { object-position: top; padding: 4px; }
     .learn-card[href*="single-cycle-cpu"] .learn-card__collage img:nth-child(3) { object-position: top; padding: 8px; }

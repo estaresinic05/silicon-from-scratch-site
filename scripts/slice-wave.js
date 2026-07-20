@@ -18,7 +18,7 @@
   var NAMEW = 148, HEADH = 38, STEPW = 46, N = 8;
   var PLOTL = NAMEW, PLOTR = PLOTL + STEPW * N, W = PLOTR + 14;
   var LANEH = 34, STRIP = 16, TXW = 6;            // full lane vs collapsed strip; bus transition half-width
-  var NAMECX = 84;                                // name centred right of the eye
+  var NAMECX = 84;                                // name centered right of the eye
   var COLOR = { in: "#b794f6", ctrl: "#60a5fa", out: "#d4bbff" };
   // Bead motion — the datapath recipe (a fat dash sliding at a constant pixel
   // speed, parked off the end for the rest of a long cycle).
@@ -253,7 +253,7 @@
     build();
 
     /* ---- hover/drag scrubber: a vertical guide + a value tooltip (each value in
-       its signal's colour). Buses read out in binary. Mirrors aluwave.js. ---- */
+       its signal's color). Buses read out in binary. Mirrors aluwave.js. ---- */
     var tip = document.createElement("div");
     tip.className = "awv-tip";
     root.appendChild(tip);

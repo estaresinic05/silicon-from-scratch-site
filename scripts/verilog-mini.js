@@ -30,7 +30,7 @@
        inputs:[…], outputs:[…], regs:[…], display,      // for the UI
        eval(env, state) -> { <signal>: 0|1, … }          // state persists regs
      }
-     highlight(src, errRange) -> HTML string             // colourised + squiggle
+     highlight(src, errRange) -> HTML string             // colorised + squiggle
    ========================================================================= */
 (function (global) {
   "use strict";
@@ -47,7 +47,7 @@
 
   /* ---------------------------------------------------------------- Lexer.
      Always spans the whole source (a bad character becomes a 1-char 'unknown'
-     token and lexing continues) so the highlighter can still colour, and the
+     token and lexing continues) so the highlighter can still color, and the
      first lexical problem is reported via .error. */
   function lex(src) {
     var toks = [], i = 0, n = src.length, error = null;
@@ -448,7 +448,7 @@
   function highlight(src, err) {
     var toks = lex(src).tokens, out = "", pos = 0;
 
-    /* Some colours need more than a token's own type — a bare identifier could
+    /* Some colors need more than a token's own type — a bare identifier could
        be a signal, a declared module name, an instantiated module's type, or an
        instance name. Resolve those with a little lookahead over the non-comment
        tokens, recording an override class per token index:

@@ -6,10 +6,10 @@
    column to the scope. Signals:
      - clk, writeEnable, readEnable      → 1-bit rails,  control blue
      - dataAddress, writeData            → 32-bit hex buses, input purple
-     - memory                            → 32-bit hex bus, internal grey
+     - memory                            → 32-bit hex bus, internal gray
      - readData                          → 32-bit hex bus, output deep-purple
    Reuses the .awv-* structure/markup from the style-guide waveforms; the
-   .dmemwave CSS scope re-colours everything for the light lesson page. Each row
+   .dmemwave CSS scope re-colors everything for the light lesson page. Each row
    keeps the eye show/hide toggle and the hover scrubber; no travelling beads
    (the capture redraws on every pulse, so a constant ripple would only distract).
    ========================================================================= */
@@ -26,7 +26,7 @@
   // pixel speed, then parked off the end for the rest of a long cycle so a ripple
   // passes only occasionally), identical to the style-guide waveforms.
   var DASH = 12, PAD = DASH + 8, MARGIN = 2 * PAD, SPEED = 0.18, CYCLE = 10000;
-  // The signal-name / trace / bus colours live in CSS (.dmemwave scope), tuned
+  // The signal-name / trace / bus colors live in CSS (.dmemwave scope), tuned
   // for the light card. The hover tooltip, though, is a dark box (exactly like
   // the style guide's), so its values use the LIGHTER role palette so they read
   // on dark — the same tones the reference waveform uses.
@@ -224,7 +224,7 @@
         var edges = busEdges(s.vals, s.top);
         svg.appendChild(el("path", { "class": "awv-trace awv-trace--" + s.role, d: edges[0] + " " + edges[1] }));
         // Two ripples per bus — one per rail — moving at the same speed and
-        // crossing over the X at each value change, in the bus's own colour.
+        // crossing over the X at each value change, in the bus's own color.
         // Drawn before the labels so the hex stays readable on top.
         for (var e = 0; e < edges.length; e++) {
           var bd = el("path", { "class": "awv-bead awv-bead--" + s.role, d: edges[e] });
@@ -245,7 +245,7 @@
     render();
 
     /* ---- hover/drag scrubber: a vertical guide + a value tooltip (each value in
-       its signal's colour). Buses read out in hex. Mirrors slice-wave.js. ---- */
+       its signal's color). Buses read out in hex. Mirrors slice-wave.js. ---- */
     var tip = document.createElement("div");
     tip.className = "awv-tip";
     root.appendChild(tip);

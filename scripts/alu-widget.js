@@ -13,7 +13,7 @@
    - Wires the control panel (named-operation buttons + four control bits).
    - "Illuminates" the active datapath for the current control[3:0] value.
 
-   HOW THE HIGHLIGHTING IS DRIVEN  (the one place you edit to change behaviour)
+   HOW THE HIGHLIGHTING IS DRIVEN  (the one place you edit to change behavior)
    - NAMED_OPS .......... friendly names + their 4-bit encodings. Edit here only.
    - deriveActiveIds() .. given any of the 16 codes, returns the SVG element ids
                           to light. Single source of truth for the active path.
@@ -54,7 +54,7 @@
     });
   }
 
-  /* A labelled block (mux / gate / adder): a shape + a centred caption, grouped
+  /* A labeled block (mux / gate / adder): a shape + a centered caption, grouped
      under one id so the whole block lights at once. */
   function block(g, id, shapeTag, shapeAttrs, label, lx, ly, extraClass) {
     var grp = add(g, "g", {
@@ -94,7 +94,7 @@
   }
 
   /* A junction bubble where datapath wires connect (a fan-out / tap). Styled like
-     an input port: hollow grey at rest, purple when its path is live. */
+     an input port: hollow gray at rest, purple when its path is live. */
   function jdot(g, id, x, y) {
     return add(g, "circle", { id: id, cx: x, cy: y, r: 3, class: "alu-jdot" });
   }
@@ -318,7 +318,7 @@
       refX: 5, refY: 4, orient: "auto", markerUnits: "userSpaceOnUse"
     });
     add(mk, "path", { d: "M1 1 L5 4 L1 7", class: "alu-arrowhead" });
-    /* the same shape for the control inputs (inherits the blue wire colour) */
+    /* the same shape for the control inputs (inherits the blue wire color) */
     var mkc = add(defs, "marker", {
       id: "alu-arrow-ctrl", markerWidth: 8, markerHeight: 8,
       refX: 5, refY: 4, orient: "auto", markerUnits: "userSpaceOnUse"
@@ -398,7 +398,7 @@
   }
 
   /* ------------------------------------------------------------------ *
-     THE OPERATION TABLE — the only thing you edit to change behaviour
+     THE OPERATION TABLE — the only thing you edit to change behavior
    * ------------------------------------------------------------------ */
   var NAMED_OPS = [
     { code: 0x0, name: "AND" },       /* 0000 */

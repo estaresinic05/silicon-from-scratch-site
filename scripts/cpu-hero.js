@@ -78,7 +78,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
   /* ----- placement tuning (single shared scene) -----
      World units. Each chip is normalised so its largest dimension is CHIP_SIZE.
-     The camera looks at the origin from `camDist`; x=0 is the centre of the
+     The camera looks at the origin from `camDist`; x=0 is the center of the
      stage. Larger camDist = smaller chips. Nudge aX/bX toward each other to
      overlap more, or negative to spill left over the text. */
   var CHIP_SIZE = 2.4;
@@ -86,7 +86,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
      DESKTOP keeps both chips off to the right so they clear the 36%-wide text
      column and can overlap it. On phones the section stacks (text above, stage
      below) and the canvas is mounted into the stage box ONLY, so the chips can
-     never cover the text; there we re-centre the pair around x=0 and pull the
+     never cover the text; there we re-center the pair around x=0 and pull the
      camera back a touch so both fit the narrower, squarer stage. */
   var DESKTOP = { camDist: 8,   aX: 0.5,  aY: 0, bX: 3.3, bY: 0 };
   // Closer camera + tighter spacing so the pair fills the short mobile band
@@ -172,7 +172,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
   function render() { renderer.render(scene, camera); }
 
   function normalise(model) {
-    // Centre + normalise size regardless of source units, and brighten the
+    // Center + normalise size regardless of source units, and brighten the
     // metal's environment reflections.
     var box = new THREE.Box3().setFromObject(model);
     var size = box.getSize(new THREE.Vector3());

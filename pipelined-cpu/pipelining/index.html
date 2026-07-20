@@ -26,10 +26,10 @@
   <meta name="twitter:title" content="Silicon From Scratch" />
   <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
 
-  <!-- Favicon follows the browser colour scheme: the grey/purple mark on
+  <!-- Favicon follows the browser color scheme: the gray/purple mark on
        light tab bars, the dark-theme symbol on dark ones. -->
-  <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="/assets/home/logo-symbol-light.png" />
-  <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="/assets/home/logo-symbol.png" />
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="../../assets/home/logo-symbol-light.png" />
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="../../assets/home/logo-symbol.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -137,7 +137,7 @@
           </div>
 
           <!-- Card stretches flush to the list card's height (align-items:
-               stretch). The image is centred with object-fit: contain, and its
+               stretch). The image is centered with object-fit: contain, and its
                own white background fills the spare space so the whitespace is
                seamless while the even border and rounded corners are preserved. -->
           <figure class="figure figure--diagram enlarge-laundry" style="max-width: 52rem;">
@@ -231,7 +231,7 @@
         <div class="split split--media-left">
           <figure class="figure enlarge-wide--sm" style="max-width: 38rem;">
             <img src="../../assets/pipelined-cpu/pipelining.jpg"
-                 alt="A hand-drawn pipeline timing diagram. A Time axis runs from 0 to 700 picoseconds in 100 ps steps. Three instructions move through five stages, labelled Instruction Fetch, Reg, ALU, Data Access, and Reg, each stage taking 100 ps. Each instruction starts 100 ps after the one before it, so at any moment several of them occupy different stages at once."
+                 alt="A hand-drawn pipeline timing diagram. A Time axis runs from 0 to 700 picoseconds in 100 ps steps. Three instructions move through five stages, labeled Instruction Fetch, Reg, ALU, Data Access, and Reg, each stage taking 100 ps. Each instruction starts 100 ps after the one before it, so at any moment several of them occupy different stages at once."
                  decoding="async" />
             <figcaption>It is assumed that the write to the register file occurs in the first half of the clock cycle while the read occurs in the second half.</figcaption>
           </figure>
@@ -373,7 +373,7 @@
         <div class="prose prose--flow" style="margin-top: var(--space-2);">
           <figure class="figure enlarge-wide" style="float: left; width: 40rem; max-width: 100%; margin: 0 var(--space-4) var(--space-2) 0;">
             <img src="../../assets/pipelined-cpu/forwarding.jpg"
-                 alt="A pipeline timing diagram of the two instructions. The add instruction and the sub instruction each move through Instruction Fetch, Instruction Decode, Execute, Mem, and Write Back. A purple arrow labelled Forward runs from the output of the add instruction's Execute stage down into the input of the sub instruction's Execute stage, delivering the ALU result before it is written back to the register file."
+                 alt="A pipeline timing diagram of the two instructions. The add instruction and the sub instruction each move through Instruction Fetch, Instruction Decode, Execute, Mem, and Write Back. A purple arrow labeled Forward runs from the output of the add instruction's Execute stage down into the input of the sub instruction's Execute stage, delivering the ALU result before it is written back to the register file."
                  decoding="async" />
           </figure>
 
@@ -600,7 +600,7 @@
   })();
   </script>
 
-  <!-- "Check yourself" quiz: colour the chosen answer, show feedback, and reveal
+  <!-- "Check yourself" quiz: color the chosen answer, show feedback, and reveal
        the continue button once the correct answer is picked. -->
   <script>
   (function () {

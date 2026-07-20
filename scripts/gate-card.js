@@ -55,7 +55,7 @@
       if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") { e.preventDefault(); flipTo(true); }
     });
     /* Flip back via the return arrow only. Hovering it bulges the whole card
-       (see .gate-card__return:hover in alu.css) instead of recolouring the
+       (see .gate-card__return:hover in alu.css) instead of recoloring the
        arrow, so the cue reads "grow, then flip" — the mirror of the front. */
     if (ret) ret.addEventListener("click", function () { flipTo(false); });
     if (resetBtn) resetBtn.addEventListener("click", function () { ta.value = original; state = {}; refresh(); if (!ta.readOnly) ta.focus(); });

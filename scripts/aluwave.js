@@ -1,11 +1,11 @@
 /* =========================================================================
    aluwave.js — the static-ish "1-bit ALU waveform" widget in the Hands On
    grid. Draws a timing diagram of the 1-bit ALU over 80 ns:
-     - a signal-name panel on the left (each name has a colour swatch you can
+     - a signal-name panel on the left (each name has a color swatch you can
        click to HIDE that signal; hidden signals collapse to a short strip whose
        swatch you click to bring them back),
      - a "Time (ns)" scale on top,
-     - the traces on the right, colour-coded by role,
+     - the traces on the right, color-coded by role,
      - a travelling bead per visible signal (like the datapath), all starting at
        0 ns and sweeping forward together at the same speed.
 
@@ -20,7 +20,7 @@
   var NAMEW = 104, HEADH = 38, W = 502, STEPW = 48, N = 8;
   var PLOTL = NAMEW, PLOTR = PLOTL + STEPW * N;
   var LANEH = 34, STRIP = 16;            // full lane vs collapsed strip height
-  var NAMECX = (32 + NAMEW) / 2;         // name centred in the panel, right of the eye
+  var NAMECX = (32 + NAMEW) / 2;         // name centered in the panel, right of the eye
   var COLOR = { in: "#b794f6", ctrl: "#60a5fa", out: "#d4bbff" };   /* dark-card readable */
   // Bead motion — the datapath's own recipe: a fat dash sliding along the path at
   // a constant pixel speed, then parked off the end for the rest of a long cycle
@@ -130,13 +130,13 @@
     function addLane(svg, s) {
       var cy = s.top + s.h / 2;
 
-      // colourless eye toggle: open eye = shown, slashed eye = hidden
+      // colorless eye toggle: open eye = shown, slashed eye = hidden
       var grp = el("g", {
         "class": "awv-toggle" + (s.visible ? "" : " awv-toggle--off"),
         tabindex: "0", role: "button", "aria-pressed": s.visible ? "true" : "false",
         "aria-label": (s.visible ? "Hide signal " : "Show signal ") + s.name
       });
-      // a small eye icon (16-unit artwork scaled down), centred at x=19, y=cy
+      // a small eye icon (16-unit artwork scaled down), centered at x=19, y=cy
       var ES = 0.68;
       var eye = el("g", { transform: "translate(" + (19 - 8 * ES).toFixed(2) + "," + (cy - 8 * ES).toFixed(2) + ") scale(" + ES + ")" });
       eye.appendChild(el("path", { "class": "awv-eye__lid",
@@ -163,7 +163,7 @@
       var dStr = pathD(s.bits, s.top);
       svg.appendChild(el("path", { "class": "awv-trace awv-trace--" + s.role, d: dStr }));
       // bead overlay: a copy of the trace styled as the datapath's dash-bulge;
-      // its colour (and glow) comes from the signal via `color`/currentColor.
+      // its color (and glow) comes from the signal via `color`/currentColor.
       var bead = el("path", { "class": "awv-bead", d: dStr });
       bead.style.color = COLOR[s.role];
       svg.appendChild(bead);
@@ -188,7 +188,7 @@
     build();
 
     /* ---- scrubber: a vertical guide through the cursor + a value tooltip
-       (each value coloured to match its signal). Attached once; it reads the
+       (each value colored to match its signal). Attached once; it reads the
        current SVG/lanes on every move, so it survives rebuilds.
 
        Mouse: follows hover, clears when the pointer leaves.

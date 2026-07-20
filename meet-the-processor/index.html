@@ -28,10 +28,10 @@
   <meta name="twitter:title" content="Silicon From Scratch" />
   <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
 
-  <!-- Favicon follows the browser colour scheme: the grey/purple mark on
+  <!-- Favicon follows the browser color scheme: the gray/purple mark on
        light tab bars, the dark-theme symbol on dark ones. -->
-  <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="/assets/home/logo-symbol-light.png" />
-  <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="/assets/home/logo-symbol.png" />
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="../assets/home/logo-symbol-light.png" />
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="../assets/home/logo-symbol.png" />
 
   <!-- Google Fonts: Bricolage Grotesque (display), Newsreader (body), JetBrains Mono (labels/code) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -77,9 +77,9 @@
     <span id="top"></span>
 
     <!-- ===================== THE JOURNEY (pinned media) ================= -->
-    <!-- One pinned image, centred in the viewport, that cross-fades through
+    <!-- One pinned image, centered in the viewport, that cross-fades through
          three states as the copy scrolls past: the chip's top face (IHS) ->
-         the delidded dies -> their greyscale internals. Each text chunk fades
+         the delidded dies -> their grayscale internals. Each text chunk fades
          in as the reader approaches it. All three images are cropped (zoom +
          rounded frame) so only the chip shows. -->
     <section class="journey" id="journey" data-menu="Meet the Processor" aria-label="Introducing the processor">
@@ -111,7 +111,7 @@
                  alt="" decoding="async" />
             <!-- Scroll-revealed highlight(s) over the die map. A plain
                  translucent-purple rectangle (same fill as the ALU overview
-                 band) running down the centre spine, flush with the bottom edge
+                 band) running down the center spine, flush with the bottom edge
                  and stopping at the visible cutoff near the top. -->
             <div class="journey__hl journey__hl--spine">
               <span class="journey__hl-label">L3 Cache</span>
@@ -144,7 +144,7 @@
             <div class="journey__hl journey__hl--deeper journey__hl--deeper-riser"></div>
             <!-- Fill region between the two L2 caches: flush with their left/right
                  edges and flush top/bottom (the gap between them). A distinct
-                 colour. Placed BEFORE the Tags block so the tags paint on top and
+                 color. Placed BEFORE the Tags block so the tags paint on top and
                  stay uncovered. -->
             <div class="journey__hl journey__hl--deeper journey__hl--deeper-fill"><span class="journey__hl-label journey__hl-label--deeper journey__hl-label--ctrl">L2$ Control and<br>Interconnect</span></div>
             <!-- A third rectangle nestled in the gap between the two, right edge
@@ -152,13 +152,13 @@
             <div class="journey__hl journey__hl--deeper journey__hl--deeper-3"><span class="journey__hl-label journey__hl-label--deeper journey__hl-label--deeper-tags">L2 Cache<br>Tags</span></div>
             <div class="journey__hl journey__hl--deeper journey__hl--deeper-2"><span class="journey__hl-label journey__hl-label--deeper">L2 Cache <span class="frac">1/2</span></span></div>
             <!-- Wide block to the LEFT of the bottom L2 cache, in a different
-                 colour. Bottom flush with that L2 cache; ~3/4 of an L2 width of
+                 color. Bottom flush with that L2 cache; ~3/4 of an L2 width of
                  gap between them; extends left about twice the L2 width. -->
             <div class="journey__hl journey__hl--deeper journey__hl--deeper-west"><span class="journey__hl-label journey__hl-label--deeper">L1 Data Cache</span></div>
             <!-- Small tab sitting on top of the L1 Data cache (same teal), like a
                  short extension. Width ~3/5 of the L1's height; its own height
                  ~1/4 of that width; bottom flush with the L1's top; placed just
-                 right of the L1 top surface's centre. -->
+                 right of the L1 top surface's center. -->
             <div class="journey__hl journey__hl--deeper journey__hl--deeper-l1tab"></div>
             <!-- Small teal square (same fill as the L1 Data cache) near the top
                  right of the cropped core, sitting just to the LEFT of the purple
@@ -167,7 +167,7 @@
             <div class="journey__hl journey__hl--deeper journey__hl--deeper-ne"><span class="journey__hl-label journey__hl-label--deeper journey__hl-label--deeper-l1i">L1 Instruction<br>Cache</span></div>
             <!-- Instruction Fetch and Decode: sits to the LEFT of the L1i, right
                  edge flush with the L1i's left edge. ~2x the L1i's width, ~1/5
-                 taller, top flush with the L1i's top. Its own (orange) colour. -->
+                 taller, top flush with the L1i's top. Its own (orange) color. -->
             <div class="journey__hl journey__hl--deeper journey__hl--deeper-fetch"><span class="journey__hl-label journey__hl-label--deeper journey__hl-label--deeper-fetch">Instruction Fetch<br>and Decode</span></div>
             <!-- Thin extension off the fetch block's bottom-right, running toward
                  the dark purple riser. Same orange; no label. -->
@@ -191,7 +191,7 @@
             <p class="kicker">Meet the processor</p>
             <h2 class="journey__title">Where our journey begins</h2>
             <p>
-              Every project here is a step towards the silicon you use each day —
+              Every project here is a step toward the silicon you use each day —
               whether that's in your phone, your computer, or the car you drive.
               Throughout this journey, we will make references to the
               AMD&nbsp;Ryzen&trade;&nbsp;5&nbsp;9600X, a powerful processor used in
@@ -244,7 +244,7 @@
             </div>
           </div>
 
-          <!-- L3 cache: reveals together with the centre-spine highlight on the
+          <!-- L3 cache: reveals together with the center-spine highlight on the
                pinned die map. -->
           <div class="journey__step journey__step--cache">
             <h2 class="journey__subhead">First stop: the L3 Cache</h2>

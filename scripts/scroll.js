@@ -58,7 +58,7 @@ function buildBpTrace(managed) {
   var frames = Array.prototype.slice.call(layout.querySelectorAll(".bp-frame"));
   if (!frames.length) return null;
 
-  /* Each node: its centre (for branch targets + reveal timing) plus its left /
+  /* Each node: its center (for branch targets + reveal timing) plus its left /
      right side mid-points. The snake now flows IN one side of each graphic and
      OUT the other, alternating side to side down the column. */
   var nodes = frames.map(function (el) {
@@ -468,7 +468,7 @@ function buildBpTrace(managed) {
     var zoomLayer = overviewBand.querySelector(".overview-band__zoom");
     var hl = overviewBand.querySelector(".overview-band__hl");
     if (zoomLayer) {
-      // Paused until the section's midpoint reaches the viewport centre, then
+      // Paused until the section's midpoint reaches the viewport center, then
       // it plays through once and holds.
       var zoomTl = gsap.timeline({
         paused: true,
@@ -749,10 +749,10 @@ function buildBpTrace(managed) {
         }
       );
     }
-    // Cycle the two delid shots (colour then greyscale) as one scrubbed
+    // Cycle the two delid shots (color then grayscale) as one scrubbed
     // timeline, split evenly. It doesn't start until "Under the covers"
     // (steps[1]) is well into view, so the IHS top face stays in full while
-    // "Where our journey begins" (steps[0]) sits centred. It ends before the
+    // "Where our journey begins" (steps[0]) sits centered. It ends before the
     // "Where the beauty lies" heading (steps[2]) reveals at "top 85%", so both
     // shots have cycled before those words appear. Two equal-length tweens on
     // one scrub keep the halves even regardless of copy height.
@@ -764,15 +764,15 @@ function buildBpTrace(managed) {
         .timeline({
           scrollTrigger: {
             trigger: steps[1],
-            start: "top 65%",      // hold the IHS while steps[0] is centred
+            start: "top 65%",      // hold the IHS while steps[0] is centered
             endTrigger: steps[2],
             end: "top 92%",        // both done before steps[2]'s words reveal
             scrub: true
           }
         })
-        // Colour delid fades in, then HOLDS fully on screen before the
-        // greyscale takes over, so it gets the lion's share of the cycle; the
-        // greyscale gets a shorter fade right at the end.
+        // Color delid fades in, then HOLDS fully on screen before the
+        // grayscale takes over, so it gets the lion's share of the cycle; the
+        // grayscale gets a shorter fade right at the end.
         .fromTo(diesImg, { opacity: 0 }, { opacity: 1, ease: "none", duration: 1.6 }, 0)
         .fromTo(grayImg, { opacity: 0 }, { opacity: 1, ease: "none", duration: 0.9 }, 2.5);
     }
@@ -781,7 +781,7 @@ function buildBpTrace(managed) {
     // fully present by "top 45%".
     crossfade(journey.querySelector(".journey__detail"), steps[2], "top 75%", "top 45%");
 
-    // The centre-spine highlight fades in together with the L3-cache copy: same
+    // The center-spine highlight fades in together with the L3-cache copy: same
     // trigger and range as that step's line-by-line reveal.
     crossfade(journey.querySelector(".journey__hl--spine"),
               journey.querySelector(".journey__step--cache"), "top 85%", "top 45%");
@@ -830,7 +830,7 @@ function buildBpTrace(managed) {
     // scrolls PAST "Inside a single core": the teal core highlight over the
     // cropped core fades out at the same time the two purple sub-block
     // rectangles fade in. Anchored to the step's bottom so it kicks in once the
-    // copy has been read and scrolled up past centre. immediateRender:false on
+    // copy has been read and scrolled up past center. immediateRender:false on
     // the core fade-out so it doesn't clobber the cores-step fade-in at load.
     // The two L1 cache rectangles (Instruction + Data, plus the Data cache's
     // little extension tab) are held back from this first reveal — they fade in
@@ -882,7 +882,7 @@ function buildBpTrace(managed) {
     // at "Small but speedy", the pinned die image slides up to open room and the
     // table fades in pinned beneath it; it holds while the section is read, then
     // — as the section scrolls past — the table fades out and the image glides
-    // back to centre. The table lives in the copy in markup (so it's in-context
+    // back to center. The table lives in the copy in markup (so it's in-context
     // and collapses to cards on mobile); here we relocate it into the sticky
     // media so it pins below the image. Only animate `top` (not transforms) so
     // we never fight the image's centring transform or the table's own.
@@ -892,7 +892,7 @@ function buildBpTrace(managed) {
     var deskMedia = window.matchMedia("(min-width: 769px)").matches;
     // Flipped true once the focus-zoom has finished cropping to the single core
     // (set from the zoom timeline below). BOTH the image raise and the table are
-    // gated on it: until the crop is done the image stays centred (covering the
+    // gated on it: until the crop is done the image stays centered (covering the
     // crop frame) so the grayscale delid never peeks out beneath the raised
     // image, and a fast scroll can't reveal the table over the full die map.
     var coreCropped = false;
@@ -900,7 +900,7 @@ function buildBpTrace(managed) {
     if (l1Table && mediaEl && detailEl && l1Step && deskMedia) {
       mediaEl.appendChild(l1Table);          // pin it with the image
       gsap.set(l1Table, { opacity: 0 });
-      var RAISE_TOP = 40;                     // image centre rides up to here, % (tune to taste)
+      var RAISE_TOP = 40;                     // image center rides up to here, % (tune to taste)
       var tableFade = { o: 0 };               // scrubbed proxy; real opacity is gated
       var raise = { t: 50 };                  // scrubbed proxy; real `top` is gated
       // Drive internal values with the scroll, but clamp the actual image lift
@@ -978,7 +978,7 @@ function buildBpTrace(managed) {
         // frame crops down it would otherwise show through behind the core. By
         // position 3 (when the crop happens) it's gone; reverses back in on up.
         .to(dieCrop, { opacity: 0, ease: "power1.inOut", duration: 1.5 }, 1)
-        // towards the very end, fade the spotlight mask in to crop the image
+        // toward the very end, fade the spotlight mask in to crop the image
         // down to the focal core. The mask (opaque, on top of every rectangle)
         // hides the other highlights on its own, so we DON'T also animate their
         // opacity here — that previously fought each rectangle's own scrubbed

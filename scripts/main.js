@@ -189,7 +189,7 @@
   }
 
   // One expandable branch: a toggle button (label + chevron) and a panel that
-  // `fill` populates with the next level. `level` drives the grey shading.
+  // `fill` populates with the next level. `level` drives the gray shading.
   function makeBranch(label, level, fill) {
     var li = document.createElement("li");
     li.className = "menu__item menu__item--l" + level;
@@ -529,9 +529,9 @@
       if (!a) return;
       closeToc();
       // The journey's "Meet the Processor" (the section, whose first chunk we
-      // centre) and "Going Deeper" (a journey chunk) should land centred in the
+      // center) and "Going Deeper" (a journey chunk) should land centered in the
       // viewport, not jumped to the top like a normal anchor. Other entries keep
-      // the default top-anchor behaviour.
+      // the default top-anchor behavior.
       var id = (a.getAttribute("href") || "").replace(/^#/, "");
       var el = id && document.getElementById(id);
       if (!el) return;
@@ -693,5 +693,85 @@
         }).catch(function () { /* clipboard blocked — nothing to do */ });
       });
     })(editors[ei]);
+  }
+  /* ---- 4. Glossary term popups -------------------------------------------
+     A word in the prose marked up as
+       <button class="glossary-term" data-glossary="doping">doped</button>
+     opens the matching <template id="glossary-doping" data-title="Doping">
+     centered on a blurred backdrop, the same treatment an enlarged figure gets.
+     Keeps a long aside off the page until the reader asks for it. */
+  var terms = document.querySelectorAll("[data-glossary]");
+  if (terms.length) {
+    var gOverlay = null, gOpener = null;
+
+    function gKey(e) {
+      if (e.key === "Escape") gClose();
+    }
+    function gClose() {
+      if (!gOverlay) return;
+      var dying = gOverlay;
+      gOverlay = null;
+      dying.classList.remove("is-open");
+      document.removeEventListener("keydown", gKey);
+      setTimeout(function () { dying.remove(); }, 220);
+      // Send focus back to the word that opened it.
+      if (gOpener) { gOpener.focus(); gOpener = null; }
+    }
+    function gOpen(btn) {
+      var tpl = document.getElementById("glossary-" + btn.dataset.glossary);
+      if (!tpl) return;
+      gClose();
+      gOpener = btn;
+
+      gOverlay = document.createElement("div");
+      gOverlay.className = "glossary-overlay";
+
+      var card = document.createElement("div");
+      card.className = "glossary-card";
+      card.setAttribute("role", "dialog");
+      card.setAttribute("aria-modal", "true");
+      card.setAttribute("aria-label", tpl.dataset.title || "Definition");
+
+      var head = document.createElement("div");
+      head.className = "glossary-card__head";
+      var title = document.createElement("p");
+      title.className = "glossary-card__title";
+      title.textContent = tpl.dataset.title || "";
+      var close = document.createElement("button");
+      close.type = "button";
+      close.className = "glossary-card__close";
+      close.setAttribute("aria-label", "Close");
+      close.innerHTML =
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M6 6l12 12M18 6L6 18" /></svg>';
+      head.appendChild(title);
+      head.appendChild(close);
+
+      var body = document.createElement("div");
+      body.className = "glossary-card__body";
+      body.appendChild(tpl.content.cloneNode(true));
+
+      card.appendChild(head);
+      card.appendChild(body);
+      gOverlay.appendChild(card);
+      document.body.appendChild(gOverlay);
+
+      // A frame before adding .is-open so the fade/scale has a state to run from.
+      requestAnimationFrame(function () {
+        if (gOverlay) gOverlay.classList.add("is-open");
+      });
+      close.focus();
+
+      close.addEventListener("click", gClose);
+      // Clicking the backdrop closes; clicking inside the card does not.
+      gOverlay.addEventListener("click", function (e) {
+        if (!e.target.closest(".glossary-card")) gClose();
+      });
+      document.addEventListener("keydown", gKey);
+    }
+
+    for (var ti = 0; ti < terms.length; ti++) {
+      terms[ti].addEventListener("click", function () { gOpen(this); });
+    }
   }
 })();

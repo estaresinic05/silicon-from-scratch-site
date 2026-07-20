@@ -176,6 +176,19 @@ p { margin: 0 0 var(--space-3); }
   color: var(--soft-ink);
 }
 
+/* Superscripts and subscripts must not stretch the line they sit on. Left at
+   their defaults, a line carrying e- or h+ gets extra leading and the
+   paragraph's rhythm breaks against every other paragraph on the page. */
+sup,
+sub {
+  font-size: 0.72em;
+  line-height: 0;                /* the part that keeps the line box unchanged */
+  position: relative;
+  vertical-align: baseline;
+}
+sup { top: -0.45em; }
+sub { bottom: -0.25em; }
+
 /* Inline code / tool names */
 code {
   font-family: var(--font-mono);
@@ -304,9 +317,9 @@ body::before {
 .topbar.is-hidden {
   transform: translateY(-100%);
 }
-/* Three-column bar: wordmark hard left, nav centred in the viewport, the index +
+/* Three-column bar: wordmark hard left, nav centered in the viewport, the index +
    toggle group hard right. Spans the full width (overriding .container's max-width)
-   so the wordmark hugs the left edge rather than the centred content column. */
+   so the wordmark hugs the left edge rather than the centered content column. */
 .topbar__inner {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -499,7 +512,7 @@ body::before {
 }
 
 /* ---- Project menu inside the drawer ---------------------------------------
-   Three levels stepping from the drawer's own dark tone, through a grey, to a
+   Three levels stepping from the drawer's own dark tone, through a gray, to a
    white leaf. Rows go edge-to-edge, so the panel drops its side padding. */
 .toc__menu--proj {
   padding: calc(4rem + var(--space-2)) 0 var(--space-3);
@@ -539,7 +552,7 @@ body::before {
 
 /* Level 1 — difficulty: flat quick-link style (font-display, soft-gray text on
    the drawer's dark bg, hairline divider) so the outermost level matches the
-   top-bar links. The inner two levels keep the stepped grey -> white treatment. */
+   top-bar links. The inner two levels keep the stepped gray -> white treatment. */
 .toc__menu .menu__item--l1 > .menu__toggle {
   background: transparent;
   color: var(--soft-ink);
@@ -550,7 +563,7 @@ body::before {
 }
 .toc__menu .menu__item--l1 > .menu__toggle:hover { color: var(--accent-deep); }
 
-/* Level 2 — project: a grey step toward the white leaf. */
+/* Level 2 — project: a gray step toward the white leaf. */
 .toc__menu .menu__item--l2 > .menu__toggle {
   background: #4a4a55;
   color: #f3f3f6;
@@ -721,7 +734,7 @@ body::before {
    to the LEFT edge, with its sheets unrolling left-to-right. Everything below
    is the mirror of the right-hand arrangement above. */
 
-/* A <button>, but indistinguishable from its sibling links: same type, colour,
+/* A <button>, but indistinguishable from its sibling links: same type, color,
    padding, and sliding hairline underline as `.nav a`. */
 .projtab {
   border: 0;
@@ -842,7 +855,7 @@ body::before {
 .toc__menu .menu__quick > a:focus-visible { color: var(--accent-deep); }
 
 /* Level 3 — the mobile-only project level. With the extra "Project Directory"
-   parent, two greys step down to the white leaf: the difficulty parent (l2)
+   parent, two grays step down to the white leaf: the difficulty parent (l2)
    darker, this project child (l3) lighter. */
 .toc__menu .menu__item--l3 > .menu__toggle {
   background: #70707d;
@@ -968,7 +981,7 @@ main section[id] { scroll-margin-top: 5rem; }
    path. On wide screens (see the media query further down) it becomes a left
    column: a vertical accent trace that "draws" downward as the reader scrolls
    the path, with the two lines hung off it. It tells the reader what the site is
-   without competing with the path — quieter weight/colour, and it only occupies
+   without competing with the path — quieter weight/color, and it only occupies
    otherwise-empty left margin. */
 /* Every line on the rail shares one type treatment. */
 .buildpath-intro__lead,
@@ -1000,7 +1013,7 @@ main section[id] { scroll-margin-top: 5rem; }
 @media (min-width: 1080px) {
   /* Two columns: the explainer text on the left, the serpentine path on the
      right. The path column is a flexible 1fr so its nodes can swing between a
-     left lane and a right lane; the pair is capped and centred on the page.
+     left lane and a right lane; the pair is capped and centered on the page.
      position:relative anchors the full-layout .bp-trace overlay. */
   .buildpath-layout {
     position: relative;
@@ -1011,17 +1024,17 @@ main section[id] { scroll-margin-top: 5rem; }
     margin-inline: auto;
     padding-inline: var(--space-4);
     /* The serpentine's bulges reach further right than the text reaches left, so
-       the centred grid reads right-biased by an amount that grows with the bulge
+       the centered grid reads right-biased by an amount that grows with the bulge
        size (which scales with width). Nudge left by a width-scaled amount so the
-       path + paragraphs stay visually centred across desktop widths. */
+       path + paragraphs stay visually centered across desktop widths. */
     transform: translateX(clamp(-3.75rem, 6.5vw - 124px, -0.5rem));
   }
   .buildpath-main { min-width: 0; }
   /* Path sits flush inside its column (the grid handles centring). */
   .buildpath-main .buildpath { margin-inline: 0; max-width: none; padding-inline: 0; }
-  /* Centre the "YOUR PATH" eyebrow over the WHOLE layout (≈ the screen middle),
+  /* Center the "YOUR PATH" eyebrow over the WHOLE layout (≈ the screen middle),
      not just the serpentine column: lift it out of the right column's flow and
-     stretch it across the full layout width so its tick + text land dead centre.
+     stretch it across the full layout width so its tick + text land dead center.
      The layout reserves top room for it. */
   .buildpath-layout { padding-top: clamp(2.4rem, 4vw, 3.4rem); }
   .buildpath-main .buildpath__title {
@@ -1046,7 +1059,7 @@ main section[id] { scroll-margin-top: 5rem; }
     justify-content: space-between;
     align-items: flex-start;           /* paragraphs sit against the column's left edge */
     padding-block: 0.2rem 2rem;
-    text-align: center;                /* centred within each block */
+    text-align: center;                /* centered within each block */
   }
   .buildpath-intro__lead,
   .buildpath-intro__sub,
@@ -1070,7 +1083,7 @@ main section[id] { scroll-margin-top: 5rem; }
 /* Section eyebrow atop the path — mimics "MEET THE PROCESSOR" on the Meet the
    Processor page. That label is a .kicker inside .journey__step, so it inherits
    the mono/uppercase/tracked kicker base but with the larger size and soft-ink
-   colour that .journey__step p applies. We reproduce those two overrides here. */
+   color that .journey__step p applies. We reproduce those two overrides here. */
 .buildpath__title {
   max-width: 980px;
   margin: -1.25rem auto var(--space-2);   /* nudged up a little */
@@ -1089,7 +1102,7 @@ main section[id] { scroll-margin-top: 5rem; }
 }
 /* Difficulty tier tags (Intermediate / Advanced) sit in the gap between two
    icons. Each carries the same downward arrow as the other transitions —
-   centred under the icon column — with the tier label hung out into the left
+   centered under the icon column — with the tier label hung out into the left
    margin so it stays clear of the arrow and reaches toward the screen edge. */
 .bp-tag {
   position: relative;
@@ -1097,7 +1110,7 @@ main section[id] { scroll-margin-top: 5rem; }
 }
 .bp-tag__arrow {
   display: block;
-  width: var(--bp-icon);             /* match the icon column so the ↓ centres under it */
+  width: var(--bp-icon);             /* match the icon column so the ↓ centers under it */
   text-align: center;
   color: var(--accent);
   font-size: clamp(1.5rem, 3.5vw, 2.2rem);
@@ -1107,7 +1120,7 @@ main section[id] { scroll-margin-top: 5rem; }
   position: absolute;
   top: 50%;
   left: calc(-1 * var(--space-4));   /* flush to the section's left edge */
-  transform: translateY(-50%);       /* centre on the arrow (no layout effect) */
+  transform: translateY(-50%);       /* center on the arrow (no layout effect) */
   margin: 0;
   padding-inline: 0;
   font-size: 0.8rem;
@@ -1196,7 +1209,7 @@ main section[id] { scroll-margin-top: 5rem; }
 /* The ↓ glyph (mobile / no-desktop view) — styled exactly as the old .bp-arrow. */
 .bp-arrow__glyph {
   display: block;
-  width: var(--bp-icon);             /* match the icon column so the ↓ centres under it */
+  width: var(--bp-icon);             /* match the icon column so the ↓ centers under it */
   text-align: center;
   color: var(--accent);
   font-size: clamp(1.5rem, 3.5vw, 2.2rem);
@@ -1232,7 +1245,7 @@ main section[id] { scroll-margin-top: 5rem; }
    Placed AFTER the base .bp-step / .bp-frame rules so these win on source order.
    Each node is a half-width column hugging one lane, so its icon sits at 25%
    (left) or 75% (right) of the path column; the full-width connector SVGs curve
-   between those two lane centres. This now applies at EVERY width — on phones
+   between those two lane centers. This now applies at EVERY width — on phones
    the left explainer paragraphs are hidden and the serpentine spans full-width. */
   .buildpath {
     position: relative;
@@ -1252,8 +1265,8 @@ main section[id] { scroll-margin-top: 5rem; }
     width: 50%;
     gap: 0.75rem;
   }
-  .bp-step--left  { margin-right: auto; }   /* hug the left lane  -> icon centre at 25% */
-  .bp-step--right { margin-left: auto; }     /* hug the right lane -> icon centre at 75% */
+  .bp-step--left  { margin-right: auto; }   /* hug the left lane  -> icon center at 25% */
+  .bp-step--right { margin-left: auto; }     /* hug the right lane -> icon center at 75% */
   /* Fixed node size (override the base 100%); opaque surface so the snaking
      trace passes cleanly BEHIND each node instead of through the icon. */
   .bp-frame { width: var(--bp-icon); background: var(--paper); }
@@ -1283,7 +1296,7 @@ main section[id] { scroll-margin-top: 5rem; }
   gap: clamp(var(--space-4), 6vw, var(--space-7));
   padding-inline: clamp(var(--space-3), 5vw, var(--space-6));
 }
-/* Media column: pinned and centred in the viewport while the copy scrolls. */
+/* Media column: pinned and centered in the viewport while the copy scrolls. */
 .journey__media {
   flex: 0 0 auto;
   position: sticky;
@@ -1292,7 +1305,7 @@ main section[id] { scroll-margin-top: 5rem; }
   display: flex;
   align-items: center;
 }
-/* Crop frame: square window zoomed past the grey border; the three substrate
+/* Crop frame: square window zoomed past the gray border; the three substrate
    states are stacked so they line up pixel-for-pixel and can cross-fade. */
 .journey__crop {
   position: relative;
@@ -1303,7 +1316,7 @@ main section[id] { scroll-margin-top: 5rem; }
   border: 1px solid var(--hairline);
   box-shadow: var(--shadow-soft);
 }
-/* The die map gets its own, larger frame centred over the smaller one and
+/* The die map gets its own, larger frame centered over the smaller one and
    faded in. Its aspect ratio matches the image, so the whole map shows with no
    crop and no letterbox — just bigger, with its own (correspondingly larger)
    border. (It's positioned against the sticky media, which is already a
@@ -1332,7 +1345,7 @@ main section[id] { scroll-margin-top: 5rem; }
 .journey__zoom {
   position: absolute;
   inset: 0;
-  transform-origin: 18% 28%;   /* centre of the top-left Zen 5 core */
+  transform-origin: 18% 28%;   /* center of the top-left Zen 5 core */
   /* No will-change/cached layer here: under the zoom the browser re-rasterises
      the highlight label text at the scaled size, so it stays crisp instead of
      being a magnified bitmap. */
@@ -1358,7 +1371,7 @@ main section[id] { scroll-margin-top: 5rem; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1.15);   /* zoom past the grey border so only the chip shows */
+  transform: scale(1.15);   /* zoom past the gray border so only the chip shows */
   /* Promote each state to its own compositor layer so the scrubbed opacity
      cross-fade is GPU-composited (no per-frame repaint of the large image). */
   will-change: opacity;
@@ -1376,7 +1389,7 @@ main section[id] { scroll-margin-top: 5rem; }
 /* Scroll-revealed highlight rectangle over the die map. Same translucent
    light-purple fill as the ALU overview band. Positioned in % of the detail
    frame (which shares the image's aspect ratio, so %s map straight onto the
-   image). A perfect rectangle down the centre spine: flush with the bottom edge
+   image). A perfect rectangle down the center spine: flush with the bottom edge
    and rising only to the visible cutoff near the top of the die. */
 .journey__hl {
   position: absolute;
@@ -1387,7 +1400,7 @@ main section[id] { scroll-margin-top: 5rem; }
 }
 .journey__hl--spine {
   left: 36%;
-  width: 28%;            /* centred: 36% + 28% = 64% */
+  width: 28%;            /* centered: 36% + 28% = 64% */
   bottom: 1.5%;          /* a tad further down toward the bottom edge */
   top: 18.25%;           /* top edge flush with the Zen 5 core's top edge */
 }
@@ -1435,7 +1448,7 @@ main section[id] { scroll-margin-top: 5rem; }
   height: 5.4%;         /* grown ~1/4 on each side (was 3.6%) */
   background: rgba(96, 165, 250, 0.5);   /* blue — distinct from the others */
 }
-/* Centre the label vertically within the band; smaller so the long string
+/* Center the label vertically within the band; smaller so the long string
    doesn't overpower the thin rectangle. */
 .journey__hl--smu .journey__hl-label {
   top: 50%;
@@ -1481,7 +1494,7 @@ main section[id] { scroll-margin-top: 5rem; }
 /* Small tab on top of the L1 Data cache, same teal, reading as a short
    extension. Width ≈ 3/5 of the L1's height (0.6 × 4.15% ≈ 2.49%); its height
    ≈ 1/4 of that width (≈ 0.62%); bottom flush with the L1's top (33.3%); placed
-   just right of the L1 top surface's centre (L1 centre ≈ 16.46%). */
+   just right of the L1 top surface's center (L1 center ≈ 16.46%). */
 .journey__hl--deeper-l1tab {
   left: 15.915%;
   width: 2.19%;         /* right side pulled in another smidge */
@@ -1578,7 +1591,7 @@ main section[id] { scroll-margin-top: 5rem; }
   background: rgba(251, 146, 60, 0.5);    /* same orange as the fetch block */
 }
 
-/* Centred label sitting at the top of the highlight rectangle. Inherits the
+/* Centered label sitting at the top of the highlight rectangle. Inherits the
    rectangle's scroll fade, so it appears with it. */
 .journey__hl-label {
   position: absolute;
@@ -1595,7 +1608,7 @@ main section[id] { scroll-margin-top: 5rem; }
   text-shadow: 0 1px 6px rgba(20, 20, 26, 0.85);
   pointer-events: none;
 }
-/* Core labels: smaller and centred within their (smaller) rectangle. */
+/* Core labels: smaller and centered within their (smaller) rectangle. */
 .journey__hl-label--core {
   top: 50%;
   font-size: clamp(0.6rem, 0.85vw, 0.78rem);
@@ -1624,7 +1637,7 @@ main section[id] { scroll-margin-top: 5rem; }
   line-height: 1.05;     /* tight stacking of the two lines */
 }
 /* "L1 Instruction cache" sits in the small teal square (deeper-ne). Two stacked
-   lines, both centred; sized down so the longer top line fits inside the box. */
+   lines, both centered; sized down so the longer top line fits inside the box. */
 .journey__hl-label--deeper-l1i {
   font-size: clamp(0.115rem, 0.153vw, 0.153rem);
   line-height: 1.1;      /* tight stacking of the two lines */
@@ -1637,9 +1650,9 @@ main section[id] { scroll-margin-top: 5rem; }
 }
 /* "L2$ Control and Interconnect" runs vertically up the left strip of the fill
    frame (the band to the left of the Tags hole). Rotated 90° CCW so it reads
-   bottom-to-top; centred in that strip. */
+   bottom-to-top; centered in that strip. */
 .journey__hl-label--ctrl {
-  left: 17.9%;           /* centre of the left strip (x 0–35.74% of the box) */
+  left: 17.9%;           /* center of the left strip (x 0–35.74% of the box) */
   right: auto;
   top: 50%;
   transform: translate(-50%, -50%) rotate(-90deg);
@@ -1655,7 +1668,7 @@ main section[id] { scroll-margin-top: 5rem; }
    media room to hold and to pace the line-by-line reveal, but the text itself
    is grouped tightly — the empty space sits between chunks, not between lines. */
 /* Don't grow — stay at the 60rem measure — so the layout's justify-content
-   can centre the image + copy pair instead of the copy filling to the edge. */
+   can center the image + copy pair instead of the copy filling to the edge. */
 /* Extra bottom runway keeps the sticky media pinned past the final copy so the
    die map holds in place while its highlight(s) reveal. */
 .journey__copy { flex: 0 1 auto; min-width: 0; max-width: 60rem; padding-block: 12vh 30vh; }
@@ -1712,8 +1725,8 @@ main section[id] { scroll-margin-top: 5rem; }
   font-size: clamp(1.15rem, 1.6vw, 1.35rem);
   line-height: 1.65;
 }
-/* Match the muted grey bold used in lesson .prose: strong inherits the
-   paragraph's --soft-ink colour with the browser's bold weight. */
+/* Match the muted gray bold used in lesson .prose: strong inherits the
+   paragraph's --soft-ink color with the browser's bold weight. */
 .journey__step strong { color: var(--soft-ink); }
 /* "Learn more about pipelining" link: pulled up snug under the paragraph it
    follows, with a normal gap restored before the next paragraph. Scoped under
@@ -1779,10 +1792,10 @@ main section[id] { scroll-margin-top: 5rem; }
 .cache-table__l1--first td { border-bottom: 0; }
 
 /* Pinned variant: when scroll.js moves the figure into the sticky media, it sits
-   centred below the (raised) die image. --cache-table-top sets how far below the
-   viewport centre it rides; tweak alongside the JS raise amount. */
+   centered below the (raised) die image. --cache-table-top sets how far below the
+   viewport center it rides; tweak alongside the JS raise amount. */
 .journey__media .cache-table {
-  --cache-table-top: calc(50% + 3.5rem);   /* how far below centre it rides */
+  --cache-table-top: calc(50% + 3.5rem);   /* how far below center it rides */
   position: absolute;
   left: 50%;
   top: var(--cache-table-top);
@@ -1824,7 +1837,7 @@ main section[id] { scroll-margin-top: 5rem; }
 .journey__gallery {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;   /* centre the pair under the paragraph */
+  justify-content: center;   /* center the pair under the paragraph */
   gap: var(--space-3);
   margin-top: var(--space-5);
 }
@@ -1841,7 +1854,7 @@ main section[id] { scroll-margin-top: 5rem; }
 }
 
 @media (max-width: 768px) {
-  /* On phones, let the hero own the first screen: fill the viewport and centre
+  /* On phones, let the hero own the first screen: fill the viewport and center
      its content so the logo clears the fixed top bar (4rem) and the AMD chip in
      the journey section stays below the fold until the reader scrolls. */
   .hero {
@@ -1863,7 +1876,7 @@ main section[id] { scroll-margin-top: 5rem; }
   .journey__img--gray { position: static; opacity: 1; }
 
   /* Cache table collapses to a stack of cards: hide the head row and turn each
-     row into a labelled card (the data-label on each cell supplies the field
+     row into a labeled card (the data-label on each cell supplies the field
      name). The L1 pair keeps its cyan accent so the grouping still reads. */
   .cache-table table,
   .cache-table tbody,
@@ -1925,7 +1938,7 @@ main section[id] { scroll-margin-top: 5rem; }
   .journey__copy > .journey__step:nth-child(2) {
     margin-top: calc(var(--space-4) + 3rem + 9vh);
   }
-  /* Lower just the opening chunk so it sits vertically centred on the pinned
+  /* Lower just the opening chunk so it sits vertically centered on the pinned
      IHS image. Transform only, so the later steps aren't pushed down. */
   .journey__copy > .journey__step:first-child {
     transform: translateY(9vh);
@@ -1936,8 +1949,8 @@ main section[id] { scroll-margin-top: 5rem; }
      ends (instead of the map holding pinned past it). */
   .journey__soon { margin-top: 22vh; }
   /* ~50vh of space after "Coming soon" so the map unpins exactly when that text
-     reaches the viewport's vertical centre — i.e. when it lines up top-to-bottom
-     with the centred die image — and the two then scroll up together. */
+     reaches the viewport's vertical center — i.e. when it lines up top-to-bottom
+     with the centered die image — and the two then scroll up together. */
   .journey__copy { padding-bottom: 50vh; }
   /* Pull the next section up into that empty runway tail (after the image has
      scrolled off) to close the gap a little, without changing the unpin point. */
@@ -1949,14 +1962,14 @@ main section[id] { scroll-margin-top: 5rem; }
    The model lives in a normal-flow canvas inside .cpu-stage__viewport, so the
    page scrolls straight through (no pinning, no overlay). scripts/cpu-hero.js
    maps the section's progress through the viewport to a gentle zoom + a few
-   degrees of rotation that peak when the section is centred. The static emblem
+   degrees of rotation that peak when the section is centered. The static emblem
    is both the loading state and the no-WebGL / reduced-motion fallback.
  * ------------------------------------------------------------------ */
 .cpu-stage {
   padding-block: var(--space-7);
   border-top: 1px solid var(--hairline);
 }
-.kicker--center { justify-content: center; }   /* centre the kicker tick + text */
+.kicker--center { justify-content: center; }   /* center the kicker tick + text */
 .cpu-stage h2 { margin-bottom: var(--space-2); }
 .cpu-stage__lead {
   color: var(--soft-ink);
@@ -2006,7 +2019,7 @@ main section[id] { scroll-margin-top: 5rem; }
 }
 html.cpu-ready .cpu-stage__canvas { opacity: 1; }
 
-/* Static fallback emblem — centred in the stage box. It is the loading state
+/* Static fallback emblem — centered in the stage box. It is the loading state
    and the standin whenever the 3D can't run; hidden once the model is ready. */
 .cpu-stage__fallback {
   position: absolute;
@@ -2134,7 +2147,7 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
 .step p { color: var(--soft-ink); margin: 0; max-width: 60ch; }
 
 /* The active ALU step links to its deep-dive page. The heading reads as ink
-   (not a coloured link) so the ladder stays calm; it warms to accent on hover. */
+   (not a colored link) so the ladder stays calm; it warms to accent on hover. */
 .step__link { color: inherit; }
 .step__link:hover { color: var(--accent-deep); }
 .step__more {
@@ -2225,7 +2238,7 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  object-position: 50% 50%;   /* crop centred so the face sits upper-middle */
+  object-position: 50% 50%;   /* crop centered so the face sits upper-middle */
   border-radius: 50%;
   border: 1px solid var(--hairline);
   box-shadow: 0 0 0 7px var(--paper),
@@ -2417,7 +2430,7 @@ html.js .buildpath-intro { --rail-progress: 0; }
 @media (max-width: 768px) {
   .nav-toggle { display: inline-flex; }   /* hamburger appears */
   .nav { display: none; }                 /* inline links collapse into the drawer */
-  /* With the centre nav gone, drop back to a simple two-end layout so the toggle
+  /* With the center nav gone, drop back to a simple two-end layout so the toggle
      group doesn't slide into the middle grid track. */
   .topbar__inner { display: flex; justify-content: space-between; }
 
@@ -2452,7 +2465,7 @@ html.js .buildpath-intro { --rail-progress: 0; }
    soft purple glow, echoing the ALU "On the die" band. Scoped to
    <body class="theme-dark"> so other pages stay on the light theme.
    It mostly works by re-pointing the design tokens; each section then
-   gets its own gradient so the glow shifts colour/position as you scroll
+   gets its own gradient so the glow shifts color/position as you scroll
    (similar mood, different per section).
  * ------------------------------------------------------------------ */
 .theme-dark {
@@ -2539,7 +2552,7 @@ code.ctrl-sig,
   gap: clamp(1.25rem, 4vw, 3.75rem);
   align-items: start;
 }
-/* Widgets fill their column rather than their own centred max-widths. */
+/* Widgets fill their column rather than their own centered max-widths. */
 .handson-grid > * { width: 100%; }
 /* In a half-width column the answer choices read better stacked. */
 .handson-grid .quiz__options { grid-template-columns: 1fr; }
@@ -2561,13 +2574,13 @@ code.ctrl-sig,
 }
 .aluwave .hoi-title { margin-bottom: 0; }   /* the card's flex gap sets the spacing */
 .handson-grid .quiz { max-width: none; margin-inline: 0; }
-/* The gated D-latch card is kept smaller and centred within its cell. */
+/* The gated D-latch card is kept smaller and centered within its cell. */
 .handson-grid .gate-card--solo { max-width: 29rem; margin-inline: auto; }
 
 /* ALU datapath explorer in the grid: the datapath + the control panel share ONE
    card, styled exactly like the Check Yourself card (paper bg, hairline border,
    soft shadow, rounded). The datapath keeps its own white plate inside so the
-   schematic — drawn with dark ink/idle colours — stays legible on the dark card;
+   schematic — drawn with dark ink/idle colors — stays legible on the dark card;
    the control panel sits straight on the card and reads in the dark theme. */
 .handson-grid .alu-widget {
   display: block;
@@ -2665,7 +2678,7 @@ code.ctrl-sig,
 /* ------------------------------------------------------------------ *
    ALU WAVEFORM — a static timing diagram of the 1-bit ALU. A signal-name
    panel on the left, a 10 ns time scale on top, and the traces on the
-   right, colour-coded by role: data inputs (purple), the control line
+   right, color-coded by role: data inputs (purple), the control line
    (datapath blue), the output (Meet-the-Processor amber). The ALU sketch
    sits on top. Everything rides white plates on the usual paper card.
  * ------------------------------------------------------------------ */
@@ -2699,7 +2712,7 @@ code.ctrl-sig,
   border-radius: 4px;
 }
 /* The scope: transparent on the card with a top hairline — the SAME treatment as
-   the datapath's control panel (not a white plate). Its SVG is coloured for the
+   the datapath's control panel (not a white plate). Its SVG is colored for the
    dark card. Scrolls horizontally on narrow screens rather than squishing. */
 .aluwave__scope {
   background: transparent;
@@ -2726,7 +2739,7 @@ code.ctrl-sig,
 .awv-hdr  { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; fill: var(--soft-ink); }
 /* Time-scale numbers — the display face reads friendlier than the mono. */
 .awv-time { font-family: var(--font-display); font-size: 11px; fill: var(--soft-ink); }
-/* Signal names in the left panel, coloured by role (dark-card readable). */
+/* Signal names in the left panel, colored by role (dark-card readable). */
 .awv-name { font-size: 11px; font-weight: 500; }
 .awv-name--in   { fill: #b794f6; }   /* inputs — light purple (the dark-theme accent) */
 .awv-name--ctrl { fill: #60a5fa; }   /* control — light blue */
@@ -2737,7 +2750,7 @@ code.ctrl-sig,
 .awv-trace--in   { stroke: #b794f6; }
 .awv-trace--ctrl { stroke: #60a5fa; }
 .awv-trace--out  { stroke: #d4bbff; stroke-width: 3; }
-/* Colourless show/hide control: an eye (open = shown, slashed = hidden). */
+/* Colorless show/hide control: an eye (open = shown, slashed = hidden). */
 .awv-toggle { cursor: pointer; }
 .awv-toggle:focus { outline: none; }
 .awv-eye__lid { fill: none; stroke: var(--soft-ink); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
@@ -2750,7 +2763,7 @@ code.ctrl-sig,
 .awv-toggle--off .awv-eye__pupil { fill: rgba(253, 253, 251, 0.4); }
 .awv-toggle:focus-visible .awv-eye__lid { stroke: var(--accent); }
 /* Travelling bead — EXACTLY the datapath treatment: a fat, round-capped dash
-   that rides the trace like a bulge, colour set per signal + a soft glow.
+   that rides the trace like a bulge, color set per signal + a soft glow.
    Hidden at rest; the JS animation reveals it. */
 .awv-bead {
   fill: none;
@@ -2801,11 +2814,11 @@ code.ctrl-sig,
 .slicewave .aluwave__art { overflow: hidden; }
 .slicewave .aluwave__art img { transform: scale(1.3); }
 
-/* In the right column it's capped and centred. */
+/* In the right column it's capped and centered. */
 .handson-grid .aluwave { max-width: 46rem; margin-inline: auto; width: 100%; }
 /* Push the waveform (and the "See the code" card trailing it) down a little so
-   the pair sits higher than dead-centre against the tall datapath — roughly half
-   the offset that would centre it. The push grows with width (the datapath gets
+   the pair sits higher than dead-center against the tall datapath — roughly half
+   the offset that would center it. The push grows with width (the datapath gets
    taller), so it still tracks the viewport. */
 .handson-grid .aluwave { margin-top: clamp(0.15rem, 9vw - 110px, 1.5rem); }
 
@@ -2952,7 +2965,7 @@ code.ctrl-sig,
    homepage loads only main.css. Used by the Hands On gated-D-latch card.
  * ------------------------------------------------------------------ */
 .gate-card { position: relative; perspective: 1200px; }
-/* A standalone flip card (not in a grid) — capped + centred. */
+/* A standalone flip card (not in a grid) — capped + centered. */
 .gate-card--solo { max-width: 30rem; margin-inline: auto; }
 .gate-card__inner {
   display: grid;                    /* stack both faces → identical footprint */
@@ -3047,7 +3060,7 @@ code.ctrl-sig,
   transition: transform 0.2s var(--ease);
 }
 /* Hovering the return arrow bulges the whole card a touch — the mirror of the
-   cue the front gives before its flip — rather than recolouring the arrow. */
+   cue the front gives before its flip — rather than recoloring the arrow. */
 .gate-card.is-flipped .gate-card__face--back:has(.gate-card__return:hover) {
   transform: rotateY(180deg) scale(1.045);
 }
@@ -3186,7 +3199,7 @@ code.ctrl-sig,
 }
 .code-editor__ta:focus { outline: none; }
 .code-editor__ta::selection { background: rgba(38, 79, 120, 0.75); color: transparent; }
-/* VS Code Dark+ Verilog token colours. */
+/* VS Code Dark+ Verilog token colors. */
 .tok-kw { color: #569cd6; }
 .tok-cm { color: #6a9955; }
 .tok-op { color: #b794f6; }              /* operators: = & | ^ ~ ? + - == && … */
@@ -3271,7 +3284,7 @@ code.ctrl-sig,
   color: var(--accent);
   cursor: pointer;
 }
-/* The arrow doesn't recolour on hover — hovering it grows the whole card
+/* The arrow doesn't recolor on hover — hovering it grows the whole card
    instead (see .gate-card__face--back:has(.gate-card__return:hover) above). */
 .gate-card__return svg {
   width: 1.15rem;
@@ -3316,6 +3329,140 @@ code.ctrl-sig,
 }
 
 /* ==========================================================================
+   GLOSSARY TERM POPUP — a word in the prose that opens its definition centered
+   on a blurred backdrop (the "doped" aside on Transistor Basics; the behavior
+   lives in scripts/main.js section 4).
+   ========================================================================== */
+
+/* The word itself: purple with a dashed underline and a small question mark,
+   so it reads as something to press rather than a link out of the page. The
+   rule is drawn with text-decoration rather than a border, so its distance
+   from the letters can be tuned: a border would sit at the bottom of the
+   inline box, well below the baseline. */
+.glossary-term {
+  font: inherit;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition: color 0.15s var(--ease);
+}
+.glossary-term::after {
+  content: "?";
+  /* inline-block, not inline: a parent's underline propagates through inline
+     children and `text-decoration: none` cannot cancel it, but it is never
+     drawn through an atomic inline box. This keeps the rule under the word. */
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.62em;
+  vertical-align: super;
+  line-height: 0;
+  margin-left: 0.15em;
+  opacity: 0.85;
+}
+/* Hover brightens the word only. No highlight block behind it. */
+.glossary-term:hover,
+.glossary-term:focus-visible { color: var(--ink); }
+
+/* Same blurred backdrop as an enlarged figure, so the two read as one idea. */
+.glossary-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5vmin;
+  background: rgba(12, 12, 18, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+.glossary-overlay.is-open { opacity: 1; }
+
+.glossary-card {
+  /* Wide enough for the three-lattice doping sketch to stay legible. */
+  width: min(68rem, 100%);
+  max-height: 86vh;
+  overflow: auto;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  transform: scale(0.94);
+  transition: transform 0.22s ease;
+}
+.glossary-overlay.is-open .glossary-card { transform: scale(1); }
+
+/* Title hard left, close button hard right. */
+.glossary-card__head {
+  display: flex;
+  /* Centred so the X sits on the same line as the middle of the title. */
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.glossary-card__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+}
+.glossary-card__close {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--soft-ink);
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+.glossary-card__close svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.glossary-card__close:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+.glossary-card__body p { margin: 0; }
+.glossary-card__body p + p { margin-top: var(--space-3); }
+
+/* A diagram inside a definition: full width of the card, on its own white tile
+   so a sketch drawn on white does not float on the dark card. */
+.glossary-fig {
+  margin: var(--space-3) 0;
+  padding: var(--space-2);
+  background: #fff;
+  border-radius: var(--radius-sm);
+}
+.glossary-fig img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ==========================================================================
    ENLARGE — static figure images pop on hover and open enlarged on a blurred
    backdrop when clicked (see scripts/enlarge.js, which tags .enlargeable and
    builds the .enlarge-overlay). The whole card scales, not just the image.
@@ -3349,7 +3496,7 @@ code.ctrl-sig,
 }
 .enlarge-overlay.is-open { opacity: 1; }
 
-/* The cloned card, enlarged and centred — keeps its own background, border and
+/* The cloned card, enlarged and centered — keeps its own background, border and
    radius, but scaled up and free of its in-page layout limits. */
 .enlarge-overlay .figure,
 .enlarge-overlay .doc-hero__art,
@@ -3392,13 +3539,14 @@ code.ctrl-sig,
 .enlarge-overlay .enlarge-lg img { max-height: 86vh; }
 
 /* Opt-in: .enlarge-xl fills the window. For a tall or square image the height
-   cap, not the width, is what limits it, so this trims the card's padding too
-   and hands that space to the image. */
+   cap, not the width, is what limits it, so this trims the card's padding a
+   little and hands that space to the image — but only to --space-3, so the
+   paper frame around the image stays as visible as on every other figure. */
 .enlarge-overlay .enlarge-xl {
   max-width: 96vw !important;
-  padding: 0.6rem !important;
+  padding: var(--space-3) !important;
 }
-.enlarge-overlay .enlarge-xl img { max-height: 94vh; }
+.enlarge-overlay .enlarge-xl img { max-height: 92vh; }
 
 /* Wide images (e.g. the full waveform) fill nearly the whole viewport width
    when enlarged, since the default 1000px cap leaves them small. */

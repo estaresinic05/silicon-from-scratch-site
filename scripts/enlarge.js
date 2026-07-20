@@ -1,6 +1,6 @@
 /* ============================================================================
    Enlarge — static figure images pop slightly on hover to signal they're
-   clickable, then open centred on a blurred backdrop when clicked. The whole
+   clickable, then open centered on a blurred backdrop when clicked. The whole
    card (the <figure> background) pops and enlarges together with the image;
    the caption is dropped from the enlarged view.
 

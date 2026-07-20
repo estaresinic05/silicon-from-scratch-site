@@ -5,9 +5,9 @@
    this file + alu-widget.js + the #alu-explore <section> and nothing else breaks.
 
    TWEAKING THE LOOK
-   - Highlight (active) colour ......... --alu-active   (defaults to the brand --accent)
-   - Inverted-leg (NOT) colour ......... --alu-invert   (the purple used for NOR/NAND/sub)
-   - Inactive wire/line colour ......... --alu-idle
+   - Highlight (active) color ......... --alu-active   (defaults to the brand --accent)
+   - Inverted-leg (NOT) color ......... --alu-invert   (the purple used for NOR/NAND/sub)
+   - Inactive wire/line color ......... --alu-idle
    ========================================================================= */
 
 .alu-widget {
@@ -96,7 +96,7 @@
 /* Named-operation presets — a tidy 2-up grid of flat chips */
 .alu-presets { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
 /* 7 presets leave the last one (NAND) alone on the bottom row — span both
-   columns and centre it at a single chip's width, below slt / NOR. */
+   columns and center it at a single chip's width, below slt / NOR. */
 .alu-presets .alu-preset:last-child {
   grid-column: 1 / -1;
   justify-self: center;
@@ -169,7 +169,7 @@
   border-radius: var(--radius);
   padding: 0.4rem;           /* tight padding so the datapath fills more of the card */
   overflow: hidden;
-  /* hug the height-filled diagram and centre it */
+  /* hug the height-filled diagram and center it */
   display: grid;
   place-items: center;
   width: fit-content;
@@ -200,7 +200,7 @@
   stroke-width: 1.8;
 }
 
-/* --- wires: idle = thin solid grey; active = thick glowing accent --- */
+/* --- wires: idle = thin solid gray; active = thick glowing accent --- */
 .alu-wire {
   fill: none;
   stroke: var(--alu-idle);
@@ -214,7 +214,7 @@
   stroke: var(--alu-active);
   stroke-width: 3;
 }
-/* inverted (NOT) legs use the invert colour (also purple); kept solid so the
+/* inverted (NOT) legs use the invert color (also purple); kept solid so the
    whole active path reads as one calm, unified line */
 .alu-wire--inv.is-active {
   stroke: var(--alu-invert);
@@ -243,15 +243,15 @@
 }
 .alu-node.is-active .alu-label { fill: var(--alu-active-2); }
 .alu-label--sm { font-size: 9.5px; }
-/* a lit NOT gate uses the invert colour to match its legs */
+/* a lit NOT gate uses the invert color to match its legs */
 .alu-node--inv.is-active .alu-shape {
   stroke: var(--alu-invert);
   fill: rgba(107, 47, 201, 0.08);
 }
 
 /* arrowheads: small OPEN chevrons (two converging strokes, no fill). They
-   inherit the colour of the wire they sit on (context-stroke) so a lit input
-   gets a purple head; older engines fall back to the static colour. */
+   inherit the color of the wire they sit on (context-stroke) so a lit input
+   gets a purple head; older engines fall back to the static color. */
 .alu-arrowhead {
   fill: none;
   stroke: var(--soft-ink);
@@ -271,7 +271,7 @@
 
 /* control-input select lines (Ainvert / Binvert / Operation) are drawn blue,
    like the hand-drawn schematic. They are control, not datapath, so they never
-   light up — they stay this colour. */
+   light up — they stay this color. */
 .alu-wire.alu-ctrl-wire { stroke: var(--alu-control); }
 
 /* solid blue junction bubble where bit-0's Binvert taps into the carry-in */
@@ -282,7 +282,7 @@
 .alu-tapdot.is-active { fill: var(--alu-active); }
 
 /* junction bubbles where datapath wires connect (fan-outs, taps, the Set branch):
-   drawn like an input-port dot — hollow paper with a grey ring when idle,
+   drawn like an input-port dot — hollow paper with a gray ring when idle,
    purple-filled when the path flowing through them is live. */
 .alu-jdot {
   fill: var(--paper);
@@ -438,7 +438,7 @@
   --accent-deep: #4F1F9E;
   --hairline:    rgba(35, 35, 42, 0.12);
 }
-/* Recompute the diagram's idle/active colour knobs against the light tokens so
+/* Recompute the diagram's idle/active color knobs against the light tokens so
    they read correctly on the white stage (they're declared on .alu-widget, which
    stays on the dark theme). */
 #explore .alu-widget__stage {

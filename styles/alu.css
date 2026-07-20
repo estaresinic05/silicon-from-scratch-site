@@ -1,7 +1,7 @@
 /* =========================================================================
    Silicon From Scratch — alu.css
    Page-specific components for the ALU lesson pages. Built entirely on
-   the design tokens defined in main.css (loaded first): colours, fonts, spacing
+   the design tokens defined in main.css (loaded first): colors, fonts, spacing
    scale, radii, shadows, --ease. Keep this file to things the home page never
    needed — figures, data tables, code blocks, the doc hero, disclosures.
    ========================================================================= */
@@ -28,7 +28,7 @@
 .doc-hero__text { max-width: 36rem; }
 
 /* On wide screens, nudge the whole hero — text and diagram together — a little
-   left of the centred container so it doesn't crowd the right edge. Gated above
+   left of the centered container so it doesn't crowd the right edge. Gated above
    the 80rem hero width + the shift, so it only applies when there's gutter to
    spare and nothing ever clips off the left. */
 @media (min-width: 1344px) {
@@ -46,8 +46,8 @@
 }
 
 /* Balanced variant: the standard side-by-side hero (text + diagram), sized so
-   the pair sits as a tight unit centred in the middle of the screen. Unlike the
-   ALU overview hero it tightens the image column and centres the two columns as
+   the pair sits as a tight unit centered in the middle of the screen. Unlike the
+   ALU overview hero it tightens the image column and centers the two columns as
    a group, and drops the wide-screen leftward nudge. Used on the Logic Gates
    lesson. */
 .doc-hero--balanced { margin-inline: auto; max-width: 88rem; }
@@ -79,7 +79,7 @@
   border-radius: var(--radius-sm);
 }
 /* Logo variant (e.g. the Icarus emblem on the setup page): a small image, so
-   centre it and don't upscale it to fill the card. */
+   center it and don't upscale it to fill the card. */
 .doc-hero__art--logo { display: grid; place-items: center; }
 .doc-hero__art--logo img { width: auto; max-width: 220px; max-height: 280px; }
 
@@ -165,7 +165,7 @@
 }
 .doc-hero h1 { margin-bottom: var(--space-3); }
 /* Eyebrow-style page title — matches the "MEET THE PROCESSOR" / "YOUR PATH"
-   section labels: a short purple tick followed by soft-grey, tracked, uppercase
+   section labels: a short purple tick followed by soft-gray, tracked, uppercase
    mono text (see main.css .kicker + .buildpath__title). Scoped to the class so
    other doc-hero titles keep the big display face. */
 .doc-hero h1.title-eyebrow {
@@ -206,7 +206,7 @@
   color: var(--soft-ink);
   margin-bottom: var(--space-4);
 }
-/* Bold terms keep the muted prose colour so emphasis reads the same greyish
+/* Bold terms keep the muted prose color so emphasis reads the same grayish
    bold as the rest of the page (see .prose strong / .checklist--quiet strong). */
 .doc-hero__lead strong { color: var(--soft-ink); }
 .doc-hero__actions {
@@ -217,16 +217,16 @@
 }
 /* Lead-in text sitting beside a hero button. */
 .doc-hero__prompt { color: var(--soft-ink); }
-/* On the balanced (Logic Gates) hero, centre the title (tick + text), the lead
+/* On the balanced (Logic Gates) hero, center the title (tick + text), the lead
    paragraph's text within its box, and the prompt + skip button under it. */
 .doc-hero--balanced h1.title-eyebrow { justify-content: center; }
 .doc-hero--balanced .doc-hero__lead { text-align: center; }
 .doc-hero--balanced .doc-hero__actions { justify-content: center; }
-/* Text-shift variant: everything stays centred per the style guide (title, lead,
+/* Text-shift variant: everything stays centered per the style guide (title, lead,
    and actions inherit the .doc-hero--balanced centring above); we only nudge the
    whole text column a little toward the outside (left) so the one-line title has
    breathing room from the picture instead of crowding it. Desktop only — mobile
-   still stacks and centres per the base balanced rules. */
+   still stacks and centers per the base balanced rules. */
 @media (min-width: 769px) {
   .doc-hero--textshift .doc-hero__text { transform: translateX(-3.75rem); }
 }
@@ -410,7 +410,7 @@
   border-radius: var(--radius-sm);
   margin-inline: auto;
 }
-/* Final Upgrade: the slice diagram on the basic image figure, centred, with two
+/* Final Upgrade: the slice diagram on the basic image figure, centered, with two
    "See the code on GitHub" cards below it — one under each slice. */
 /* The slice diagram on the basic image figure, with the two GitHub cards a sliver
    below the frame — one under each slice. */
@@ -457,7 +457,7 @@
 .container--wide { max-width: 88rem; }
 
 /* Body text beside a small figure: text on the left, a compact image on the
-   right, vertically centred. Stacks on narrow screens. */
+   right, vertically centered. Stacks on narrow screens. */
 .split {
   margin-top: var(--space-4);
   display: grid;
@@ -470,7 +470,7 @@
 /* Lists inside prose — numbered (e.g. the Final Upgrade "two tricks") or
    bulleted — always ride a shaded card: the same raised surface as the picture
    frames, so each list reads as a distinct block rather than plain body text.
-   The extra left padding keeps the (accent-coloured) markers inside the frame. */
+   The extra left padding keeps the (accent-colored) markers inside the frame. */
 .prose ol,
 .prose ul {
   margin: var(--space-4) 0;
@@ -500,7 +500,7 @@
   padding: clamp(var(--space-3), 3vw, var(--space-4));
   margin: var(--space-4) 0;
 }
-/* p.term-card__title so the accent colour outranks the base `.prose p` soft-ink. */
+/* p.term-card__title so the accent color outranks the base `.prose p` soft-ink. */
 .term-card p.term-card__title {
   font-family: var(--font-mono);
   text-transform: uppercase;
@@ -531,7 +531,7 @@
 #addition-incoming .prose p { margin: 0; }
 #addition-incoming .prose p + p { margin-top: var(--space-3); }
 /* Two-column layout: the copy stretches to the widget's height, but the three
-   paragraphs sit as a tight group centred against it (normal paragraph rhythm)
+   paragraphs sit as a tight group centered against it (normal paragraph rhythm)
    rather than being spread the full height. */
 @media (min-width: 769px) {
   #addition-incoming .prose {
@@ -732,7 +732,7 @@
 }
 /* Ripple-carry section: open up the paragraph rhythm a touch, and nudge the
    diagram card a little left of its column (desktop only — the split stacks and
-   re-centres on mobile). */
+   re-centers on mobile). */
 #multi-bit .prose p { margin-bottom: var(--space-4); }
 @media (min-width: 769px) {
   #multi-bit .figure { transform: translateX(-2rem); }
@@ -899,13 +899,13 @@
     border-left: 0;
   }
 }
-/* An extra-wide cap for a large landscape table shown full-width and centred
+/* An extra-wide cap for a large landscape table shown full-width and centered
    (the 3-input full-adder truth table). */
 .figure--diagram-xl { max-width: 48rem; }
-/* Quieter checklist: bold lead-ins use the muted prose colour (matches
+/* Quieter checklist: bold lead-ins use the muted prose color (matches
    .prose strong) rather than the brighter site default. */
 .checklist--quiet strong { color: var(--soft-ink); }
-/* Centre a prose block and its text (used above the truth table), on a wider
+/* Center a prose block and its text (used above the truth table), on a wider
    measure than the default body prose. */
 .prose--center { text-align: center; margin-inline: auto; max-width: 62rem; }
 /* Meet the Gates intro: fill the wide container so the sentence sits on one
@@ -955,7 +955,7 @@
      so the diagram sits above its explanation on phones. */
   .split--media-right .figure { order: 1; }
   .split--media-right .prose { order: 2; }
-  .figure--mux { max-width: 340px; margin-inline: auto; }   /* re-centre on mobile */
+  .figure--mux { max-width: 340px; margin-inline: auto; }   /* re-center on mobile */
   /* First-ALU section: stack with the diagram above its explanation. `order`
      puts the card first without moving its long markup ahead of the prose. */
   .split--stack { display: flex; flex-direction: column; }
@@ -990,7 +990,7 @@
 
 /* Instruction / Data memory flip cards on the Fetch-Decode-Execute page. Each
    sits beside its explanation in a .split — the instruction card in the left
-   (media) track, the data card in the right track — vertically centred against
+   (media) track, the data card in the right track — vertically centered against
    the copy. The cards are larger than the little gate tiles, and the square
    block diagram simply fills the whole card (width 100%, natural height) so the
    card takes the image's own shape rather than being letterboxed onto a fixed
@@ -1024,12 +1024,12 @@
 .mem-harvard { margin-top: var(--space-5); }
 /* Inline control-signal names in prose (readEnable, clk) — the same light blue
    as the cards' control chips and the waveform's control traces (overrides the
-   default purple <code> colour + tint). */
+   default purple <code> color + tint). */
 code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 
 /* Putting It All Together: the fetch-decode-execute diagram on the standard
    `.figure` image card (paper background, hairline border, radius, soft shadow —
-   see the Figures / image cards entry in STYLE_GUIDE.md); just centred and
+   see the Figures / image cards entry in STYLE_GUIDE.md); just centered and
    width-capped here. */
 #all-together .together-fig { max-width: 58rem; margin-inline: auto; }
 #all-together .together-fig figcaption { text-align: center; }
@@ -1041,7 +1041,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .section--tight { padding-block: var(--space-5); }
 .section--tight .section__head { margin-bottom: var(--space-3); }
 .gate-grid .figure { margin: 0; text-align: center; }
-/* Every sketch sits on a uniform white tile of the same height, centred, so the
+/* Every sketch sits on a uniform white tile of the same height, centered, so the
    gates line up regardless of their individual shapes and the caption's faint
    divider falls at exactly the same level on every card. */
 .gate-grid .figure img {
@@ -1052,13 +1052,13 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   background: #fff;
   border-radius: var(--radius-sm);
 }
-/* Captions are centred (symmetrical about the card's centre line) and kept to a
-   similar length so the cards balance. Bold terms keep the muted prose colour so
+/* Captions are centered (symmetrical about the card's center line) and kept to a
+   similar length so the cards balance. Bold terms keep the muted prose color so
    emphasis reads the same as body paragraphs (see .prose strong). */
 .gate-grid figcaption { text-align: center; }
-/* Card front captions centre in any context — the gate grid or a standalone
+/* Card front captions center in any context — the gate grid or a standalone
    .gate-card--solo sitting in a split — so the gate-name eyebrow + caption stay
-   symmetrical about the card's centre line. */
+   symmetrical about the card's center line. */
 .gate-card__face--front figcaption { text-align: center; }
 /* Mono eyebrow naming the gate at the top of each caption. */
 .gate-name {
@@ -1081,10 +1081,10 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
  * ------------------------------------------------------------------ */
 .gate-card { position: relative; perspective: 1200px; }
 /* A standalone flip card (mux / 1-bit ALU) sitting outside the gate grid —
-   capped and centred so its editor back isn't overly wide. */
+   capped and centered so its editor back isn't overly wide. */
 .gate-card--solo { max-width: 30rem; margin-inline: auto; }
 /* Nudge a right-column flip card left on the two-column desktop layout so it
-   centres over the text column below it. Removed once the split stacks. */
+   centers over the text column below it. Removed once the split stacks. */
 @media (min-width: 769px) {
   .gate-card--nudge-left { transform: translateX(-7rem); }
 }
@@ -1131,7 +1131,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   transition: transform 0.2s var(--ease);
 }
 /* Hovering the return arrow bulges the whole card a touch — the mirror of the
-   cue the front gives before its flip — rather than recolouring the arrow. */
+   cue the front gives before its flip — rather than recoloring the arrow. */
 .gate-card.is-flipped .gate-card__face--back:has(.gate-card__return:hover) {
   transform: rotateY(180deg) scale(1.045);
 }
@@ -1156,7 +1156,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   align-items: center;
   gap: 0.4rem;
   padding: 0.3rem 0.35rem 0.3rem 0.6rem;
-  background: #252526;                   /* VS Code titlebar grey */
+  background: #252526;                   /* VS Code titlebar gray */
   border-bottom: 1px solid #333;
   color: #cccccc;
   font-size: 0.62rem;
@@ -1238,12 +1238,12 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .code-editor__copy.is-copied .code-editor__copy-ico--done { display: inline; }
 .code-editor__copy.is-copied .code-editor__copy-txt--done { display: inline; }
 /* A caption strip belonging to the editor itself — a footer bar mirroring the
-   titlebar (same VS Code greys), so a one-line note reads as part of the widget
+   titlebar (same VS Code grays), so a one-line note reads as part of the widget
    rather than floating text below it. Clipped to the editor's rounded corners by
    the figure's overflow:hidden. */
 .code-editor__note {
   padding: 0.45rem 0.7rem;
-  background: #252526;                    /* same grey as the titlebar */
+  background: #252526;                    /* same gray as the titlebar */
   border-top: 1px solid #333;
   color: #a8a8a8;
   font-family: var(--font-display);       /* readable, not mono — it's prose */
@@ -1254,7 +1254,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .code-editor__note em { color: #cfcfcf; font-style: italic; }
 /* Editable body: a highlighted <pre> underlay with a transparent-text
    <textarea> layered on top, sharing identical metrics so the caret lines up
-   over the coloured tokens. */
+   over the colored tokens. */
 .code-editor__body { position: relative; flex: 1; min-height: 5.5rem; overflow: hidden; }
 .code-editor__hl,
 .code-editor__ta {
@@ -1297,7 +1297,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 }
 .code-editor__ta:focus { outline: none; }
 .code-editor__ta::selection { background: rgba(38, 79, 120, 0.75); color: transparent; }
-/* VS Code Dark+ Verilog token colours. */
+/* VS Code Dark+ Verilog token colors. */
 .tok-kw { color: #569cd6; }              /* keywords: input / output / wire / reg / assign */
 .tok-cm { color: #6a9955; }              /* comments */
 .tok-op { color: #b794f6; }              /* operators: = & | ^ ~ ? + - == && … */
@@ -1312,7 +1312,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   text-underline-offset: 2px;
 }
 
-/* Static, display-only code block. Same VS Code chrome + `.tok-*` token colours as
+/* Static, display-only code block. Same VS Code chrome + `.tok-*` token colors as
    the editable card, but a plain in-flow <pre> that grows to fit its code (no
    textarea, no JS, no Reset button). Used to show read-only Verilog snippets in
    the Testing lesson. The panel scrolls horizontally on its own when a line is
@@ -1493,7 +1493,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .pc-branch-split { --pc-track: calc(43.17rem + 2 * clamp(var(--space-2), 3vw, var(--space-4))); }
 .pc-rca-split .prose { max-width: none; }
 /* Drop the paragraph's trailing margin so its box hugs the visible text — then
-   align-items:center lands the card centred on the paragraph, not on a box that
+   align-items:center lands the card centered on the paragraph, not on a box that
    runs taller than the text. */
 .pc-rca-split .prose p { margin: 0; }
 .pc-rca-split .code-card { margin-top: 0; }
@@ -1589,7 +1589,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 
 /* --- "slide right" hint arrow (both reveal widgets) --------------------------
    A purple arrow sitting just past the collapsed card's right edge, vertically
-   centred on the diagram, nudging rightward to suggest the widget grows that way
+   centered on the diagram, nudging rightward to suggest the widget grows that way
    on press. Shown only while collapsed; fades out once expanded. */
 .reveal-hint {
   position: absolute;
@@ -1637,7 +1637,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 }
 
 /* GitHub report card floated to the right of the What's New prose, so the text
-   flows down its left side. Keeps its original 36rem size; unfloats and centres
+   flows down its left side. Keeps its original 36rem size; unfloats and centers
    once the column is too narrow to sit a readable paragraph beside it. */
 .prose--flow .code-card--aside {
   float: right;
@@ -1660,8 +1660,8 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 #data-transfer .prose--flow p:first-of-type { margin-top: var(--space-3); }
 
 /* R-type intro: the first two paragraphs sit in a left column with the diagram
-   in a right column, vertically centred against them (align-items: center). This
-   keeps the image centred top-to-bottom between the top of the first paragraph
+   in a right column, vertically centered against them (align-items: center). This
+   keeps the image centered top-to-bottom between the top of the first paragraph
    and the top of the third paragraph (which follows below), instead of floating
    at the very top. */
 #arith-logic .arith-lead {
@@ -1701,12 +1701,12 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
    diagram room to read (capped so the wrap-up copy keeps a comfortable measure). */
 #whole-kit .split--media-right .figure--diagram { max-width: 42rem; }
 
-/* Field-name <code> tinted to the colours of the R-type diagram
+/* Field-name <code> tinted to the colors of the R-type diagram
    (assets/single-cycle-cpu/r-type.jpg) so a field named in the prose reads as
    the same field shown in the image: funct7/funct3/opcode stay the default
    purple code chip, while rs2/rs1/rd take the diagram's green/amber/periwinkle.
    Scoped under .theme-dark with a `code` element to outrank the base `.theme-dark
-   code` chip colour. */
+   code` chip color. */
 .theme-dark code.fld-funct7,
 .theme-dark code.fld-funct3,
 .theme-dark code.fld-opcode { background: rgba(183, 148, 246, 0.18); color: #d9c6ff; }
@@ -1736,7 +1736,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   color: var(--accent);
   cursor: pointer;
 }
-/* The arrow doesn't recolour on hover — hovering it grows the whole card
+/* The arrow doesn't recolor on hover — hovering it grows the whole card
    instead (see .gate-card__face--back:has(.gate-card__return:hover) above). */
 .gate-card__return svg {
   width: 1.15rem;
@@ -1855,7 +1855,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .dmem-sim__out { display: flex; align-items: center; gap: 0.4rem 1.2rem; flex-wrap: wrap; }
 .dmem-sim__group { display: inline-flex; align-items: center; gap: 0.4rem; }
 /* `memory` is an internal signal — neither input nor output — so its value reads
-   in neutral grey to set it apart from readData's purple. */
+   in neutral gray to set it apart from readData's purple. */
 .dmem-sim__mem { color: var(--soft-ink); }
 .dmem-sim__bit { font-weight: 600; }
 /* writeData: a purple data-input pill (matching dataAddress) wrapping an inline
@@ -1890,7 +1890,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .dmem-sim__wd-input::placeholder { color: var(--soft-ink); opacity: 0.5; font-weight: 400; }
 
 /* ---- Live data-memory timing diagram (dmem-wave.js) ---------------------- *
-   Rides the shared .aluwave card + .awv-* structure, but recolours every role
+   Rides the shared .aluwave card + .awv-* structure, but recolors every role
    for the light lesson page (the home page's waveforms are tuned for the dark
    theme). */
 /* Data memory: the flip card on the left; to its right a column holding the
@@ -1982,8 +1982,8 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .dmemwave .awv-time       { font-size: 13.5px; }
 .dmemwave .awv-name       { font-size: 15px; }
 .dmemwave .awv-busval     { font-size: 12px; }
-/* Role colours: data inputs purple, control blue, output deep purple, and the
-   internal `memory` signal in neutral grey — matching the card's own readouts. */
+/* Role colors: data inputs purple, control blue, output deep purple, and the
+   internal `memory` signal in neutral gray — matching the card's own readouts. */
 .dmemwave .awv-name--in         { fill: var(--accent); }
 .dmemwave .awv-trace--in        { stroke: var(--accent); }
 .dmemwave .awv-busval--in       { fill: var(--accent); }
@@ -1996,9 +1996,9 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .dmemwave .awv-name--internal   { fill: var(--soft-ink); }
 .dmemwave .awv-trace--internal  { stroke: var(--soft-ink); }
 .dmemwave .awv-busval--internal { fill: var(--soft-ink); }
-/* Ripple beads pull their colour from the SAME tokens as their trace (via the
+/* Ripple beads pull their color from the SAME tokens as their trace (via the
    role class), so every bead matches its signal's trace exactly. A tighter glow
-   than the dark-card default keeps the bead reading as the crisp trace colour
+   than the dark-card default keeps the bead reading as the crisp trace color
    rather than a lighter smudge on the light card. */
 .dmemwave .awv-bead           { filter: drop-shadow(0 0 1.5px currentColor); }
 .dmemwave .awv-bead--in       { color: var(--accent); }
@@ -2100,7 +2100,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .quiz__figure { max-width: 48rem; margin: 0 auto var(--space-4); }
 
 /* Answer reveal: once the correct answer is picked (.quiz.is-solved), the truth
-   table scales down a little and slides toward centre-left to make room, while
+   table scales down a little and slides toward center-left to make room, while
    the Cout circuit fades in beside it — the two then sit side by side. The Cout
    panel grows into place first, then fades in (delayed opacity) so it only
    appears once the table has moved over. Driven purely by the is-solved class. */
@@ -2120,7 +2120,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   background: #fff;
   transition: width 0.55s var(--ease);
 }
-.quiz__figure--tt img { max-width: 34rem; margin-inline: auto; }  /* drawing keeps its size, centred */
+.quiz__figure--tt img { max-width: 34rem; margin-inline: auto; }  /* drawing keeps its size, centered */
 .quiz__figure--cout {
   width: 0;
   opacity: 0;
@@ -2141,13 +2141,13 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 }
 
 /* ALU-slice Check Yourself reveal: the slice sketch sits small on its own, then
-   on a correct answer slides toward centre-left while the De Morgan sketch fades
+   on a correct answer slides toward center-left while the De Morgan sketch fades
    in beside it — the two then sit side by side. Same mechanism as the full-adder
    reveal above, sized for these two images. */
 /* A roomier card so the slice + De Morgan sketches can sit larger side by side. */
 .quiz--wide { max-width: 66rem; }
 /* Complete-ALU equality Check Yourself: the drawing sits on a full-width white
-   frame spanning the widened card, centred and padded so there's white space
+   frame spanning the widened card, centered and padded so there's white space
    around it (matches the slice/truth-table sketches). */
 .quiz__figure--equality {
   width: 100%;
@@ -2174,7 +2174,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   background: #fff;
   transition: width 0.55s var(--ease);
 }
-.quiz__figure--slice img { max-width: 21rem; margin-inline: auto; }  /* drawing keeps its size, centred */
+.quiz__figure--slice img { max-width: 21rem; margin-inline: auto; }  /* drawing keeps its size, centered */
 .quiz__figure--demorgan {
   width: 0;
   opacity: 0;
@@ -2194,7 +2194,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 
 /* Basics-of-Instructions Check Yourself reveal: the encoded R-type instruction
    sits alone at first; on a correct answer it shrinks and slides toward
-   centre-left while the decoded answer (register meanings + the assembled `sub`
+   center-left while the decoded answer (register meanings + the assembled `sub`
    instruction) fades in beside it — the two then sit side by side. Exactly the
    full-adder reveal mechanism above, sized for these two wide diagrams. */
 .quiz__figure--instr {
@@ -2203,7 +2203,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   background: #fff;
   transition: width 0.55s var(--ease);
 }
-.quiz__figure--instr img { max-width: 40rem; margin-inline: auto; }  /* drawing keeps its size, centred */
+.quiz__figure--instr img { max-width: 40rem; margin-inline: auto; }  /* drawing keeps its size, centered */
 .quiz__figure--decode {
   width: 0;
   opacity: 0;
@@ -2284,7 +2284,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 #check .quiz__q { margin-bottom: var(--space-2); }
 #check .quiz__figure { max-width: 31rem; margin-bottom: var(--space-2); }
 
-/* Code-answer variant: each choice holds a small, syntax-coloured Verilog
+/* Code-answer variant: each choice holds a small, syntax-colored Verilog
    snippet instead of prose. It sits in the standard two-column .quiz__options
    grid (same as the Fetch/Decode/Execute quiz), so the snippet is written across
    a few lines to fit the box. Tighter padding keeps each box a hair shorter. */
@@ -2420,7 +2420,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 }
 .quiz__next.is-shown { display: flex; }
 /* Completion stub (revealed on the right answer): the "you finished the ALU"
-   message sits centred in the card's grey space, with the next-project button
+   message sits centered in the card's gray space, with the next-project button
    stacked beneath it. */
 .quiz__next--done.is-shown { flex-direction: column; align-items: center; gap: var(--space-3); }
 .quiz__done {
@@ -2593,7 +2593,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   .doc-hero--balanced .doc-hero__text { display: contents; }
   .doc-hero--balanced .title-eyebrow { order: 1; margin-bottom: 0; }
   /* Drop the accent tick on phones so the (possibly two-line) title sits truly
-     centred rather than nudged right by the tick. */
+     centered rather than nudged right by the tick. */
   .doc-hero--balanced h1.title-eyebrow::before { display: none; }
   .doc-hero--balanced .doc-hero__art { order: 2; }
   .doc-hero--balanced .doc-hero__lead { order: 3; margin-bottom: 0; }
@@ -2609,7 +2609,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
    into TWO frames: the datapath on the left as its own white plate, and a
    right column holding the explanatory copy above the control panel, which
    is broken out as its own card at the bottom-right of the datapath. The
-   white-plate + colour machinery still comes from `.handson-grid
+   white-plate + color machinery still comes from `.handson-grid
    .alu-widget*` (main.css); the rules below drop the single outer card,
    lay the widget out in two columns, and give the panel back its own frame.
  * ------------------------------------------------------------------ */
