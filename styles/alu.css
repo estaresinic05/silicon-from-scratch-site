@@ -2661,3 +2661,86 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   .handson-grid.playtime-grid .alu-widget { grid-template-columns: 1fr; }
   .handson-grid.playtime-grid .alu-panel { margin-top: 0; }
 }
+
+/* =========================================================================
+   MODE SWITCHER (Transistor Basics — "Applying Voltages")
+   The same treatment as the full adder's ripple-carry / adder-subtractor
+   reveal: the standard .figure card, a caption under the artwork, and ghost
+   buttons below that. The three drawings are pre-cropped to a common frame
+   (see assets/introduction-to-physical-design/modes/), so only the charge in
+   the picture appears to change as they cross-fade.
+   ========================================================================= */
+/* The frames are stacked on top of one another, so the stage has to carry its
+   own height: this is the aspect ratio every crop was rendered at. */
+.mode-switch__stage {
+  position: relative;
+  aspect-ratio: 1400 / 846;
+  /* The drawings are on white. Cross-fading them by opacity means that midway
+     through, both are half transparent and whatever sits behind shows through,
+     which on the dark card reads as a dip to grey. Backing the stage with the
+     same white the artwork is on keeps the brightness constant all the way
+     across the fade. */
+  background: #fff;
+  border-radius: var(--radius-sm);
+}
+.mode-switch__stage img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition: opacity 1.2s var(--ease);
+}
+.mode-switch__stage img.is-active { opacity: 1; }
+
+/* One equal-width column per button, so they share the full width of the card
+   and stay the same size whatever their labels are. */
+.mode-switch__tabs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0.5rem;
+  margin-top: var(--space-3);
+}
+.mode-switch__tab { justify-content: center; padding-inline: 0.75rem; }
+@media (max-width: 520px) {
+  /* Too narrow for three across without the labels crowding: stack them. */
+  .mode-switch__tabs { grid-auto-flow: row; }
+}
+/* Selected: the same accent border and deep-accent text a ghost button takes on
+   hover in the full adder lesson, so the pressed state and the hover state read
+   as one idea. */
+.mode-switch__tab[aria-pressed="true"] {
+  color: var(--accent-deep);
+  border-color: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mode-switch__stage img { transition-duration: 0.01ms; }
+}
+
+/* Bare schematic artwork (Transistor Basics — "Putting Transistors in a
+   Circuit"). The drawings already carry their own coloured card, so they sit on
+   the page without a figure frame and are simply rounded off. `corner-shape`
+   makes that rounding a squircle, where the curve eases into the straight edge
+   instead of meeting it at a hard tangent; browsers that don't support it get
+   the ordinary circular corner from border-radius. The black outer line of each
+   drawing is trimmed off in assets/introduction-to-physical-design/schematics/,
+   so nothing dark is left for the corner to clip through. */
+.schematic-art {
+  border-radius: 2.25rem;
+  corner-shape: squircle;
+}
+/* Caption under a bare schematic. The standard .figure figcaption hangs below a
+   hairline rule, which only reads correctly inside a framed card; with no frame
+   the rule has nothing to divide, so this one is simply centred under the art. */
+.schematic-cap {
+  margin-top: var(--space-3);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--soft-ink);
+  text-align: center;
+  border-top: 0;
+  padding-top: 0;
+}

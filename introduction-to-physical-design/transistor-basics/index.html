@@ -105,19 +105,45 @@
         <!-- Top-aligned rather than the split's default centring, so the prose
              starts level with the top of the sketch. -->
         <div class="split split--media-right" style="align-items: start;">
-          <figure class="figure enlarge-xl" style="max-width: 34rem;">
-            <img src="../../assets/introduction-to-physical-design/finfet-exploded.jpg"
-                 alt="An exploded three-dimensional sketch of a transistor with its layers pulled apart: a gray silicon substrate at the bottom, a green fin standing on it that carries the source, channel, and drain, a thin yellow gate-oxide layer above it, and a red gate that sits across the channel."
-                 decoding="async" />
-          </figure>
+          <!-- The sketch and the Gate Oxide card share the right-hand track, so
+               the card sits directly underneath the image. It is a .prose so the
+               copy takes the same ink as every other card; the inline `order`
+               overrides the order:1 that .split--media-right gives a .prose, and
+               stretching the column lets the card grow until its bottom is flush
+               with the Channel card opposite. -->
+          <div class="prose" style="order: 2; max-width: 34rem; align-self: stretch;
+                                    display: flex; flex-direction: column;">
+            <!-- order:0 undoes the order:2 that .split--media-right gives a
+                 .figure. That rule is meant for a figure sitting directly in the
+                 grid; here the figure is a flex item of this column, where the
+                 same order would drop it below the card. -->
+            <figure class="figure enlarge-xl" style="order: 0;">
+              <img src="../../assets/introduction-to-physical-design/finfet-exploded.jpg"
+                   alt="An exploded three-dimensional sketch of a transistor with its layers pulled apart: a gray silicon substrate at the bottom, a green fin standing on it that carries the source, channel, and drain, a thin yellow gate-oxide layer above it, and a red gate that sits across the channel."
+                   decoding="async" />
+            </figure>
+
+            <div class="term-card" style="flex: 1; margin-bottom: 0;">
+              <p class="term-card__title">Gate Oxide</p>
+              <p>
+                The third part is the <strong>gate oxide</strong>, a dielectric
+                sandwiched between the gate and the channel. Its job is to stop the
+                gate injecting current into the silicon it controls, while staying
+                thin enough that the gate's field still reaches through.
+              </p>
+              <p>
+                It is usually silicon dioxide, SiO<sub>2</sub>, which is what
+                silicon becomes when heated in oxygen and so can be grown straight
+                out of the wafer.
+              </p>
+            </div>
+          </div>
 
           <div class="prose">
-            <p>The transistor is built from four parts:</p>
-
-            <div class="term-card">
+            <div class="term-card" style="margin-top: 0;">
               <p class="term-card__title">Substrate</p>
               <p>
-                The first, and by far the largest, is the
+                The first part of the transistor, and by far the largest, is the
                 <strong>substrate</strong>. Sometimes called the
                 <strong>bulk</strong>, it is a moderately
                 <button type="button" class="glossary-term" data-glossary="doping"
@@ -138,7 +164,7 @@
                 structure known as <strong>diamond cubic</strong>. Pure silicon by
                 itself is a poor conductor, because every one of those electrons is
                 locked into a bond and almost none are free to move, so if silicon is
-                going to be any use in our devices we have to find a way of adding
+                going to be any use in our devices, we have to find a way of adding
                 free charge carriers to it. Doping is that way.
               </p>
               <figure class="glossary-fig">
@@ -160,65 +186,364 @@
                 In the far right image, we see another doped piece of silicon, this
                 time with the Group III atom boron, giving us
                 <strong>p-type silicon</strong>. Since boron has only three valence
-                electrons, when it embeds itself into the silicon lattice it creates a
+                electrons, when it embeds itself into the silicon lattice, it creates a
                 vacancy, known as a hole and written h<sup>+</sup>. The boron atom can
                 borrow an electron from a neighboring atom, thereby transferring the
                 vacancy across the lattice.
               </p>
             </template>
+
+            <!-- Last card in the column: drop its bottom margin, which a grid
+                 item does not let collapse away and which would otherwise leave
+                 the Gate Oxide card opposite stretching that bit lower. -->
+            <div class="term-card" style="margin-bottom: 0;">
+              <p class="term-card__title">Channel</p>
+              <p>
+                The second part is the <strong>channel</strong>, drawn in green and
+                standing on top of the substrate. Its purpose is to provide the road
+                that charge travels along as it crosses from one end of the
+                transistor to the other. At either end of that road we place a region
+                of silicon doped far more heavily than the bulk underneath, and we
+                give those two regions the names <strong>source</strong> and
+                <strong>drain</strong>. The channel, then, is simply the stretch of
+                silicon lying between them, and everything the transistor does comes
+                down to whether that stretch is willing to carry current or not.
+              </p>
+              <p>
+                Here is a point that surprises most people when they first meet it.
+                The source and the drain are manufactured identically, so if we were
+                handed a transistor on its own, we would have no way of saying which
+                region is which. Their identities are not built into the silicon at
+                all, but they are decided by the voltages we choose to apply once the
+                device is in a circuit. The rule to remember is that charge carriers
+                enter at the source and leave at the drain. In an n-type device the
+                carriers are electrons, which drift from low voltage toward high, so
+                the terminal we hold at the lower voltage becomes the source and the
+                higher one becomes the drain. In a p-type device the carriers are
+                holes, which travel the other way, so that ordering is reversed.
+              </p>
+            </div>
           </div>
         </div>
 
         <div class="prose prose--flow" style="margin-top: var(--space-4);">
-          <div class="term-card">
-            <p class="term-card__title">Channel</p>
-            <p>
-              The second is the <strong>channel</strong>, the green block standing on
-              the substrate and the path that allows current to get from one end of
-              the transistor to the other. At each end of that path sits a region
-              doped far more heavily than the bulk beneath it, one called the
-              <strong>source</strong> and the other the <strong>drain</strong>, and
-              the channel is the stretch of silicon lying between them.
-            </p>
-            <p>
-              The two are built identically, so nothing about the transistor itself
-              tells them apart. What distinguishes them is the voltage we apply.
-              Carriers enter at the source and leave at the drain, so in an n-type
-              device the source is the terminal held at the lower voltage and the
-              drain is the one held higher. In a p-type device that ordering is
-              reversed.
-            </p>
-          </div>
-
-          <div class="term-card">
-            <p class="term-card__title">Gate Oxide</p>
-            <p>
-              The third part, labeled dielectric in the sketch and drawn in yellow. It
-              is a wafer-thin layer of insulating glass whose only job is to keep the
-              piece above it from ever touching the silicon below.
-            </p>
-          </div>
-
-          <div class="term-card">
+          <div class="term-card" style="margin-top: 0;">
             <p class="term-card__title">Gate</p>
             <p>
-              The fourth part, shown in red, and this is what gives a transistor its
-              power. Because the oxide holds it away from the channel, the gate cannot
-              pass any current of its own into the silicon. Instead it controls the
-              channel from a distance, purely through the electric field it creates
-              when we place a voltage on it.
+              The fourth part is the <strong>gate</strong>, the piece of the
+              transistor that controls the flow of carriers through the channel.
+              Depending on the voltage applied to the gate, the channel beneath it
+              either fills with carriers and conducts or empties out and blocks. The
+              gate never touches the silicon and never delivers those carriers
+              itself, since the oxide stands in the way. It works entirely at a
+              distance, through the electric field its voltage projects downward.
             </p>
+            <p>
+              The gate is usually made of <strong>polysilicon</strong>, which is
+              silicon deposited as a mass of small crystals rather than one
+              continuous lattice, and doped so heavily that it conducts much like a
+              metal. Metal would seem the obvious choice, and the earliest devices
+              did use it, but polysilicon has a decisive advantage in manufacturing.
+              It survives the high temperatures of the steps that follow, which means
+              the gate can be laid down first and then used as a mask while the
+              source and drain are doped on either side of it. The gate therefore
+              aligns itself perfectly with the channel it controls, and no amount of
+              care aligning a separate mask could match that.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ APPLYING VOLTAGES ==================== -->
+    <section class="section" id="applying-voltages"
+             aria-labelledby="applying-voltages-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="applying-voltages-title">Applying Voltages</h2>
+        </div>
+
+        <!-- The sketch takes the left track and its paragraph the right. -->
+        <div class="split split--media-left" style="align-items: start;">
+          <figure class="figure enlarge-xl" style="max-width: 42rem;">
+            <img src="../../assets/introduction-to-physical-design/cross-section.jpg"
+                 alt="A hand-drawn cross section of an nMOS transistor: a large p-type substrate with two green n-plus wells sunk into its top surface, wired out to terminals labeled Source and Drain, and between them a thin yellow gate-oxide line under a red gate slab wired out to a terminal labeled Gate."
+                 decoding="async" />
+          </figure>
+
+          <div class="prose">
+            <p style="margin-top: 0;">
+              With all four parts in hand, we can turn to what the transistor
+              actually does once we begin applying voltages to its terminals. This is
+              where a transistor stops
+              being a stack of materials and starts being a switch, because,
+              depending on what we apply to its terminals, the very same piece of
+              silicon behaves in completely different ways. It helps here to look
+              at the transistor a second way, through a cross section of the same
+              device, which shows all four components again from the side. For
+              this conversation, we will consider a transistor whose diffusions are
+              n-type, marked n<sup>+</sup> to show how heavily they are doped,
+              sitting in a p-type substrate. A transistor built this way around is
+              called an <strong>nMOS</strong>.
+            </p>
+          </div>
+        </div>
+
+        <!-- One column, with the widget floated into its right-hand side: that
+             is what lets a single paragraph run beside the widget and then carry
+             on underneath it. A grid track cannot do that, since a column is one
+             box and has to pick a single width.
+             The widget's images are absolutely positioned, so it has no intrinsic
+             width of its own; as a float, though, `width: 100%` resolves against
+             this column, so max-width is what sizes it. -->
+        <div class="prose prose--flow"
+             style="display: flow-root; margin-top: var(--space-5);">
+          <!-- One drawing at a time, cross-faded by the buttons underneath (see
+               .mode-switch in alu.css and main.js section 5). The three images
+               are pre-cropped to a common frame, so the transistor stays put and
+               only the charge appears to move. -->
+          <figure class="figure mode-switch" data-no-enlarge
+                  style="float: right; width: 100%; max-width: 41rem;
+                         margin: 0 0 var(--space-4) var(--space-5);">
+            <div class="mode-switch__stage">
+              <img src="../../assets/introduction-to-physical-design/modes/accumulation.jpg"
+                   data-mode="accumulation" class="is-active" aria-hidden="false"
+                   alt="The nMOS cross section with a negative gate-to-source voltage. Negative charge lines the underside of the gate and a row of red plus signs gathers in the substrate just below the oxide."
+                   decoding="async" />
+              <img src="../../assets/introduction-to-physical-design/modes/depletion.jpg"
+                   data-mode="depletion" aria-hidden="true"
+                   alt="The same cross section with a small positive gate voltage. Plus signs now line the gate and a handful of blue negative ions are left behind in the substrate below the oxide."
+                   decoding="async" />
+              <img src="../../assets/introduction-to-physical-design/modes/inversion.jpg"
+                   data-mode="inversion" aria-hidden="true"
+                   alt="The same cross section with the gate voltage above the threshold. A dense double row of blue electrons fills the surface between the two n-plus wells, forming a channel."
+                   decoding="async" />
+            </div>
+
+            <div class="mode-switch__tabs" role="group"
+                 aria-label="Choose an operating mode">
+              <button type="button" class="btn btn--ghost mode-switch__tab"
+                      data-mode="accumulation" aria-pressed="true">Accumulation</button>
+              <button type="button" class="btn btn--ghost mode-switch__tab"
+                      data-mode="depletion" aria-pressed="false">Depletion</button>
+              <button type="button" class="btn btn--ghost mode-switch__tab"
+                      data-mode="inversion" aria-pressed="false">Inversion</button>
+            </div>
+          </figure>
+
+          <p style="margin-top: 0;">
+            Taking the substrate beneath the oxide to be p-type, so the carriers
+            already sitting in it are holes, we start by applying a negative
+            voltage to the gate. Doing so drives the negative charge in the gate
+            down onto its lower face, so it piles up along the interface between
+            the gate and the oxide. With all of that negative charge sitting
+            there, the positive charges, the holes in the channel just beneath the
+            oxide, are pulled up toward it and gather in a thin layer against the
+            underside of the oxide. The silicon at the surface is now even richer
+            in holes than the bulk below it, and because we have gathered extra
+            carriers at the surface rather than removed any, this mode is called
+            <strong>accumulation</strong>.
+          </p>
+
+          <p>
+            If we instead apply a positive voltage to the gate and slowly increase
+            it, we see the opposite arrangement. Positive charge now collects at
+            the gate side of the interface, and in a similar light as before, it
+            acts on the carriers below. This time it repels the holes in the
+            channel, pushing them down and away from the surface and leaving
+            behind a region emptied of them. What remains there is not nothing. It
+            is the ionized impurities, the dopant atoms themselves, which are
+            locked into the silicon lattice and cannot move. This mode is called
+            <strong>depletion</strong>, and the name is exactly what you would
+            guess, since we have depleted the surface of holes and left only fixed
+            charge behind.
+          </p>
+
+          <p>
+            If we keep cranking the gate voltage up, the surface eventually runs
+            out of holes to push away, and the field begins pulling electrons
+            toward the interface instead. Past a certain gate voltage, which we
+            call the <strong>threshold voltage</strong>, written
+            V<sub>th</sub>, enough of them have
+            gathered that the surface is no longer behaving as p-type silicon at
+            all. It has flipped into a thin sheet of what is effectively n-type
+            material, stretching from the source to the drain. This mode is called
+            <strong>inversion</strong>, because the surface has inverted from one
+            type to the other, and it is the mode that finally lays a conducting
+            path between the source and the drain.
+          </p>
+        </div>
+
+        <!-- The "transistor on" sketch takes the left track, with the two
+             paragraphs that explain I-DS running beside it. -->
+        <div class="split split--media-left" style="align-items: start;">
+          <figure class="figure enlarge-xl" style="max-width: 38rem;">
+            <img src="../../assets/introduction-to-physical-design/transistor-on.jpg"
+                 alt="The nMOS cross section with the transistor conducting. The gate voltage is at or above the threshold, a dense layer of electrons fills the channel between the two n-plus wells, an arrow marks the electrons drifting from source to drain, and a purple arrow beneath it marks the current I-DS running the other way, from drain to source."
+                 decoding="async" />
+          </figure>
+
+          <div class="prose">
+            <p style="margin-top: 0;">
+              Before we can call the transistor on, however, one thing is still
+              missing. Inversion has given us a channel full of free electrons,
+              but a channel full of carriers is not the same as a current. Those
+              electrons will sit where they are unless something pushes them along
+              the channel, and the gate cannot do it, because the field the gate
+              projects points straight down into the silicon rather than from one
+              end of the channel to the other. What we need is a lateral field,
+              one that runs the length of the channel, and we get it by putting a
+              positive voltage on the drain terminal. The drain now pulls on the
+              electrons in the channel, they drift from the source toward the
+              drain, and at last we have movement.
+            </p>
+            <p>
+              Here we have to be careful, because current and carriers do not
+              point the same way. Conventional current is defined as the flow of
+              positive charge, so electrons, being negative, travel in the
+              <em>opposite</em> direction to the current they constitute. Our
+              electrons run from source to drain, which means the current runs
+              from drain to source. This is the current the transistor is built to
+              deliver, and we denote it I<sub>DS</sub>.
+            </p>
+          </div>
+        </div>
+
+        <!-- The same gap the split above holds open over the sketch, so the
+             image sits evenly between the copy on either side of it. -->
+        <div class="prose prose--flow" style="margin-top: var(--space-4);">
+          <p style="margin-top: 0;">
+            Everything we have just built up describes an nMOS device, and its
+            counterpart, the <strong>pMOS</strong>, is best understood as the same
+            story with every sign turned around. A pMOS has p-type diffusions in an
+            n-type body, so its carriers are holes rather than electrons, and its
+            threshold voltage is negative. We write the two as
+            V<sub>thn</sub> and V<sub>thp</sub> to keep them apart. Where an nMOS
+            turns on once V<sub>GS</sub> rises above V<sub>thn</sub>, a pMOS turns
+            on once V<sub>GS</sub> falls below V<sub>thp</sub>, which means pulling
+            the gate down rather than up. The drain sits below the source instead
+            of above it, so V<sub>DS</sub> is negative, and the holes carrying the
+            charge move from source to drain, which makes I<sub>DS</sub> negative
+            as well. The practical consequence is the one worth remembering: an
+            nMOS is an active <em>high</em> switch, turning on when its gate is
+            driven high, while a pMOS is an active <em>low</em> switch, turning on
+            when its gate is driven low.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================= PUTTING THEM IN A CIRCUIT =============== -->
+    <section class="section" id="in-a-circuit"
+             aria-labelledby="in-a-circuit-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="in-a-circuit-title">Putting Transistors in a Circuit</h2>
+        </div>
+
+        <div class="prose prose--flow">
+          <p style="margin-top: 0;">
+            We now know enough about the device to begin using it, and once we are
+            building circuits out of transistors rather than studying one on its
+            own, the cross section stops being a useful drawing. Nobody sketches
+            doped wells and oxide layers when they are wiring up a circuit. So we
+            meet the transistor a third time, in its <strong>schematic</strong>
+            form, which throws away everything about how the device is made and
+            keeps only what we need in order to connect it. The terminals are the
+            same ones we have been studying all along. The line coming in from the
+            left is the gate, and the two leads on the right are the source and the
+            drain. The only difference between the two symbols is the small circle
+            on the gate of the p-type device, which is our shorthand for a
+            transistor that turns on when its gate is pulled low rather than high.
+            Notice too that the source and drain have traded places between the two
+            drawings, which is exactly the point we made earlier: those names
+            follow the voltages, not the silicon.
+          </p>
+
+          <div class="split" style="grid-template-columns: 1fr 1fr;
+                                    align-items: start;">
+            <figure class="figure"
+                    style="background: none; border: 0; box-shadow: none;
+                           padding: 0; margin: 0;">
+              <img class="schematic-art"
+                   src="../../assets/introduction-to-physical-design/schematics/n-type.jpg"
+                   alt="The schematic symbol for an n-type transistor: a gate lead entering from the left onto a vertical bar, with the drain leaving from the top right and the source from the bottom right."
+                   decoding="async" />
+              <figcaption class="schematic-cap">
+                The <strong>n-type</strong> transistor, which conducts when its gate
+                is driven high. Its drain sits on top and its source below.
+              </figcaption>
+            </figure>
+            <figure class="figure"
+                    style="background: none; border: 0; box-shadow: none;
+                           padding: 0; margin: 0;">
+              <img class="schematic-art"
+                   src="../../assets/introduction-to-physical-design/schematics/p-type.jpg"
+                   alt="The schematic symbol for a p-type transistor: the same shape as the n-type symbol but with a small circle where the gate meets the device, and with the source leaving from the top right and the drain from the bottom right."
+                   decoding="async" />
+              <figcaption class="schematic-cap">
+                The <strong>p-type</strong> transistor. The circle on its gate marks a
+                device that conducts when the gate is driven low, and source and
+                drain have swapped ends.
+              </figcaption>
+            </figure>
           </div>
 
           <p>
-            This is the whole trick. When we put the right voltage on the gate, its
-            electric field reaches through the oxide and pulls the channel into a
-            conducting state, opening a path so that current flows freely from the
-            source to the drain. Take the voltage away and the channel closes again,
-            and no current can cross. The gate is the lever, and the source and drain
-            are the two contacts it connects or separates. A transistor, for all its
-            tiny complexity, really is just a switch that another wire gets to flip.
+            With both symbols in hand we can wire our first circuit, and it turns
+            out that one of each is all we need to build the simplest logic gate we
+            met earlier, the <strong>inverter</strong>. Pairing an n-type device
+            with a p-type device this way, so that one of them conducts whenever
+            the other does not, is what makes the circuit a
+            <button type="button" class="glossary-term" data-glossary="cmos"
+                    aria-haspopup="dialog">CMOS Technology</button>
+            inverter.
           </p>
+
+          <figure class="figure" style="background: none; border: 0;
+                  box-shadow: none; padding: 0; margin: var(--space-5) auto 0;
+                  max-width: 40rem;">
+            <img class="schematic-art"
+                 src="../../assets/introduction-to-physical-design/schematics/inverter-schematic.jpg"
+                 alt="The schematic of a CMOS inverter: a p-type transistor on top with its source tied to V-DD and an n-type transistor below it with its source tied to ground, their gates joined on the left as the input and their drains joined on the right as the output."
+                 decoding="async" />
+          </figure>
+
+          <p>
+            Read the schematic from the outside in. The p-type device sits on top
+            with its source tied to the supply voltage, written
+            V<sub>DD</sub>, and the n-type device sits underneath it with its
+            source tied to ground. Their gates are joined together on the left and
+            become the single input, and their drains are joined together on the
+            right and become the output. Every transistor in the circuit therefore
+            sees the same input voltage at its gate, which is what makes the pair
+            behave as one device.
+          </p>
+
+          <p>
+            Now recall what each device does with that shared input. Drive the
+            input high and the n-type transistor, which turns on for a high gate
+            voltage, opens a path from the output down to ground, while the p-type
+            transistor, marked with its circle to remind us that it wants a low
+            gate, shuts off. The output is pulled to ground, a logic zero. Drive
+            the input low and the two swap roles exactly. The p-type device opens a
+            path from the supply to the output and the n-type device shuts, so the
+            output is pulled up to V<sub>DD</sub>, a logic one. A high in gives a
+            low out and a low in gives a high out, which is precisely the behavior
+            of the inverter we met when we were working in logic gates alone.
+          </p>
+
+          <!-- Opened by the "CMOS Technology" button above; see main.js section 4.
+               PLACEHOLDER COPY — replace the paragraph below with the fuller
+               explanation of why CMOS is built this way. -->
+          <template id="glossary-cmos" data-title="CMOS Technology">
+            <p>
+              CMOS stands for complementary metal-oxide-semiconductor, and the
+              word doing the work is complementary. The n-type and p-type devices
+              are built to be opposites of each other, so in any settled state one
+              of them is conducting and the other is not.
+            </p>
+          </template>
         </div>
       </div>
     </section>
@@ -239,6 +564,18 @@
       <em>CMOS VLSI Design: A Circuits and Systems Perspective</em>, Fourth
       Edition, Chapter 1, &ldquo;Introduction,&rdquo; &sect;1.3 &ldquo;MOS
       Transistors&rdquo; (Addison-Wesley, 2011).
+    </p>
+    <p class="container footer__credit">
+      Informed by: Neil H. E. Weste and David Money Harris,
+      <em>CMOS VLSI Design: A Circuits and Systems Perspective</em>, Fourth
+      Edition, Chapter 1, &ldquo;Introduction,&rdquo; &sect;1.4.1 &ldquo;The
+      Inverter&rdquo; (Addison-Wesley, 2011).
+    </p>
+    <p class="container footer__credit">
+      Informed by: Neil H. E. Weste and David Money Harris,
+      <em>CMOS VLSI Design: A Circuits and Systems Perspective</em>, Fourth
+      Edition, Chapter 2, &ldquo;MOS Transistor Theory,&rdquo; &sect;2.1
+      &ldquo;Introduction&rdquo; (Addison-Wesley, 2011).
     </p>
   </footer>
 

@@ -774,4 +774,37 @@
       terms[ti].addEventListener("click", function () { gOpen(this); });
     }
   }
+
+  /* ---- 5. Mode switcher ---------------------------------------------------
+     A .mode-switch card shows one drawing at a time and cross-fades between
+     them when a button underneath is pressed. Each button carries
+     data-mode="<name>" and each image in the stage carries the same, so the
+     pairing lives in the markup rather than in here. */
+  var switches = document.querySelectorAll(".mode-switch");
+  for (var si = 0; si < switches.length; si++) {
+    (function (box) {
+      var shots = box.querySelectorAll(".mode-switch__stage img");
+      var tabs = box.querySelectorAll(".mode-switch__tab");
+
+      function show(mode) {
+        for (var i = 0; i < shots.length; i++) {
+          var on = shots[i].getAttribute("data-mode") === mode;
+          shots[i].classList.toggle("is-active", on);
+          // The three drawings are the same picture in three states, so only
+          // the visible one should reach a screen reader.
+          shots[i].setAttribute("aria-hidden", on ? "false" : "true");
+        }
+        for (var t = 0; t < tabs.length; t++) {
+          tabs[t].setAttribute("aria-pressed",
+            tabs[t].getAttribute("data-mode") === mode ? "true" : "false");
+        }
+      }
+
+      for (var t = 0; t < tabs.length; t++) {
+        tabs[t].addEventListener("click", function () {
+          show(this.getAttribute("data-mode"));
+        });
+      }
+    })(switches[si]);
+  }
 })();
