@@ -807,4 +807,83 @@
       }
     })(switches[si]);
   }
+
+  /* ---- 6. Layout fade slider ---------------------------------------------
+     A .layout-fade figure stacks three pre-aligned drawings of the inverter
+     layout and fades between them as the reader drags a bubble along the
+     track. The base drawing stays fully opaque underneath; the stage-2 and
+     stage-3 images fade in one after the other, so a solid opaque image is
+     always behind whatever is fading and the picture never darkens. */
+  var fades = document.querySelectorAll(".layout-fade");
+  for (var fi = 0; fi < fades.length; fi++) {
+    (function (box) {
+      var track = box.querySelector(".layout-fade__track");
+      var fill = box.querySelector(".layout-fade__fill");
+      var handle = box.querySelector(".layout-fade__handle");
+      var step2 = box.querySelector('.layout-fade__stage img[data-step="2"]');
+      var step3 = box.querySelector('.layout-fade__stage img[data-step="3"]');
+      if (!track) return;
+
+      var LABELS = [
+        "Stage 1 of 3: transistors placed",
+        "Stage 2 of 3: supply and ground rails connected",
+        "Stage 3 of 3: input and output wired"
+      ];
+
+      function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+      // t runs 0 (stage 1) to 1 (stage 3). Stage 2 fades in over the first
+      // half, stage 3 over the second half.
+      function render(t) {
+        t = clamp(t);
+        if (step2) step2.style.opacity = clamp(t / 0.5);
+        if (step3) step3.style.opacity = clamp((t - 0.5) / 0.5);
+        fill.style.width = (t * 100) + "%";
+        handle.style.left = (t * 100) + "%";
+        var stage = t < 0.25 ? 0 : t < 0.75 ? 1 : 2;
+        track.setAttribute("aria-valuenow", String(1 + Math.round(t * 2)));
+        track.setAttribute("aria-valuetext", LABELS[stage]);
+      }
+
+      function tFromEvent(e) {
+        var r = track.getBoundingClientRect();
+        return clamp((e.clientX - r.left) / r.width);
+      }
+
+      var dragging = false;
+      track.addEventListener("pointerdown", function (e) {
+        dragging = true;
+        track.setPointerCapture(e.pointerId);
+        render(tFromEvent(e));
+        e.preventDefault();
+      });
+      track.addEventListener("pointermove", function (e) {
+        if (dragging) render(tFromEvent(e));
+      });
+      function endDrag(e) {
+        if (!dragging) return;
+        dragging = false;
+        try { track.releasePointerCapture(e.pointerId); } catch (err) {}
+      }
+      track.addEventListener("pointerup", endDrag);
+      track.addEventListener("pointercancel", endDrag);
+
+      // Keyboard: arrows nudge, and snap to whole stages with page keys.
+      var current = 0;
+      var origRender = render;
+      render = function (t) { current = clamp(t); origRender(current); };
+      track.addEventListener("keydown", function (e) {
+        var k = e.key, next = current;
+        if (k === "ArrowRight" || k === "ArrowUp") next = current + 0.5;
+        else if (k === "ArrowLeft" || k === "ArrowDown") next = current - 0.5;
+        else if (k === "Home") next = 0;
+        else if (k === "End") next = 1;
+        else return;
+        e.preventDefault();
+        render(next);
+      });
+
+      render(0);
+    })(fades[fi]);
+  }
 })();

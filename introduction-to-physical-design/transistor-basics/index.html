@@ -18,13 +18,13 @@
   <meta property="og:site_name" content="Silicon From Scratch" />
   <meta property="og:title" content="Silicon From Scratch" />
   <meta property="og:url" content="https://siliconfromscratch.com/introduction-to-physical-design/transistor-basics/" />
-  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
-  <meta property="og:image:width" content="1408" />
-  <meta property="og:image:height" content="768" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo-white.png" />
+  <meta property="og:image:width" content="2816" />
+  <meta property="og:image:height" content="1536" />
   <meta property="og:image:alt" content="Silicon From Scratch logo" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Silicon From Scratch" />
-  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo-white.png" />
 
   <!-- Favicon follows the browser color scheme: the gray/purple mark on
        light tab bars, the dark-theme symbol on dark ones. -->
@@ -117,7 +117,8 @@
                  .figure. That rule is meant for a figure sitting directly in the
                  grid; here the figure is a flex item of this column, where the
                  same order would drop it below the card. -->
-            <figure class="figure enlarge-xl" style="order: 0;">
+            <figure class="figure enlarge-xl"
+                    style="order: 0; max-width: 34rem; margin-inline: auto;">
               <img src="../../assets/introduction-to-physical-design/finfet-exploded.jpg"
                    alt="An exploded three-dimensional sketch of a transistor with its layers pulled apart: a gray silicon substrate at the bottom, a green fin standing on it that carries the source, channel, and drain, a thin yellow gate-oxide layer above it, and a red gate that sits across the channel."
                    decoding="async" />
@@ -139,7 +140,8 @@
             </div>
           </div>
 
-          <div class="prose">
+          <div class="prose" style="align-self: stretch; display: flex;
+                                    flex-direction: column;">
             <div class="term-card" style="margin-top: 0;">
               <p class="term-card__title">Substrate</p>
               <p>
@@ -163,7 +165,7 @@
                 shares one electron with each of its four neighbors, a crystal
                 structure known as <strong>diamond cubic</strong>. Pure silicon by
                 itself is a poor conductor, because every one of those electrons is
-                locked into a bond and almost none are free to move, so if silicon is
+                locked into a bond and almost none are free to move. So if silicon is
                 going to be any use in our devices, we have to find a way of adding
                 free charge carriers to it. Doping is that way.
               </p>
@@ -196,7 +198,7 @@
             <!-- Last card in the column: drop its bottom margin, which a grid
                  item does not let collapse away and which would otherwise leave
                  the Gate Oxide card opposite stretching that bit lower. -->
-            <div class="term-card" style="margin-bottom: 0;">
+            <div class="term-card" style="margin-bottom: 0; flex: 1;">
               <p class="term-card__title">Channel</p>
               <p>
                 The second part is the <strong>channel</strong>, drawn in green and
@@ -243,7 +245,10 @@
               silicon deposited as a mass of small crystals rather than one
               continuous lattice, and doped so heavily that it conducts much like a
               metal. Metal would seem the obvious choice, and the earliest devices
-              did use it, but polysilicon has a decisive advantage in manufacturing.
+              did use it, which is where these transistors get their name, the
+              <strong>metal-oxide-semiconductor</strong>, or MOS for short.
+              Polysilicon, though, has a
+              decisive advantage in manufacturing.
               It survives the high temperatures of the steps that follow, which means
               the gate can be laid down first and then used as a mask while the
               source and drain are doped on either side of it. The gate therefore
@@ -450,9 +455,8 @@
             meet the transistor a third time, in its <strong>schematic</strong>
             form, which throws away everything about how the device is made and
             keeps only what we need in order to connect it. The terminals are the
-            same ones we have been studying all along. The line coming in from the
-            left is the gate, and the two leads on the right are the source and the
-            drain. The only difference between the two symbols is the small circle
+            same ones we have been studying all along. The only difference between
+            the two symbols is the small circle
             on the gate of the p-type device, which is our shorthand for a
             transistor that turns on when its gate is pulled low rather than high.
             Notice too that the source and drain have traded places between the two
@@ -461,77 +465,119 @@
           </p>
 
           <div class="split" style="grid-template-columns: 1fr 1fr;
-                                    align-items: start;">
-            <figure class="figure"
-                    style="background: none; border: 0; box-shadow: none;
-                           padding: 0; margin: 0;">
-              <img class="schematic-art"
-                   src="../../assets/introduction-to-physical-design/schematics/n-type.jpg"
-                   alt="The schematic symbol for an n-type transistor: a gate lead entering from the left onto a vertical bar, with the drain leaving from the top right and the source from the bottom right."
-                   decoding="async" />
-              <figcaption class="schematic-cap">
-                The <strong>n-type</strong> transistor, which conducts when its gate
-                is driven high. Its drain sits on top and its source below.
-              </figcaption>
-            </figure>
-            <figure class="figure"
-                    style="background: none; border: 0; box-shadow: none;
-                           padding: 0; margin: 0;">
-              <img class="schematic-art"
-                   src="../../assets/introduction-to-physical-design/schematics/p-type.jpg"
-                   alt="The schematic symbol for a p-type transistor: the same shape as the n-type symbol but with a small circle where the gate meets the device, and with the source leaving from the top right and the drain from the bottom right."
-                   decoding="async" />
-              <figcaption class="schematic-cap">
-                The <strong>p-type</strong> transistor. The circle on its gate marks a
-                device that conducts when the gate is driven low, and source and
-                drain have swapped ends.
-              </figcaption>
-            </figure>
+                                    align-items: start; max-width: 50rem;
+                                    margin-inline: auto;
+                                    margin-bottom: var(--space-5);">
+              <figure class="figure"
+                      style="background: none; border: 0; box-shadow: none;
+                             padding: 0; margin: 0;">
+                <img class="schematic-art"
+                     src="../../assets/introduction-to-physical-design/schematics/n-type.jpg"
+                     alt="The schematic symbol for an n-type transistor: a gate lead entering from the left onto a vertical bar, with the drain leaving from the top right and the source from the bottom right."
+                     decoding="async" />
+                <figcaption class="schematic-cap">
+                  The <strong>n-type</strong> transistor, which conducts when its gate
+                  is driven high.
+                </figcaption>
+              </figure>
+              <figure class="figure"
+                      style="background: none; border: 0; box-shadow: none;
+                             padding: 0; margin: 0;">
+                <img class="schematic-art"
+                     src="../../assets/introduction-to-physical-design/schematics/p-type.jpg"
+                     alt="The schematic symbol for a p-type transistor: the same shape as the n-type symbol but with a small circle where the gate meets the device, and with the source leaving from the top right and the drain from the bottom right."
+                     decoding="async" />
+                <figcaption class="schematic-cap">
+                  The <strong>p-type</strong> transistor, which conducts when its gate
+                  is driven low.
+                </figcaption>
+              </figure>
           </div>
 
           <p>
             With both symbols in hand we can wire our first circuit, and it turns
             out that one of each is all we need to build the simplest logic gate we
-            met earlier, the <strong>inverter</strong>. Pairing an n-type device
-            with a p-type device this way, so that one of them conducts whenever
-            the other does not, is what makes the circuit a
-            <button type="button" class="glossary-term" data-glossary="cmos"
-                    aria-haspopup="dialog">CMOS Technology</button>
-            inverter.
+            met earlier: the <strong>inverter</strong>. Arranging a combination of
+            nMOS and pMOS in this configuration is referred to as
+            <strong>static complementary MOS, or static CMOS</strong>. In this
+            configuration, the p-type devices pull the output node <em>up</em> to
+            logic 1, while the nMOS pull the output node <em>down</em> to logic 0.
+            Static CMOS is often the default starting point for VLSI designers when
+            designing a piece of logic, because when the device is not switching
+            state, there is no path for current to travel from V<sub>DD</sub> to
+            ground, limiting the static power consumption of the logic.
           </p>
 
-          <figure class="figure" style="background: none; border: 0;
-                  box-shadow: none; padding: 0; margin: var(--space-5) auto 0;
-                  max-width: 40rem;">
-            <img class="schematic-art"
-                 src="../../assets/introduction-to-physical-design/schematics/inverter-schematic.jpg"
-                 alt="The schematic of a CMOS inverter: a p-type transistor on top with its source tied to V-DD and an n-type transistor below it with its source tied to ground, their gates joined on the left as the input and their drains joined on the right as the output."
-                 decoding="async" />
+          <div class="split split--media-left" style="align-items: start;">
+            <figure class="figure" style="background: none; border: 0;
+                    box-shadow: none; padding: 0; margin: 0;
+                    max-width: 30rem;">
+              <img class="schematic-art"
+                   src="../../assets/introduction-to-physical-design/schematics/inverter-schematic.jpg"
+                   alt="The schematic of a CMOS inverter: a p-type transistor on top with its source tied to V-DD and an n-type transistor below it with its source tied to ground, their gates joined on the left as the input and their drains joined on the right as the output."
+                   decoding="async" />
+            </figure>
+            <div class="prose">
+              <p style="margin-top: 0;">
+                Read the schematic from the outside in. The p-type device sits on top
+                with its source tied to the supply voltage, written
+                V<sub>DD</sub>, and the n-type device sits underneath it with its
+                source tied to ground. Their gates are joined together on the left and
+                become the single input, and their drains are joined together on the
+                right and become the output. Every transistor in the circuit therefore
+                sees the same input voltage at its gate, which is what makes the pair
+                behave as one device.
+              </p>
+
+              <p>
+                Now recall what each device does with that shared input. Drive the
+                input high and the n-type transistor, which turns on for a high gate
+                voltage, opens a path from the output down to ground, while the p-type
+                transistor, marked with its circle to remind us that it wants a low
+                gate, shuts off. The output is pulled to ground, a logic zero. Drive
+                the input low and the two swap roles exactly. The p-type device opens a
+                path from the supply to the output and the n-type device shuts, so the
+                output is pulled up to V<sub>DD</sub>, a logic one. A high in gives a
+                low out and a low in gives a high out, which is precisely the behavior
+                of the inverter we met when we were working in logic gates alone.
+              </p>
+            </div>
+          </div>
+
+          <p>
+            The schematic tells us how the two devices connect, but it says nothing
+            about how they are actually laid out in silicon. The drawing below builds
+            that physical picture up in stages. Drag the slider from left to right to
+            place the transistors on the wafer, run the supply and ground rails down
+            to them, and finally wire up the input and the output.
+          </p>
+
+          <!-- Slider that fades between three progressive builds of the inverter
+               layout. The images are pre-aligned to a common frame (see
+               assets/…/inverter-layout-*-aligned.png), so the substrate and
+               transistors stay put and only the wiring appears to grow. Section 6
+               of main.js drives the fade; the stage is backed white so the fade
+               never dips to grey (same trick as .mode-switch). -->
+          <figure class="figure layout-fade" data-no-enlarge
+                  style="max-width: 46rem; margin: var(--space-5) auto 0;">
+            <div class="layout-fade__stage">
+              <img src="../../assets/introduction-to-physical-design/inverter-layout-1-aligned.png"
+                   class="layout-fade__base"
+                   alt="A three-dimensional sketch of a CMOS inverter laid out in silicon: a pMOS transistor in blue and an nMOS transistor in green standing on the substrate and its n-well, with the V-DD and GND metal rails drawn floating above, not yet connected."
+                   decoding="async" />
+              <img src="../../assets/introduction-to-physical-design/inverter-layout-2-aligned.png"
+                   data-step="2" alt="" aria-hidden="true" decoding="async" />
+              <img src="../../assets/introduction-to-physical-design/inverter-layout-3-aligned.png"
+                   data-step="3" alt="" aria-hidden="true" decoding="async" />
+            </div>
+            <div class="layout-fade__track" role="slider" tabindex="0"
+                 aria-label="Build the inverter layout, stage 1 to 3"
+                 aria-valuemin="1" aria-valuemax="3" aria-valuenow="1"
+                 aria-valuetext="Stage 1 of 3: transistors placed">
+              <span class="layout-fade__fill"></span>
+              <span class="layout-fade__handle" aria-hidden="true"></span>
+            </div>
           </figure>
-
-          <p>
-            Read the schematic from the outside in. The p-type device sits on top
-            with its source tied to the supply voltage, written
-            V<sub>DD</sub>, and the n-type device sits underneath it with its
-            source tied to ground. Their gates are joined together on the left and
-            become the single input, and their drains are joined together on the
-            right and become the output. Every transistor in the circuit therefore
-            sees the same input voltage at its gate, which is what makes the pair
-            behave as one device.
-          </p>
-
-          <p>
-            Now recall what each device does with that shared input. Drive the
-            input high and the n-type transistor, which turns on for a high gate
-            voltage, opens a path from the output down to ground, while the p-type
-            transistor, marked with its circle to remind us that it wants a low
-            gate, shuts off. The output is pulled to ground, a logic zero. Drive
-            the input low and the two swap roles exactly. The p-type device opens a
-            path from the supply to the output and the n-type device shuts, so the
-            output is pulled up to V<sub>DD</sub>, a logic one. A high in gives a
-            low out and a low in gives a high out, which is precisely the behavior
-            of the inverter we met when we were working in logic gates alone.
-          </p>
 
           <!-- Opened by the "CMOS Technology" button above; see main.js section 4.
                PLACEHOLDER COPY — replace the paragraph below with the fuller
@@ -563,13 +609,8 @@
       Informed by: Neil H. E. Weste and David Money Harris,
       <em>CMOS VLSI Design: A Circuits and Systems Perspective</em>, Fourth
       Edition, Chapter 1, &ldquo;Introduction,&rdquo; &sect;1.3 &ldquo;MOS
-      Transistors&rdquo; (Addison-Wesley, 2011).
-    </p>
-    <p class="container footer__credit">
-      Informed by: Neil H. E. Weste and David Money Harris,
-      <em>CMOS VLSI Design: A Circuits and Systems Perspective</em>, Fourth
-      Edition, Chapter 1, &ldquo;Introduction,&rdquo; &sect;1.4.1 &ldquo;The
-      Inverter&rdquo; (Addison-Wesley, 2011).
+      Transistors&rdquo; and &sect;1.4.1 &ldquo;The Inverter&rdquo;
+      (Addison-Wesley, 2011).
     </p>
     <p class="container footer__credit">
       Informed by: Neil H. E. Weste and David Money Harris,
