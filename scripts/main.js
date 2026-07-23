@@ -17,9 +17,17 @@
      (switch it to manual and start at the top ourselves). Anchor arrivals
      (e.g. /#learn from another page) keep the native jump. */
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  // Back/forward-cached pages resume frozen mid-scroll: reload them.
   window.addEventListener("pageshow", function (e) {
     if (e.persisted) location.reload();
   });
+  // History loads that bypass the bfcache still restore old state; when this
+  // load came from the back/forward button, swap it for a clean reload so the
+  // landing animations replay. (After the reload the navigation type becomes
+  // "reload", so this can never loop.)
+  var navEntry = performance.getEntriesByType &&
+                 performance.getEntriesByType("navigation")[0];
+  if (navEntry && navEntry.type === "back_forward") location.reload();
   if (!location.hash) window.scrollTo(0, 0);
 
   /* ---- 1. Clean URLs for in-page anchors --------------------------------
