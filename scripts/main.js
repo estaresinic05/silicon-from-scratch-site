@@ -7,6 +7,21 @@
 (function () {
   "use strict";
 
+  /* ---- 0. Fresh landings on back/forward --------------------------------
+     Returning to a page with the browser's back (or forward) button should
+     feel like landing on it fresh — top of the page, scroll-reveals replaying
+     — not dropped wherever the reader last was.
+     Two mechanisms restore the old position: the back/forward cache serves
+     the whole page frozen as it was left (reload it), and the browser's
+     scroll restoration re-applies the old offset on ordinary history loads
+     (switch it to manual and start at the top ourselves). Anchor arrivals
+     (e.g. /#learn from another page) keep the native jump. */
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  window.addEventListener("pageshow", function (e) {
+    if (e.persisted) location.reload();
+  });
+  if (!location.hash) window.scrollTo(0, 0);
+
   /* ---- 1. Clean URLs for in-page anchors --------------------------------
      Sections are linked with #fragments (e.g. "Back to the path" -> /#learn,
      the nav, "See the architecture"). We still scroll to the section, but
