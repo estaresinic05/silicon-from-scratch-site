@@ -7,7 +7,21 @@
   <!-- Progressive enhancement: mark that JS is available BEFORE first paint, so the
        "hidden-before-reveal" styles only apply when JS can reveal them again.
        Without JS this never runs and the full page stays visible. -->
-  <script>document.documentElement.classList.add("js");</script>
+  <script>
+    document.documentElement.classList.add("js");
+    // Back/forward loads reload as fresh landings (main.js §0 owns the
+    // policy). Doing the reload HERE, before first paint, keeps the restored
+    // page from flashing for a frame first. bfcache restores are handled in
+    // main.js (scripts don't re-run on those).
+    (function () {
+      var nav = performance.getEntriesByType &&
+                performance.getEntriesByType("navigation")[0];
+      if (nav && nav.type === "back_forward") {
+        document.documentElement.style.visibility = "hidden";
+        location.reload();
+      }
+    })();
+  </script>
 
   <title>Meet the Processor</title>
   <meta name="description"
