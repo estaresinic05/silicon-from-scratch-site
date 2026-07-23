@@ -113,8 +113,7 @@
   // place at the head of the bar (the wordmark still links home).
   var QUICK = [
     ["Meet the Processor", "meet-the-processor/"],
-    ["About", "about/"],
-    ["Tools", "#tools"]
+    ["About", "about/"]
   ];
 
   // GitHub left the link row and rides in the top-right corner as its mark.
