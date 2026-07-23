@@ -86,9 +86,16 @@
           a handful of them, wired together, build the very logic gates we met
           earlier.
         </p>
+        <div class="doc-hero__actions">
+          <span class="doc-hero__prompt">Think you got this already?</span>
+          <a class="btn btn--primary" href="#check">Skip to Check Yourself</a>
+        </div>
       </div>
 
-      <figure class="doc-hero__art">
+      <!-- Slightly narrower than the 44rem art track, so the card reads a
+           touch smaller beside the title. -->
+      <figure class="doc-hero__art"
+              style="width: 100%; max-width: 39rem; justify-self: center; align-self: center;">
         <img src="../../assets/introduction-to-physical-design/transistor-basics.jpg"
              alt="A hand-drawn three-dimensional sketch of a transistor: a gray base with a green fin rising through a red gate slab, and two gray metal contacts standing above it, labeled Transistor Basics."
              decoding="async" />
@@ -476,8 +483,7 @@
                      alt="The schematic symbol for an n-type transistor: a gate lead entering from the left onto a vertical bar, with the drain leaving from the top right and the source from the bottom right."
                      decoding="async" />
                 <figcaption class="schematic-cap">
-                  The <strong>n-type</strong> transistor, which conducts when its gate
-                  is driven high.
+                  The <strong>n-type</strong> turns on when its gate is high.
                 </figcaption>
               </figure>
               <figure class="figure"
@@ -488,29 +494,31 @@
                      alt="The schematic symbol for a p-type transistor: the same shape as the n-type symbol but with a small circle where the gate meets the device, and with the source leaving from the top right and the drain from the bottom right."
                      decoding="async" />
                 <figcaption class="schematic-cap">
-                  The <strong>p-type</strong> transistor, which conducts when its gate
-                  is driven low.
+                  The <strong>p-type</strong> turns on when its gate is low.
                 </figcaption>
               </figure>
           </div>
 
           <p>
             With both symbols in hand we can wire our first circuit, and it turns
-            out that one of each is all we need to build the simplest logic gate we
-            met earlier: the <strong>inverter</strong>. Arranging a combination of
+            out one of each is all we need to build the simplest logic gate we
+            met earlier: the inverter. Arranging a combination of
             nMOS and pMOS in this configuration is referred to as
             <strong>static complementary MOS, or static CMOS</strong>. In this
             configuration, the p-type devices pull the output node <em>up</em> to
             logic 1, while the nMOS pull the output node <em>down</em> to logic 0.
+            For this reason, the p-type devices of a gate are collectively called
+            its <strong>pull-up network</strong>, or PUN, and the n-type devices
+            its <strong>pull-down network</strong>, or PDN.
             Static CMOS is often the default starting point for VLSI designers when
-            designing a piece of logic, because when the device is not switching
+            designing a piece of logic because when the device is not switching
             state, there is no path for current to travel from V<sub>DD</sub> to
             ground, limiting the static power consumption of the logic.
           </p>
 
           <div class="split split--media-left" style="align-items: start;">
             <figure class="figure" style="background: none; border: 0;
-                    box-shadow: none; padding: 0; margin: 0;
+                    box-shadow: none; padding: 0; margin: var(--space-4) 0 0;
                     max-width: 30rem;">
               <img class="schematic-art"
                    src="../../assets/introduction-to-physical-design/schematics/inverter-schematic.jpg"
@@ -544,41 +552,6 @@
             </div>
           </div>
 
-          <p>
-            The schematic tells us how the two devices connect, but it says nothing
-            about how they are actually laid out in silicon. The drawing below builds
-            that physical picture up in stages. Drag the slider from left to right to
-            place the transistors on the wafer, run the supply and ground rails down
-            to them, and finally wire up the input and the output.
-          </p>
-
-          <!-- Slider that fades between three progressive builds of the inverter
-               layout. The images are pre-aligned to a common frame (see
-               assets/…/inverter-layout-*-aligned.png), so the substrate and
-               transistors stay put and only the wiring appears to grow. Section 6
-               of main.js drives the fade; the stage is backed white so the fade
-               never dips to grey (same trick as .mode-switch). -->
-          <figure class="figure layout-fade" data-no-enlarge
-                  style="max-width: 46rem; margin: var(--space-5) auto 0;">
-            <div class="layout-fade__stage">
-              <img src="../../assets/introduction-to-physical-design/inverter-layout-1-aligned.png"
-                   class="layout-fade__base"
-                   alt="A three-dimensional sketch of a CMOS inverter laid out in silicon: a pMOS transistor in blue and an nMOS transistor in green standing on the substrate and its n-well, with the V-DD and GND metal rails drawn floating above, not yet connected."
-                   decoding="async" />
-              <img src="../../assets/introduction-to-physical-design/inverter-layout-2-aligned.png"
-                   data-step="2" alt="" aria-hidden="true" decoding="async" />
-              <img src="../../assets/introduction-to-physical-design/inverter-layout-3-aligned.png"
-                   data-step="3" alt="" aria-hidden="true" decoding="async" />
-            </div>
-            <div class="layout-fade__track" role="slider" tabindex="0"
-                 aria-label="Build the inverter layout, stage 1 to 3"
-                 aria-valuemin="1" aria-valuemax="3" aria-valuenow="1"
-                 aria-valuetext="Stage 1 of 3: transistors placed">
-              <span class="layout-fade__fill"></span>
-              <span class="layout-fade__handle" aria-hidden="true"></span>
-            </div>
-          </figure>
-
           <!-- Opened by the "CMOS Technology" button above; see main.js section 4.
                PLACEHOLDER COPY — replace the paragraph below with the fuller
                explanation of why CMOS is built this way. -->
@@ -590,6 +563,132 @@
               of them is conducting and the other is not.
             </p>
           </template>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================= LAYOUT ON SILICON ======================= -->
+    <section class="section" id="on-silicon" aria-labelledby="on-silicon-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="on-silicon-title">Layout on Silicon</h2>
+        </div>
+
+        <!-- The widget is floated into the left of the single prose column
+             (same trick as the .mode-switch figure, mirrored): the stage's
+             images are absolutely positioned, so the figure has no intrinsic
+             width of its own, and as a float `width: 100%` resolves against
+             the column so max-width is what sizes it. The paragraph runs
+             beside it on the right and carries on underneath. -->
+        <div class="prose prose--flow" style="display: flow-root;">
+          <!-- Slider that fades between three progressive builds of the
+               inverter layout. The images are pre-aligned to a common frame
+               (see assets/…/inverter-layout-*-aligned.jpg), so the substrate
+               and transistors stay put and only the wiring appears to grow.
+               Section 6 of main.js drives the fade; the stage is backed white
+               so the fade never dips to grey (same trick as .mode-switch). -->
+          <figure class="figure layout-fade" data-no-enlarge
+                  style="float: left; width: 100%; max-width: 38rem;
+                         margin: 0 var(--space-5) var(--space-4) 0;">
+            <div class="layout-fade__stage">
+              <img src="../../assets/introduction-to-physical-design/inverter-layout-1-aligned.jpg"
+                   class="layout-fade__base"
+                   alt="A three-dimensional sketch of a CMOS inverter laid out in silicon: a pMOS transistor in blue and an nMOS transistor in green standing on the substrate and its n-well, with the V-DD and GND metal rails drawn floating above, not yet connected."
+                   decoding="async" />
+              <img src="../../assets/introduction-to-physical-design/inverter-layout-2-aligned.jpg"
+                   data-step="2" alt="" aria-hidden="true" decoding="async" />
+              <img src="../../assets/introduction-to-physical-design/inverter-layout-3-aligned.jpg"
+                   data-step="3" alt="" aria-hidden="true" decoding="async" />
+            </div>
+            <div class="layout-fade__track" role="slider" tabindex="0"
+                 aria-label="Build the inverter layout, stage 1 to 3"
+                 aria-valuemin="1" aria-valuemax="3" aria-valuenow="1"
+                 aria-valuetext="Stage 1 of 3: transistors placed">
+              <span class="layout-fade__fill"></span>
+              <span class="layout-fade__handle" aria-hidden="true"></span>
+              <span class="layout-fade__hint" aria-hidden="true">
+                <svg viewBox="0 0 16 16" fill="none"
+                     stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+                     stroke-linejoin="round">
+                  <path d="M5 2 L13 8 L5 14" />
+                </svg>
+              </span>
+            </div>
+          </figure>
+
+          <p style="margin-top: 0;">
+            The schematic tells us how the two devices connect, but it says
+            nothing about how they are actually laid out in silicon. The
+            drawing to the left builds that physical picture up in stages.
+            First notice that we are now using two transistors, one nMOS and
+            one pMOS, and we have extended the gate to be over top of both of
+            them. We then connected the input to the gate through a vertical
+            metal pillar called a <strong>via</strong>. We have connected one
+            end of the pMOS to V<sub>DD</sub> and one end of the nMOS to
+            ground, just as we did in the schematic. Next, we connect the
+            remaining side of each transistor to each other, which forms the
+            drain-to-drain connection we have on the schematic. Finally, we
+            use another via to pull the output of this circuit from that
+            connection.
+          </p>
+
+          <p>
+            What you are looking at is exactly how an inverter is laid out on
+            real silicon. A finished layout like this one is called a
+            <strong>standard cell</strong>, and designers keep a library of
+            them, one for every gate they might reach for. Standard cells act
+            like lego bricks. Each one snaps cleanly against its neighbors,
+            sharing the same supply and ground rails, so larger pieces of
+            logic are built simply by tiling the right cells side by side
+            across the wafer.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== CHECK YOURSELF ===================== -->
+    <section class="section section--tight" id="check" aria-labelledby="check-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="check-title">Check Yourself</h2>
+        </div>
+
+        <div class="quiz quiz--wide" id="quiz">
+          <p class="quiz__q">Which logic expression does this CMOS circuit implement? Choose from one of the four options below.</p>
+
+          <div class="quiz__reveal">
+            <figure class="figure figure--photo quiz__figure quiz__figure--instr">
+              <img src="../../assets/introduction-to-physical-design/check-yourself-NAND.jpg"
+                   alt="A CMOS logic circuit: two p-type transistors in parallel between V-DD and the output y, their gates driven by a and b, and two n-type transistors in series between y and ground, their gates also driven by a and b."
+                   decoding="async" />
+            </figure>
+            <!-- TEMPORARILY DISABLED: check-yourself-NAND-answer.jpg is a 0-byte
+                 file (lost in a bad edit; restore it from OneDrive version
+                 history or re-export it). The empty image has no intrinsic size
+                 and blows the reveal row up. Re-enable this figure once the
+                 file is back.
+            <figure class="figure figure--photo quiz__figure quiz__figure--decode" aria-hidden="true">
+              <img src="../../assets/introduction-to-physical-design/check-yourself-NAND-answer.jpg"
+                   alt="The circuit's truth table: y is 1 with the pull-up network active for every input pair except a equals 1 and b equals 1, where the pull-down network is active and y is 0. Underneath, the NAND gate symbol."
+                   decoding="async" />
+            </figure>
+            -->
+          </div>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button"><span class="eq"><var>y</var> = <var>a</var><var>b</var></span></button>
+            <button class="quiz__opt" type="button"><span class="eq"><var>y</var> = <span class="ovl"><var>a</var> + <var>b</var></span></span></button>
+            <button class="quiz__opt" type="button"><span class="eq"><var>y</var> = <var>a</var> + <var>b</var></span></button>
+            <button class="quiz__opt" type="button" data-correct="true"><span class="eq"><var>y</var> = <span class="ovl"><var>a</var><var>b</var></span></span></button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <div class="quiz__next">
+            <a class="btn btn--primary" href="../../coming-soon/">
+              Continue to Implementing Arbitrary Logic and Stick Diagrams <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
         </div>
       </div>
     </section>
@@ -630,6 +729,35 @@
   <script src="../../scripts/scroll.js" defer></script>
   <!-- Enlarge: static figure images pop on hover and open enlarged on a
        blurred backdrop when clicked (see scripts/enlarge.js). -->
+  <!-- Check Yourself quiz (see STYLE_GUIDE.md — Check Yourself). -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          if (next) next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+        } else {
+          btn.classList.add("is-wrong");
+          // A wrong choice can carry a tailored nudge in data-hint; the stock
+          // line is the fallback for the rest.
+          feedback.textContent = btn.dataset.hint || "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
+  })();
+  </script>
   <script src="../../scripts/enlarge.js" defer></script>
 </body>
 </html>

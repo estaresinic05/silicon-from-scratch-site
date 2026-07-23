@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. Without JS this
+       never runs and the full page stays visible. -->
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>Implementing Arbitrary Logic and Stick Diagrams</title>
+  <meta name="description"
+        content="The inverter showed us one gate in silicon. Learn how any logic expression becomes a pull-up and pull-down network, and how stick diagrams sketch the layout before it is drawn for real." />
+
+  <!-- Social link previews: shared logo + "Silicon From Scratch" card (see index.html). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Silicon From Scratch" />
+  <meta property="og:title" content="Silicon From Scratch" />
+  <meta property="og:url" content="https://siliconfromscratch.com/introduction-to-physical-design/implementing-arbitrary-logic/" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo-white.png" />
+  <meta property="og:image:width" content="2816" />
+  <meta property="og:image:height" content="1536" />
+  <meta property="og:image:alt" content="Silicon From Scratch logo" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Silicon From Scratch" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo-white.png" />
+
+  <!-- Favicon follows the browser color scheme: the gray/purple mark on
+       light tab bars, the dark-theme symbol on dark ones. -->
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="../../assets/home/logo-symbol-light.png" />
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="../../assets/home/logo-symbol.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles, then the ALU project components (this page lives at
+       /introduction-to-physical-design/implementing-arbitrary-logic/, two
+       levels down). -->
+  <link rel="stylesheet" href="../../styles/main.css" />
+  <link rel="stylesheet" href="../../styles/alu.css" />
+</head>
+<body class="theme-dark page-logic">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../../" aria-label="Silicon From Scratch — home">
+        <img class="wordmark__mark" src="../../assets/home/logo-symbol.png" alt="" aria-hidden="true" />
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="../../meet-the-processor/">Meet the Processor</a>
+        <a href="../../about/">About</a>
+        <a href="../../#tools">Tools</a>
+      </nav>
+
+      <div class="topbar__right">
+        <div class="toc" id="page-toc">
+          <ul class="toc__menu" aria-label="Project directory"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================== DOC HERO ============================ -->
+    <section class="doc-hero doc-hero--balanced container" aria-labelledby="ial-title">
+      <div class="doc-hero__text">
+        <h1 id="ial-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">Implementing Arbitrary Logic</span> <span class="title-eyebrow__group">and Stick Diagrams</span></span></h1>
+        <p class="doc-hero__lead">
+          The inverter showed us one gate in silicon. In this lesson we take the
+          same idea further: any logic expression can be built as a
+          <strong>pull-up network</strong> and a <strong>pull-down network</strong>,
+          and a <strong>stick diagram</strong> lets us sketch its layout before
+          drawing a single rectangle for real.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================== COMING SOON ========================= -->
+    <section class="section" id="coming-soon" aria-labelledby="coming-soon-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="coming-soon-title">Coming Soon</h2>
+        </div>
+
+        <div class="prose prose--flow">
+          <p style="margin-top: 0;">
+            This lesson is being written. Check back soon, or head back to
+            <a href="../transistor-basics/">Transistor Basics</a> in the
+            meantime.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+  </footer>
+
+  <script src="../../scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger from CDN for the same scroll-reveal feel as the rest
+       of the site. If they fail to load, scroll.js removes the `js` class and
+       the page is simply fully visible. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
+  <script src="../../scripts/scroll.js" defer></script>
+</body>
+</html>

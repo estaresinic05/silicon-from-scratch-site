@@ -151,7 +151,8 @@
         "Control Hazards"
       ]],
       ["Introduction to Physical Design", [
-        ["Transistor Basics", "introduction-to-physical-design/transistor-basics/"]
+        ["Transistor Basics", "introduction-to-physical-design/transistor-basics/"],
+        ["Implementing Arbitrary Logic and Stick Diagrams", "coming-soon/"]
       ]]
     ]],
     ["Very Advanced", [
@@ -840,6 +841,10 @@
         if (step3) step3.style.opacity = clamp((t - 0.5) / 0.5);
         fill.style.width = (t * 100) + "%";
         handle.style.left = (t * 100) + "%";
+        // The drag-me chevron hides while the bubble is away from its start
+        // and pops back up whenever it returns home (with a little slack, so
+        // "close enough to the start" still counts).
+        box.classList.toggle("is-used", t > 0.02);
         var stage = t < 0.25 ? 0 : t < 0.75 ? 1 : 2;
         track.setAttribute("aria-valuenow", String(1 + Math.round(t * 2)));
         track.setAttribute("aria-valuetext", LABELS[stage]);

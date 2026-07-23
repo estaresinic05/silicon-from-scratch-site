@@ -2691,7 +2691,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   object-fit: contain;
   border-radius: var(--radius-sm);
   opacity: 0;
-  transition: opacity 1.2s var(--ease);
+  transition: opacity 0.6s var(--ease);
 }
 .mode-switch__stage img.is-active { opacity: 1; }
 
@@ -2728,7 +2728,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
    same paper card as the other widgets. */
 .layout-fade__stage {
   position: relative;
-  aspect-ratio: 2016 / 1559;      /* the aligned inverter-layout PNGs */
+  aspect-ratio: 1942 / 1528;      /* the aligned inverter-layout JPGs */
   /* Same white backing as .mode-switch: the drawings are on white, so a
      solid white stage keeps the brightness constant through the fade
      instead of letting the dark card show through as a grey dip. */
@@ -2754,56 +2754,80 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .layout-fade__track {
   position: relative;
   height: 1.5rem;
-  width: 50%;                    /* half the card width, centred below the stage */
+  width: 54%;                    /* a hair past half the card width, centred */
   margin: var(--space-4) auto 0;
   cursor: pointer;
   touch-action: none;            /* let us own the drag on touch screens */
 }
 /* The rail the bubble rides along, centred vertically inside the taller hit
-   area. A visible outline (soft-ink stroke over a faint groove fill) makes the
-   track itself read clearly, in both the light and dark themes. */
+   area: a slim hairline groove, no outline, so it reads as an understated
+   line rather than a chunky bar. */
 .layout-fade__track::before {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
   top: 50%;
-  height: 0.5rem;
+  height: 0.2rem;
   transform: translateY(-50%);
   background: var(--hairline);
-  border: 1.5px solid var(--soft-ink);
   border-radius: 999px;
-  box-sizing: border-box;
 }
-/* The filled portion, from the left up to the bubble. */
+/* The filled portion, from the left up to the bubble — the same purple as
+   the Verilog `&&` operator (.tok-op), so the growing wiring reads in the
+   site's code accent. */
 .layout-fade__fill {
   position: absolute;
   left: 0;
   top: 50%;
-  height: 0.5rem;
+  height: 0.2rem;
   width: 0;
   transform: translateY(-50%);
-  background: var(--accent);
+  background: #b794f6;
   border-radius: 999px;
   pointer-events: none;
 }
-/* The draggable bubble. */
+/* The draggable bubble: the same purple as the Verilog `&&` operator
+   (.tok-op), matching the fill it leads. */
 .layout-fade__handle {
   position: absolute;
   top: 50%;
   left: 0;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1rem;
+  height: 1rem;
   transform: translate(-50%, -50%);
-  background: var(--accent);
-  border: 3px solid #fff;
+  background: #b794f6;
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
   pointer-events: none;          /* the track owns the pointer during a drag */
+}
+/* "Drag right" hint: a purple chevron hugging the bubble's resting spot,
+   nudging rightward like the datapath reveal arrows (same animation) — just
+   the head, no tail, so nothing doubles up on the rail beneath it. Fades out
+   after the first drag (main.js §6 sets .is-used on the figure). */
+.layout-fade__hint {
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.3s var(--ease);
+}
+.layout-fade__hint svg {
+  display: block;
+  width: 0.95rem;
+  height: auto;
+  animation: reveal-hint-nudge 1.3s ease-in-out infinite;
+}
+.layout-fade.is-used .layout-fade__hint { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .layout-fade__hint svg { animation: none; }
 }
 .layout-fade__track:focus-visible { outline: none; }
 .layout-fade__track:focus-visible .layout-fade__handle {
-  outline: 2px solid var(--accent);
+  outline: 2px solid #b794f6;
   outline-offset: 3px;
 }
 .layout-fade__track:active { cursor: grabbing; }
