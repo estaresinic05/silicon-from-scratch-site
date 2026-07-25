@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. Without JS this
+       never runs and the full page stays visible. -->
+  <script>
+    document.documentElement.classList.add("js");
+    // Back/forward loads reload as fresh landings (main.js §0 owns the
+    // policy). Doing the reload HERE, before first paint, keeps the restored
+    // page from flashing for a frame first. bfcache restores are handled in
+    // main.js (scripts don't re-run on those).
+    (function () {
+      var nav = performance.getEntriesByType &&
+                performance.getEntriesByType("navigation")[0];
+      if (nav && nav.type === "back_forward") {
+        document.documentElement.style.visibility = "hidden";
+        location.reload();
+      }
+    })();
+  </script>
+
+  <title>The Pipelined Datapath</title>
+  <meta name="description"
+        content="The pipelined datapath is the single-cycle datapath with pipeline registers dropped in between the stages, so five instructions can share the hardware at once. This raises a subtle timing question about reads and writes to the register file." />
+
+  <!-- Social link previews: shared logo + "Silicon From Scratch" card (see index.html). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Silicon From Scratch" />
+  <meta property="og:title" content="Silicon From Scratch" />
+  <meta property="og:url" content="https://siliconfromscratch.com/pipelined-cpu/pipelined-datapath/" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo-white.png" />
+  <meta property="og:image:width" content="2816" />
+  <meta property="og:image:height" content="1536" />
+  <meta property="og:image:alt" content="Silicon From Scratch logo" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Silicon From Scratch" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo-white.png" />
+
+  <!-- Favicon follows the browser color scheme: the gray/purple mark on
+       light tab bars, the dark-theme symbol on dark ones. -->
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="../../assets/home/logo-symbol-light.png" />
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="../../assets/home/logo-symbol.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles, then the ALU project components (this page lives at
+       /pipelined-cpu/pipelined-datapath/, two levels down). -->
+  <link rel="stylesheet" href="../../styles/main.css" />
+  <link rel="stylesheet" href="../../styles/alu.css" />
+
+  <!-- Page-scoped: give the hero picture a little more width than the standard
+       46/44 balanced split (it stays a single stacked column on mobile via the
+       shared max-width:768px rule). -->
+  <style>
+    @media (min-width: 769px) {
+      .doc-hero--balanced { grid-template-columns: minmax(0, 40rem) minmax(0, 52rem); }
+    }
+  </style>
+</head>
+<body class="theme-dark page-logic">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../../" aria-label="Silicon From Scratch — home">
+        <img class="wordmark__mark" src="../../assets/home/logo-symbol.png" alt="" aria-hidden="true" />
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="../../meet-the-processor/">Meet the Processor</a>
+        <a href="../../about/">About</a>
+      </nav>
+
+      <div class="topbar__right">
+        <div class="toc" id="page-toc">
+          <ul class="toc__menu" aria-label="Project directory"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================== DOC HERO ============================ -->
+    <section class="doc-hero doc-hero--balanced container" aria-labelledby="pd-title">
+      <div class="doc-hero__text">
+        <h1 id="pd-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">The Pipelined</span> <span class="title-eyebrow__group">Datapath</span></span></h1>
+        <p class="doc-hero__lead">
+          The <strong>pipelined datapath</strong> looks quite similar to the single
+          cycle datapath we learned about before but with a few small changes. In
+          this lesson, we'll learn about how we can transfer data from one
+          instruction through the datapath without stomping on data from other
+          instructions.
+        </p>
+        <div class="doc-hero__actions">
+          <span class="doc-hero__prompt">Think you got this already?</span>
+          <a class="btn btn--primary" href="#check">Skip to Check Yourself</a>
+        </div>
+      </div>
+
+      <figure class="doc-hero__art enlarge-wide--sm">
+        <img src="../../assets/pipelined-cpu/pipelined-datapath-complete.jpg"
+             alt="The complete pipelined RISC-V datapath. The five stages, Instruction Fetch, Instruction Decode, Execute, Memory, and Writeback, run left to right, separated by four pipeline registers that carry each instruction's values forward from one stage to the next."
+             decoding="async" />
+      </figure>
+    </section>
+
+    <!-- ============================ PIPELINE REGISTERS ================== -->
+    <section class="section" id="pipeline-registers" aria-labelledby="pr-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="pr-title">Pipeline Registers</h2>
+        </div>
+
+        <div class="split split--media-left">
+          <figure class="figure enlarge-wide" style="max-width: 46rem;">
+            <img src="../../assets/pipelined-cpu/initial-looks.jpg"
+                 alt="A first look at the pipelined datapath, with a single instruction's data spread across all five stages as it works its way from Fetch through to Writeback."
+                 decoding="async" />
+          </figure>
+
+          <div class="prose">
+            <p>
+              It may appear that to perform multiple instructions at the same time
+              we need multiple datapaths. This is a confusing point, and it is a
+              common mistake many people make when learning pipelining for the first
+              time. It makes sense, right? Each instruction has data that is used in
+              all five stages, and this data is vital to the instruction being
+              performed properly. If we start another instruction while the first
+              instruction's data is still working its way through the path, we will
+              overwrite that data before the first instruction has had a chance to
+              finish.
+            </p>
+          </div>
+        </div>
+
+        <div class="split split--media-right" style="margin-top: var(--space-5);">
+          <div class="prose">
+            <p>
+              That is where the <strong>pipeline register</strong> comes into play.
+              A pipeline register's entire job is to hold onto valuable data that
+              will be of use later on in the pipeline in future clock cycles. This
+              way, data can move through the pipeline in a consistent, organized
+              fashion, like items carried along on a conveyor belt. Not only this,
+              but the data will safely make it through each stage without the risk of
+              being overwritten.
+            </p>
+          </div>
+
+          <figure class="figure enlarge-wide" style="max-width: 46rem;">
+            <img src="../../assets/pipelined-cpu/initial-looks-2.jpg"
+                 alt="The pipelined datapath with pipeline registers drawn in between the stages, each one holding an instruction's data so it passes safely from one stage to the next across clock cycles."
+                 decoding="async"
+                 style="background: #fff; padding: 1.5rem;" />
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== CHECK YOURSELF ===================== -->
+    <section class="section section--tight" id="check" aria-labelledby="check-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="check-title">Check Yourself</h2>
+        </div>
+
+        <div class="quiz" id="quiz" style="max-width: 74rem;">
+          <p class="quiz__q">In this pipelined datapath, an instruction reads its
+            operands from the register file during Decode while an earlier
+            instruction may be writing its own result back during the very same
+            clock cycle. How do we make a read and a write to the same register in
+            the same cycle behave correctly?</p>
+
+          <figure class="figure figure--photo quiz__figure enlarge-wide" style="max-width: 60rem;">
+            <img src="../../assets/pipelined-cpu/pipelined-datapath-complete.jpg"
+                 alt="The complete pipelined RISC-V datapath, with the register file read during the Decode stage and written during the Writeback stage, so both a read and a write can land in the same clock cycle."
+                 decoding="async"
+                 style="background: #fff; padding-left: 8rem; padding-right: 8rem;" />
+          </figure>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button">Stall every instruction reaching Decode for a full cycle whenever an earlier instruction is still in its Writeback stage.</button>
+            <button class="quiz__opt" type="button" data-correct="true">Write to the register file in the first half of the clock cycle and read from it in the second half, so a read during Decode picks up a value another instruction wrote earlier in that same cycle.</button>
+            <button class="quiz__opt" type="button">Keep two separate copies of the register file, one for reading and one for writing, and reconcile them only at the end of every cycle.</button>
+            <button class="quiz__opt" type="button">Forbid any two instructions in the pipeline from ever touching the same register, leaving it to the assembler to rename them apart.</button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <!-- Revealed by the quiz script once the correct answer is chosen. -->
+          <div class="quiz__next">
+            <a class="btn btn--primary" href="../../coming-soon/?topic=Pipelined%20Control">
+              Continue to The Pipelined Control <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+    <p class="container footer__credit">
+      Adapted from: David A. Patterson and John L. Hennessy,
+      <em>Computer Organization and Design RISC-V Edition: The Hardware/Software
+      Interface</em>, Second Edition, Chapter 4, &ldquo;The Processor,&rdquo;
+      &sect;4.7 &ldquo;Pipelined Datapath and Control&rdquo; (Morgan Kaufmann, 2021).
+    </p>
+  </footer>
+
+  <script src="../../scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger from CDN for the same scroll-reveal feel as the rest
+       of the site. If they fail to load, scroll.js removes the `js` class and
+       the page is simply fully visible. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
+  <script src="../../scripts/scroll.js" defer></script>
+  <!-- Enlarge: static figure images pop on hover and open enlarged on a
+       blurred backdrop when clicked (see scripts/enlarge.js). -->
+  <script src="../../scripts/enlarge.js" defer></script>
+
+  <!-- "Check yourself" quiz: color the chosen answer, show feedback, and reveal
+       the continue button once the correct answer is picked. -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          if (next) next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+        } else {
+          btn.classList.add("is-wrong");
+          feedback.textContent = "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
