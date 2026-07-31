@@ -4,9 +4,14 @@ A "golden set" of reusable UI patterns for this site. When building one of these
 things, copy the pattern here **exactly** — same classes, markup shape, and
 behavior — so every instance looks and works the same across pages.
 
-Base design tokens (`--accent`, `--soft-ink`, `--paper`, `--ink`, `--hairline`,
-`--radius`, `--ease`, `--font-mono`, `--font-display`, `--font-body`,
-`--space-*`) live in `styles/main.css` and are assumed available.
+Base design tokens (`--accent`, `--accent-deep`, `--fill`, `--fill-hover`,
+`--soft-ink`, `--paper`, `--ink`, `--hairline`, `--radius`, `--ease`,
+`--font-mono`, `--font-display`, `--font-body`, `--space-*`) live in
+`styles/main.css` and are assumed available.
+
+See **Colour and type foundations** below before picking any colour or face by
+hand — in particular, `--accent` and `--fill` are two different purples for two
+different jobs and are not interchangeable.
 
 ---
 
@@ -23,10 +28,18 @@ normal 16px baseline, so big monitors render at their standard size (no growing)
 we only scale *down* for now. Turning enlarging back on later is a one-line change
 (raise the `clamp()` ceiling below).
 
+**The ramp reaches full size at 1280px, not 1440.** It used to top out at 1440,
+which quietly undersized the two commonest laptop widths: 14.9px root at 1280 and
+15.5px at 1366, so a `1.125rem` paragraph rendered at 16.8px instead of 18px.
+Against any fixed-16px reference the whole site read 7-20% small, and it was the
+root doing it rather than any one rule. The slope is steeper now and the floor is
+a point higher, so the shrink still happens where it earns its keep — genuinely
+narrow windows — instead of across the range most people browse at.
+
 ### How the scaling works
 
-- **One knob: a fluid root font-size.** `html { font-size: clamp(12px, 6.5px +
-  0.66vw, 16px); }` — 16px at ~1440px and above, shrinking toward a 12px floor on
+- **One knob: a fluid root font-size.** `html { font-size: clamp(13px, 1px +
+  1.17vw, 16px); }` — 16px at ~1280px and above, shrinking toward a 13px floor on
   phones. (The `16px` ceiling is the temporary "don't enlarge yet" cap; it was
   `20px` when large-screen enlarging is enabled.) **Because the whole design is
   sized in `rem`** (the `--space-*` scale, `--maxw`/`--maxw-prose`, and type),
@@ -52,10 +65,15 @@ we only scale *down* for now. Turning enlarging back on later is a one-line chan
 3. **Contain internal overflow, never the page.** A component wider than its column
    (a wide timing diagram, a code editor) scrolls **inside its own panel**
    (`overflow-x: auto` + a `rem` `min-width`) — the page itself must never scroll
-   sideways (verify `scrollWidth === clientWidth` at your test widths).
+   sideways (see rule 5 for how to check that honestly).
 4. **Verify at the extremes.** Check ~360–500px (phone), ~768px (tablet), ~1280px
    (laptop), and ~1920px (large). It should be the *same layout* at all four, and
    the page must not overflow horizontally at any of them.
+5. **Test horizontal overflow by scrolling, not by measuring.** `scrollWidth >
+   clientWidth` gives false positives: the closed nav drawer is parked off-screen
+   at `translateX(100%)` and inflates it on every page. The honest check is
+   `window.scrollTo(9999, 0)` and then reading `window.scrollX` — if it is still
+   `0`, the page does not scroll sideways.
 
 ### The only sanctioned exceptions
 
@@ -72,6 +90,107 @@ we only scale *down* for now. Turning enlarging back on later is a one-line chan
 
 Add a new exception here **only** with a clear reason — the default is always
 "same layout, just resized."
+
+---
+
+## Colour and type foundations
+
+### Typefaces — one sans, plus mono for code
+
+| Token | Face | Used for |
+|---|---|---|
+| `--font-display` | **Geist** | headings, nav, buttons, the wordmark |
+| `--font-body` | **Geist** | all body prose |
+| `--font-mono` | **JetBrains Mono** | code blocks, control-signal chips, kickers, tracked labels |
+
+This replaced a three-family system: Bricolage Grotesque for display and
+**Newsreader, a serif, for every line of body prose.** The serif was a deliberate
+editorial choice and it read well; it was traded for a single sans. Display and
+body are kept as two separate token names even though they resolve to the same
+face, so they can diverge again later without touching every rule.
+
+**Mono's job is narrow.** Reach for it only where the content genuinely is
+machine text — code, signal names, spec labels — or for the small tracked
+uppercase labels (`.kicker`, `.section-title`, the lesson `title-eyebrow`). Do
+not use it for navigation, buttons, or prose; it is both wider and harder to scan
+at small sizes, and it makes UI read as a system readout.
+
+Fonts load from one `<link>` that is **identical on all 18 pages**, plus a
+`<link rel="preload">` for the Geist Latin subset. If you add a page, copy both
+from an existing one.
+
+### The two purples — not interchangeable
+
+This is the single easiest thing to get wrong.
+
+| Token | Value | Job |
+|---|---|---|
+| `--fill` | `#6b2fc9` | solid backgrounds that carry **white text** |
+| `--fill-hover` | `#7b3ce0` | hover state for the above |
+| `--accent` | `#a97bff` (dark) / `#6b2fc9` (light) | **text**, strokes, icons, borders |
+| `--accent-deep` | `#d4bbff` (dark) / `#4f1f9e` (light) | hover for accent text |
+
+**`--fill` is `#6b2fc9` on both themes and is deliberately not re-pointed by
+`.theme-dark`.** A filled control is judged by how its *label* reads against it,
+and white on `#6b2fc9` is 7.3:1 either way. `--accent` *does* flip, because it is
+judged against the *page*: `#6b2fc9` as text on `#08080b` measures **2.74:1** and
+fails WCAG outright. That asymmetry is the whole reason there are two tokens.
+
+So: **`--fill` behind white, `--accent` on the page.** Never use `--fill` as a
+text colour on dark, and never use `--accent` as a button background.
+
+**Tints derive, they don't get declared.** A translucent purple wash is
+`color-mix(in srgb, var(--accent) N%, transparent)` — or `var(--fill)` for fills.
+Do not write `rgba(183, 148, 246, .16)`; hand-typed rgba freezes an old accent and
+silently stops following the token. That exact value was found in nine places
+still mixing from a purple that had been retired.
+
+Two purples are deliberately **outside** this system and must stay hard-coded:
+the die-shot region overlays on Meet the Processor (`rgba(205,180,242,.55)` and
+`rgba(124,58,237,.5)`). They mark *different regions* on a photograph, so they
+encode information rather than brand, and folding them into one accent would
+destroy the distinction.
+
+### Surfaces
+
+| Token | Dark | Role |
+|---|---|---|
+| `--bg` | `#08080b` | the page |
+| `--paper` | `#14141c` | cards, quizzes, figure panels |
+
+**The ambient hue is one fixed violet field in the top-left**, painted by
+`.theme-dark::before`, which is `position: fixed; inset: 0`. Being fixed pins it
+to the *viewport*, so it sits in the corner at every scroll position on a
+600-line lesson exactly as on the landing screen. Do **not** switch this to
+`background-attachment: fixed` on the body — iOS Safari ignores that outright.
+
+### Buttons
+
+**Surfaces keep the radius scale; actions are pills.** That is the rule, and it
+is what keeps a mixed system from looking accidental.
+
+```css
+.btn { border-radius: 999px; font-family: var(--font-display); }
+.btn--primary { background: var(--fill); color: #fff; }
+.btn--primary:hover { background: var(--fill-hover); }
+```
+
+Cards, figures and panels keep `--radius` / `--radius-sm`. Anything a person
+presses is full-radius.
+
+### Top bar
+
+Metrics that are load-bearing, not decorative:
+
+- The inner rail is `max-width: 1400px; padding-inline: 40px` — **the same rail
+  the home hero uses**, so the bar and the headline beneath it share one left
+  edge. On a 1440px screen that puts the wordmark at x=60.
+- Bar height `4rem`; wordmark Geist 0.95rem/600 with `-0.025em` tracking.
+- Nav `gap: 2rem`; links 0.875rem/400.
+- The **Project Directory pill trails the text links**, and carries no underline —
+  an underline is how a *text* link announces itself, and drawing one under a
+  filled pill is two affordances doing one job. Its open state is the darker fill.
+- Below 769px the nav collapses to the drawer and the pill hides.
 
 ---
 
@@ -479,7 +598,7 @@ palette. **These exact values live in *both* `styles/alu.css` and
 | `.tok-type` | module names — **declared** (`module <name>`) *or* **instantiated** (the type in `<type> [#(…)] <inst> (…)`) | `#4ec9b0` teal |
 | `.tok-inst` | the **instance name** in an instantiation | `#dcdcaa` pale yellow |
 | `.tok-paren` | parentheses `(` `)` | `#ffd700` gold |
-| `.tok-op` | operators — `= & \| ^ ~ ? + - == && …` | `#b794f6` purple |
+| `.tok-op` | operators — `= & \| ^ ~ ? + - == && …` | `var(--accent)` purple |
 | `.tok-err` | error span — red wavy underline (not a fill) | `#f14c4c` |
 
 Plain signal identifiers (and non-paren punctuation like `[] {} ; , : @`) get **no
@@ -778,10 +897,10 @@ the pattern.
 Every signal is coloured by **role**, in tones that read on the dark panel — the
 signal's name, its trace, and its bead all share the one colour:
 
-- **Data inputs** → light purple `#b794f6` (the dark-theme accent).
+- **Data inputs** → light purple `var(--accent)` (`#a97bff` on dark).
 - **Control signals** → light blue `#60a5fa`.
-- **Outputs** → `#d4bbff` (the same lavender as the flip card's output-value
-  number, i.e. `--accent-deep` on dark).
+- **Outputs** → `var(--accent-deep)` (`#d4bbff` on dark — the same lavender as
+  the flip card's output-value number).
 
 Neutral chrome comes from tokens: dividers `var(--hairline)`; gridlines + row
 separators a faint `rgba(253,253,251,0.06)`; header/label/muted text

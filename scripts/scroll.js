@@ -265,16 +265,23 @@ function buildBpTrace(managed) {
   /* ---- Home hero: a gentle settling-in on load ---- */
   if (document.querySelector(".hero")) {
     whenFontsReady(function () {
+      /* The copy leads now. It used to open on the emblem, which was right when
+         the emblem sat on top of the headline and is wrong now that it sits
+         beside it: the reveal should follow the reading path, and the reading
+         path starts at the headline. The emblem runs underneath from just after
+         the headline starts, on a longer duration, so it settles rather than
+         arriving. Its absolute position (0.15) rather than a relative offset is
+         what lets it overlap the whole copy sequence. */
       gsap
         .timeline({ defaults: { ease: EASE } })
-        .fromTo(".hero__logo", { opacity: 0, scale: 0.94 },
-                { opacity: 1, scale: 1, duration: 0.9 })
         .fromTo(".hero h1", { opacity: 0, y: 20 },
-                { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5")
+                { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" })
         .fromTo(".hero__intro", { opacity: 0, y: 20 },
                 { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5")
         .fromTo(".hero__actions", { opacity: 0, y: 20 },
-                { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5");
+                { opacity: 1, y: 0, duration: 0.7, clearProps: "transform" }, "-=0.5")
+        .fromTo(".hero__art", { opacity: 0, scale: 0.96 },
+                { opacity: 1, scale: 1, duration: 0.9 }, 0.15);
     });
 
     /* subtle logo parallax as the hero scrolls away */

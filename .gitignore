@@ -30,3 +30,7 @@ assets/Meet-The-Processor/ccd-dieshot4.jpg
 assets/Meet-The-Processor/ihs-top_9600x.jpg
 assets/Meet-The-Processor/delid-color_dies-on-substrate.jpg
 assets/Meet-The-Processor/delid-grayscaled_dies-on-substrate.jpg
+
+# Experimental Next.js rebuild (prototypes/rebuild-taste) drags in node_modules.
+# The whole prototypes/ tree is scratch work and never ships.
+prototypes/

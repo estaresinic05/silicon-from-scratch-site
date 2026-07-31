@@ -32,13 +32,13 @@
   <meta property="og:site_name" content="Silicon From Scratch" />
   <meta property="og:title" content="Silicon From Scratch" />
   <meta property="og:url" content="https://siliconfromscratch.com/pipelined-cpu/pipelined-datapath/" />
-  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo-white.png" />
-  <meta property="og:image:width" content="2816" />
-  <meta property="og:image:height" content="1536" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+  <meta property="og:image:width" content="1408" />
+  <meta property="og:image:height" content="768" />
   <meta property="og:image:alt" content="Silicon From Scratch logo" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Silicon From Scratch" />
-  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo-white.png" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
 
   <!-- Favicon follows the browser color scheme: the gray/purple mark on
        light tab bars, the dark-theme symbol on dark ones. -->
@@ -47,7 +47,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet" />
 
   <!-- Shared site styles, then the ALU project components (this page lives at
@@ -130,11 +130,32 @@
 
         <div class="split split--media-left">
           <figure class="figure enlarge-wide" style="max-width: 46rem;">
-            <img src="../../assets/pipelined-cpu/initial-looks.jpg"
-                 alt="A first look at the pipelined datapath, with a single instruction's data spread across all five stages as it works its way from Fetch through to Writeback."
-                 decoding="async" />
+            <img src="../../assets/pipelined-cpu/initial-looks-2.jpg"
+                 alt="Three load word instructions drawn one per row, each with its own copy of the datapath, staggered one clock cycle apart across seven clock cycles so the stages running at the same time line up in the same column."
+                 decoding="async"
+                 style="background: #fff; padding: 1.5rem;" />
           </figure>
 
+          <div class="prose">
+            <p>
+              <em>Fetch</em>, <em>Decode</em>, <em>Execute</em>, <em>Memory</em>,
+              and <em>Writeback</em>: these are the 5 stages we discussed
+              previously that we could break our single cycle datapath into. We
+              can show this a few ways, one of which is by pretending each
+              instruction has its own datapath and placing each of them
+              staggered in different rows. This makes it clear which stages of
+              the instruction are happening concurrently, and whether there will
+              be any hazards introduced by running certain combinations of
+              instructions at the same time. Below is the single cycle datapath
+              but with the 5 unique stages identified. Apart from the data being
+              written from memory to the register file and the calculated new
+              branch address, all the signals in this datapath are moving from
+              left to right through each stage.
+            </p>
+          </div>
+        </div>
+
+        <div class="split split--media-right" style="margin-top: var(--space-5);">
           <div class="prose">
             <p>
               It may appear that to perform multiple instructions at the same time
@@ -147,29 +168,115 @@
               overwrite that data before the first instruction has had a chance to
               finish.
             </p>
-          </div>
-        </div>
-
-        <div class="split split--media-right" style="margin-top: var(--space-5);">
-          <div class="prose">
             <p>
-              That is where the <strong>pipeline register</strong> comes into play.
-              A pipeline register's entire job is to hold onto valuable data that
-              will be of use later on in the pipeline in future clock cycles. This
-              way, data can move through the pipeline in a consistent, organized
-              fashion, like items carried along on a conveyor belt. Not only this,
-              but the data will safely make it through each stage without the risk of
-              being overwritten.
+              To keep every instruction's values safe as it travels, we can place
+              a register between each pair of neighboring stages. Anything an
+              instruction will still need in a later cycle is written into that
+              register at the end of the cycle. Those values then sit well out of
+              reach of the instruction coming up behind, so nothing arriving
+              later can overwrite them. These are the
+              <strong>pipeline registers</strong>, highlighted in blue in the
+              image below. Each one has to be large enough to fit everything
+              being stored in it, so all of the data, addresses, and control
+              information an instruction carries forward has room to sit
+              together.
             </p>
           </div>
 
           <figure class="figure enlarge-wide" style="max-width: 46rem;">
-            <img src="../../assets/pipelined-cpu/initial-looks-2.jpg"
-                 alt="The pipelined datapath with pipeline registers drawn in between the stages, each one holding an instruction's data so it passes safely from one stage to the next across clock cycles."
-                 decoding="async"
-                 style="background: #fff; padding: 1.5rem;" />
+            <img src="../../assets/pipelined-cpu/initial-looks.jpg"
+                 alt="A first look at the pipelined datapath, with a single instruction's data spread across all five stages as it works its way from Fetch through to Writeback."
+                 decoding="async" />
           </figure>
         </div>
+
+        <!-- No top margin: the preceding paragraph's own bottom margin already
+             supplies the standard between-paragraphs gap, so this block sits the
+             same distance below it as any two paragraphs in a shared column. -->
+        <div class="prose" style="margin: 0; max-width: none;">
+          <p>
+            The PC is a special case. It sits at the front of the datapath and
+            feeds instruction memory every cycle, yet we do not count it as a
+            pipeline register. It is architectural state, meaning it is part of
+            the machine's visible condition rather than a value merely in
+            flight. That distinction matters when an exception arrives, which is
+            something we will come to later, because the contents of the PC must
+            be saved while the contents of the pipeline registers can safely be
+            discarded. You may also notice that no pipeline register follows
+            <em>Writeback</em>. None is needed, since that stage already updates
+            state the machine keeps anyway, whether that is the PC, the register
+            file, or memory.
+          </p>
+        </div>
+
+        <figure class="figure enlarge-wide" style="max-width: 68rem; margin-inline: auto;">
+          <img src="../../assets/pipelined-cpu/first-pipeline.jpg"
+               alt="The same datapath with four pipeline registers added, drawn as tall blue bars and labelled IF/ID, ID/EX, EX/MEM, and MEM/WB. Each one sits on the boundary between two stages and holds an instruction's values so they carry forward to the next stage on the following clock cycle."
+               decoding="async" />
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============================ PIPELINE DIAGRAMS =================== -->
+    <section class="section" id="pipeline-diagrams" aria-labelledby="pdg-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="pdg-title">Pipeline Diagrams</h2>
+        </div>
+
+        <div class="prose" style="margin: 0; max-width: none;">
+          <p>
+            It helps to put a worked example in front of us. The five
+            instructions we will follow through the pipeline are
+            <em>lw x1, 20(x8)</em>, <em>add x2, x7, x9</em>,
+            <em>sub x3, x10, x11</em>, <em>sw x12, 24(x6)</em>, and
+            <em>add x14, x15, x17</em>. There are two common ways to draw a
+            program like this one working its way through the datapath, and each
+            answers a different question. The first freezes time and asks what
+            the hardware is doing at this very moment. The second lets time run
+            and asks how the whole program unfolds.
+          </p>
+          <p>
+            The single cycle diagram draws the datapath once and labels each
+            stage with the instruction sitting in it during that one clock
+            cycle. Reading from right to left walks backward through the
+            program, because the instruction nearest <em>Writeback</em> entered
+            the pipeline first and the one still in <em>Fetch</em> arrived most
+            recently. All five instructions are inside the machine at the same
+            instant, each one occupying a different piece of hardware, and that
+            overlap is exactly what pipelining buys us.
+          </p>
+        </div>
+
+        <figure class="figure enlarge-wide" style="max-width: 68rem; margin-inline: auto;">
+          <img src="../../assets/pipelined-cpu/example-single-cycle.jpg"
+               alt="The pipelined datapath with the five stages labelled by the instruction occupying each one during a single clock cycle. Instruction Fetch holds add x14, x15, x17, Instruction Decode holds sw x12, 24(x6), Execution holds sub x3, x10, x11, Memory holds add x2, x7, x9, and Write-back holds lw x1, 20(x8)."
+               decoding="async" />
+        </figure>
+
+        <div class="prose" style="margin: var(--space-5) 0 0; max-width: none;">
+          <p>
+            The multiple cycle diagram turns that same execution on its side.
+            Every row is one instruction and every column is one clock cycle, so
+            an instruction's five stages march across the page a cycle at a
+            time. Since each instruction starts one cycle after the one above
+            it, the stages settle into diagonal bands, and the filling and
+            draining of the pipeline at the beginning and end of the program
+            becomes easy to see. Reading straight down any column tells you
+            which stage every instruction is in during that cycle, which is the
+            same information a single cycle diagram captures for one column at a
+            time. Cycle 5 is the interesting one here, since that is the only
+            column where all five stages are busy, and it is precisely the
+            moment drawn in the diagram above.
+          </p>
+        </div>
+
+        <figure class="figure enlarge-wide" style="max-width: 68rem; margin-inline: auto;">
+          <img src="../../assets/pipelined-cpu/example-multi-cycle.jpg"
+               alt="A multiple clock cycle diagram. The five instructions run down the left as rows and nine clock cycles run across the top as columns. Each instruction moves through Instruction Fetch, Instruction Decode, Execution, Data Access, and Write-back, starting one cycle after the instruction above it, so the stages form diagonal bands and cycle 5 is the first column in which all five stages are busy at once."
+               decoding="async"
+               style="background: #fff; padding: 1.5rem;" />
+        </figure>
       </div>
     </section>
 

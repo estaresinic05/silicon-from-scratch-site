@@ -34,12 +34,37 @@
   --soft-ink:    #56565F;   /* secondary text */
   --accent:      #6B2FC9;   /* purple, from the logo */
   --accent-deep: #4F1F9E;   /* hover */
+
+  /* The SOLID fill and its hover, for controls that carry white text: the
+     primary button, the Project Directory pill, the directory's lesson hover.
+
+     Deliberately NOT re-pointed by .theme-dark, unlike --accent. A filled
+     control is judged by how its LABEL reads against it, and white on #6b2fc9
+     is 7.3:1 on either theme, so the fill has no reason to change. --accent
+     does flip, because it is judged against the PAGE: #6b2fc9 as text on the
+     near-black ground is 2.74:1 and fails outright. That difference is why
+     the two cannot be collapsed into one value. */
+  --fill:        #6b2fc9;
+  --fill-hover:  #7b3ce0;
   --hairline:    rgba(35, 35, 42, 0.12);
   --grid-line:   rgba(35, 35, 42, 0.06);
 
-  /* Type families */
-  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
-  --font-body:    "Newsreader", Georgia, serif;
+  /* Type families
+
+     One face now carries both display and body. It replaces a two-family
+     system: Bricolage Grotesque for headings and Newsreader, a serif, for every
+     line of body prose.
+
+     The serif is the real change here. It was a deliberate editorial choice and
+     it read well; this trades that voice for a single sans that matches the
+     reference build. Both tokens are kept as separate names rather than
+     collapsed into one, so headings and body can diverge again later without
+     touching every rule that references them.
+
+     JetBrains Mono stays, and its job narrows to what mono is actually for:
+     code blocks, control-signal chips, and the small tracked labels. */
+  --font-display: "Geist", system-ui, -apple-system, sans-serif;
+  --font-body:    "Geist", system-ui, -apple-system, sans-serif;
   --font-mono:    "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
 
   /* Spacing scale */
@@ -84,7 +109,18 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
-  font-size: clamp(12px, 6.5px + 0.66vw, 16px);
+  /* Reaches the full 16px at 1280px wide, where it used to need 1440.
+
+     The old ramp (12px + 0.66vw, topping out at 1440) meant the two most
+     common laptop widths were quietly undersized: 14.9px at 1280 and 15.5px at
+     1366, so a 1.125rem paragraph rendered at 16.8px instead of 18px. Against a
+     fixed-16px reference the whole site read about 7-20% small, and it was the
+     ROOT doing it, not any one rule.
+
+     The slope is steeper and the floor comes up a point, so the shrink still
+     happens where it earns its keep — genuinely narrow windows — instead of
+     across the range most people actually browse at. */
+  font-size: clamp(13px, 1px + 1.17vw, 16px);
 }
 
 body {
@@ -193,7 +229,7 @@ sub { bottom: -0.25em; }
 code {
   font-family: var(--font-mono);
   font-size: 0.86em;
-  background: rgba(107, 47, 201, 0.07);
+  background: color-mix(in srgb, var(--fill) 7%, transparent);
   color: var(--accent-deep);
   padding: 0.12em 0.4em;
   border-radius: 5px;
@@ -257,13 +293,25 @@ body::before {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
+  /* Sans, not mono. Buttons are actions, not code. This also closes most of the
+     width gap against the reference build, whose buttons were sans as well:
+     mono runs roughly 30% wider per character at the same size, which is why
+     "Start Building" measured 187px here against its 161px. */
+  font-family: var(--font-display);
+  font-size: 0.9rem;
   font-weight: 500;
-  letter-spacing: 0.03em;
+  letter-spacing: 0;
   line-height: 1;
-  padding: 0.9rem 1.4rem;
-  border-radius: var(--radius-sm);
+  /* A touch more horizontal padding than the old 1.4rem. A pill needs it: the
+     corners curve away from the label, so the same side padding that looked
+     balanced on a 10px-radius rectangle reads tight on a full-radius one. */
+  padding: 0.9rem 1.5rem;
+  /* Full-radius pill rather than the 10px --radius-sm. Buttons are the one
+     component that deliberately leaves the shared radius scale: everything on
+     the page that is a SURFACE (cards, figures, panels) keeps --radius /
+     --radius-sm, and everything that is an ACTION is a pill. That is a
+     documented rule rather than a mixed system, so the two never blur. */
+  border-radius: 999px;
   border: 1px solid transparent;
   cursor: pointer;
   transition: transform 0.18s var(--ease),
@@ -274,11 +322,11 @@ body::before {
 }
 
 .btn--primary {
-  background: var(--accent);
+  background: var(--fill);
   color: #fff;
 }
 .btn--primary:hover {
-  background: var(--accent-deep);
+  background: var(--fill-hover);
   color: #fff;
   transform: translateY(-2px);
   box-shadow: var(--shadow-lift);
@@ -310,6 +358,7 @@ body::before {
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: saturate(1.2) blur(8px);
   border-bottom: 1px solid var(--hairline);
+  /* NOTE: the dark theme re-points both of these — see "TOP BAR ON DARK". */
   /* Auto-hiding bar (main.js): slides up out of view until summoned. */
   transition: transform 0.28s ease;
   will-change: transform;
@@ -322,23 +371,40 @@ body::before {
    so the wordmark hugs the left edge rather than the centered content column. */
 .topbar__inner {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: var(--space-3);
   height: 4rem;
-  max-width: none;
-  padding-inline: clamp(var(--space-3), 4vw, var(--space-5));
+  /* The reference bar's own track: 1400px with a 40px inset, which puts the
+     wordmark at x=60 and the last control's right edge at 60 from the other
+     side on a 1440px screen. It is the SAME rail the hero uses, so the bar and
+     the headline beneath it now share one left edge instead of two. */
+  max-width: 1400px;
+  padding-inline: 40px;
 }
 .topbar__inner .wordmark { justify-self: start; }
-.topbar__inner .nav { justify-self: center; }
+/* The links group with the GitHub mark and the hamburger on the RIGHT, instead
+   of floating in the centre of the bar. Two things fall out of that and both
+   are why it changed: the wordmark gets the whole left side to itself, and the
+   nav reads as one cluster of controls rather than as two groups with an
+   unexplained gap between them.
+
+   The column track changes from `1fr auto 1fr` to `1fr auto auto`: the first
+   column absorbs all the slack, so both remaining groups are pushed right and
+   sit hard against each other. No markup change, which matters — this bar is
+   duplicated across all eighteen pages. */
+.topbar__inner .nav { justify-self: end; }
 .topbar__inner .topbar__right { justify-self: end; }
 
+/* Sans semibold at 0.95rem with tight tracking, matching the reference mark.
+   It was mono, uppercase and widely tracked, which measured 229px against the
+   reference's 179px and read as a system label rather than as a brand. */
 .wordmark {
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  text-transform: none;
   color: var(--ink);
   display: inline-flex;
   align-items: center;
@@ -361,12 +427,27 @@ body::before {
 .nav {
   display: flex;
   align-items: center;
-  gap: clamp(1rem, 2.5vw, 2.2rem);
+  /* Flat 32px, the reference's gap-8, rather than a viewport clamp that landed
+     on 35.2px at 1440 and drifted at every other width. */
+  gap: 2rem;
 }
+/* Nav links are SANS, not mono.
+
+   The bar used JetBrains Mono at 0.8rem with 0.05em tracking, which gave every
+   item the same technical-label texture as a code caption. That is the right
+   voice for a spec line or a control signal and the wrong one for navigation:
+   at this size mono is both wider and harder to scan, and it made three short
+   words look like a toolbar readout.
+
+   The display face is the site's own Bricolage Grotesque, so this adds no font
+   and stays in the family the headlines already use. The wordmark keeps its
+   mono treatment on purpose, so it still reads as a mark rather than as the
+   first nav item. */
 .nav a {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  letter-spacing: 0.05em;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--soft-ink);
   position: relative;
   padding: 0.25rem 0;
@@ -490,13 +571,16 @@ body::before {
 }
 .toc-backdrop.is-open { opacity: 1; visibility: visible; }
 .toc__menu li { margin: 0; }
+/* Drawer links are navigation, so they take the sans the top bar's links took.
+   Keeping them mono would have left the mobile menu speaking a different voice
+   from the desktop bar it stands in for. */
 .toc__menu a {
   display: block;
   padding: 0.75rem 0;
   border-bottom: 1px solid var(--hairline);
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  letter-spacing: 0.05em;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  letter-spacing: 0;
   line-height: 1.3;
   color: var(--soft-ink);
 }
@@ -589,7 +673,7 @@ body::before {
 }
 .toc__menu .menu__leaf:first-child > a { border-top: 0; }
 .toc__menu .menu__leaf > a:hover,
-.toc__menu .menu__leaf > a:focus-visible { background: #4f1f9e; color: #fff; }
+.toc__menu .menu__leaf > a:focus-visible { background: var(--fill); color: #fff; }
 
 /* Collapsible panel: animate the grid row 0fr -> 1fr so it slides open without
    needing a fixed height; the single child clips its overflow. */
@@ -700,7 +784,11 @@ body::before {
 }
 .navsheet__links a:hover,
 .navsheet__links a:focus-visible {
-  background: #4f1f9e;   /* same purple the drawer's white leaves use */
+  /* The Start Building purple, so the one colour that means "this is the
+     action" is the same in the bar, the hero and the directory. It was
+     #4f1f9e, a deeper shade that belonged to no other control on the page.
+     White on #6b2fc9 measures 7.3:1, so the label stays legible while lit. */
+  background: var(--fill);
   color: #fff;
 }
 
@@ -715,7 +803,7 @@ body::before {
 }
 .toc__menu .menu__cat.is-active > .menu__toggle {
   color: #fff;
-  background: rgba(107, 47, 201, 0.22);
+  background: color-mix(in srgb, var(--fill) 22%, transparent);
 }
 .toc__menu .menu__cat.is-active > .menu__toggle::before {
   content: "";
@@ -736,33 +824,39 @@ body::before {
 
 /* A <button>, but indistinguishable from its sibling links: same type, color,
    padding, and sliding hairline underline as `.nav a`. */
+/* The Project Directory tab is a filled pill, not a text link.
+
+   It is the one control in the bar that opens something rather than navigating
+   somewhere, and it is the entry point to every lesson on the site, so it earns
+   the weight. Same purple and same full radius as the primary button, one step
+   smaller, so the bar and the hero read as the same system.
+
+   It keeps its sliding underline OFF: an underline is how a TEXT link announces
+   itself, and drawing one under a filled pill is two affordances doing one job.
+   The open state is carried by the darker fill instead. */
 .projtab {
   border: 0;
-  background: transparent;
   cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  letter-spacing: 0.05em;
-  color: var(--soft-ink);
-  position: relative;
-  padding: 0.25rem 0;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  background: var(--fill);
+  color: #fff;
+  border-radius: 999px;
+  /* 8px/16px around a 20px line box gives the reference's 36px pill exactly.
+     The line-height matters as much as the padding here: at line-height 1 the
+     same padding produced a 30px pill, because the text box collapsed to the
+     font size instead of carrying its own leading. */
+  padding: 0.5rem 1rem;
+  line-height: 1.25rem;
+  transition: background-color 0.18s var(--ease);
 }
-.projtab:hover { color: var(--accent-deep); }
-.projtab::after {
-  content: "";
-  position: absolute;
-  left: 0; bottom: -2px;
-  width: 100%; height: 1px;
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.2s var(--ease);
+.projtab:hover,
+.projtab[aria-expanded="true"] {
+  background: var(--fill-hover);
+  color: #fff;
 }
-.projtab:hover::after,
-.projtab:focus-visible::after,
-/* The underline stays drawn while its menu is out. */
-.projtab[aria-expanded="true"]::after { transform: scaleX(1); }
-.projtab[aria-expanded="true"] { color: var(--accent-deep); }
 
 /* Drawer mirrored to the left edge. It doesn't slide in from that edge, though:
    the desktop menu drops straight down out from behind the top bar, drawer and
@@ -888,8 +982,84 @@ main section[id] { scroll-margin-top: 5rem; }
  * ------------------------------------------------------------------ */
 .hero {
   position: relative;
-  padding-block: clamp(var(--space-4), 5.5vw, var(--space-6)) clamp(var(--space-5), 8vw, var(--space-7));
-  text-align: center;
+  /* The vh cap on the top pad is part of the short-screen budget (see
+     .hero__logo): on a laptop-height display the hero has to finish above the
+     fixed scroll cue, so its spacing tightens as the viewport gets shorter.
+     On tall screens 6.5vh exceeds the clamp and the original spacing stands. */
+  padding-block: min(clamp(var(--space-4), 5.5vw, var(--space-6)), 6.5vh) clamp(var(--space-5), 8vw, var(--space-7));
+  /* Copy left, emblem right. Below 900px it collapses to one column and the
+     emblem follows the copy, which is the order the source is already in, so
+     nothing has to be reordered with `order`. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(var(--space-3), 4vw, var(--space-5));
+  align-items: center;
+  text-align: left;
+}
+@media (min-width: 900px) {
+  .hero {
+    /* The art column is the wider of the two, and that is a property of the
+       ASSET, not a composition preference: logo-transparent-dark.png is
+       2816x1536 with the emblem occupying barely half its width, so roughly a
+       quarter of the box is transparent padding on each side. At an even split
+       the mark rendered about 300px wide inside a 594px image. Giving the
+       column the extra width buys back real emblem rather than more air. */
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.1fr);
+
+    /* Where the copy sits down the screen.
+
+       The hero is a full-viewport box whose single row is vertically centred,
+       so the row's position is set by how the padding is split, not by the
+       padding total. It used to be bottom-heavy (58px top against 115px
+       bottom), which pulled the centred row UP: the headline landed at y=254 on
+       a 900px screen, roughly the quarter mark, and read as pinned near the top
+       bar rather than composed on the screen.
+
+       This inverts the split. The top term clears the 4rem fixed bar and then
+       adds a viewport-proportional push; the bottom term is deliberately small,
+       because the pinned scroll cue already owns the foot of the screen and
+       does not need padding reserved for it.
+
+       Careful when re-tuning: the row is CENTRED, so a pixel added to the top
+       padding moves the headline down by only half a pixel. Going from 254 to
+       365 needed the top/bottom difference to swing by 222px, not 111px. */
+    /* Solved, not guessed. The row is centred inside the padded box, so:
+         h1.y = padTop + (H - padTop - padBot - rowH)/2 + (rowH - textH)/2
+       With H=900 and padBot=27, landing h1 at 365 needs padTop = 140.
+
+       Re-solved twice now, both times because the TEXT COLUMN's height changed
+       and the row is centred, so half of any change lands on the top edge:
+
+         9.22vh  — 18px intro on two lines (text column 290, shorter than the
+                   299 emblem, so the emblem set the row height)
+        12.44vh  — Geist made it wrap to three lines; column grew to 319 and
+                   became the taller of the two
+         8.44vh  — intro dropped to 16px and went back to two lines; column is
+                   283 and the emblem sets the height again
+
+       If the hero copy or its size changes again, re-solve rather than nudge. */
+    padding-block: calc(4rem + clamp(2.5rem, 8.44vh, 10rem))
+                   clamp(1.5rem, 3vh, 3rem);
+
+    /* The hero takes the PROTOTYPE'S box rather than the shared .container one,
+       so the copy starts at the same x it does there: a 1400px track with 40px
+       of inset, which lands the headline at x=60 on a 1440px screen and holds
+       that relationship at every wider width.
+
+       This does not break a left rail, because there isn't one to break: the
+       sections below already begin at 16, 40, 52, 64 and 240 depending on what
+       they are. 60 sits inside that spread, next to the build path's own 64. */
+    max-width: 1400px;
+    padding-inline: 40px;
+  }
+  /* The column is the measure now, so the 18ch cap only fights it: at 18ch the
+     headline broke to three lines in a column wide enough for two. */
+  .hero h1 { max-width: none; }
+}
+/* Single column: centre the pair, since a left-aligned emblem under
+   left-aligned copy reads as a mistake rather than a composition. */
+@media (max-width: 899px) {
+  .hero { justify-items: center; text-align: center; }
 }
 /* Scroll cue pinned to the foot of the first screen; the inline script on the
    home page fades it out (adds .is-hidden) once the reader starts scrolling. */
@@ -912,6 +1082,13 @@ main section[id] { scroll-margin-top: 5rem; }
   transition: opacity 0.4s ease, color 0.2s ease;
 }
 .hero__scroll.is-hidden { opacity: 0; pointer-events: none; }
+/* Under ~520px of viewport height (landscape phones, a heavily shrunk window)
+   the hero cannot compress far enough to leave the cue a clear band of its own,
+   and a "scroll down" hint is redundant on a screen that shallow anyway. Drop it
+   rather than let it sit on top of the buttons. */
+@media (max-height: 520px) {
+  .hero__scroll { display: none; }
+}
 .hero__scroll:hover,
 .hero__scroll:focus-visible { color: var(--accent); }
 .hero__scroll-chev {
@@ -931,29 +1108,100 @@ main section[id] { scroll-margin-top: 5rem; }
 @media (prefers-reduced-motion: reduce) {
   .hero__scroll-chev { animation: none; }
 }
+/* The emblem now sits in its own column rather than stacked above the copy, so
+   it is sized by its column and by height, not by a page-width fraction. The
+   vh cap is still what keeps a laptop-height screen from pushing the buttons
+   under the pinned scroll cue. No negative margin any more: nothing sits
+   directly beneath it to pull upward. */
+.hero__art { display: grid; place-items: center; min-width: 0; }
 .hero__logo {
-  width: min(800px, 92%);
-  /* Negative bottom margin trims the transparent padding baked into the PNG,
-     pulling the headline (and the copy below it) up closer to the wordmark. */
-  margin: 0 auto -4rem;
+  width: min(100%, 780px, 88vh);
+  /* Trims the PNG's baked-in transparent band top and bottom, so the emblem
+     sits optically level with the copy instead of floating in its own gutter.
+     Proportional to the rendered width, so the trim keeps pace as it scales. */
+  margin-block: calc(min(100%, 780px, 88vh) * -0.05);
+}
+@media (max-width: 899px) {
+  /* Stacked: give it back a page-relative width and trim the PNG's baked-in
+     transparent padding so it does not open a gap above the fold. */
+  .hero__logo { width: min(560px, 88%, 46vh); }
 }
 .hero h1 {
   max-width: 18ch;
-  margin-inline: auto;
+  margin-inline: 0;
+  /* 3.75rem = 60px, matching the reference exactly, where this used to cap at
+     4rem/64px. Both caps only engage on genuinely short windows (roughly under
+     690px of viewport height); above that the clamp wins.
+     Leading is 1.05 (was 1.08), so two lines measure 126px rather than 138. */
+  font-size: min(clamp(2.4rem, 6vw, 3.75rem), 9vh);
+  line-height: 1.05;
+  /* 24px of air under the headline. The vh term still protects short screens;
+     it is 3vh rather than 2.6vh only so that a 900px-tall window lands on a
+     clean 24 instead of 23.4. */
+  margin-bottom: min(var(--space-3), 3vh);
 }
 .hero h1 .accent { color: var(--accent); }
 .hero__intro {
-  max-width: 46ch;
-  margin: 0 auto var(--space-4);
-  font-size: 1.25rem;
+  /* Matched to the reference: 18px on a 1.625 leading over a 549px measure,
+     where this used to be 20px/1.65 over 46ch (508px). The measure is a fixed
+     px value rather than a ch count on purpose — ch scales with the font size,
+     so expressing it in ch would have moved the wrap point the moment the size
+     changed, which is exactly what made the two versions differ. */
+  max-width: 549px;
+  /* 36px of air above the buttons, matching the reference (was 30.6px). Still
+     height-capped, so the gap closes up on short screens instead of pushing the
+     buttons into the pinned scroll cue. */
+  margin: 0 0 min(2.25rem, 4vh);
+  /* 1rem, not the reference's 1.125rem, and the reason is the COPY rather than
+     the type: this sentence runs 23 words where the reference's ran 18, so at
+     18px it wrapped to three lines in the same 549px measure. 16px is the
+     largest size that still lands it on two, which is the shape being matched.
+     Widening the measure was the alternative and would have taken ~700px in a
+     ~630px column, so it was never available. */
+  font-size: 1rem;
+  line-height: 1.625;
   color: var(--soft-ink);
 }
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  justify-content: center;
+  /* 12px, matching the reference, rather than the 16px --space-2 the rest of
+     the site pairs controls at. Scoped to the hero so nothing else shifts. */
+  gap: 0.75rem;
+  justify-content: flex-start;
 }
+/* Stacked layout re-centres the copy block with the emblem beneath it. */
+@media (max-width: 899px) {
+  .hero h1,
+  .hero__intro { margin-inline: auto; }
+  .hero__actions { justify-content: center; }
+}
+
+/* The GitHub mark inside the ghost button. Sized to the cap height of the label
+   and inheriting its colour, so it dims and lights with the button rather than
+   sitting on it as a separate object. */
+.btn__icon {
+  width: 1.05em;
+  height: 1.05em;
+  fill: currentColor;
+  flex: none;
+}
+/* Trailing arrow on a primary action. Stroked rather than filled, so it matches
+   the chevrons used elsewhere, and it nudges forward on hover: 2px, which is
+   inside the 4-16px band for a micro-interaction and reads as the button
+   leaning toward what it opens rather than as an animation. */
+.btn__arrow {
+  width: 1.05em;
+  height: 1.05em;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.18s var(--ease);
+}
+.btn:hover .btn__arrow { transform: translateX(2px); }
 
 /* The build path: a vertical sequence of large line-art icons (left) paired with
    copy (right), joined by downward arrows. Each step fades in on scroll. */
@@ -2201,8 +2449,8 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
 
 /* The interactive-tools call to action: a faint accent wash and a link heading
    that stays white (a "white heading") with an accent arrow that nudges. */
-.finding--cta { background: rgba(183, 148, 246, 0.06); }
-.finding--cta:hover { background: rgba(183, 148, 246, 0.11); }
+.finding--cta { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.finding--cta:hover { background: color-mix(in srgb, var(--accent) 11%, transparent); }
 .finding__link { color: var(--ink); text-decoration: none; }
 .finding__link span {
   display: inline-block;
@@ -2242,7 +2490,7 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
   border-radius: 50%;
   border: 1px solid var(--hairline);
   box-shadow: 0 0 0 7px var(--paper),
-              0 0 0 8px rgba(107, 47, 201, 0.18),
+              0 0 0 8px color-mix(in srgb, var(--fill) 18%, transparent),
               var(--shadow-soft);
 }
 .aboutme__photo::after {
@@ -2256,11 +2504,11 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
   box-shadow: 0 0 0 4px var(--bg);
 }
 
+/* Every paragraph in the About body reads the same. The first one used to be
+   singled out as a lead-in at 1.18rem in full --ink, which made the greeting
+   sit a size and a shade above the two that follow it and broke the column's
+   rhythm. It is the same prose, so it takes the same treatment. */
 .aboutme__body p { color: var(--soft-ink); font-size: 1.0625rem; }
-.aboutme__body p:first-child {        /* the greeting reads as a lead-in */
-  font-size: 1.18rem;
-  color: var(--ink);
-}
 .about__actions {
   margin-top: var(--space-4);
   display: flex;
@@ -2324,7 +2572,11 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
 
 /* Reveal targets start hidden only when JS is active (prevents a flash,
    while staying fully visible if JS never runs). */
-html.js .hero > *,
+/* The hero is now two columns, so its direct children are the two column
+   wrappers. Target the copy's children instead, or the whole text block
+   would fade in as one lump and lose the stagger. */
+html.js .hero__text > *,
+html.js .hero__art,
 html.js .doc-hero__text > *,
 html.js .doc-hero__art,
 html.js .figure,
@@ -2387,7 +2639,8 @@ html.js .buildpath-intro { --rail-progress: 0; }
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
-  html.js .hero > *,
+  html.js .hero__text > *,
+  html.js .hero__art,
   html.js .doc-hero__text > *,
   html.js .doc-hero__art,
   html.js .figure,
@@ -2469,11 +2722,22 @@ html.js .buildpath-intro { --rail-progress: 0; }
    (similar mood, different per section).
  * ------------------------------------------------------------------ */
 .theme-dark {
-  --bg:          #1b1b22;   /* die-shot base */
-  --paper:       #24242e;   /* raised dark surface (cards, nodes) */
+  /* Near-black rather than the old #1b1b22 charcoal. The darker base is what
+     lets the violet field in the top-left register as a HUE rather than as a
+     lightening of an already-grey page. */
+  --bg:          #08080b;
+  /* Raised surfaces come down with it. The lift over the page has to stay
+     roughly what it was, or every card, quiz and figure on the site turns into
+     a pale grey box floating on black. Old delta was #1b1b22 -> #24242e; this
+     keeps a comparable step from the new, much darker base. */
+  --paper:       #14141c;
   --ink:         #fdfdfb;   /* primary text */
   --soft-ink:    rgba(253, 253, 251, 0.72);
-  --accent:      #b794f6;   /* lighter purple reads on dark (matches the die kicker) */
+  /* #a97bff, the reference's accent, replacing #b794f6. Both are light violets
+     that read on a dark page; this one is a touch bluer and is what "actually
+     built" and every other accent on the reference build uses. 6.6:1 on the
+     near-black page, so it clears AA for body text as well as display. */
+  --accent:      #a97bff;
   --accent-deep: #d4bbff;   /* hover — lighter still */
   --hairline:    rgba(253, 253, 251, 0.14);
   --grid-line:   rgba(253, 253, 251, 0.045);
@@ -2484,14 +2748,29 @@ html.js .buildpath-intro { --rail-progress: 0; }
                  0 16px 40px rgba(0, 0, 0, 0.50);
 }
 
-/* Primary button: the accent is light on dark, so use dark text for contrast. */
-.theme-dark .btn--primary { color: #15151b; }
-.theme-dark .btn--primary:hover { color: #15151b; }
+/* Primary button on dark: the DEEP brand violet with white text.
+
+   It used to take --accent, which on the dark theme is the pale lavender
+   (var(--accent)) the rest of the page uses for links and kickers, and therefore
+   needed near-black label text to stay legible. That made the one element on
+   the page that is supposed to be the loudest thing in the frame read as a
+   pale chip, and it made the button the same colour as every inline link.
+
+   So the button leaves the accent token deliberately. --accent stays var(--accent)
+   for links, kickers, code and focus rings, where a light tint is right on a
+   dark page; the primary action alone drops to the full-strength brand purple
+   and carries white. That also puts it back in step with the light theme,
+   whose --accent already IS #6b2fc9, so the primary button is now the same
+   colour on both themes rather than two different purples.
+
+   White on #6b2fc9 measures 7.3:1, which clears WCAG AAA for body text. */
+.theme-dark .btn--primary,
+.theme-dark .btn--primary:hover { color: #fff; }
 
 /* Inline code: a touch more presence on the dark surface. */
 .theme-dark code {
-  background: rgba(183, 148, 246, 0.16);
-  color: #d9c6ff;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent-deep);
 }
 /* Control signals (operation, Ainvert, Binvert, sel, clk) in inline <code> wear
    the same light blue they have on the back of the Verilog cards (the control-chip
@@ -2505,22 +2784,63 @@ code.ctrl-sig,
 /* Skip link stays visible when focused on dark. */
 .theme-dark .skip-link { background: var(--accent); color: #15151b; }
 
-/* One continuous surface: a single ambient glow fixed to the viewport, with the
-   section dividers removed so the whole homepage reads as one big page. */
+/* ---- TOP BAR ON DARK -------------------------------------------------
+   Slightly more transparent and much more blurred than the light-theme bar:
+   at 88% over a near-black page the bar was indistinguishable from the page
+   behind it, so the fixed header stopped reading as a separate plane. 80% plus
+   a 24px blur keeps it legible while the content underneath still shows
+   through as motion, which is what tells you the bar is floating.
+
+   The hairline drops from 0.14 to 0.08 white for the same reason: on #08080b a
+   14% white rule reads as a bright line rather than an edge.
+
+   The slide-in drawer (.toc__menu) already paints with var(--bg), so it
+   follows the new base colour without a rule of its own. */
+.theme-dark .topbar {
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  backdrop-filter: saturate(1.1) blur(24px);
+  -webkit-backdrop-filter: saturate(1.1) blur(24px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+/* The drawer sits ON the page rather than over content, so it takes the flat
+   base at full opacity and the same quiet edge. */
+.theme-dark .toc__menu {
+  background: var(--bg);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* One continuous surface: a flat near-black page, with the section dividers
+   removed so a whole document reads as one big page rather than a stack. */
 .theme-dark {
-  background:
-    radial-gradient(75% 55% at 50% 0%,
-                    rgba(107, 47, 201, 0.30), transparent 60%),
-    #1b1b22;
-  background-attachment: fixed;
+  background: var(--bg);
 }
 .theme-dark .section,
 .theme-dark .cpu-stage,
 .theme-dark .epigraph,
 .theme-dark .footer { border-top: 0; }
 
-/* Drop the engineering-grid texture on the dark theme — just the smooth glow. */
-.theme-dark.theme-dark::before { display: none; }
+/* The ambient hue: ONE soft violet field in the top-left corner.
+
+   It replaces the old top-centre glow, and the two differences that matter are
+   where it sits and that it never moves. body::before is already
+   `position: fixed; inset: 0`, so this layer is pinned to the VIEWPORT, not to
+   the document: the hue sits in the top-left corner at every scroll position,
+   on a 600-line lesson exactly as on the landing screen.
+
+   That is deliberately not `background-attachment: fixed` on the body, which is
+   the other way to get this and is ignored outright by iOS Safari. A fixed
+   pseudo-element behaves the same everywhere.
+
+   The grid texture the light theme paints here is dropped on dark; this
+   overrides both its image and its 48px tile size. */
+.theme-dark.theme-dark::before {
+  display: block;
+  background-image:
+    radial-gradient(56rem 40rem at 13% -6%,
+                    color-mix(in srgb, var(--fill) 26%, transparent), transparent 64%);
+  background-size: auto;
+  background-repeat: no-repeat;
+}
 
 
 /* ------------------------------------------------------------------ *
@@ -2741,13 +3061,13 @@ code.ctrl-sig,
 .awv-time { font-family: var(--font-display); font-size: 11px; fill: var(--soft-ink); }
 /* Signal names in the left panel, colored by role (dark-card readable). */
 .awv-name { font-size: 11px; font-weight: 500; }
-.awv-name--in   { fill: #b794f6; }   /* inputs — light purple (the dark-theme accent) */
+.awv-name--in   { fill: var(--accent); }   /* inputs — light purple (the dark-theme accent) */
 .awv-name--ctrl { fill: #60a5fa; }   /* control — light blue */
 .awv-name--out  { fill: #d4bbff; }   /* output — the flip card's output value number */
 .awv-name--muted { font-size: 9px; fill: rgba(253, 253, 251, 0.42); }   /* a hidden signal's strip label */
 /* Traces. */
 .awv-trace { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
-.awv-trace--in   { stroke: #b794f6; }
+.awv-trace--in   { stroke: var(--accent); }
 .awv-trace--ctrl { stroke: #60a5fa; }
 .awv-trace--out  { stroke: #d4bbff; stroke-width: 3; }
 /* Colorless show/hide control: an eye (open = shown, slashed = hidden). */
@@ -3202,7 +3522,7 @@ code.ctrl-sig,
 /* VS Code Dark+ Verilog token colors. */
 .tok-kw { color: #569cd6; }
 .tok-cm { color: #6a9955; }
-.tok-op { color: #b794f6; }              /* operators: = & | ^ ~ ? + - == && … */
+.tok-op { color: var(--accent); }              /* operators: = & | ^ ~ ? + - == && … */
 .tok-num { color: #b5cea8; }             /* numeric literals */
 .tok-type { color: #4ec9b0; }            /* module names — declared or instantiated */
 .tok-inst { color: #dcdcaa; }            /* instance names in a module instantiation */
@@ -3251,7 +3571,7 @@ code.ctrl-sig,
 .gate-sim__chip[data-val="1"] {
   border-color: var(--accent);
   color: var(--accent-deep);
-  background: rgba(107, 47, 201, 0.06);
+  background: color-mix(in srgb, var(--fill) 6%, transparent);
 }
 .gate-sim__chip--control b { color: #4a90d9; }
 .gate-sim__chip--control[data-val="1"] {
@@ -3579,4 +3899,150 @@ code.ctrl-sig,
   .enlarge-overlay .flow-figure,
   .enlarge-overlay .aboutme__photo { transition: none; }
   .enlargeable:hover, .enlargeable:focus-visible { transform: none; }
+}
+
+/* ==========================================================================
+   VIDEO MODAL — the CMOS explainer, opened front and centre the first time
+   someone lands on About and reopenable afterwards from "Watch the intro"
+   (see scripts/about-video.js). Backdrop, fade and card scale are lifted from
+   .glossary-overlay so the three overlays on this site read as one idea.
+   ========================================================================== */
+.video-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4vmin;
+  background: rgba(12, 12, 18, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+.video-modal[hidden] { display: none; }
+.video-modal.is-open { opacity: 1; }
+
+.video-modal__card {
+  /* Shrink-wraps the frame, so the card is only ever as wide as the video. */
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  padding: clamp(var(--space-2), 2vw, var(--space-3));
+  transform: scale(0.94);
+  transition: transform 0.22s ease;
+}
+.video-modal.is-open .video-modal__card { transform: scale(1); }
+
+/* Title hard left, X hard right — same head row as a glossary card. */
+.video-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.video-modal__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+}
+.video-modal__close {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--soft-ink);
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+.video-modal__close svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.video-modal__close:hover { color: var(--ink); border-color: var(--accent); }
+
+/* The file is encoded at 2304x1440 (the 2560-wide capture pinched in by 128px
+   a side), so the frame holds that native 8:5 exactly and simply scales down;
+   nothing is stretched or letterboxed. The third term caps the HEIGHT at 72vh
+   by converting it back into a width, which keeps the ratio intact — a
+   max-height here would break it instead. */
+.video-modal__frame {
+  width: min(88vw, 2304px, calc(72vh * 8 / 5));
+  aspect-ratio: 2304 / 1440;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #000;
+}
+/* Fallback content inside <video> (the "Download the explainer instead" link)
+   inherits the UA default serif rather than the page font. It only ever renders
+   when the browser cannot play the file, but when it does it should still look
+   like the site. This was the one string left on the whole site that was not
+   Geist after the font change. */
+.video-modal__video { font-family: inherit; }
+.video-modal__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.video-modal__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.video-modal__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  padding: 0.75rem 1.25rem;
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.18s var(--ease), transform 0.18s var(--ease);
+}
+.video-modal__toggle:hover { background: var(--accent-deep); transform: translateY(-2px); }
+.video-modal__icon { width: 1.05rem; height: 1.05rem; fill: currentColor; }
+/* One button, two faces: the icon shown follows the video's real state. */
+.video-modal__toggle .video-modal__icon--pause { display: none; }
+.video-modal__toggle.is-playing .video-modal__icon--play { display: none; }
+.video-modal__toggle.is-playing .video-modal__icon--pause { display: inline-block; }
+
+/* Narrow screens: the frame is width-bound long before it is height-bound. */
+@media (max-width: 640px) {
+  .video-modal { padding: var(--space-2); }
+  .video-modal__frame { width: min(92vw, calc(60vh * 8 / 5)); }
+  .video-modal__title { font-size: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-modal,
+  .video-modal__card,
+  .video-modal__toggle { transition: none; }
+  .video-modal__card { transform: none; }
+  .video-modal__toggle:hover { transform: none; }
 }

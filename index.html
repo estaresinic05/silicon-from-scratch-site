@@ -34,13 +34,13 @@
   <meta property="og:site_name" content="Silicon From Scratch" />
   <meta property="og:title" content="Silicon From Scratch" />
   <meta property="og:url" content="https://siliconfromscratch.com/" />
-  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo-white.png" />
-  <meta property="og:image:width" content="2816" />
-  <meta property="og:image:height" content="1536" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+  <meta property="og:image:width" content="1408" />
+  <meta property="og:image:height" content="768" />
   <meta property="og:image:alt" content="Silicon From Scratch logo" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Silicon From Scratch" />
-  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo-white.png" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
 
   <!-- Favicon follows the browser color scheme: the gray/purple mark on
        light tab bars, the dark-theme symbol on dark ones. -->
@@ -60,15 +60,15 @@
   }
   </script>
 
-  <!-- Google Fonts: Bricolage Grotesque (display), Newsreader (body), JetBrains Mono (labels/code) -->
+  <!-- Google Fonts: Geist (display + body), JetBrains Mono (labels/code) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <!-- Preload the Bricolage Grotesque Latin subset (the display face used by every
-       heading) so titles paint in the right font on first load instead of flashing
-       the system fallback while the webfont downloads. -->
+  <!-- Preload the Geist Latin subset (the face every heading and every line
+       of body copy uses) so text paints in the right font on first load
+       instead of flashing the system fallback while the webfont downloads. -->
   <link rel="preload" as="font" type="font/woff2" crossorigin
-        href="https://fonts.gstatic.com/s/bricolagegrotesque/v9/3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2" />
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+        href="https://fonts.gstatic.com/s/geist/v5/gyByhwUxId8gMEwcGFU.woff2" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet" />
 
   <!-- Site styles (relative path — domain-ready) -->
@@ -201,22 +201,45 @@
     <span id="top"></span>
 
     <!-- ================================ HERO ============================= -->
+    <!-- Two columns: copy on the left, the emblem on the right. It used to be a
+         centred stack with the emblem on top, which put roughly 400px of logo
+         between the top bar and the first word of the headline. Side by side,
+         the headline is the first thing in the reading path and the emblem
+         still gets the room to be large.
+
+         Same shape as the lesson pages' .doc-hero, deliberately: the site
+         already had a text-left / art-right hero pattern, so the landing screen
+         now opens in the same language the lessons continue in. -->
     <section class="hero container" aria-labelledby="hero-title">
-      <img class="hero__logo" src="assets/home/logo-transparent-dark.png"
-           alt="Silicon From Scratch — a circuit-board emblem with an upward arrow" />
-      <h1 id="hero-title">
-        Learn how processors are <span class="accent">actually built</span>.
-      </h1>
-      <p class="hero__intro">
-        For students, hobbyists, career-switchers, tinkerers, and the merely
-        curious — young or old. Learn the genius behind the heart of modern
-        computing.
-      </p>
-      <div class="hero__actions">
-        <button class="btn btn--primary js-open-proj-dir" type="button">Open Project Directory</button>
-        <a class="btn btn--ghost"
-           href="https://github.com/estaresinic05/Silicon-From-Scratch"
-           target="_blank" rel="noopener">View on GitHub</a>
+      <div class="hero__text">
+        <h1 id="hero-title">
+          Learn how processors are <span class="accent">actually built</span>.
+        </h1>
+        <p class="hero__intro">
+          For students, hobbyists, career-switchers, tinkerers, and the merely
+          curious &mdash; young or old. Learn the genius behind the heart of
+          modern computing.
+        </p>
+        <div class="hero__actions">
+          <!-- Still opens the project directory; only the label and the arrow
+               changed. "Start Building" says what the reader gets to do, where
+               "Open Project Directory" described the mechanism. The arrow is
+               the same trailing-chevron affordance the learn cards use. -->
+          <button class="btn btn--primary js-open-proj-dir" type="button">
+            Start Building
+            <svg class="btn__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg>
+          </button>
+          <a class="btn btn--ghost"
+             href="https://github.com/estaresinic05/Silicon-From-Scratch"
+             target="_blank" rel="noopener">
+            <svg class="btn__icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+            View on GitHub
+          </a>
+        </div>
+      </div>
+      <div class="hero__art">
+        <img class="hero__logo" src="assets/home/logo-transparent-dark.png"
+             alt="Silicon From Scratch — a circuit-board emblem with an upward arrow" />
       </div>
     </section>
 

@@ -626,9 +626,14 @@
   var nav = document.getElementById("primary-nav");
   if (nav) {
     nav.innerHTML = "";
-    // The Project Directory tab leads, where "Home" used to sit.
-    if (typeof tab !== "undefined" && tab) nav.appendChild(tab);
+    /* Text links first, then the Project Directory pill LAST.
+       It used to lead the bar, where "Home" once sat. A filled pill reads as
+       the end of a nav, not the start of one: leading with it put the loudest
+       element in the middle of the group and left the eye travelling down in
+       weight from there. Trailing it, the run goes quiet-to-loud and finishes
+       on the one control that opens something. */
     QUICK.forEach(function (q) { nav.appendChild(quickNode(q[0], q[1])); });
+    if (typeof tab !== "undefined" && tab) nav.appendChild(tab);
   }
 
   /* ---- 3. Copy button on every code block -------------------------------
