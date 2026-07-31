@@ -2590,10 +2590,6 @@ let frozen = false;                   // the sheet is open: arrows are inert
    understood is noise, the same reasoning as the nav pill's ring. */
 let parkedAt = -1e9;
 let sheetOpened = false;
-/* True once the viewer has hovered a block or opened one. Either is proof the
-   blocks have been understood as interactive, which is the only thing the
-   attract pass below is trying to establish. */
-let attractSeen = false;
 let target = 0, current = 0;
 let stopIdx = 0;
 let flying = false, flyFrom = 0, flyTo = 0, flyT0 = 0, flyMs = 0;
@@ -2919,7 +2915,6 @@ function openSheet(id) {
   sheet.hidden = false;
   frozen = true;
   sheetOpened = true;
-  attractSeen = true;
   syncNav();
   document.getElementById('sheet-close').focus();
   return true;
@@ -2961,6 +2956,7 @@ function pick(ev) {
   return null;
 }
 
+
 /* The block under the cursor, if it is one you can open. The scene reads this
    every frame to lift it and pulse its colour — see the tile loops in
    updateScene. Held as the record rather than the id so that eight Zen 5 cores
@@ -2993,7 +2989,6 @@ canvas.addEventListener('pointermove', (ev) => {
     if (!atStop()) { hovered = null; canvas.style.cursor = 'default'; return; }
     const ud = pick(ev);
     hovered = ud ? (ud.live || null) : null;
-    if (hovered) attractSeen = true;    // they have found it; stop demonstrating
     canvas.style.cursor = ud ? 'pointer' : 'default';
   });
 });
@@ -3052,48 +3047,74 @@ const pulse = () => 0.5 + 0.5 * Math.sin(now() * 0.001 * PULSE_HZ * Math.PI * 2)
    twenty-nine, is not a hint; it is a rash.
 
    So nothing is added. Instead the scene performs its own hover response on a
-   few blocks in turn, a beat after the descent parks: each one rises and its
-   colour brightens exactly as it would under a cursor, then settles. Movement in
-   a still frame is the strongest attention cue there is, and what the viewer is
-   shown is precisely what they will get when they try it themselves, so the demo
-   IS the instruction. It costs no geometry, no material and no new vocabulary.
+   block: it rises out of the die and its colour brightens exactly as it would
+   under a cursor, then settles. Movement in a still frame is the strongest
+   attention cue there is, and what the viewer is shown is precisely what they
+   will get when they try it themselves, so the demo IS the instruction. It
+   costs no geometry, no material and no new vocabulary.
 
-   It repeats on a slow cycle and stops for good the moment the viewer hovers any
-   block or opens any sheet, because either one proves the point has landed. */
-const ATTRACT_START = 700;    // ms after parking before the first block lifts
-const ATTRACT_DWELL = 900;    // ms one block spends rising and settling again
-const ATTRACT_GAP   = 260;    // ms of stillness between them
-const ATTRACT_N     = 3;      // blocks per pass, spread across the die
-const ATTRACT_REST  = 2600;   // ms of stillness before the pass runs again
-const ATTRACT_CYCLE = ATTRACT_START + ATTRACT_N * (ATTRACT_DWELL + ATTRACT_GAP)
-                    + ATTRACT_REST;
+   The block is chosen AT RANDOM from whatever is selectable at this stop, and
+   a new one is chosen every time. That replaces three fixed slots spread evenly
+   through the tile arrays, which always lifted the same three blocks in the
+   same order — legible as a loop after two passes, and it taught that those
+   three were special rather than that all of them are. Random means the cue
+   lands somewhere new each time and eventually covers the whole die.
 
-/* Slots are assigned by spreading evenly across the array, which for both tile
-   sets happens to put them far apart on the die: the floorplan's list runs cores,
-   then L3, then the bottom strip. */
-function assignAttractSlots(list) {
-  if (list.length < ATTRACT_N) return;
-  for (let j = 0; j < ATTRACT_N; j++) {
-    list[Math.round(j * (list.length - 1) / (ATTRACT_N - 1))].attractSlot = j;
+   It runs continuously rather than retiring once the viewer has hovered
+   something. A fixed loop had to stop, because a repeating pattern in the
+   corner of the eye becomes noise; an unpredictable one every few seconds
+   reads as the die being alive. It does pause while the cursor is actually on
+   a block, so the demo never fights a real hover. */
+const JUMP_MS    = 900;    // one block's whole rise and settle
+const JUMP_GAP   = 1700;   // stillness between one jump and the next
+const JUMP_FIRST = 700;    // beat after the camera parks before the first
+
+let jumpTile = null;       // the block currently in the air, if any
+let jumpLast = null;       // so the same block does not go twice in a row
+let jumpT0   = 0;          // when the current jump began
+let jumpNext = 0;          // earliest the next one may begin
+
+/* The pool is rebuilt per pick rather than cached, because what is selectable
+   changes with the stop: the floorplan's regions at one, a core's blocks at
+   another, nothing at all inside the metal stack. Asking `selectable` is the
+   same test the picker and the hover use, so the demo can never lift a block
+   the viewer could not have clicked. */
+function pickJumpTile() {
+  const pool = [];
+  for (const tl of tiles)     if (tl !== hovered && selectable(tl)) pool.push(tl);
+  for (const tl of coreTiles) if (tl !== hovered && selectable(tl)) pool.push(tl);
+  if (!pool.length) return null;
+  let pick = pool[(Math.random() * pool.length) | 0];
+  /* One retry when the dice repeat. Not a loop: with a pool of two, insisting
+     on a different block every time is just alternation, which is the pattern
+     this exists to avoid. */
+  if (pool.length > 2 && pick === jumpLast) {
+    pick = pool[(pool.indexOf(pick) + 1 + ((Math.random() * (pool.length - 1)) | 0)) % pool.length];
   }
+  jumpLast = pick;
+  return pick;
 }
 
-function attractLevel(tl, on) {
-  if (!on || tl.attractSlot === undefined) return 0;
-  /* Only a block that is actually on screen. Without this the demo runs on its
-     three slots at EVERY stop, lifting slabs whose opacity is zero — invisible,
-     and harmless, right up until the block tag started naming whatever the demo
-     had claimed and cheerfully labelled an L1D cache in the middle of the metal
-     stack. Same test the picker and the hover use. */
-  if (!selectable(tl)) return 0;
-  const e = now() - parkedAt;
-  if (e < 0) return 0;
-  const pos = e % ATTRACT_CYCLE;
-  const t0 = ATTRACT_START + tl.attractSlot * (ATTRACT_DWELL + ATTRACT_GAP);
-  if (pos < t0 || pos > t0 + ATTRACT_DWELL) return 0;
-  /* A sine bump rather than a ramp in and a ramp out: it leaves and arrives at
-     exactly zero with zero slope, so the block never twitches at either end. */
-  return Math.sin(Math.PI * (pos - t0) / ATTRACT_DWELL);
+/* Called once per frame, before the tile loops read jumpLevel. */
+function updateJump(live) {
+  const t = now();
+  if (!live) {
+    /* Mid-flight, frozen behind a sheet, or the cursor is on a block. Drop any
+       jump in progress and hold the next one off, so nothing is in the air the
+       instant the camera lands or the sheet closes. */
+    jumpTile = null;
+    jumpNext = t + JUMP_FIRST;
+    return;
+  }
+  if (jumpTile && t - jumpT0 >= JUMP_MS) { jumpTile = null; jumpNext = t + JUMP_GAP; }
+  if (!jumpTile && t >= jumpNext) { jumpTile = pickJumpTile(); jumpT0 = t; }
+}
+
+/* A sine bump rather than a ramp in and a ramp out: it leaves and arrives at
+   exactly zero with zero slope, so the block never twitches at either end. */
+function jumpLevel(tl) {
+  if (tl !== jumpTile) return 0;
+  return Math.sin(Math.PI * THREE.MathUtils.clamp((now() - jumpT0) / JUMP_MS, 0, 1));
 }
 
 /* ------------------------------------------------------------------ *
@@ -3113,78 +3134,30 @@ function attractLevel(tl, on) {
    stage 01, where nothing is clickable, and gone by stage 03, where everything
    is. It was shown exactly when it was false.
 
-   So: the hint lines now have independent lifecycles keyed to whether anything
-   is ACTUALLY selectable, and the tag names the block under the cursor and
-   states the gesture. The attract pass raises the same tag over the block it is
-   demonstrating, which is the point — the demo now teaches the click and not
-   just the hover, and it still adds nothing to the scene itself.
+   So: the hint lines have independent lifecycles keyed to whether anything is
+   ACTUALLY selectable, and hover answers on the OBJECT rather than beside it.
+
+   There used to be a chip here — the block's name plus "click to read about
+   it" — riding the cursor, and the same chip pinned over whatever the attract
+   pass was demonstrating. Both are gone, and the reason is visible the moment
+   you look at one: every block already carries its own name, painted on it, in
+   larger type than the chip used. The chip repeated the label it was sitting
+   next to and covered two other blocks to do it. Naming was never the missing
+   piece; the only thing hover had to add was that the block OPENS.
+
+   That is now said with a ripple: concentric rings that expand and fade on the
+   block's own top face, under the cursor. It is drawn in the scene rather than
+   over it, so it occludes nothing, needs no text, and repeats nothing.
  * ------------------------------------------------------------------ */
 const hintKeys  = document.querySelector('.hint-keys');
 const hintClick = document.querySelector('.hint-click');
-const tagEl   = document.getElementById('tag');
-const tagName = tagEl.querySelector('.tag-name');
 
-/* Written by the tile loops in updateScene and cleared at the top of every
-   frame, so it can never be left pointing at a block whose demo has finished.
-   0.55 rather than any positive value: the tag should appear when the block is
-   clearly up, not the instant it starts to move. */
-const ATTRACT_TAG_MIN = 0.55;
-let attractTile = null, attractBest = 0;
 
-/* A beat after parking, matching the attract pass's own ATTRACT_START, so the
+/* A beat after parking, matching the jump's own JUMP_FIRST, so the
    words and the demonstration arrive together rather than the line appearing
    over a still frame and then something moving underneath it. */
 const HINT_DELAY = 700;
 
-const _tagV = new THREE.Vector3();
-/* The block's world centre, for pinning the tag over it. The local centre is
-   cached on the record — the geometry never changes — and only the world
-   transform is recomputed, since the lift moves the block every frame. */
-function tileCentre(tl) {
-  if (!tl._c) {
-    const g = tl.body.geometry;
-    if (!g.boundingBox) g.computeBoundingBox();
-    tl._c = g.boundingBox.getCenter(new THREE.Vector3());
-  }
-  tl.body.updateWorldMatrix(true, false);
-  return _tagV.copy(tl._c).applyMatrix4(tl.body.matrixWorld);
-}
-
-/* Measured on the frame the text changes rather than on every frame: reading
-   offsetWidth forces a layout, and doing that once per frame inside a WebGL
-   loop is a cost paid for nothing 59 frames out of 60. */
-let tagW = 0, tagH = 0, tagFor = '';
-function updateTag() {
-  /* Hover wins over the demo: if the viewer is already on a block, labelling a
-     different one somewhere else on the die is worse than saying nothing. */
-  const tl = (hovered && !ptrTouch) ? hovered : attractTile;
-  const sub = tl && SUBJECTS[SUBJECT_OF[tl.body.userData.pick]];
-  if (!sub || frozen || !atStop()) { tagEl.classList.remove('show'); return; }
-
-  tagEl.hidden = false;
-  if (tagFor !== sub.title) {
-    tagFor = tagName.textContent = sub.title;
-    tagEl.style.borderLeftColor = tl.color || '';
-    tagW = tagEl.offsetWidth; tagH = tagEl.offsetHeight;
-  }
-
-  const pinned = tl !== hovered;
-  tagEl.classList.toggle('pinned', pinned);
-  let x, y;
-  if (pinned) {
-    const v = tileCentre(tl).project(camera);
-    x = (v.x * 0.5 + 0.5) * innerWidth - tagW / 2;
-    y = (-v.y * 0.5 + 0.5) * innerHeight - tagH - 16;   // clear of the raised slab
-  } else {
-    x = ptrX + 17; y = ptrY + 19;
-  }
-  /* Clamped into the frame, because a chip that runs off the right edge beside a
-     block near the die's edge is the one case this is guaranteed to hit. */
-  x = THREE.MathUtils.clamp(x, 10, innerWidth - tagW - 10);
-  y = THREE.MathUtils.clamp(y, 10, innerHeight - tagH - 10);
-  tagEl.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
-  tagEl.classList.add('show');
-}
 
 /* The hint lines. Each is a separate question.
 
@@ -3268,8 +3241,6 @@ const _t = new THREE.Vector3();
 /* A surface whose texture has not streamed in yet stays hidden. Without this
    a fast scroll past a still-loading stage shows an untextured white plane,
    which is far worse than showing nothing for a moment. */
-assignAttractSlots(tiles);
-assignAttractSlots(coreTiles);
 
 const mapped = (m) => !!m.map;
 
@@ -3315,11 +3286,9 @@ function updateScene(t) {
   const coreIn  = ramp(t, 0.532, 0.566);
   const surfOut = ramp(t, 0.822, 0.854);
   const p = pulse();   // one value per frame, shared by both tile sets
-  const attractOn = atStop() && !attractSeen;
-  /* Cleared here, then claimed by whichever block is furthest into its demo in
-     the loops below, so the tag can name it. Reset every frame rather than when
-     a demo ends: there is no "ends" event, only a level that returns to zero. */
-  attractTile = null; attractBest = ATTRACT_TAG_MIN;
+  /* The jump pauses while the cursor is on a block, so the demonstration
+     never competes with the thing it is demonstrating. */
+  updateJump(atStop() && !frozen && !hovered);
 
   /* The I/O die shows its own dieshot, and everything about it — silicon, both
      photographs, the slab — leaves together on pkgOut, the substrate's ramp.
@@ -3415,8 +3384,7 @@ function updateScene(t) {
        one hover response in the file and the demo cannot drift from the real
        thing. max() rather than a sum, so a real hover during the demo does not
        stack into a double-height lift. */
-    const al = attractLevel(tl, attractOn);
-    if (al > attractBest) { attractBest = al; attractTile = tl; }
+    const al = jumpLevel(tl);
     const h = Math.max(hoverState(tl), al);
     const y = 0.02 + base * (TILE_REST * e + TILE_PEAK * Math.sin(Math.PI * e))
                    + h * TILE_REST * HOVER_LIFT * base;
@@ -3475,8 +3443,7 @@ function updateScene(t) {
   for (const tl of coreTiles) {
     const a = THREE.MathUtils.clamp((blockIn - tl.k) / CORE_FADE, 0, 1);
     const e = smoothstep(a);
-    const al = attractLevel(tl, attractOn);
-    if (al > attractBest) { attractBest = al; attractTile = tl; }
+    const al = jumpLevel(tl);
     const h = Math.max(hoverState(tl), al);
     const y = 0.008 + blockBase * CORE_SCALE
                     * (TILE_REST * e + TILE_PEAK * Math.sin(Math.PI * e))
@@ -3827,7 +3794,6 @@ function frame() {
      block the attract pass claimed this frame, and the hint needs the tile
      opacities that decide whether anything is selectable at all. */
   updateHints();
-  updateTag();
   updatePins();
   renderer.render(scene, camera);
 }
@@ -3927,9 +3893,10 @@ Promise.all([
     get keyTimes() { return KEYS.map((k) => k.t); },
     /* For verify: the demo lift on each slotted block, and whether it is live. */
     get attract() {
-      return { on: atStop() && !attractSeen,
-               lift: tiles.concat(coreTiles).filter((x) => x.attractSlot !== undefined)
-                          .map((x) => +attractLevel(x, true).toFixed(2)) };
+      return { on: atStop() && !frozen && !hovered,
+               tile: jumpTile ? (jumpTile.label ||
+                                 jumpTile.body.userData.pick || '?') : null,
+               lift: +(jumpTile ? jumpLevel(jumpTile) : 0).toFixed(2) };
     },
     /* The camera path at an arbitrary t, without moving the live camera or
        waiting for a frame. seek() only sets t — the camera itself is not written

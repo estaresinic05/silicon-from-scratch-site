@@ -82,33 +82,43 @@ with sync_playwright() as p:
     frames()
     check(not shown(".hint-keys"), "t=0.512 keyboard hint down")
 
-    print("the tag:")
-    # The attract pass demonstrates on its own, a beat after parking, and only
-    # for ATTRACT_DWELL at a time. Polled across a whole ATTRACT_CYCLE rather
-    # than sampled, since the gaps between slots are dead time by design.
-    seek(0.512)
-    check(wait_shown("#tag"), "attract pass raises the tag over a block")
-    check(pg.evaluate("document.querySelector('#tag').classList.contains('pinned')"),
-          "  ...and it is the pinned variant, not the cursor one")
-    pg.screenshot(path="aff_attract.png")
+    print("the periodic jump:")
+    # No chip and no ripple. Every block already carries its own name, so the
+    # chip repeated the label beside it; the ripple that replaced it was dropped
+    # in turn. What remains is the demonstration itself: one block, chosen at
+    # random, rises out of the die every few seconds.
+    check(not pg.evaluate("!!document.getElementById('tag')"),
+          "no cursor chip in the DOM")
 
-    # A real hover wins over the demo and moves the chip to the cursor. Two moves
-    # because the pick is throttled to one rAF and the first only primes it.
-    pg.mouse.move(720, 470)
-    pg.wait_for_timeout(200)
-    pg.mouse.move(722, 472)
-    ok = wait_shown("#tag")
-    tag = pg.evaluate("""() => {
-      const t = document.querySelector('#tag');
-      return { show: t.classList.contains('show'),
-               pinned: t.classList.contains('pinned'),
-               name: t.querySelector('.tag-name').textContent };
-    }""")
-    check(ok and tag["show"] and not tag["pinned"],
-          f"hover raises the cursor tag: {tag}")
-    check(not shown(".hint-click"),
-          "the generic click line stands down while the tag is up")
-    pg.screenshot(path="aff_hover.png")
+    seek(0.512)
+    # Collect who jumps over a stretch. Sampled rather than awaited, because a
+    # jump lasts JUMP_MS and the gap after it is longer than one poll.
+    seen, lifts = [], []
+    for _ in range(60):
+        pg.wait_for_timeout(180)
+        a = pg.evaluate("window.__die.attract")
+        if a["tile"]:
+            lifts.append(a["lift"])
+            if not seen or seen[-1] != a["tile"]:
+                seen.append(a["tile"])
+    check(len(seen) >= 2, f"blocks jump periodically (saw {len(seen)} jumps)")
+    check(len(set(seen)) >= 2,
+          f"and the block is chosen at random, not fixed: {seen[:6]}")
+    check(max(lifts or [0]) > 0.4,
+          f"the lift is a real rise, not a twitch (peak {max(lifts or [0]):.2f})")
+    check(all(seen[i] != seen[i + 1] for i in range(len(seen) - 1)),
+          "and never picks the same block twice in a row")
+
+    # A real hover takes precedence: the demo must not fight the thing it
+    # is demonstrating.
+    pg.mouse.move(700, 470)
+    pg.wait_for_timeout(220)
+    pg.mouse.move(702, 472)
+    pg.wait_for_timeout(600)
+    check(pg.evaluate("window.__die.attract.tile") is None,
+          "and it stands down while the cursor is on a block")
+    pg.mouse.move(60, 780)
+    pg.wait_for_timeout(400)
 
     print("the credit panel:")
     check(pg.evaluate("document.getElementById('credit-panel').hidden"),
@@ -125,7 +135,7 @@ with sync_playwright() as p:
     }""")
     check(box["l"] >= 0 and box["t"] >= 0 and box["r"] <= 1440 and box["b"] <= 900,
           f"stays inside the viewport: {box}")
-    pg.screenshot(path="aff_credit.png")
+    pg.screenshot(path="aff_credit.png", timeout=120000)
     pg.keyboard.press("Escape")
     frames()
     check(pg.evaluate("document.getElementById('credit-panel').hidden"),

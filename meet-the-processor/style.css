@@ -346,58 +346,6 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .arrow { display: inline-block; animation: bob 1.9s ease-in-out infinite; }
 @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(4px)} }
 
-/* ------------------------------------------------------------------ *
-   Block tag — the name of the block under the cursor, and what a click does
-
-   Deliberately not a tooltip in the usual sense. It carries two lines, and the
-   second is the one that earns it: the lift already told the viewer that the
-   slab reacts, so the only thing left to say is that it OPENS. The name on the
-   first line is what makes it worth reading at all, since half the point of the
-   floorplan is learning what the shapes are called.
-
-   The left accent bar ties it to the block's own coloured edge, and is set from
-   JS to the block's colour, so the chip reads as belonging to that slab rather
-   than as page chrome that happened to appear.
- * ------------------------------------------------------------------ */
-#tag {
-  position: absolute;
-  z-index: 30;
-  pointer-events: none;
-  left: 0; top: 0;                 /* JS drives the translate */
-  display: grid;
-  gap: .12rem;
-  padding: .48rem .72rem .5rem .78rem;
-  border-radius: 9px;
-  border: 1px solid var(--line);
-  border-left: 2px solid var(--accent-lit);
-  background: rgba(10, 12, 17, .74);
-  backdrop-filter: blur(9px) saturate(.9);
-  -webkit-backdrop-filter: blur(9px) saturate(.9);
-  box-shadow: 0 14px 34px -18px rgba(0,0,0,.95);
-  /* Opacity and a small rise, never a change of position: the translate is JS's,
-     so the transition is on opacity alone or the chip would slide across the
-     screen every time it moved to a different block. */
-  opacity: 0;
-  transition: opacity .16s ease;
-  white-space: nowrap;
-}
-#tag.show { opacity: 1; }
-#tag[hidden] { display: none; }
-.tag-name {
-  font-size: .84rem; font-weight: 600; letter-spacing: -0.005em; color: var(--text);
-}
-.tag-cue {
-  font-family: var(--font-mono); font-size: .56rem;
-  letter-spacing: .12em; text-transform: uppercase;
-  color: var(--accent-lit);
-}
-/* The attract pass shows the same chip, centred over the block it is lifting
-   rather than at a cursor that is somewhere else entirely. It also comes in a
-   touch slower, because nothing is chasing it. */
-#tag.pinned {
-  border-left-width: 1px;
-  transition: opacity .34s ease;
-}
 
 /* ------------------------------------------------------------------ *
    Route pins — labels anchored to points on the traced net at stage 06
@@ -560,9 +508,6 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
     right: 50%; transform: translateX(50%);
     width: 92vw; font-size: .7rem;
   }
-  /* A cursor chip is meaningless on a touch screen, where there is no hover and
-     the finger is already on the thing it would be labelling. */
-  #tag { display: none; }
   .pin { font-size: .9em; }
   /* Full-width thumb targets beat a pretty pill on a phone. The vertical
      stacking of nav, hint, caption and credit at this width is not here: it has
