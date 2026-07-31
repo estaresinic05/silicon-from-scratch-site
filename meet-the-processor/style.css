@@ -1,0 +1,876 @@
+/* =========================================================================
+   Inside the Die — prototype stylesheet
+   Deliberately standalone. Nothing here is imported by the live site, and
+   this file imports nothing from it. Dark scene, restrained chrome.
+   ========================================================================= */
+
+/* Tokens, aligned to the live site rather than approximating it. Names stay
+   local to this prototype, but every value below now comes from
+   styles/main.css so the two cannot drift apart by eye. */
+:root {
+  /* Both stage buttons share one width so neither can drift from the other.
+     7.5rem is what the forward pill measured when it still carried the word
+     'Descend' — the label went, the footprint stayed, because a 46px circle
+     beside a 121px pill was the asymmetry doing the work and shrinking it
+     would have made the primary action smaller than the secondary one. */
+  --nav-btn-w: 7.5rem;
+
+  --void:      #08080b;   /* = site --bg  (was #07080b, a shade off) */
+  --panel:     #14141c;   /* = site --paper (was #101319) */
+  --line:      rgba(255,255,255,0.08);  /* = the site's top-bar hairline */
+  --text:      #fdfdfb;   /* = site --ink */
+  --muted:     rgba(253,253,251,0.72);  /* = site --soft-ink */
+  --accent:    #6b2fc9;   /* = site --fill: solid, carries white text */
+  --accent-lit:#a97bff;   /* = site --accent: text and strokes on the page */
+  --fill-hover:#7b3ce0;   /* = site --fill-hover */
+  --copper:    #d08a4e;   /* scene-only, no site counterpart */
+
+  /* Geist, matching the site. The old stack named Bricolage Grotesque and this
+     page never loaded it, so the whole UI had been rendering in a fallback. */
+  --font-ui:   "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* The site's ambient hue: one violet field in the top-left, pinned to the
+   VIEWPORT. On the live site this rides body::before; here the scene owns the
+   canvas, so it goes on its own layer under everything and above the void.
+   Fixed rather than background-attachment, which iOS Safari ignores. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;                 /* under #stage (z-index 1), over the page ground */
+  pointer-events: none;
+  background: radial-gradient(56rem 40rem at 13% -6%,
+              rgba(107, 47, 201, 0.26), transparent 64%);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: auto; }
+
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--text);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ------------------------------------------------------------------ *
+   Loader
+ * ------------------------------------------------------------------ */
+#loader {
+  position: fixed; inset: 0; z-index: 90;
+  display: grid; place-items: center;
+  background: var(--void);
+  transition: opacity .6s ease;
+}
+#loader.done { opacity: 0; pointer-events: none; }
+.loader-inner {
+  display: flex; align-items: center; gap: .7rem;
+  font-family: var(--font-mono); font-size: .8rem;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+.spark {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent-lit);
+  box-shadow: 0 0 14px 2px var(--accent);
+  animation: pulse 1.3s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity:.25; transform:scale(.75);} 50% { opacity:1; transform:scale(1.15);} }
+
+/* ------------------------------------------------------------------ *
+   Sticky stage
+ * ------------------------------------------------------------------ */
+#stage {
+  position: fixed; inset: 0;
+  z-index: 1;
+}
+#gl { display: block; width: 100%; height: 100%; }
+
+/* seven stages: one per arrow stop, so the rail, the counter and the arrows
+   all agree about where you are */
+/* The descent is no longer a scrolling document: it is played leg by leg by the
+   arrows, so the page is exactly one viewport tall and never scrolls. The old
+   2000vh #scroll-track is gone rather than hidden, because a page that can still
+   be scrolled by a trackpad while the animation is under someone else's control
+   is a page that fights the user. */
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+
+/* ------------------------------------------------------------------ *
+   Chrome — top bar
+ * ------------------------------------------------------------------ */
+/* ---- the site bar --------------------------------------------------
+   Metrics copied from styles/main.css, not eyeballed: 4rem tall, a 1400px
+   rail with 40px inset, 80% ground behind a 24px blur, and an 8% white
+   hairline. Keep these in step if the site's bar changes. */
+#sitebar {
+  position: absolute; top: 0; left: 0; right: 0;
+  z-index: 40;
+  height: 4rem;
+  background: color-mix(in srgb, var(--void) 80%, transparent);
+  -webkit-backdrop-filter: saturate(1.1) blur(24px);
+  backdrop-filter: saturate(1.1) blur(24px);
+  border-bottom: 1px solid var(--line);
+}
+.sitebar__inner {
+  height: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding-inline: 40px;
+  display: grid;
+  grid-template-columns: auto auto auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+}
+.wordmark {
+  justify-self: start;
+  display: inline-flex; align-items: center; gap: .625rem;
+  /* Two words on two lines doubled the bar's height on a phone. */
+  white-space: nowrap;
+  font-size: .95rem; font-weight: 600; letter-spacing: -0.025em;
+  color: var(--text); text-decoration: none;
+}
+.wordmark img { width: 26px; height: 26px; object-fit: contain; flex: none; }
+
+/* A hairline between the brand and the page it is showing, then the subject.
+   Quiet on purpose: the wordmark is the identity, this is only context. */
+.sitebar__page {
+  width: 1px; height: 1.1rem;
+  background: var(--line);
+  justify-self: start;
+}
+.sitebar__subject {
+  justify-self: start;
+  font-size: .875rem; color: var(--muted);
+  white-space: nowrap;
+}
+
+.sitenav { justify-self: end; display: flex; align-items: center; gap: 2rem; }
+.sitenav a {
+  font-size: .875rem; font-weight: 400;
+  color: var(--muted); text-decoration: none;
+  transition: color .15s ease;
+}
+.sitenav a:hover { color: var(--text); }
+/* The link to the page you are already on reads as current, not as a way out. */
+.sitenav a[aria-current="page"] { color: var(--text); cursor: default; }
+/* The filled pill trails the text links, as it does on the site. */
+.sitenav__pill {
+  background: var(--accent);
+  color: #fff !important;
+  border-radius: 999px;
+  padding: .5rem 1rem;
+  font-weight: 500 !important;
+  line-height: 1.25rem;
+  transition: background .18s ease;
+}
+.sitenav__pill:hover { background: var(--fill-hover); }
+
+.ghlink {
+  justify-self: end;
+  display: grid; place-items: center;
+  width: 2.1rem; height: 2.1rem;
+  color: var(--muted);
+  transition: color .18s ease;
+}
+.ghlink svg { width: 1.35rem; height: 1.35rem; fill: currentColor; }
+.ghlink:hover { color: var(--text); }
+
+/* ---- the subject strip, on its own row under the bar --------------- */
+#chrome {
+  position: absolute; top: 4rem; left: 0; right: 0;
+  pointer-events: none;
+}
+.chrome__inner {
+  max-width: 1400px;
+  margin-inline: auto;
+  padding: .95rem 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem; flex-wrap: wrap;
+}
+.chip-id {
+  display: flex; align-items: center; gap: .55rem;
+  font-size: .92rem; font-weight: 600; letter-spacing: .01em;
+}
+.chip-id .dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--accent-lit); box-shadow: 0 0 12px var(--accent);
+}
+
+.specs {
+  display: flex; gap: 1.4rem;
+  font-family: var(--font-mono); font-size: .72rem;
+  color: var(--muted); letter-spacing: .02em;
+}
+.specs b { color: var(--text); font-weight: 500; }
+
+/* Narrow screens: the nav links collapse and the pill carries the way back,
+   the same trade the site makes at this width. The specs wrap under the chip
+   name rather than being dropped — they are the point of the page. */
+@media (max-width: 860px) {
+  .sitebar__inner { padding-inline: 20px; gap: .75rem; }
+  .sitenav a:not(.sitenav__pill) { display: none; }
+  .sitebar__page, .sitebar__subject { display: none; }
+  .sitenav { gap: 0; }
+  .wordmark { font-size: .8rem; gap: .5rem; }
+  .wordmark img { width: 22px; height: 22px; }
+  /* The pill tightens rather than the wordmark truncating: the brand name is
+     worth more than a few pixels of button padding. */
+  .sitenav__pill { padding: .45rem .7rem; font-size: .8rem; }
+  .ghlink { width: 1.7rem; height: 1.7rem; }
+  .ghlink svg { width: 1.15rem; height: 1.15rem; }
+  .chrome__inner { padding-inline: 20px; }
+  .specs { gap: .9rem; font-size: .64rem; }
+}
+
+/* ------------------------------------------------------------------ *
+   Caption block
+ * ------------------------------------------------------------------ */
+#caption {
+  position: absolute;
+  left: clamp(1rem, 4vw, 2.6rem);
+  bottom: clamp(2.4rem, 7vh, 4.4rem);
+  max-width: 27rem;
+  pointer-events: none;
+  isolation: isolate;
+}
+/* soft scrim so the caption stays legible wherever the die happens to sit */
+#caption::before {
+  content: "";
+  position: absolute;
+  inset: -4rem -9rem -5rem -5rem;
+  z-index: -1;
+  background: radial-gradient(60% 62% at 26% 58%,
+              rgba(8,8,11,.94) 0%, rgba(8,8,11,.78) 42%, rgba(8,8,11,0) 100%);
+}
+/* and a matching one behind the top bar */
+#chrome::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 190%;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(8,8,11,.85), rgba(8,8,11,0));
+}
+#chrome { position: absolute; isolation: isolate; }
+.cap-index {
+  font-family: var(--font-mono); font-size: .72rem;
+  letter-spacing: .14em; color: var(--muted); margin-bottom: .5rem;
+}
+#cap-num { color: var(--accent-lit); }
+.cap-of { margin-left: .3rem; }
+
+#caption h2 {
+  margin: 0 0 .5rem;
+  font-size: clamp(1.55rem, 3.6vw, 2.4rem);
+  font-weight: 600; line-height: 1.1; letter-spacing: -0.015em;
+}
+#caption p {
+  margin: 0; color: var(--muted);
+  font-size: .97rem; line-height: 1.55; max-width: 24rem;
+}
+/* the swap animation is driven by a class toggle in JS */
+#caption.swap h2, #caption.swap p, #caption.swap .cap-index {
+  animation: capIn .55s cubic-bezier(.2,.7,.3,1) both;
+}
+#caption.swap p { animation-delay: .06s; }
+@keyframes capIn { from { opacity:0; transform: translateY(11px);} to { opacity:1; transform:none;} }
+
+/* ------------------------------------------------------------------ *
+   Progress rail
+ * ------------------------------------------------------------------ */
+#rail {
+  position: absolute;
+  right: clamp(.9rem, 2.6vw, 1.8rem);
+  top: 50%; transform: translateY(-50%);
+  width: 2px; height: 34vh;
+  background: rgba(255,255,255,.12);
+  border-radius: 2px;
+}
+#rail-ticks { position: absolute; inset: 0; }
+/* one tick per stage, so the rail says WHERE you are in the descent rather than
+   only how far. The lit one is the stage the caption is showing. */
+#rail-ticks i {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  width: 6px; height: 1px;
+  background: rgba(255,255,255,.28);
+  transition: background .3s ease, width .3s ease, box-shadow .3s ease;
+}
+#rail-ticks i.on {
+  width: 11px; height: 2px;
+  background: var(--accent-lit);
+  box-shadow: 0 0 8px 1px var(--accent);
+}
+#rail-fill {
+  width: 100%; height: 0%;
+  background: linear-gradient(180deg, var(--accent-lit), var(--accent));
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(169,123,255,.55);
+}
+
+/* ------------------------------------------------------------------ *
+   Scroll hint
+ * ------------------------------------------------------------------ */
+/* Sits directly ABOVE the nav control it describes, not adrift at the bottom of
+   the frame while the control lived in a corner. "the control below" only works
+   if it is in fact below. */
+#hint {
+  position: absolute;
+  bottom: calc(clamp(1.1rem, 3.4vh, 2.2rem) + 3.7rem);
+  left: 50%; transform: translateX(-50%);
+  font-family: var(--font-mono); font-size: .66rem;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+  transition: opacity .5s ease;
+  pointer-events: none;
+  text-align: center;
+  text-shadow: 0 1px 6px rgba(8,8,11,.95), 0 0 14px rgba(8,8,11,.8);
+}
+/* Each line fades on its own, so the click line can be up at the floorplan while
+   the keyboard line is long gone. Opacity only: the block stays laid out either
+   way, so neither line ever moves when the other leaves. */
+#hint span {
+  display: block; white-space: nowrap; line-height: 2;
+  opacity: 0; transition: opacity .5s ease;
+}
+#hint span.show { opacity: 1; }
+#hint kbd {
+  font-family: inherit; font-size: .95em;
+  padding: .12em .38em;
+  border: 1px solid rgba(255,255,255,.26);
+  border-radius: 4px;
+  color: var(--text);
+}
+.arrow { display: inline-block; animation: bob 1.9s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(4px)} }
+
+/* ------------------------------------------------------------------ *
+   Block tag — the name of the block under the cursor, and what a click does
+
+   Deliberately not a tooltip in the usual sense. It carries two lines, and the
+   second is the one that earns it: the lift already told the viewer that the
+   slab reacts, so the only thing left to say is that it OPENS. The name on the
+   first line is what makes it worth reading at all, since half the point of the
+   floorplan is learning what the shapes are called.
+
+   The left accent bar ties it to the block's own coloured edge, and is set from
+   JS to the block's colour, so the chip reads as belonging to that slab rather
+   than as page chrome that happened to appear.
+ * ------------------------------------------------------------------ */
+#tag {
+  position: absolute;
+  z-index: 30;
+  pointer-events: none;
+  left: 0; top: 0;                 /* JS drives the translate */
+  display: grid;
+  gap: .12rem;
+  padding: .48rem .72rem .5rem .78rem;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent-lit);
+  background: rgba(10, 12, 17, .74);
+  backdrop-filter: blur(9px) saturate(.9);
+  -webkit-backdrop-filter: blur(9px) saturate(.9);
+  box-shadow: 0 14px 34px -18px rgba(0,0,0,.95);
+  /* Opacity and a small rise, never a change of position: the translate is JS's,
+     so the transition is on opacity alone or the chip would slide across the
+     screen every time it moved to a different block. */
+  opacity: 0;
+  transition: opacity .16s ease;
+  white-space: nowrap;
+}
+#tag.show { opacity: 1; }
+#tag[hidden] { display: none; }
+.tag-name {
+  font-size: .84rem; font-weight: 600; letter-spacing: -0.005em; color: var(--text);
+}
+.tag-cue {
+  font-family: var(--font-mono); font-size: .56rem;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--accent-lit);
+}
+/* The attract pass shows the same chip, centred over the block it is lifting
+   rather than at a cursor that is somewhere else entirely. It also comes in a
+   touch slower, because nothing is chasing it. */
+#tag.pinned {
+  border-left-width: 1px;
+  transition: opacity .34s ease;
+}
+
+/* ------------------------------------------------------------------ *
+   Route pins — labels anchored to points on the traced net at stage 06
+   Smaller and quieter than the tag: these annotate, they do not invite.
+ * ------------------------------------------------------------------ */
+#pins { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+#pins[hidden] { display: none; }
+.pin {
+  position: absolute; left: 0; top: 0;
+  display: grid; gap: .1rem;
+  padding: .34rem .6rem .38rem;
+  border-radius: 7px;
+  border: 1px solid rgba(217, 138, 68, .34);
+  background: rgba(12, 9, 6, .68);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  text-align: left;
+  opacity: 0;
+  transition: opacity .45s ease;
+}
+.pin.show { opacity: 1; }
+.pin b {
+  font-family: var(--font-mono); font-size: .64rem;
+  letter-spacing: .1em; color: #f0b471; font-weight: 500;
+}
+.pin span {
+  font-size: .68rem; color: var(--muted); white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ *
+   Block sheet — title and text on the left, video player on the right, both
+   sitting directly on the blurred scene. Freezes the descent while open.
+
+   No solid card: the scene stays visible through a heavy blur, so the block you
+   just clicked is still there behind the words rather than replaced by a panel.
+
+   The alignment is the fiddly part. `align-content: center` centres the single
+   grid ROW in the viewport, and `align-items: start` then puts both columns at
+   the top of that row. The row is as tall as the player, so the title's cap
+   height lands level with the top of the player rather than at the top of the
+   screen — which is what pulls the whole thing down into the middle.
+ * ------------------------------------------------------------------ */
+#sheet {
+  position: fixed; inset: 0; z-index: 80;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-content: center;
+  align-items: start;
+  gap: clamp(1.6rem, 4vw, 4.5rem);
+  padding: clamp(2.2rem, 6vh, 5rem) clamp(1.6rem, 5vw, 5.5rem);
+  background: rgba(5, 6, 9, .58);
+  backdrop-filter: blur(22px) saturate(.85);
+  -webkit-backdrop-filter: blur(22px) saturate(.85);
+  animation: sheetIn .3s cubic-bezier(.2,.7,.3,1) both;
+}
+#sheet[hidden] { display: none; }
+@keyframes sheetIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* --- left: the name, then the text --- */
+.sheet-copy {
+  max-width: 36rem;
+  animation: sheetSlide .38s cubic-bezier(.2,.7,.3,1) both;
+}
+@keyframes sheetSlide { from { opacity:0; transform: translateY(14px);} to { opacity:1; transform:none;} }
+
+#sheet-title {
+  /* Nudged up by the difference between the line box and the cap height, so the
+     letters line up with the player's edge rather than the text box doing. */
+  margin: -0.14em 0 1rem;
+  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+  font-weight: 600; line-height: 1.08; letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.sheet-body { color: #c2c9d6; font-size: clamp(.94rem, 1.05vw, 1.02rem); line-height: 1.65; }
+.sheet-body p { margin: 0 0 .9rem; }
+.sheet-body p:last-child { margin-bottom: 0; }
+
+/* --- right: the player, blank until a video is dropped in --- */
+.sheet-media { justify-self: stretch; animation: sheetSlide .38s .05s cubic-bezier(.2,.7,.3,1) both; }
+.sheet-media video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #040507;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 30px 70px -28px rgba(0,0,0,.85);
+}
+.sheet-media-note {
+  margin: .7rem 0 0;
+  font-family: var(--font-mono); font-size: .68rem;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+  text-align: center;
+}
+.sheet-media.has-video .sheet-media-note { display: none; }
+
+.sheet-x {
+  position: absolute;
+  top: clamp(1rem, 2.4vh, 1.8rem); right: clamp(1rem, 2.4vw, 2rem);
+  width: 40px; height: 40px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 1.6rem; line-height: 1;
+  color: var(--text); cursor: pointer;
+  background: rgba(10,12,17,.6);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  transition: border-color .2s ease, color .2s ease, transform .2s ease;
+}
+.sheet-x:hover { border-color: var(--accent-lit); color: #fff; transform: scale(1.06); }
+.sheet-x:focus-visible { outline: 2px solid var(--accent-lit); outline-offset: 3px; }
+
+/* Stacked on narrow screens: name, text, then the player under them. */
+@media (max-width: 860px) {
+  #sheet {
+    grid-template-columns: 1fr;
+    align-content: start;
+    gap: 1.4rem;
+    padding: 4.2rem clamp(1.1rem, 5vw, 2rem) 2rem;
+    overflow-y: auto;
+  }
+  .sheet-copy { max-width: none; }
+  #sheet-title { font-size: 1.6rem; margin-top: 0; }
+}
+
+/* ------------------------------------------------------------------ *
+   Fallbacks
+ * ------------------------------------------------------------------ */
+.fallback {
+  position: fixed; inset: 0; display: grid; place-items: center;
+  padding: 2rem; text-align: center; color: var(--muted);
+}
+
+/* ------------------------------------------------------------------ *
+   Responsive
+ * ------------------------------------------------------------------ */
+@media (max-width: 860px) {
+  .specs { display: none; }
+  /* Clears the hint and the centred nav stacked beneath it. */
+  #caption { bottom: 8.8rem; max-width: none; right: clamp(1rem,4vw,2.6rem); }
+  #caption h2 { font-size: 1.4rem; }
+  #caption p { font-size: .88rem; }
+  #rail { height: 24vh; }
+  /* Needs the #hint prefix: `#hint span { display: block }` above outranks a bare
+     class selector, so `.hint-keys { display: none }` alone loses. */
+  #hint .hint-keys { display: none; }
+  #hint { font-size: .6rem; }
+  /* There is no corner free at this width, so the credit goes centred under the
+     nav. It is one line now, which is what makes that possible: the block that
+     used to live here was four lines deep and the disclaimer had to be dropped
+     outright. Behind the toggle it survives at this width for the first time,
+     and the panel is centred on the viewport rather than hung off a right edge
+     that no longer exists. */
+  #credit {
+    right: auto; left: 50%; transform: translateX(-50%);
+    bottom: .35rem; max-width: none; width: 96vw;
+    text-align: center; font-size: .56rem; line-height: 1.6;
+  }
+  .credit-toggle { margin-left: .45em; }
+  #credit-panel {
+    right: 50%; transform: translateX(50%);
+    width: 92vw; font-size: .7rem;
+  }
+  /* A cursor chip is meaningless on a touch screen, where there is no hover and
+     the finger is already on the thing it would be labelling. */
+  #tag { display: none; }
+  .pin { font-size: .9em; }
+  /* Full-width thumb targets beat a pretty pill on a phone. The vertical
+     stacking of nav, hint, caption and credit at this width is not here: it has
+     to come after the nav section to win the cascade, so it is at the foot of
+     the file. */
+  #nav { gap: .5rem; }
+  .nav-btn { height: 3.1rem; }
+  .nav-back { width: 3.1rem; }
+  .nav-fwd { padding: 0 .95rem 0 1.15rem; }
+}
+
+/* ------------------------------------------------------------------ *
+   Reduced motion — the scene still renders, but the camera settles
+   immediately instead of easing, and decorative loops stop.
+ * ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .spark, .arrow { animation: none; }
+  #nav.untouched .nav-fwd::after, #nav.untouched .nav-fwd svg { animation: none; }
+  #caption.swap h2, #caption.swap p, #caption.swap .cap-index { animation: none; }
+  #sheet, .sheet-card { animation: none; }
+  #credit-panel { animation: none; }
+}
+
+/* ------------------------------------------------------------------ *
+   Credit and disclaimer — bottom right
+
+   One permanent line, plus a toggle that opens the rest.
+
+   The split is by obligation, not by length. Crediting the photograph is the
+   condition this page carries, so that line is always on screen and never
+   depends on anybody opening anything. The disclaimer about the annotations is
+   a note rather than a condition, so it goes behind the toggle — and the moment
+   it is behind a toggle it can be set at a size somebody might actually read,
+   which at 0.56rem in a permanent corner it never was.
+
+   What that buys: the corner shrinks from a four-line block to a single line, so
+   it stops competing with the scene for the whole descent; the long text becomes
+   legible instead of merely present; and the phone, which used to drop the
+   disclaimer entirely for want of room, now gets all of it.
+
+   Right-aligned into the one corner nothing else claims. The caption owns the
+   bottom left, the hint and the nav own the bottom centre, the rail owns the
+   right edge above it.
+ * ------------------------------------------------------------------ */
+#credit {
+  position: absolute;
+  right: clamp(.9rem, 2.6vw, 1.8rem);
+  bottom: clamp(1.1rem, 3.4vh, 2.2rem);
+  z-index: 5;
+  max-width: 26rem;
+  text-align: right;
+  /* The footer holds a single control now, so it sets no type of its own —
+     .credit-toggle sizes itself and the panel sizes its prose. */
+  line-height: 1.7;
+  color: var(--muted);
+  text-shadow: 0 1px 5px rgba(8,8,11,.95), 0 0 12px rgba(8,8,11,.85);
+  pointer-events: none;          /* never in the way of a click on the die... */
+}
+/* A scrim, the same device the caption uses. A text-shadow alone is enough over
+   the black opening frames and nowhere near enough at the core stop, where the
+   background behind this corner is a fully lit die and the type washed out
+   completely. Tighter than it was, because it now wraps one line. */
+#credit { isolation: isolate; }
+#credit::before {
+  content: "";
+  position: absolute;
+  inset: -1rem -1.6rem -1rem -2.6rem;
+  z-index: -1;
+  background: radial-gradient(74% 76% at 78% 50%,
+              rgba(8,8,11,.88) 0%, rgba(8,8,11,.64) 46%, rgba(8,8,11,0) 100%);
+}
+#credit a {
+  color: rgba(169, 123, 255, .85);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(169, 123, 255, .3);
+  pointer-events: auto;          /* ...except the links themselves */
+}
+#credit a:hover { color: var(--accent-lit); border-bottom-color: var(--accent-lit); }
+#credit p { margin: 0; }
+
+/* The toggle. A word, not a bare glyph: "ⓘ" alone in a corner is a mystery box,
+   and the one thing a viewer needs to know before deciding to open it is that
+   this is about the ANNOTATIONS rather than about the site. The small badge in
+   front of it is what makes it read as a control at this weight. */
+.credit-toggle {
+  pointer-events: auto;
+  display: inline-flex; align-items: center; gap: .34em;
+  /* No left margin: nothing precedes it any more. Sized in rem rather than em
+     because it no longer inherits a parent line's size — it IS the line. */
+  margin-left: 0;
+  padding: .38rem .8rem .38rem .5rem;
+  font-family: var(--font-ui);
+  font-size: .8rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color .2s ease, border-color .2s ease, background .2s ease;
+}
+.credit-toggle:hover,
+.credit-toggle[aria-expanded="true"] {
+  color: var(--text);
+  border-color: var(--line);
+  background: rgba(255,255,255,.06);
+}
+.credit-toggle:focus-visible { outline: 2px solid var(--accent-lit); outline-offset: 2px; }
+.credit-i {
+  display: grid; place-items: center;
+  width: 1.25em; height: 1.25em;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  font-family: var(--font-mono); font-size: .85em; line-height: 1;
+  font-style: italic;
+}
+
+/* The panel opens UPWARD out of the line, since the line is already at the
+   bottom of the frame. Left-aligned even though the trigger is right-aligned:
+   this is two sentences of prose, and prose is read from a straight left edge. */
+#credit-panel {
+  position: absolute;
+  right: 0; bottom: calc(100% + .55rem);
+  width: min(30rem, 78vw);
+  padding: .95rem 1.05rem 1rem;
+  text-align: left;
+  font-size: .74rem;
+  line-height: 1.62;
+  letter-spacing: 0;
+  color: #b8c0cd;
+  text-shadow: none;
+  background: rgba(10, 12, 17, .82);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  backdrop-filter: blur(14px) saturate(.9);
+  -webkit-backdrop-filter: blur(14px) saturate(.9);
+  box-shadow: 0 24px 56px -26px rgba(0,0,0,.95);
+  pointer-events: auto;
+  animation: creditIn .22s cubic-bezier(.2,.7,.3,1) both;
+}
+#credit-panel[hidden] { display: none; }
+/* The processor's numbers, where "About this model" promises them. A dl rather
+   than a paragraph because they are label/value pairs, and tabular figures so
+   the values line up. */
+.model-specs {
+  margin: 0 0 .95rem;
+  padding: 0 0 .85rem;
+  border-bottom: 1px solid var(--line);
+  display: grid; gap: .3rem;
+}
+.model-specs > div { display: flex; justify-content: space-between; gap: 1.5rem; }
+.model-specs dt { color: var(--muted); }
+.model-specs dd {
+  margin: 0; color: var(--text);
+  font-family: var(--font-mono); font-size: .92em;
+  font-variant-numeric: tabular-nums;
+}
+
+#credit-panel p + p { margin-top: .7em; color: rgba(184, 192, 205, .82); }
+@keyframes creditIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ------------------------------------------------------------------ *
+   Stage navigation — bottom centre
+   The primary control of the whole page, so it is placed and weighted like one.
+   It used to be two hairline chevrons in the bottom-right corner, which is both
+   the least-scanned part of the frame and the place a viewer reads as chrome
+   rather than as the thing to press.
+
+   Three deliberate choices:
+     · CENTRED, so it sits in the natural scan path under the scene, directly
+       below the hint that describes it.
+     · ASYMMETRIC. Forward is a labelled accent pill, back is a quiet circle.
+       The silhouette alone says which way the story runs.
+     · A pulse ring on forward until the first press, then it stops for good.
+       An affordance that keeps pulsing after it has been understood is noise.
+
+   While a leg is in flight both buttons are disabled, which is also the signal
+   that the scene is not interactive yet — nothing is clickable until the camera
+   parks.
+ * ------------------------------------------------------------------ */
+#nav {
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  bottom: clamp(1.1rem, 3.4vh, 2.2rem);
+  display: flex; align-items: center; gap: .7rem;
+  z-index: 6;
+}
+/* Announced, not drawn. As bare mono text between the two buttons it disappeared
+   entirely against the lit die at the core stop, and giving it its own dark chip
+   made three chips in a row where the whole point was one obvious control. The
+   position is already stated twice on screen, by the caption's 05 / 07 and by the
+   lit tick on the rail, so only the screen-reader announcement is load-bearing. */
+#nav-count {
+  position: absolute;
+  width: 1px; height: 1px; margin: -1px;
+  padding: 0; border: 0; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+.nav-btn {
+  appearance: none; -webkit-appearance: none;
+  position: relative;
+  height: 2.9rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  line-height: 1;
+  color: var(--text);
+  /* A dark fill rather than a light one, plus a blur. The control sits over
+     whatever the scene happens to be, and at the core stop that is a full-frame
+     brightly lit die: a 5% white wash disappeared into it completely. Tinting
+     DOWN reads on both the black opening frames and the bright ones. */
+  background: rgba(10,11,15,.68);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  border: 1px solid rgba(255,255,255,.24);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .22s ease, border-color .22s ease,
+              box-shadow .22s ease, opacity .22s ease, transform .12s ease;
+}
+/* Stroked, not filled — a 2px stroke holds its weight at 15px where the glyph
+   chevrons did not. */
+.nav-btn svg {
+  width: 15px; height: 15px; flex: none;
+  fill: none; stroke: currentColor;
+  stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round;
+}
+/* Both buttons are the same size now. Direction is carried by the chevron and
+   PRIMACY by the fill: forward is the solid brand purple, back is tinted glass.
+   Colour does the job the old shape difference did. */
+.nav-btn { width: var(--nav-btn-w); }
+.nav-back { width: var(--nav-btn-w); }
+
+/* --- forward: the hero ---
+   SOLID, not the tinted glass the rest of the chrome uses. A 20%-alpha purple
+   looked right on the opening black frames and then all but vanished at the core
+   stop, where the whole frame is a brightly lit die: the scene came through the
+   fill and the white label lost its ground. An opaque pill is the one thing that
+   reads identically on every stage of the descent. */
+/* The primary action, styled as the site styles its own: a FLAT fill of the
+   brand purple with a white label. It was a vertical gradient carrying a
+   coloured drop-shadow and an inset highlight — three effects doing what one
+   solid colour does, and none of them appear anywhere on the live site. */
+.nav-fwd {
+  gap: 0;
+  padding: 0;
+  background: var(--accent);
+  border-color: transparent;
+  box-shadow: none;
+}
+.nav-fwd:hover:not(:disabled) {
+  background: var(--fill-hover);
+  border-color: transparent;
+  box-shadow: none;
+}
+.nav-back:hover:not(:disabled) {
+  background: rgba(169,123,255,.18);
+  border-color: var(--accent);
+  box-shadow: 0 0 14px 1px rgba(169,123,255,.34);
+}
+.nav-btn:active:not(:disabled) { transform: scale(.93); }
+.nav-btn:focus-visible { outline: 2px solid var(--accent-lit); outline-offset: 3px; }
+/* In flight, or at either end of the journey. Kept visible rather than hidden so
+   the control does not jump around under the cursor. */
+.nav-btn:disabled { opacity: .26; cursor: default; }
+
+/* --- first-run attention, dropped the moment the viewer advances --- */
+.nav-fwd::after {
+  content: "";
+  position: absolute; inset: -1px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-lit);
+  opacity: 0;
+  pointer-events: none;
+}
+#nav.untouched .nav-fwd::after { animation: navRing 2.6s ease-out infinite; }
+#nav.untouched .nav-fwd svg { animation: navNudge 2.6s ease-in-out infinite; }
+@keyframes navRing {
+  0%       { opacity: .85; transform: scale(1); }
+  55%,100% { opacity: 0;   transform: scale(1.22); }
+}
+@keyframes navNudge {
+  0%,72%,100% { transform: translateX(0); }
+  84%         { transform: translateX(3px); }
+}
+
+/* While a leg is playing the scene is not pickable, so the canvas should not
+   advertise otherwise. */
+#stage.flying #gl { cursor: default; }
+
+/* ------------------------------------------------------------------ *
+   Narrow screens: the bottom stack
+
+   Deliberately at the FOOT of the file, after the nav section. The responsive
+   block further up is the wrong place for any of this: it sits before `#nav`,
+   `#hint` and `#caption` are defined, and at equal specificity the later rule
+   wins — so an override written up there against a property the base rule also
+   sets is simply dead. (`#nav { gap: .5rem }` up there has never applied.)
+
+   The four offsets are one decision. The credit is a single line now instead of
+   two tiny ones, and a line carrying a toggle is wider than the nav pill, so it
+   can no longer share a row with it: it takes the bottom edge and everything
+   else steps up by the height of that row. Each value is derived from the one
+   below it rather than chosen — nav clears the credit, hint clears the nav's
+   3.1rem button, caption clears the hint.
+ * ------------------------------------------------------------------ */
+@media (max-width: 860px) {
+  #credit  { bottom: .5rem; }
+  #nav     { bottom: 2.4rem; gap: .5rem; }
+  #hint    { bottom: 6.1rem; }
+  #caption { bottom: 9.6rem; }
+}
