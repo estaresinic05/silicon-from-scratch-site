@@ -154,6 +154,21 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   color: var(--muted); text-decoration: none;
   transition: color .15s ease;
 }
+/* Hover is a colour lift and nothing else. There is deliberately NO animated
+   underline here, even though `.nav a` in styles/main.css draws one on every
+   other page.
+
+   That difference is intentional, not an oversight, and this note exists because
+   it was already "fixed" once: the bar is a hand copy of the site's (this page
+   loads none of main.css), the missing underline read as a piece that had failed
+   to come across, and it was added back. It is not wanted. Three text links sit
+   in this bar and two of them — the current page and the filled pill — must not
+   carry an underline anyway, so the rule only ever reached About, and a single
+   underlined item in a row of three reads as an inconsistency rather than an
+   affordance. The colour change already says the link is live.
+
+   If you are here because you compared this file against main.css and found the
+   underline missing: that is the expected diff. Leave it. */
 .sitenav a:hover { color: var(--text); }
 /* The link to the page you are already on reads as current, not as a way out. */
 .sitenav a[aria-current="page"] { color: var(--text); cursor: default; }
@@ -525,7 +540,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
  * ------------------------------------------------------------------ */
 @media (prefers-reduced-motion: reduce) {
   .spark, .arrow { animation: none; }
-  #nav.untouched .nav-fwd::after, #nav.untouched .nav-fwd svg { animation: none; }
+  .nav-fwd::after, .nav-fwd svg { animation: none; }
   #caption.swap h2, #caption.swap p, #caption.swap .cap-index { animation: none; }
   #sheet, .sheet-card { animation: none; }
   #credit-panel { animation: none; }
@@ -773,7 +788,22 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
    the control does not jump around under the cursor. */
 .nav-btn:disabled { opacity: .26; cursor: default; }
 
-/* --- first-run attention, dropped the moment the viewer advances --- */
+/* --- the forward arrow's pulse, for the whole descent ---------------
+   A ring expanding off the pill and a small nudge on the glyph itself.
+
+   This used to run only until the viewer moved once, on the theory that a cue
+   which has been understood is just noise afterwards. That is true of a cue
+   which says "start here", and false of this one. The arrow is not an
+   introduction to the page; it is the ONLY way through it — there is no scroll
+   to fall back on, the descent has seven stops, and a viewer who has read a
+   caption and looked away comes back to a still frame with no indication that
+   there is more below. The pulse is the answer to "is that everything?", and
+   that question is asked at every stop, not only the first.
+
+   Gated on :not(:disabled) rather than on a class, which lands it in exactly the
+   right places without any state to keep in sync: the arrow is disabled while a
+   leg is playing, while the sheet is open, and at the last stop — so the pulse
+   is quiet whenever pressing would do nothing, and running whenever it would. */
 .nav-fwd::after {
   content: "";
   position: absolute; inset: -1px;
@@ -782,8 +812,8 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   opacity: 0;
   pointer-events: none;
 }
-#nav.untouched .nav-fwd::after { animation: navRing 2.6s ease-out infinite; }
-#nav.untouched .nav-fwd svg { animation: navNudge 2.6s ease-in-out infinite; }
+.nav-fwd:not(:disabled)::after { animation: navRing 2.6s ease-out infinite; }
+.nav-fwd:not(:disabled) svg { animation: navNudge 2.6s ease-in-out infinite; }
 @keyframes navRing {
   0%       { opacity: .85; transform: scale(1); }
   55%,100% { opacity: 0;   transform: scale(1.22); }
@@ -818,4 +848,97 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   #nav     { bottom: 2.4rem; gap: .5rem; }
   #hint    { bottom: 6.1rem; }
   #caption { bottom: 9.6rem; }
+}
+
+/* ------------------------------------------------------------------ *
+   THE PHONE SCHEME
+
+   The site's phone scheme lives in styles/mobile.css, which this page
+   deliberately does not load — see CLAUDE.md, "Two design systems". This
+   block is its counterpart, and it follows the same one rule: everything
+   here is inside `@media (max-width: 768px)`, so the desktop and laptop
+   view of this page cannot be affected by any of it.
+
+   It is at the FOOT of the file for the reason the block above documents:
+   equal-specificity overrides only win if they come after the base rule.
+ * ------------------------------------------------------------------ */
+@media (max-width: 768px) {
+
+  /* ---- The bar ------------------------------------------------------
+     Measured at 390px, the "Project Directory" pill rendered 125x54: it
+     wrapped onto two lines and made itself taller than the 64px bar
+     containing it.
+
+     The cause is a specificity miss in the 860px block above, not a
+     missing rule. It sets `.sitenav__pill { font-size: .8rem }`, but
+     `.sitenav a` — a class AND an element, so one step more specific —
+     also sets font-size, and wins. The pill has been rendering at 14px
+     at every width since. Matching the selector shape fixes it; the
+     nowrap is the belt, so a future copy change cannot reintroduce a
+     two-line pill. */
+  .sitenav a.sitenav__pill {
+    font-size: .78rem;
+    white-space: nowrap;
+    padding: .5rem .8rem;
+    /* The way back to the rest of the site, and the only nav link left at
+       this width once the others collapse. It gets a full target. */
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* Both bar controls take a 44px target. The GitHub glyph keeps its
+     1.15rem size from the block above — only the region that answers a
+     thumb grows, so the bar looks identical. */
+  .ghlink {
+    width: 44px;
+    height: 44px;
+  }
+  .wordmark {
+    min-height: 44px;
+  }
+
+  /* Clear the notch. The bar is the full width of the screen, so in
+     landscape it runs under the rounded corners and the camera housing
+     unless the inset is honoured on both edges. */
+  .sitebar__inner {
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+  }
+
+  /* ---- The bottom stack --------------------------------------------
+     The four offsets above are a derived chain, each clearing the row
+     beneath it, and that reasoning still holds — the home indicator just
+     adds a new floor under the whole stack. Adding the inset to every
+     member preserves the spacing between them exactly; without it the
+     credit line sits under the indicator, where it cannot be tapped and
+     the toggle beside it is unreachable. */
+  #credit  { bottom: calc(.5rem  + env(safe-area-inset-bottom)); }
+  #nav     { bottom: calc(2.4rem + env(safe-area-inset-bottom)); }
+  #hint    { bottom: calc(6.1rem + env(safe-area-inset-bottom)); }
+  #caption { bottom: calc(9.6rem + env(safe-area-inset-bottom)); }
+
+  /* The caption is the page's actual content and shares the bar's inset
+     so its left edge lines up with the wordmark above it. */
+  #caption {
+    left: max(1.15rem, env(safe-area-inset-left));
+  }
+
+  /* Press feedback on the two controls that carry the whole page. The
+     scene is driven entirely by these, so they should acknowledge a
+     touch the instant it lands rather than when it lifts. */
+  .nav-btn:active {
+    transform: scale(0.96);
+    transition: transform 90ms ease-out;
+  }
+
+  /* The brand purple, not iOS blue, for the tap flash. */
+  html {
+    -webkit-tap-highlight-color: color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  .nav-btn,
+  .sitenav a,
+  .credit-toggle {
+    touch-action: manipulation;
+  }
 }

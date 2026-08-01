@@ -1,0 +1,776 @@
+/* =========================================================================
+   Silicon From Scratch — mobile.css
+
+   THE PHONE SCHEME. Loaded LAST, after main.css / alu.css / alu-widget.css,
+   on every shared-site page.
+
+   ---------------------------------------------------------------------
+   THE ONE RULE THIS FILE EXISTS TO GUARANTEE
+   ---------------------------------------------------------------------
+   Every declaration in this file lives inside the single media block below.
+   Nothing sits outside it. That is not a convention, it is the whole point:
+   the desktop layout cannot be affected by anything written here, and you can
+   verify that by reading the file rather than by comparing screenshots. The
+   brace depth returns to zero exactly once, at the very bottom.
+
+   If you are tempted to add a rule outside the wrapper: don't. Put it in
+   main.css and accept that it changes desktop too.
+
+   ---------------------------------------------------------------------
+   WHY THE CONDITION HAS TWO CLAUSES
+   ---------------------------------------------------------------------
+   `max-width: 768px` alone misses the phone people actually hold sideways.
+   An iPhone 14/15 in landscape is 844px wide and a Pro Max 932px, both above
+   the breakpoint — so the entire scheme switched off at exactly the moment
+   the device was still a phone. Measured at 844x390: the hamburger went back
+   to 34px and every safe-area inset stopped applying, in the orientation
+   where the notch sits on the LONG edge and matters most.
+
+   The second clause catches those, fenced on three sides so no desktop
+   window can fall into it:
+
+     orientation: landscape   a tall window is never this
+     max-height: 500px        a laptop has 700px+ of viewport height
+     max-width: 950px         above the widest phone, below any real desktop
+
+   A deliberately short, narrow, landscape desktop window would match. That
+   is the intended trade — at 950x450 the phone treatment is the better
+   rendering anyway, and main.css already special-cases `max-height: 520px`
+   for the same reason.
+
+   ---------------------------------------------------------------------
+   WHY A SEPARATE SCHEME AT ALL
+   ---------------------------------------------------------------------
+   The site is sized in rem and the root is fluid:
+
+       html { font-size: clamp(13px, 1px + 1.17vw, 16px); }
+
+   At 390px the viewport term is 5.6px, so the root clamps to its 13px floor.
+   Everything measured in rem is therefore rendered at 81% of its desktop
+   size on a phone — including every control. That is correct for type and
+   spacing and exactly wrong for touch targets, which need to get BIGGER as
+   the pointer becomes a thumb, not smaller. A 2.6rem hamburger is a
+   comfortable 42px on desktop and a missable 34px on a phone.
+
+   So the scheme splits the two concerns:
+     · Type and rhythm stay in rem and keep scaling with the root.
+     · Anything a finger touches is sized in px, which the root cannot
+       deflate, and is held at the 44px minimum.
+
+   That single distinction is most of this file.
+   ========================================================================= */
+
+@media (max-width: 768px),
+       (orientation: landscape) and (max-height: 500px) and (max-width: 950px) {
+
+  /* ==================================================================== *
+     1. RHYTHM — the tokens, retuned for a screen you hold
+   * ==================================================================== */
+
+  /* The desktop rhythm assumes a reader who can see a whole section at once.
+     On a phone the same values are pure scrolling: `.section` alone spends
+     `--space-7` above AND below, so at 8rem a section boundary costs 208px
+     of empty ground before the next word arrives.
+
+     Retuning the three large tokens here is the highest-leverage change in
+     the file — every section, figure margin and card gap on the site reads
+     from them, so the whole page tightens from one place instead of from a
+     hundred component overrides. The small tokens (1 through 4) are
+     component-internal padding and are left exactly as they are; shrinking
+     those would make things look cramped rather than shorter. */
+  :root {
+    --space-5: 2.25rem;   /* was 3rem */
+    --space-6: 3.25rem;   /* was 5rem */
+    --space-7: 4.25rem;   /* was 8rem */
+  }
+
+  /* ==================================================================== *
+     2. TOUCH — what changes when the pointer is a thumb
+   * ==================================================================== */
+
+  /* The default tap flash is iOS blue and belongs to no design system on
+     this site. Tint it with the brand fill instead, at an opacity that
+     reads as a press rather than as a selection. */
+  html {
+    -webkit-tap-highlight-color: color-mix(in srgb, var(--fill) 22%, transparent);
+  }
+
+  /* Kill the 300ms double-tap-to-zoom delay on things meant to be tapped
+     once. Deliberately NOT applied to the page as a whole: pinch-zoom on a
+     diagram is a feature on a site full of circuit drawings. */
+  a,
+  button,
+  summary,
+  [role="button"],
+  input,
+  select,
+  label {
+    touch-action: manipulation;
+  }
+
+  /* Press feedback belongs on pointer-down, not on release — an interface
+     that waits for the tap to complete before acknowledging it reads as
+     lag. Scale is the cheapest honest signal and it composts with whatever
+     transform the element already carries at rest. */
+  .btn:active,
+  .quiz__opt:active,
+  .alu-preset:active,
+  .code-editor__copy:active,
+  .code-editor__reset:active {
+    transform: scale(0.97);
+    transition: transform 90ms ease-out;
+  }
+
+  /* Reduced motion does not mean no feedback — it means feedback that does
+     not move. The press still acknowledges itself, with a tint instead of a
+     scale, so the control is never silent. The reduce blocks in main.css
+     cannot cover this rule; it is new and it lives here. */
+  @media (prefers-reduced-motion: reduce) {
+    .btn:active,
+    .quiz__opt:active,
+    .alu-preset:active,
+    .code-editor__copy:active,
+    .code-editor__reset:active {
+      transform: none;
+      transition: none;
+      background-color: color-mix(in srgb, var(--fill) 14%, transparent);
+    }
+    .aluwave svg g[role="button"] { transition: none; }
+  }
+
+  /* ==================================================================== *
+     3. SAFE AREAS — the notch, the home indicator, the rounded corners
+   * ==================================================================== */
+
+  /* Fixed chrome must clear the hardware. Without this the top bar slides
+     under the notch on every modern iPhone and the drawer's last row sits
+     beneath the home indicator, where it cannot be tapped.
+
+     The bar's own inset is NOT set here — it is part of the one
+     `.topbar__inner` rule in section 4. Splitting it across two rules is how
+     it broke the first time: this section set `padding-left`/`padding-right`
+     with the inset, and the `padding-inline` shorthand further down, being
+     later in the file at equal specificity, quietly replaced both. */
+
+  .toc__menu {
+    padding-bottom: env(safe-area-inset-bottom);
+    /* A drawer that chains its scroll to the page behind it means a flick
+       inside the menu keeps scrolling the article underneath once the menu
+       hits its end. Contain it. */
+    overscroll-behavior: contain;
+  }
+
+  /* ==================================================================== *
+     4. THE TOP BAR
+   * ==================================================================== */
+
+  /* The bar carries the site's 1400px rail with a 40px inset, which is right
+     on a laptop and absurd on a phone: 80px of the 390px screen, a fifth of
+     the width, spent on outer margin while the wordmark truncates. Drop to
+     the container's own inset so the bar shares its left edge with the prose
+     beneath it.
+
+     Three things about this one declaration:
+
+     · The safe-area insets are folded in HERE rather than added in section 3.
+       Written as a separate rule up there they were silently replaced by this
+       one, because this comes later in the file at equal specificity. Measured.
+     · `padding-inline`, not `padding-left`/`padding-right`. The base rule in
+       main.css sets the logical shorthand, and the physical longhands did not
+       override it — the bar kept its 40px desktop inset on a 390px screen.
+       Measured.
+     · `env()` carries an explicit `0px` fallback. This is good practice rather
+       than a demonstrated fix: it was added while chasing the bug above, and
+       the actual culprit turned out to be a broken comment delimiter that was
+       swallowing the whole rule. Keep the fallback, but do not cite it as the
+       reason this works.
+
+     `max()` means the notch can only ever widen the inset, never narrow it. */
+  .topbar__inner {
+    padding-inline:
+      max(var(--space-3), env(safe-area-inset-left, 0px))
+      max(var(--space-3), env(safe-area-inset-right, 0px));
+    gap: var(--space-2);
+  }
+
+  /* The hamburger is the single most important control on the phone — it is
+     the only way to reach the rest of the site — and at 2.6rem it renders
+     34px. Size it in px so the root's 13px floor cannot shrink it. */
+  .nav-toggle {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  /* The GitHub mark keeps its 1.35rem glyph and gains a 44px hit area
+     around it. The visual weight of the bar is unchanged; only the region
+     that responds to a thumb grows. */
+  .ghlink {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* ---- Clearing the bar ---------------------------------------------
+     The bar is `position: fixed`, so it hangs over whatever starts at the
+     top of the document and every opening section has to reserve room for
+     it. The home hero and the lesson doc-heroes already do. These two do
+     not: both are full-screen opening sections that begin their content
+     26px down, and the bar is 52px tall, so on a phone the About page's
+     kicker and the Coming Soon headline both render underneath it.
+
+     Measured at 390px, where it bites; at desktop widths the same sections
+     open far enough down that they already clear. */
+  .section.aboutme,
+  .section.coming-soon {
+    padding-top: calc(4rem + var(--space-3));
+  }
+
+  /* ==================================================================== *
+     4b. THE HOME HERO — the mark leads
+   * ==================================================================== */
+
+  /* On desktop the hero is two columns, copy left and emblem right, and the
+     two read as one composition side by side. Collapsed to a single column
+     the source order takes over and the mark lands at the BOTTOM, under the
+     buttons, where it reads as a stray footer rather than as the brand.
+
+     Put it first. On a phone the first screen is the whole introduction, and
+     leading with the mark says who this is before it says what it does. The
+     markup is untouched — the hero is a flex column at this width, so `order`
+     alone does it, and the source order that desktop depends on is preserved. */
+  .hero__art {
+    order: 1;
+    margin-bottom: var(--space-3);
+  }
+  .hero__text {
+    order: 2;
+  }
+
+  /* Sized as a lockup rather than as artwork. The asset is mostly transparent
+     padding — roughly a quarter of its width on each side is empty — so a cap
+     on the IMAGE leaves the mark small inside a large empty box. Capping the
+     column is what actually controls how big the emblem reads, and the
+     percentage has to be generous to compensate for that padding: at 88% of a
+     351px column the emblem itself still only draws about 155px across. */
+  .hero__logo {
+    width: min(88%, 21rem);
+    margin-inline: auto;
+  }
+
+  /* ==================================================================== *
+     5. TYPE — the same voice, set for a 350px measure
+   * ==================================================================== */
+
+  /* Body prose runs about 46 characters at this width, well inside the
+     comfortable band, so the size is fine and the LEADING is what needs
+     attention: 1.65 was tuned for a 44rem desktop measure and reads loose
+     and gappy over a short line. Tightening it also removes real height
+     from pages that run eight screens. */
+  body {
+    line-height: 1.58;
+  }
+
+  /* Tracking is size-specific, never one value for every size. Display type
+     needs progressively more negative tracking as it grows, because the
+     letterfit that looks right at 16px reads as gaps at 31px. */
+  h1 {
+    letter-spacing: -0.035em;
+    line-height: 1.04;
+  }
+  h2 {
+    letter-spacing: -0.028em;
+    line-height: 1.08;
+  }
+
+  /* Widows are a phone problem specifically: a heading that sits on one
+     comfortable line at 1280px breaks to three at 390px, and the third is
+     often a single short word stranded under the other two. `balance` evens
+     the lines out instead. Headings only — it is capped at a few lines and
+     is the wrong tool for body copy. */
+  h1,
+  h2,
+  h3,
+  .section-title {
+    text-wrap: balance;
+  }
+
+  /* The kicker is mono, uppercase and tracked to 0.22em. On a wide screen
+     that reads as a precise technical label; over a 350px line it is the
+     widest thing on the page and wraps a two-word label onto two lines.
+     Pull the tracking in and let the tick mark do more of the work. */
+  .kicker {
+    letter-spacing: 0.16em;
+    gap: 0.5rem;
+  }
+  .kicker::before {
+    width: 1rem;
+  }
+
+  /* Size only the PLAIN kicker. `.section-title` is the golden-set section
+     heading and it is applied alongside `.kicker`, deliberately setting a
+     larger size — but it sits at the same specificity, so a bare
+     `.kicker { font-size }` here wins purely by loading later and silently
+     shrinks every section heading on the site from 15px to 9px. Measured on
+     the About page, where the "ABOUT" heading had become unreadable. */
+  .kicker:not(.section-title) {
+    font-size: 0.7rem;
+  }
+
+  /* ==================================================================== *
+     6. CONTAINMENT — nothing may push the page sideways
+   * ==================================================================== */
+
+  /* A grid or flex item defaults to `min-width: auto`, which means it
+     refuses to shrink below its own content. One unbreakable token — a long
+     code line, a wide table, a fixed-width figure — then widens its parent,
+     and the parent's parent, all the way up to <html>, and the whole
+     document scrolls sideways. Setting `min-width: 0` on the reading column
+     lets the chain break at the right place, so overflow becomes the inner
+     element's problem to solve (by scrolling) rather than the page's. */
+  .prose,
+  .prose > *,
+  .split,
+  .split > * {
+    min-width: 0;
+  }
+
+  /* Belt to the above braces: never let the document itself scroll across. */
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  /* ---- Code: scroll it, don't wrap it, never let it push -------------
+     Wrapping code would be the easy fix and it is the wrong one: these
+     listings are Verilog with meaningful indentation, and a soft-wrapped
+     line destroys the column alignment that makes them readable. Give the
+     body its own horizontal scroll instead, so a long line stays a long
+     line and the page stays 390px wide. */
+  .code-editor,
+  .code-editor--static {
+    max-width: 100%;
+  }
+  .code-editor__body {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* `overflow-x: auto` on the body is necessary but NOT sufficient, and this
+     is the subtle half. A scroll container only stops its content widening
+     its ancestors if it is itself allowed to be narrower than that content —
+     and every one of these boxes defaults to `min-width: auto`, which means
+     "never smaller than my contents". The <pre> therefore still pushed the
+     figure to 572px on a 390px screen even with the scroller in place; the
+     scrollbar simply never had a reason to appear.
+     Measured on single-cycle-cpu/control-unit. */
+  .code-editor,
+  .code-editor__bar,
+  .code-editor__body,
+  .code-editor__hl,
+  .code-editor__hl code,
+  .code-editor textarea {
+    min-width: 0;
+  }
+
+  /* The reading column may never exceed the screen, whatever a child asks
+     for. Belt to the `min-width: 0` braces above. */
+  .prose {
+    max-width: 100%;
+  }
+
+  /* ---- The grid blowout ----------------------------------------------
+     The stacking rules across the site all say `grid-template-columns: 1fr`,
+     and `1fr` is shorthand for `minmax(auto, 1fr)`. That `auto` minimum is
+     the track's floor, and it is sized from the widest thing in the column —
+     so one long, unwrapped <pre> makes the track 572px inside a 351px grid,
+     and the column overflows even though the item itself is allowed to
+     shrink. `minmax(0, 1fr)` removes the floor and the track finally obeys
+     its container.
+
+     Measured on single-cycle-cpu/control-unit, which was the last page still
+     202px too wide after the code editor had been given its own scroller.
+     Every other single-column stack on the site carries the same latent
+     fault; this fixes them together rather than waiting for each to surface.
+
+     SCOPED TO 768px ON PURPOSE, unlike the rest of this file. These are
+     companions to the site's own stacking rules, and every one of those is
+     written `@media (max-width: 768px)`. Applied any wider they stop being a
+     fix and start being a layout decision: at 844px landscape main.css still
+     wants the About page's photo BESIDE its text, and forcing one column
+     there blew the portrait up to full width and doubled the page height.
+     An override must not outrange the rule it is correcting. */
+  @media (max-width: 768px) {
+    .split,
+    .split--media-left,
+    .split--media-right,
+    .split--textleft,
+    .split--stack,
+    .handson-grid,
+    .dmem-layout,
+    .quiz__options,
+    .aboutme__grid,
+    .mc-split,
+    .ct-split,
+    .bl-split {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* ---- Tables: scroll them at a legible size, don't shrink them ------
+     Left alone a six-column truth table compresses to fit 350px and every
+     cell becomes unreadable. A table that scrolls at a readable size is
+     more useful than a table that fits and cannot be read. */
+  .prose table,
+  .figure table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ---- The two measured offenders ------------------------------------
+     Both were found by walking the DOM at 390px and reading back every
+     element wider than the viewport, not by eye.
+
+     `#register-files .mem-card` pins the card to 38rem and, because it
+     also sets `max-width: 38rem`, it overrides the base rule's
+     `max-width: 100%`. At the phone root that is 494px on a 390px screen.
+     The ID in the selector means this override has to carry one too.
+
+     SCOPED TO 768px, for the same reason as the grid fix below: 494px is
+     only too wide when the screen is narrower than 494px. In landscape the
+     card fits beside its text exactly as intended, and forcing it to 100%
+     there stretched it to 805px and made fetch-decode-execute 72% taller. */
+  @media (max-width: 768px) {
+    #register-files .mem-card {
+      width: 100%;
+      max-width: 100%;
+    }
+    /* Any other card in the family given a rem width wide enough to matter.
+       `max-width` alone is enough — the width declaration is only a
+       preference once the cap binds. */
+    .mem-card,
+    .dmem-layout .mem-card {
+      max-width: 100%;
+    }
+  }
+
+  /* ==================================================================== *
+     7. FIGURES — let the drawing be the card
+   * ==================================================================== */
+
+  /* Every diagram on the site sits in a white card on the near-black
+     ground. On desktop the padding is what makes it read as a mounted
+     plate. At 390px the same padding is a frame thicker than the drawing
+     is wide, and since the pages carry dozens of these it is the largest
+     single contributor to their length. Trim the frame; keep the plate. */
+  .figure {
+    padding: var(--space-2);
+    margin-top: var(--space-4);
+  }
+  .figure figcaption {
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    font-size: 0.86rem;
+    line-height: 1.55;
+  }
+
+  /* The tall ripple-carry diagram is capped at 460px so it does not tower
+     over a desktop reading column. On a 390px screen that cap is above the
+     available width and does nothing, while the portrait aspect makes it
+     the tallest thing on the page. Let it use the full column. */
+  .figure--tall img {
+    max-width: 100%;
+  }
+
+  /* ==================================================================== *
+     8. CONTROLS — the 44px floor
+   * ==================================================================== */
+
+  /* Sized in px throughout this section, deliberately. See the header note:
+     rem is deflated to 81% exactly where fingers need more room, so a rem
+     value here would silently reintroduce the problem it is fixing. */
+
+  /* Primary actions go full width and become genuinely thumb-sized. A pill
+     that spans the column is easier to hit than a pretty one that doesn't,
+     and on a phone the column IS the layout. */
+  .btn {
+    min-height: 48px;
+    padding-inline: 1.25rem;
+  }
+  .hero__actions .btn,
+  .doc-hero .btn {
+    width: 100%;
+  }
+
+  /* The quiz options were 43px — one pixel short, which is the most
+     annoying kind of miss. Give them real room; a wrong answer should never
+     be a mis-tap. */
+  .quiz__opt {
+    min-height: 52px;
+    padding-block: 0.85rem;
+  }
+
+  /* The flip-card return arrow renders 30x34. It sits in the corner of a
+     card and must stay visually small, so the hit area is expanded with a
+     pseudo-element instead of by growing the glyph. Verified free: nothing
+     else in the stylesheets attaches ::after to this class. */
+  .gate-card__return {
+    position: relative;
+  }
+  .gate-card__return::after {
+    content: "";
+    position: absolute;
+    /* Pull the region out to at least 44px in both axes without moving,
+       resizing or restyling the arrow itself. */
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Same treatment for the other genuinely-small controls: the signal chips
+     embedded in diagrams and the control bits, where the visual size is
+     semantic and must not change. */
+  .gate-sim__chip,
+  .ctrl-bit,
+  .alu-bit {
+    position: relative;
+  }
+  .gate-sim__chip::after,
+  .ctrl-bit::after,
+  .alu-bit::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* The code editor's copy and reset buttons are 15px tall. These are not
+     size-critical, so grow them properly rather than faking the hit area. */
+  .code-editor__copy,
+  .code-editor__reset {
+    min-height: 36px;
+    min-width: 64px;
+    padding: 0.4rem 0.7rem;
+  }
+
+  /* Preset chips in the ALU explorer sit in a grid and are the page's main
+     affordance. 24px tall is a desktop density; on a phone they are the
+     control surface. */
+  .alu-preset {
+    min-height: 44px;
+  }
+
+  /* The wordmark is a link and measures 26px tall. It is the way home from
+     every page, so give it a real target without changing how it looks. */
+  .wordmark {
+    min-height: 44px;
+  }
+
+  /* The drawer rows are the whole navigation on a phone. Anything under
+     44px here is a miss on the one screen where misses cost the most. */
+  .toc__menu .menu__quick > a,
+  .toc__menu .menu__toggle,
+  .toc__menu .menu__leaf > a {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* The footer's links are bare text at 16px tall and sit at the very end of
+     a seven-screen scroll, which is exactly where someone is reaching for
+     "GitHub Repository" one-handed. Make them rows, not words. */
+  .footer a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* The code editor's toolbar buttons. 36px was already an improvement over
+     the 15px they started at, but 36 is not 44 and this is the control that
+     copies a Verilog listing — the single most likely thing a reader wants
+     to do with one on a phone. */
+  .code-editor__copy,
+  .code-editor__reset {
+    min-height: 44px;
+  }
+
+  /* The scroll cue on the home hero is a 25px chevron. It is genuinely
+     tappable — it jumps to the next section — so it gets a real target,
+     with the chevron left at its drawn size. */
+  .hero__scroll {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  /* Glossary terms are inline inside running prose, so they cannot be grown
+     vertically without opening up the line they sit on and breaking the
+     paragraph's rhythm. The hit area goes around them instead: the box
+     extends above and below the text into the leading, which is dead space
+     the line already owns. */
+  .glossary-term {
+    position: relative;
+  }
+  .glossary-term::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+
+  /* ---- Inputs: never let iOS zoom the page on focus ------------------
+     Safari zooms the viewport whenever a focused field's text is under
+     16px, and it does not zoom back out. The reader is then left on a
+     magnified, sideways-scrolling page with no obvious way back. 16px is
+     the threshold, and it is a real px threshold, not a rem one. */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  /* ---- The waveform legend toggles -----------------------------------
+     These are <g role="button"> inside an inline SVG and render 15x13.
+     CSS cannot give an SVG group a larger hit area, because the region
+     comes from its geometry and there is no box to pad — closing the gap
+     properly means adding a transparent hit rect to the markup, which is
+     shared with desktop and therefore out of bounds here.
+
+     What CSS can do is scale the group. `transform-box: fill-box` makes
+     the transform resolve against the group's own bounding box rather
+     than the SVG's viewBox, so this grows the control in place instead of
+     flinging it across the diagram. It lands around 33x29: a real
+     improvement on 15x13 and still short of 44. Deliberately not scaled
+     further — past this the legend starts to overpower the waveform it is
+     labelling, and a legible figure is worth more than the last 11px. */
+  .aluwave svg g[role="button"] {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(2.2);
+  }
+
+  /* ==================================================================== *
+     9. MOTION — a short viewport changes what scroll-reveal means
+   * ==================================================================== */
+
+  /* The site reveals content with GSAP ScrollTrigger. On a desktop screen a
+     reveal fires while the element is still comfortably below the fold. On
+     a 844px-tall phone the trigger point and the reading position are
+     nearly the same, so content can appear to pop in under the reader's
+     thumb. Shortening the travel keeps the effect without the lurch. */
+  .reveal,
+  [data-reveal] {
+    --reveal-shift: 0.75rem;
+  }
+
+  /* ==================================================================== *
+     10. SMALL PHONES — 430px and under
+   * ==================================================================== */
+
+  /* Nested deliberately, so there is exactly one place in the codebase to
+     look for phone refinements and it is inside the phone scheme. */
+  @media (max-width: 430px) {
+
+    /* The hero's two actions stop sitting side by side and stack, each
+       full width. Two 170px pills on one row are both harder to hit and
+       harder to read than two 350px ones stacked. */
+    .hero__actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+    }
+
+    /* One more notch off the display sizes. At 390px an h1 at 2.4rem is
+       31px over a 350px measure, which puts long words like
+       "multiplexer" close to the full line on their own. */
+    h1 {
+      font-size: 2.05rem;
+    }
+    h2 {
+      font-size: 1.7rem;
+    }
+
+    /* The footer's attribution runs at 0.72rem, which is 9px at the phone
+       root — below the size at which anyone will read it. */
+    .footer,
+    .footer p {
+      font-size: 0.82rem;
+    }
+  }
+
+  /* ==================================================================== *
+     11. LANDSCAPE PHONES — wide but only ~390px tall
+   * ==================================================================== */
+
+  /* A landscape phone passes the width test and fails the height one. The
+     hero claims 100svh, which at 390px tall leaves no room for the copy it
+     is supposed to centre, so it clips. Let it size to its content. */
+  @media (orientation: landscape) and (max-height: 500px) {
+
+    /* A landscape phone has plenty of width and almost no height — 844x390.
+       Stacking the mark above the copy, which is right in portrait, spends
+       the one axis that is scarce and pushes the buttons off the screen.
+
+       So landscape goes back to the desktop composition, which was designed
+       for exactly this proportion: copy on the left, mark on the right, the
+       two centred against each other. This is the only place in the scheme
+       where portrait and landscape genuinely want different layouts rather
+       than the same layout at a different size. */
+    .hero {
+      min-height: 0;
+      padding-block: calc(4rem + var(--space-2)) var(--space-3);
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      align-items: center;
+      gap: var(--space-4);
+      /* main.css centres the hero below 900px, which is the right call for a
+         single column and the wrong one for two. */
+      text-align: left;
+      justify-items: stretch;
+    }
+    /* Undo the portrait reorder — in two columns the source order is already
+       copy-then-mark, which is what we want. */
+    .hero__text { order: 1; }
+    .hero__art  { order: 2; margin-bottom: 0; }
+    /* The mark owns its column here rather than sitting as a small crest in
+       the middle of it — same reasoning as portrait, the asset's transparent
+       margins mean the drawn emblem is far smaller than the box. */
+    .hero__logo { width: min(100%, 23rem); }
+
+    /* Full-width buttons made sense across a 351px column. Across a 390px
+       half-column beside the mark they look stretched; let them size to
+       their labels and sit side by side again. */
+    .hero__actions {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .hero__actions .btn { width: auto; }
+
+    /* The bar still has to be cleared here, but 71.5px is 18% of a 390px-tall
+       screen. Keep the clearance and spend the minimum on it: the bar is 4rem
+       and the gap below it comes down to the smallest token. */
+    .section.aboutme,
+    .section.coming-soon {
+      padding-top: calc(4rem + var(--space-1));
+    }
+  }
+
+}
+/* ---- end of the single max-width: 768px wrapper ---------------------- *
+   Brace depth returns to zero HERE and nowhere earlier. Anything below
+   this line would apply at every width, including desktop. Leave it empty.
+ * --------------------------------------------------------------------- */

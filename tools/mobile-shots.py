@@ -14,9 +14,14 @@ Usage:
   python tools/mobile-shots.py                  # every page, every width
   python tools/mobile-shots.py index.html       # just one page (path or name)
   python tools/mobile-shots.py --widths 390     # override the widths
+  python tools/mobile-shots.py --landscape      # add the 844x390 landscape phone
   python tools/mobile-shots.py --keep           # don't wipe old shots first
 
 Output: .mobile-audit/<flattened-page>__<width>w.png
+        .mobile-audit/<flattened-page>__844w-land.png   (with --landscape)
+
+Phone fixes belong in styles/mobile.css and nowhere else — see the
+`mobile-scheme` skill for why, and for how to prove desktop is unaffected.
 """
 
 from __future__ import annotations
@@ -83,12 +88,17 @@ def scroll_through(page) -> None:
     )
 
 
-def shoot(pw, page_file: Path, width: int) -> Path:
+def shoot(pw, page_file: Path, width: int, landscape: bool = False) -> Path:
     is_tablet = width >= TABLET_CUTOFF
     browser = pw.chromium.launch()
+    # Real device emulation, not just a narrow window. The device pixel ratio
+    # matters because it is what makes hairlines and small type render the way
+    # they actually do on a phone, and `is_mobile` is what makes the page use
+    # the mobile user-agent and viewport behaviour rather than a desktop one.
+    # A resized desktop window passes tests a real phone fails.
     context = browser.new_context(
-        viewport={"width": width, "height": 844},
-        device_scale_factor=2,
+        viewport={"width": width, "height": 390 if landscape else 844},
+        device_scale_factor=2 if is_tablet else 3,
         is_mobile=not is_tablet,
         has_touch=True,
     )
@@ -101,7 +111,40 @@ def shoot(pw, page_file: Path, width: int) -> Path:
     except Exception:
         pass  # a JS hiccup shouldn't stop us getting a screenshot
     page.wait_for_timeout(300)
-    out = OUT_DIR / f"{flat_name(page_file)}__{width}w.png"
+    # A full-page shot is stitched, and a `position: fixed` element is painted
+    # wherever it stood during the capture — so the top bar lands in the middle
+    # of the image and reads as a layout bug that isn't there. Pin it to the top
+    # of the document for the shot, and drop the fixed scroll cue for the same
+    # reason, so the PNG shows what a reader actually sees.
+    try:
+        page.evaluate(
+            """() => {
+                const bar = document.querySelector('.topbar');
+                if (bar) {
+                    bar.classList.remove('is-hidden');
+                    bar.style.position = 'absolute';
+                    bar.style.top = '0';
+                    bar.style.transform = 'none';
+                }
+                const cue = document.querySelector('.hero__scroll');
+                if (cue) cue.style.display = 'none';
+                // The dark theme's purple corner glow is `position: fixed` so
+                // it stays in the top-left of the SCREEN as you scroll. In a
+                // stitched shot it lands mid-image and reads as a background
+                // that starts halfway down the page. Re-anchor it to the top
+                // of the document; a pseudo-element needs a stylesheet.
+                const s = document.createElement('style');
+                s.textContent =
+                    'body::before{position:absolute!important;top:0!important;height:100vh!important}';
+                document.head.appendChild(s);
+                void document.body.offsetHeight;
+            }"""
+        )
+        page.wait_for_timeout(120)
+    except Exception:
+        pass
+    suffix = f"{width}w-land" if landscape else f"{width}w"
+    out = OUT_DIR / f"{flat_name(page_file)}__{suffix}.png"
     page.screenshot(path=str(out), full_page=True)
     context.close()
     browser.close()
@@ -113,6 +156,12 @@ def main() -> int:
     ap.add_argument("page", nargs="?", help="A single page (name or relative path).")
     ap.add_argument("--widths", type=int, nargs="+", default=DEFAULT_WIDTHS)
     ap.add_argument("--keep", action="store_true", help="Keep existing screenshots.")
+    ap.add_argument(
+        "--landscape",
+        action="store_true",
+        help="Also shoot 844x390, the landscape phone. Worst case for anything "
+             "that assumes a tall viewport, and the least-checked size on the site.",
+    )
     args = ap.parse_args()
 
     if args.page:
@@ -133,6 +182,9 @@ def main() -> int:
         for page_file in pages:
             for width in args.widths:
                 out = shoot(pw, page_file, width)
+                print(f"  {out.relative_to(ROOT)}")
+            if args.landscape:
+                out = shoot(pw, page_file, 844, landscape=True)
                 print(f"  {out.relative_to(ROOT)}")
     print("Done.")
     return 0

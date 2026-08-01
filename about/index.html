@@ -51,6 +51,9 @@
 
   <!-- Shared site styles (this page lives at /about/, one level down). -->
   <link rel="stylesheet" href="../styles/main.css" />
+  <!-- The phone scheme. Loads LAST so it can override; every rule inside it
+       is scoped to max-width 768px, so desktop is untouched. -->
+  <link rel="stylesheet" href="../styles/mobile.css" />
 
   <!-- Center the About content vertically so it's mid-screen on landing. -->
   <style>

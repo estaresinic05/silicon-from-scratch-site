@@ -13,6 +13,12 @@ See **Colour and type foundations** below before picking any colour or face by
 hand — in particular, `--accent` and `--fill` are two different purples for two
 different jobs and are not interchangeable.
 
+**This guide covers the shared lesson-page system.** One surface deliberately
+sits outside it — the WebGL die descent at `meet-the-processor/`, which runs its
+own tokens and its own copy of the top bar. See **Newer surfaces** at the end of
+this document before touching it, and read `CLAUDE.md` for the repo-wide working
+rules.
+
 ---
 
 ## Responsive strategy — ONE layout, just resized (read this first)
@@ -90,6 +96,43 @@ narrow windows — instead of across the range most people browse at.
 
 Add a new exception here **only** with a clear reason — the default is always
 "same layout, just resized."
+
+### The phone scheme lives in `styles/mobile.css`
+
+"Same layout, just resized" is still the rule, and the phone scheme does not
+break it — it adjusts the things that resizing alone gets wrong.
+
+**All of it is in one file, inside a single `@media (max-width: 768px)`
+block, loaded last on every shared page.** Nothing outside the wrapper. That is
+what makes the desktop layout provably unaffected: a rule that cannot match at
+769px cannot move a desktop pixel, and it is checkable by reading the file
+rather than by comparing screenshots.
+
+The two things resizing gets wrong, and what the scheme does about them:
+
+1. **Touch targets shrink exactly when they should grow.** The root clamps to
+   13px on a phone, so every rem-sized control renders at 81%: a `2.6rem`
+   hamburger is 42px on a laptop and 34px on a phone. Inside `mobile.css`,
+   **type and spacing stay in rem, and anything a finger lands on is sized in
+   px**, held at a 44px minimum. Where the visual must stay small, the hit
+   area is expanded with an absolutely-positioned `::after` and the glyph is
+   left alone.
+
+2. **The rhythm was tuned for a screen you can see all of.** `--space-5`,
+   `--space-6` and `--space-7` are retuned at the top of the file, so every
+   section, figure margin and card gap tightens from one place.
+   `--space-1`–`--space-4` are component-internal padding and are untouched.
+
+Wide content — Verilog listings, truth tables — **scrolls inside its own
+container**; it never wraps (which destroys the alignment that makes it
+readable) and it never shrinks to fit (which makes it illegible).
+
+`meet-the-processor/` shares none of the site's CSS, so it carries its own
+equivalent block at the foot of `meet-the-processor/style.css`, under the same
+one rule.
+
+Full reasoning, plus how to measure without being fooled by in-flight scroll
+reveals, is in `.claude/skills/mobile-scheme/SKILL.md`.
 
 ---
 
@@ -296,15 +339,22 @@ image. Add the matching `fld-*` class to the `<code>`; the colours live in
 
 | Field(s) | Class | Colour | Text | Chip background |
 |---|---|---|---|---|
-| `funct7`, `funct3`, `opcode` | `fld-funct7` / `fld-funct3` / `fld-opcode` | purple | `#d9c6ff` | `rgba(183, 148, 246, 0.18)` |
+| `funct7`, `funct3`, `opcode` | `fld-funct7` / `fld-funct3` / `fld-opcode` | purple | `var(--accent-deep)` | `color-mix(in srgb, var(--accent) 18%, transparent)` |
 | `rs2` | `fld-rs2` | green | `#8fe0a0` | `rgba(134, 214, 162, 0.18)` |
 | `rs1` | `fld-rs1` | amber | `#f0c886` | `rgba(240, 200, 134, 0.18)` |
 | `rd` | `fld-rd` | periwinkle | `#b3baf2` | `rgba(160, 168, 232, 0.22)` |
 | `imm[…]` | `fld-imm` | rose | `#eaa9ba` | `rgba(216, 150, 170, 0.20)` |
 
 The purple trio (`funct7`/`funct3`/`opcode`) is the same as the default `<code>`
-chip (`.theme-dark code`, `#d9c6ff`), so they already match — but still carry an
-explicit `fld-*` class so the field-colour scheme is complete and self-documenting.
+chip (`.theme-dark code`, which is `var(--accent-deep)` on a 16% accent wash), so
+they already match — but still carry an explicit `fld-*` class so the
+field-colour scheme is complete and self-documenting.
+
+Note the split: the purple trio **derives from `--accent`**, because purple is
+brand. The green, amber, periwinkle and rose stay hard-coded rgba, because they
+are keyed to cells in the instruction-format photographs and are data, not
+brand — the same reasoning that keeps the die-region colours out of the token
+system.
 
 ```html
 <em>lw x7, 8(x10)</em> loads from address <em>x10</em> + 8 into the
@@ -1277,7 +1327,7 @@ on the homepage, duplicate them into `styles/main.css` the same way the
   align-items: center;
   gap: var(--space-3);
   padding: clamp(var(--space-3), 3vw, var(--space-4));
-  background: rgba(183, 148, 246, 0.10);   /* faint accent wash — not plain paper */
+  background: color-mix(in srgb, var(--accent) 10%, transparent);  /* faint accent wash — not plain paper */
   border: 1px solid var(--hairline);
   border-left: 3px solid var(--accent);    /* accent spine = "back to earlier" */
   border-radius: var(--radius);
@@ -1290,7 +1340,7 @@ on the homepage, duplicate them into `styles/main.css` the same way the
   transform: translateY(-2px);
   box-shadow: var(--shadow-lift);
   border-color: var(--accent);
-  background: rgba(183, 148, 246, 0.16);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
 }
 .recall-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .recall-card__icon {
@@ -1315,3 +1365,122 @@ on the homepage, duplicate them into `styles/main.css` the same way the
 }
 .recall-card__sub { color: var(--soft-ink); font-size: 0.9rem; }
 ```
+
+---
+
+## Newer surfaces (outside the golden set)
+
+Everything above describes the shared lesson-page system: pages that load
+`styles/main.css` + `styles/alu.css`, scroll normally, and are built by copying a
+pattern. Two surfaces are not built that way. They are recorded here so nobody
+looks for them above and concludes they were never designed.
+
+### Meet the Processor — the WebGL die descent
+
+`meet-the-processor/` replaced the old scrolling article of flat die photographs
+with an interactive 3D model of a Ryzen 5 9600X: **seven composed stops** that
+lift the lid, strip to bare silicon, walk the floorplan and then one core, climb
+the copper metal stack, trace a net through it, and end at a FinFET. Blocks are
+clickable at every stop and open a detail panel.
+
+| File | Role |
+|---|---|
+| `meet-the-processor/index.html` | Page shell, import map, the 2D chrome over the canvas. |
+| `meet-the-processor/scene.js` | The entire 3D scene, stop model, camera keys, materials, picking. |
+| `meet-the-processor/style.css` | All styling, including its own reproduction of the site top bar. |
+| `meet-the-processor/DESIGN.md` | **The spec for the 2D interface** — tokens, layout, components, motion, a11y. |
+| `meet-the-processor/README.md` | **The spec for the 3D scene** — the stops, region data, how to serve it. |
+| `meet-the-processor/verify/` | Python checks to run after editing `scene.js`. |
+
+**It shares no CSS or JS with the rest of the site, on purpose.** It does not
+load `styles/main.css` or `scripts/main.js`, because the scene owns the whole
+viewport and the page never scrolls conventionally — the shared layout,
+scroll-reveal and drawer machinery have nothing to act on and would only fight
+the canvas.
+
+Three consequences worth internalising:
+
+1. **The top bar exists twice.** `meet-the-processor/style.css` reproduces it at
+   this guide's exact metrics: 1400px rail, 40px inset, `4rem` tall, Geist
+   wordmark at 0.95rem/600, filled Project Directory pill trailing the text
+   links. **A change to the shared bar must be made in both files** — there is no
+   inheritance to catch the second one.
+
+   **One deliberate difference: that bar has no hover underline.** `.nav a` in
+   `main.css` draws an animated hairline; the die page draws none, and hover is a
+   colour lift only. The gap looks like an oversight and was "fixed" once before
+   being reverted, so treat a missing underline there as correct. The reason is
+   that two of its three links — the current page and the filled pill — must not
+   carry one anyway, so the rule only ever reached About, and one underlined item
+   in a row of three reads as inconsistency rather than affordance.
+   `verify/topbar-nav.py` asserts its *absence* so it cannot creep back.
+
+   A related trap if you ever do add per-link styling there: a bare
+   `.sitenav a { padding }` outranks `.sitenav__pill { padding }` — one class plus
+   a type beats one class — and silently shrinks the pill. Scope with
+   `a:not(.sitenav__pill)`.
+2. **It has its own token names.** `--void`, `--panel`, `--line`, `--text`,
+   `--muted`, `--accent`, `--accent-lit`. They are tuned to the brand but they
+   are not the site tokens, so do not paste site CSS in and expect it to resolve.
+3. **The five die-region colours are data, not brand.** Zen 5 cores `#ff5f42`,
+   L3 `#5b8cf0`, SMU `#f0a93a`, Test/Debug `#9b6cf0`, IFOP PHY `#38c9a0`. They
+   identify regions on a real die, so they stay hard-coded and never fold into
+   the accent. The same reasoning covers the two hard-coded die-shot overlay
+   purples noted under **The two purples**. The interface itself stays monochrome
+   plus purple; region colour belongs to the die, never to a button or a border.
+
+**Serve it over HTTP.** ES modules and the import map do not load from `file://`.
+Use `python prototypes/cpu-layers/serve.py` (it sends `Cache-Control: no-store`)
+rather than `python -m http.server`, which lets the browser serve a stale
+stylesheet. Symptom: new behaviour, old appearance.
+
+**Transparent tiles are sorted by their mesh origin, so every tile must own
+one.** All the slabs are glass — `transparent: true`, `depthWrite: false` — which
+means the depth buffer cannot decide what is in front and draw order is the only
+thing that can. three.js sets that order by sorting on the distance to each
+mesh's origin. Build a tile with its position baked into the vertices and the
+mesh parked at the group origin, and all 29 core blocks report the same distance,
+the sort ties, and they get painted in declaration order instead. Flat on the die
+that is invisible; the moment one *lifts*, a block behind it that happens to be
+declared later paints straight over it. So geometry goes through
+`centreGeometry()` and the position is carried by the mesh. Any new tile added to
+`scene.js` has to do the same.
+
+**The forward arrow pulses for the whole descent**, not just the first stop. It
+is gated on `:not(:disabled)`, which needs no state: the arrow is disabled while
+a leg is playing, while a sheet is open, and at the last stop, so the cue runs
+exactly when pressing would do something. The arrow is the only way through the
+page — there is no scroll to fall back on — so "is that everything?" is a
+question asked at every stop, not only the first.
+
+**The unit of interaction is the part, not the block.** Several things on this
+die are one part drawn as several blocks: eight Zen 5 cores, two L2 halves, four
+vector regfile quarters, four FADD + FMAC lanes, two Vector Execution columns.
+They all open the same panel, so hovering any one of them lifts **all** of them.
+The grouping needs no table of its own — `SUBJECT_OF` already says which blocks
+open which sheet, and the part *is* the subject. The lift is the only thing on
+screen saying what a click will act on, so it has to outline the part rather than
+the rectangle under the cursor. `verify/part-hover.py` measures this.
+
+**The idle affordance.** No hover label. One part, chosen at random from whatever
+is selectable at the current stop, rises out of the die and settles back, exactly
+as it would under a cursor — the same code path, so the demo cannot drift from
+the real thing. It runs continuously and stands down while the cursor is on a
+block. Each block already carries its own name, painted larger than any label
+chip could be, so the demonstration only has to show that blocks *move* — naming
+was never the missing piece. `verify/affordance.py` enforces all of this; note it
+runs on swiftshader and its jump counts sit close to their thresholds, so a lone
+failure there is worth re-running before believing.
+
+### `prototypes/`
+
+Where the die descent was developed. Self-contained, linked from nothing, and
+`noindex`. Its `DESIGN.md` / `README.md` are the ancestors of the ones now in
+`meet-the-processor/` — read the shipped ones instead unless you want the history.
+
+### Dormant: `scripts/cpu-hero.js`
+
+A Three.js two-chip turntable for the home hero, driven by ScrollTrigger with a
+static emblem fallback. **No page currently loads it** (only `styles/main.css`
+still references its classes). Leave it alone or finish wiring it; don't treat it
+as a live pattern.
