@@ -998,48 +998,53 @@ main section[id] { scroll-margin-top: 5rem; }
 }
 @media (min-width: 900px) {
   .hero {
-    /* The art column is the wider of the two, and that is a property of the
-       ASSET, not a composition preference: logo-transparent-dark.png is
-       2816x1536 with the emblem occupying barely half its width, so roughly a
-       quarter of the box is transparent padding on each side. At an even split
-       the mark rendered about 300px wide inside a 594px image. Giving the
-       column the extra width buys back real emblem rather than more air. */
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.1fr);
+    /* The art column used to be the wider of the two, and that was a property
+       of the ASSET rather than a composition preference:
+       logo-transparent-dark.png carried roughly a quarter of its width as
+       transparent padding on each side, so the extra column width bought back
+       real emblem rather than more air.
 
-    /* Where the copy sits down the screen.
+       The card that replaced it has no baked padding — every pixel of it is
+       content, and it sets its own width anyway. So the columns go back to
+       even, and the small tilt now runs the other way, toward the copy: the
+       headline is what a first-time reader is meant to read first. */
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
 
-       The hero is a full-viewport box whose single row is vertically centred,
-       so the row's position is set by how the padding is split, not by the
-       padding total. It used to be bottom-heavy (58px top against 115px
-       bottom), which pulled the centred row UP: the headline landed at y=254 on
-       a 900px screen, roughly the quarter mark, and read as pinned near the top
-       bar rather than composed on the screen.
+    /* Where both columns sit down the screen: centred in the band between the
+       bottom of the fixed top bar and the bottom of the viewport.
 
-       This inverts the split. The top term clears the 4rem fixed bar and then
-       adds a viewport-proportional push; the bottom term is deliberately small,
-       because the pinned scroll cue already owns the foot of the screen and
-       does not need padding reserved for it.
+       This replaces years of hand-solved padding. The old rule carried a
+       viewport-proportional top push (4rem + 8.44vh) against a small bottom
+       term, chosen so the headline landed on a particular y at one particular
+       screen height. Every time the copy rewrapped or the artwork changed size
+       the number had to be re-solved, because the row is centred inside the
+       padded box and half of any height change lands on the top edge. It was
+       re-solved three times.
 
-       Careful when re-tuning: the row is CENTRED, so a pixel added to the top
-       padding moves the headline down by only half a pixel. Going from 254 to
-       365 needed the top/bottom difference to swing by 222px, not 111px. */
-    /* Solved, not guessed. The row is centred inside the padded box, so:
-         h1.y = padTop + (H - padTop - padBot - rowH)/2 + (rowH - textH)/2
-       With H=900 and padBot=27, landing h1 at 365 needs padTop = 140.
+       Padding the top by exactly the bar's height and the bottom by nothing
+       makes the content box the band itself, and the rest falls out of the
+       layout rather than out of arithmetic:
 
-       Re-solved twice now, both times because the TEXT COLUMN's height changed
-       and the row is centred, so half of any change lands on the top edge:
+         * the hero is min-height 100vh with one auto row, and a grid's default
+           align-content stretches that row to fill the content box, so the row
+           IS the band;
+         * align-items: center then centres each column in the row
+           independently, so the card and the copy are each centred in the band
+           on their own terms rather than being centred as a pair.
 
-         9.22vh  — 18px intro on two lines (text column 290, shorter than the
-                   299 emblem, so the emblem set the row height)
-        12.44vh  — Geist made it wrap to three lines; column grew to 319 and
-                   became the taller of the two
-         8.44vh  — intro dropped to 16px and went back to two lines; column is
-                   283 and the emblem sets the height again
+       Nothing to re-solve when the copy rewraps or the card's proportions
+       change: both stay centred by construction, at every screen height.
 
-       If the hero copy or its size changes again, re-solve rather than nudge. */
-    padding-block: calc(4rem + clamp(2.5rem, 8.44vh, 10rem))
-                   clamp(1.5rem, 3vh, 3rem);
+       The pinned scroll cue owns the foot of the screen and needs no padding
+       reserved for it — it is position: fixed and outside this box entirely.
+       The card's own 74vh width cap is what keeps it from growing into the cue
+       on a short screen.
+
+       The +1px is the bar's bottom hairline, which is part of its border box:
+       the bar measures 4rem + 1px on screen, so padding it at a bare 4rem left
+       both columns half a pixel high. A hairline is one of the two things the
+       repo sizes in px, and this is the same hairline. */
+    padding-block: calc(4rem + 1px) 0;
 
     /* The hero takes the PROTOTYPE'S box rather than the shared .container one,
        so the copy starts at the same x it does there: a 1400px track with 40px
@@ -1108,23 +1113,122 @@ main section[id] { scroll-margin-top: 5rem; }
 @media (prefers-reduced-motion: reduce) {
   .hero__scroll-chev { animation: none; }
 }
-/* The emblem now sits in its own column rather than stacked above the copy, so
-   it is sized by its column and by height, not by a page-width fraction. The
-   vh cap is still what keeps a laptop-height screen from pushing the buttons
-   under the pinned scroll cue. No negative margin any more: nothing sits
-   directly beneath it to pull upward. */
+/* The art column holds one clickable card rather than a brand mark, so it is
+   sized by its column and by height, not by a page-width fraction. The vh cap
+   is still what keeps a laptop-height screen from pushing the buttons under the
+   pinned scroll cue. */
 .hero__art { display: grid; place-items: center; min-width: 0; }
-.hero__logo {
-  width: min(100%, 780px, 88vh);
-  /* Trims the PNG's baked-in transparent band top and bottom, so the emblem
-     sits optically level with the copy instead of floating in its own gutter.
-     Proportional to the rendered width, so the trim keeps pace as it scales. */
-  margin-block: calc(min(100%, 780px, 88vh) * -0.05);
+
+/* ---- the Meet the Processor card -----------------------------------------
+   Three silent loops out of the 3D scene, a label and an arrow. Deliberately
+   the same component the coming-soon page's .learn-card is: same paper frame,
+   same hairline, same lift on hover, same arrow nudge. A card that behaved
+   differently here would read as a different site.
+
+   Every hover transform lives on .mtp-card or deeper and never on .hero__art,
+   which scroll.js already owns an inline transform on. */
+.mtp-card {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-2), 1.4vw, var(--space-3));
+  padding: clamp(var(--space-2), 1.4vw, var(--space-3));
+  width: min(100%, 42rem, 74vh);
+  box-sizing: border-box;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease),
+              border-color 0.18s var(--ease);
 }
-@media (max-width: 899px) {
-  /* Stacked: give it back a page-relative width and trim the PNG's baked-in
-     transparent padding so it does not open a gap above the fold. */
-  .hero__logo { width: min(560px, 88%, 46vh); }
+.mtp-card:hover,
+.mtp-card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--accent);
+}
+.mtp-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* One wide panel over two, the same brick wall the learn cards use. Row heights
+   come from the clips' own aspect ratios rather than fixed pixels, so the wall
+   scales with the column instead of hiding part of itself at a narrow width. */
+.mtp-card__collage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+.mtp-card__clip {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  /* The scene's own backdrop, so a clip that has not decoded yet is a hole of
+     exactly the colour that is about to fill it. */
+  background: #0f0b1a;
+}
+.mtp-card__clip--wide { grid-column: 1 / 3; aspect-ratio: 16 / 7; }
+
+.mtp-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-inline: 0.25rem;
+}
+.mtp-card__label { display: grid; gap: 0.15rem; min-width: 0; }
+/* The part number of the chip in the clips, so the card names its subject.
+   No text-transform and only light tracking, unlike the site's other mono
+   kickers: this is a product name, and "AMD RYZEN 5 9600X" is not how it is
+   written. The wide tracking those kickers use exists to make a shouted label
+   legible, which a mixed-case name does not need. */
+.mtp-card__kicker {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+.mtp-card__title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+  line-height: 1.2;
+}
+.mtp-card__sub {
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: var(--soft-ink);
+}
+/* An action, so it is a pill, and it is filled rather than outlined: the whole
+   point of the card is that this is the thing to press. */
+.mtp-card__arrow {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 999px;
+  background: var(--fill);
+  color: #fff;
+  transition: transform 0.18s var(--ease), background-color 0.18s var(--ease);
+}
+.mtp-card__arrow svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mtp-card:hover .mtp-card__arrow,
+.mtp-card:focus-visible .mtp-card__arrow {
+  transform: translateX(4px);
+  background: var(--fill-hover);
 }
 .hero h1 {
   max-width: 18ch;

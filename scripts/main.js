@@ -597,6 +597,52 @@
     }
   }
 
+  /* ---- 1b. The home hero card's three loops -----------------------------
+     The clips carry no autoplay attribute, so this is the only place that
+     decides whether they run. Two reasons it is worth the lines rather than
+     the attribute:
+
+       * reduced motion. An autoplaying loop is exactly the thing that setting
+         exists to stop, and CSS cannot pause a video. Left paused, each panel
+         shows its poster, which is the same frame the clip opens on, so the
+         card looks composed rather than broken.
+       * scrolling away. Three decoders running under a page nobody is looking
+         at is heat for nothing, so they stop at the viewport edge.
+
+     What is deliberately NOT here is a stagger. Three loops of the same length
+     cut back to frame one together and the card reads as one flashing object,
+     but the fix belongs in the assets, not here: the clips are rendered 5.0,
+     5.6 and 4.4 seconds long, so they drift apart on their own. Setting
+     currentTime from here was tried and is worse — it depends on metadata
+     arriving before playback starts, and when that lost the race it jumped all
+     three panels seconds into the loop. See tools/render-hero-loops.py. */
+  var heroClips = document.querySelectorAll(".mtp-card__clip");
+  if (heroClips.length && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    var heroCard = document.querySelector(".mtp-card");
+    var heroPlaying = false;
+    var setHeroPlaying = function (on) {
+      if (on === heroPlaying) return;
+      heroPlaying = on;
+      for (var ci = 0; ci < heroClips.length; ci++) {
+        if (on) {
+          // play() rejects if the element is not ready yet or the tab is
+          // backgrounded. Nothing to recover — the observer fires again.
+          var p = heroClips[ci].play();
+          if (p && p.catch) p.catch(function () {});
+        } else {
+          heroClips[ci].pause();
+        }
+      }
+    };
+    if ("IntersectionObserver" in window && heroCard) {
+      new IntersectionObserver(function (entries) {
+        setHeroPlaying(entries[0].isIntersecting);
+      }, { threshold: 0.01 }).observe(heroCard);
+    } else {
+      setHeroPlaying(true);
+    }
+  }
+
   /* ---- 2. Top-bar quick links (desktop inline nav) ----------------------
      Home / About / Meet the Processor / Tools / Help. Inline on desktop;
      hidden on mobile, where they ride at the top of the drawer instead. */

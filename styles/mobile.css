@@ -246,16 +246,20 @@
     order: 2;
   }
 
-  /* Sized as a lockup rather than as artwork. The asset is mostly transparent
-     padding — roughly a quarter of its width on each side is empty — so a cap
-     on the IMAGE leaves the mark small inside a large empty box. Capping the
-     column is what actually controls how big the emblem reads, and the
-     percentage has to be generous to compensate for that padding: at 88% of a
-     351px column the emblem itself still only draws about 155px across. */
-  .hero__logo {
-    width: min(88%, 21rem);
+  /* The card is content edge to edge, unlike the emblem it replaced, so it does
+     not need the generous percentage that asset's transparent margins did. It
+     takes the column and stops there. Provisional: the phone pass still has to
+     decide whether a call to action deserves to sit above the headline at all,
+     which is what the `order` above currently gives it. */
+  .mtp-card {
+    width: 100%;
     margin-inline: auto;
   }
+  /* The hero centres its text at this width, and the card's foot inherited it:
+     a centred label beside a right-aligned arrow, which reads as neither. The
+     foot is a label-and-action row, not hero copy, so it keeps its own
+     alignment and the two ends anchor to the two edges. */
+  .mtp-card__foot { text-align: left; }
 
   /* ==================================================================== *
      5. TYPE — the same voice, set for a 350px measure
@@ -746,10 +750,10 @@
        copy-then-mark, which is what we want. */
     .hero__text { order: 1; }
     .hero__art  { order: 2; margin-bottom: 0; }
-    /* The mark owns its column here rather than sitting as a small crest in
-       the middle of it — same reasoning as portrait, the asset's transparent
-       margins mean the drawn emblem is far smaller than the box. */
-    .hero__logo { width: min(100%, 23rem); }
+    /* The card owns its column here rather than sitting as a small crest in
+       the middle of it. The vh cap the desktop rule carries matters more in
+       landscape than the rem cap does, so it stays in charge. */
+    .mtp-card { width: min(100%, 23rem); }
 
     /* Full-width buttons made sense across a 351px column. Across a 390px
        half-column beside the mark they look stretched; let them size to

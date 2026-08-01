@@ -220,8 +220,8 @@
         </h1>
         <p class="hero__intro">
           For students, hobbyists, career-switchers, tinkerers, and the merely
-          curious &mdash; young or old. Learn the genius behind the heart of
-          modern computing.
+          curious, young or old. Learn the genius behind the heart of modern
+          computing.
         </p>
         <div class="hero__actions">
           <!-- Still opens the project directory; only the label and the arrow
@@ -240,9 +240,42 @@
           </a>
         </div>
       </div>
+      <!-- The art column is the way in to Meet the Processor, not a brand mark.
+           Three silent loops rendered straight out of the live 3D scene by
+           tools/render-hero-loops.py: the lid lifting off, the core's blocks
+           rising, the copper stack coming apart. Nothing here is decoration for
+           its own sake — each panel is a moment the reader gets to fly through
+           once they press it.
+
+           The clips carry no autoplay attribute. Playback is started in
+           scripts/main.js so reduced motion and the offscreen case are decided
+           in one place rather than three. Until it runs, the posters stand in,
+           which is also exactly what a reduced-motion visitor keeps. -->
       <div class="hero__art">
-        <img class="hero__logo" src="assets/home/logo-transparent-dark.png"
-             alt="Silicon From Scratch — a circuit-board emblem with an upward arrow" />
+        <a class="mtp-card" href="meet-the-processor/">
+          <span class="mtp-card__collage" aria-hidden="true">
+            <video class="mtp-card__clip mtp-card__clip--wide"
+                   src="assets/home/mtp-lid.mp4"
+                   poster="assets/home/mtp-lid-poster.jpg"
+                   muted loop playsinline preload="metadata"></video>
+            <video class="mtp-card__clip" src="assets/home/mtp-core.mp4"
+                   poster="assets/home/mtp-core-poster.jpg"
+                   muted loop playsinline preload="metadata"></video>
+            <video class="mtp-card__clip" src="assets/home/mtp-metal.mp4"
+                   poster="assets/home/mtp-metal-poster.jpg"
+                   muted loop playsinline preload="metadata"></video>
+          </span>
+          <span class="mtp-card__foot">
+            <span class="mtp-card__label">
+              <span class="mtp-card__kicker">AMD Ryzen 5 9600X</span>
+              <span class="mtp-card__title">Meet the Processor</span>
+              <span class="mtp-card__sub">Descend from the lid to a single transistor</span>
+            </span>
+            <span class="mtp-card__arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg>
+            </span>
+          </span>
+        </a>
       </div>
     </section>
 

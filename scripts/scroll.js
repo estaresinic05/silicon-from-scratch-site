@@ -265,13 +265,13 @@ function buildBpTrace(managed) {
   /* ---- Home hero: a gentle settling-in on load ---- */
   if (document.querySelector(".hero")) {
     whenFontsReady(function () {
-      /* The copy leads now. It used to open on the emblem, which was right when
-         the emblem sat on top of the headline and is wrong now that it sits
-         beside it: the reveal should follow the reading path, and the reading
-         path starts at the headline. The emblem runs underneath from just after
-         the headline starts, on a longer duration, so it settles rather than
-         arriving. Its absolute position (0.15) rather than a relative offset is
-         what lets it overlap the whole copy sequence. */
+      /* The copy leads. It used to open on the art, which was right when the art
+         sat on top of the headline and is wrong now that it sits beside it: the
+         reveal should follow the reading path, and the reading path starts at
+         the headline. The art runs underneath from just after the headline
+         starts, on a longer duration, so it settles rather than arriving. Its
+         absolute position (0.15) rather than a relative offset is what lets it
+         overlap the whole copy sequence. */
       gsap
         .timeline({ defaults: { ease: EASE } })
         .fromTo(".hero h1", { opacity: 0, y: 20 },
@@ -284,9 +284,13 @@ function buildBpTrace(managed) {
                 { opacity: 1, scale: 1, duration: 0.9 }, 0.15);
     });
 
-    /* subtle logo parallax as the hero scrolls away */
+    /* Subtle parallax as the hero scrolls away.
+       Deliberately on the INNER collage rather than on .mtp-card: the card owns
+       a transform of its own on hover, and two owners of one transform means
+       whichever wrote last wins. GSAP drives the panels, CSS lifts the card,
+       and neither has to know about the other. */
     var smallScreen = window.matchMedia("(max-width: 768px)").matches;
-    gsap.to(".hero__logo", {
+    gsap.to(".hero__art .mtp-card__collage", {
       yPercent: smallScreen ? -5 : -10, // lighter drift on phones
       ease: "none",
       scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true }
