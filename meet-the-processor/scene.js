@@ -987,6 +987,45 @@ function overlayTexture(list, mode, aspect, glow = 1, wash = 1, inset = 0) {
    keeps it reading as glass — the plane paints over it, so you see the silicon
    lying flat under the slab rather than a second copy of it floating at the
    slab's own height. */
+/* --- sorting transparent tiles ---------------------------------------
+   Every tile in this file — the floorplan's regions and the core's blocks — is
+   glass: `transparent: true` with `depthWrite: false`, so the depth buffer
+   cannot decide what is in front. Order of drawing is the only thing that can,
+   and three.js decides that by sorting transparent meshes back to front on the
+   distance to each mesh's ORIGIN.
+
+   Which means the origin has to be somewhere meaningful. It was not. Every tile
+   was built with its position baked into the vertices and its mesh left at the
+   group origin, so all 29 core blocks reported the same distance, the sort tied
+   on all of them, and three.js fell back to the stable tiebreak: creation order.
+   The blocks were therefore painted in the order CORE_BLOCKS happens to list
+   them, which has nothing to do with where they are.
+
+   Flat on the die that is invisible, because the tiles are disjoint and never
+   overlap on screen. It becomes visible the moment one LIFTS: a raised block
+   covers its neighbours, and any neighbour listed later in the array paints
+   straight back over it. Hovering Branch put L1 BTB — a block strictly behind
+   it — on top of it, and the periodic jump hit the same thing wherever the
+   dice landed on a block declared early with something behind it declared late.
+
+   So: geometry is centred on its own origin, and the position is carried by the
+   MESH. Then the sort has real distances to work with and back-to-front is
+   simply correct, at every camera angle, for the lift and the hover and the
+   jump alike, with no per-case handling anywhere. Any new tile built here must
+   go through centreGeometry for the same reason. */
+function centreGeometry(geo) {
+  geo.computeBoundingBox();
+  const bb = geo.boundingBox;
+  const ox = (bb.min.x + bb.max.x) / 2;
+  const oy = (bb.min.y + bb.max.y) / 2;
+  geo.translate(-ox, -oy, 0);
+  /* The mesh is laid flat by a -90° rotation about x, which sends shape-y to
+     world -z, so this is the parent-space offset that puts the tile back
+     exactly where its vertices used to be. z stays put: it is the extrude
+     depth, and it is what the lift animates. */
+  return [ox, -oy];
+}
+
 const RO_WALLS = 10;           // after sBack 1 / sFloor 2 / sCore 3
 /* Splits one extruded body into two meshes over one geometry: each draws only
    its own group, the other being suppressed by an invisible material. Same
@@ -1100,9 +1139,15 @@ GROUPS.forEach((grp) => {
     });
     const geo = planar(
       new THREE.ExtrudeGeometry(shape, { depth: TILE_T, bevelEnabled: false }));
+    /* Centre the geometry on its own origin and carry the position on the MESH.
+       See "sorting transparent tiles" above RO_WALLS — this is the whole reason
+       a raised tile draws in front of the ones behind it. uv is written by
+       planar() first, because it reads the untranslated coordinates. */
+    const [ox, oz] = centreGeometry(geo);
     const mkPart = (mats, order) => {
       const m = new THREE.Mesh(geo, mats);
       m.rotation.x = -Math.PI / 2;
+      m.position.set(ox, 0, oz);
       m.renderOrder = order;
       m.userData.pick = r.id;
       tileGroup.add(m);
@@ -1116,10 +1161,13 @@ GROUPS.forEach((grp) => {
        so the highlight is painted ON the silicon instead of hovering over it.
        The polygon offset is what stops that from z-fighting. */
     const mkCap = (map, order) => {
-      const m = new THREE.Mesh(planar(new THREE.ShapeGeometry(shape)),
+      const cap = planar(new THREE.ShapeGeometry(shape));
+      centreGeometry(cap);          // same shape, so the same origin as the body
+      const m = new THREE.Mesh(cap,
         new THREE.MeshBasicMaterial({ map, transparent: true, opacity: 0,
                                       depthWrite: false, ...DIE_FACE_OFFSET }));
       m.rotation.x = -Math.PI / 2;
+      m.position.set(ox, 0, oz);
       m.renderOrder = order;
       tileGroup.add(m);
       return m;
@@ -1612,10 +1660,15 @@ chip.add(coreTileGroup);
     });
     const geo = corePlanar(
       new THREE.ExtrudeGeometry(shapes, { depth: LIFT_T, bevelEnabled: false }));
+    /* Centred on its own origin so the transparent sort has a real distance to
+       work with — see "sorting transparent tiles" above RO_WALLS. This is the
+       group where it matters most: 29 blocks packed edge to edge, any of which
+       can be lifted by a hover or by the periodic jump. */
+    const [ox, oz] = centreGeometry(geo);
     const mkPart = (mats, order) => {
       const m = new THREE.Mesh(geo, mats);
       m.rotation.x = -Math.PI / 2;
-      m.position.set(coreCX, 0.008, coreCZ);
+      m.position.set(coreCX + ox, 0.008, coreCZ + oz);
       m.renderOrder = order;
       /* A core block's identity is its label — there is no id for these — so the
        pick reads 'blk:<label>'. SUBJECT_OF maps that to a sheet. */
@@ -1630,11 +1683,13 @@ chip.add(coreTileGroup);
        is painted ON the silicon; the polygon offset is what stops that
        z-fighting. */
     const mkCap = (map, order) => {
-      const m = new THREE.Mesh(corePlanar(new THREE.ShapeGeometry(shapes)),
+      const cap = corePlanar(new THREE.ShapeGeometry(shapes));
+      centreGeometry(cap);          // same shapes, so the same origin as the body
+      const m = new THREE.Mesh(cap,
         new THREE.MeshBasicMaterial({ map, transparent: true, opacity: 0,
                                       depthWrite: false, ...DIE_FACE_OFFSET }));
       m.rotation.x = -Math.PI / 2;
-      m.position.set(coreCX, 0, coreCZ);
+      m.position.set(coreCX + ox, 0, coreCZ + oz);
       m.renderOrder = order;
       coreTileGroup.add(m);
       return m;
@@ -2629,16 +2684,15 @@ function advance() {
   return current;
 }
 
-const navEl = document.getElementById('nav');
 const navPrev = document.getElementById('nav-prev');
 const navNext = document.getElementById('nav-next');
 const navCount = document.getElementById('nav-count');
 const stageEl = document.getElementById('stage');
 function syncNav() {
-  /* The forward pill pulses until the viewer moves once, however they moved:
-     pill, back button or arrow key. The point of the pulse is "this is the
-     control", and once that has landed it is only noise. */
-  if (stopIdx !== 0 || flying) navEl.classList.remove('untouched');
+  /* The forward pill's pulse used to be retired here, once the viewer had moved
+     once. It runs for the whole descent now and needs no state to do it: the CSS
+     keys off :not(:disabled), so setting `disabled` below is the only thing that
+     starts or stops it. See "the forward arrow's pulse" in style.css. */
   navPrev.disabled = flying || frozen || stopIdx === 0;
   navNext.disabled = flying || frozen || stopIdx === STOPS.length - 1;
   navCount.textContent = `${stopIdx + 1} / ${STOPS.length}`;
@@ -2957,11 +3011,55 @@ function pick(ev) {
 }
 
 
-/* The block under the cursor, if it is one you can open. The scene reads this
-   every frame to lift it and pulse its colour — see the tile loops in
-   updateScene. Held as the record rather than the id so that eight Zen 5 cores
-   do not all light up when you hover one of them. */
+/* --- parts, not blocks ------------------------------------------------
+   Several things on this die are ONE part drawn as several blocks: the Zen 5
+   cores, the two L2 halves, the four vector regfile quarters, the four FADD +
+   FMAC lanes, the two Vector Execution columns. The floorplan and the core were
+   traced that way because that is how the silicon is laid out, and the labels
+   say so — "L2 Cache ½", "Vector Regfile ¼".
+
+   SUBJECT_OF already knows which blocks are the same part, because it maps every
+   pick id to the sheet it opens and the four quarters all open one sheet. So the
+   grouping needs no new table: the part IS the subject.
+
+   Hover used to answer on the single block under the cursor. That was wrong on
+   exactly these parts. A viewer moving onto one quarter of the vector regfile
+   was shown one quarter reacting, learned that this small rectangle was the
+   clickable thing, and then got a panel about the whole register file — and the
+   three identical rectangles beside it, which do the same job and open the same
+   panel, sat still as though they were something else. The lift is the only
+   thing on screen that says what a click is going to act on, so it has to
+   outline the part, not the pick. */
+const PART = new Map();          // subject slug -> every block that opens it
+for (const tl of tiles)     addToPart(tl);
+for (const tl of coreTiles) addToPart(tl);
+function addToPart(tl) {
+  const subj = SUBJECT_OF[tl.body.userData.pick];
+  if (!subj) return;             // not wired to a sheet, so not a part
+  let set = PART.get(subj);
+  if (!set) PART.set(subj, set = []);
+  set.push(tl);
+}
+/* Falls back to the block itself, so anything outside SUBJECT_OF still behaves
+   exactly as it did: a part of one. */
+const partOf = (tl) => PART.get(SUBJECT_OF[tl.body.userData.pick]) || [tl];
+/* Only the blocks that are actually on screen. A part can straddle a boundary
+   the descent has already crossed, and a faded block must not be lifted or have
+   its fill restored — the same reasoning as the drop in hoverState below. */
+const litPart = (tl) => new Set(partOf(tl).filter(selectable));
+
+/* The block under the cursor, if it is one you can open, and every block that
+   rises with it. The scene reads hoverSet every frame to lift and pulse — see
+   the tile loops in updateScene. `hovered` stays the single record the cursor is
+   actually on, because the things that ask about it (the hint line, the attract
+   pass standing down, the verify hook) mean the cursor, not the part. */
 let hovered = null;
+let hoverSet = new Set();
+function setHover(tl) {
+  if (tl === hovered) return;
+  hovered = tl;
+  hoverSet = tl ? litPart(tl) : new Set();
+}
 
 /* The scene is only touchable while PARKED at a stop — see atStop(). Mid-flight
    the blocks are still arriving, the camera is still moving, and a hit test
@@ -2972,7 +3070,7 @@ let hovered = null;
 canvas.addEventListener('click', (ev) => {
   if (!atStop()) return;
   const ud = pick(ev);
-  if (ud && openSheet(ud.pick)) hovered = null;   // the sheet covers the canvas
+  if (ud && openSheet(ud.pick)) setHover(null);   // the sheet covers the canvas
 });
 let hoverRaf = 0;
 /* Where the cursor is, and whether it is a cursor at all. The block tag rides
@@ -2986,19 +3084,25 @@ canvas.addEventListener('pointermove', (ev) => {
   if (hoverRaf) return;
   hoverRaf = requestAnimationFrame(() => {
     hoverRaf = 0;
-    if (!atStop()) { hovered = null; canvas.style.cursor = 'default'; return; }
+    if (!atStop()) { setHover(null); canvas.style.cursor = 'default'; return; }
     const ud = pick(ev);
-    hovered = ud ? (ud.live || null) : null;
+    setHover(ud ? (ud.live || null) : null);
     canvas.style.cursor = ud ? 'pointer' : 'default';
   });
 });
-canvas.addEventListener('pointerleave', () => { hovered = null; });
+canvas.addEventListener('pointerleave', () => { setHover(null); });
 
 /* --- hover feedback -------------------------------------------------
-   A hovered block rises a little further out of the die and its colour breathes,
+   A hovered part rises a little further out of the die and its colour breathes,
    which is the affordance: these slabs already move, so a static highlight would
    not read as "this one is different", but a slab that lifts under the cursor and
    pulses does.
+
+   PART, not block — see the note above setHover. Where a part is several blocks
+   they all rise together, which is also why the lift reads as an outline of the
+   thing rather than a highlight of a rectangle: four quarters coming up as one
+   shape is a picture of how wide the vector unit is, and that width is the point
+   the core reveal is already making when it raises them as a single beat.
 
    HOVER_LIFT is a FRACTION of the block's own settled offset rather than a world
    distance, because the floorplan sits at 0.20 and the core at 0.069 — one fixed
@@ -3028,9 +3132,16 @@ function hoverState(tl) {
   /* Drop the hover if the block has faded out from under a cursor that never
      moved — scrolling can carry a region away while it is still hovered, and
      without this it would keep lifting and pulsing, and worse, keep the fill
-     that hover restores, so a cleared region would stay visible. */
-  if (tl === hovered && !selectable(tl)) hovered = null;
-  const want = tl === hovered ? 1 : 0;
+     that hover restores, so a cleared region would stay visible.
+
+     A sibling that fades leaves the set on its own; only the block the cursor is
+     actually on clears the whole thing. Otherwise one member going see-through
+     at the edge of a transition would take the part the viewer is pointing at
+     down with it. */
+  if (hoverSet.has(tl) && !selectable(tl)) {
+    if (tl === hovered) setHover(null); else hoverSet.delete(tl);
+  }
+  const want = hoverSet.has(tl) ? 1 : 0;
   tl.hov = (tl.hov || 0) + (want - (tl.hov || 0)) * HOVER_EASE;
   if (tl.hov < 0.001) { tl.hov = 0; return 0; }
   return tl.hov;
@@ -3069,8 +3180,9 @@ const JUMP_MS    = 900;    // one block's whole rise and settle
 const JUMP_GAP   = 1700;   // stillness between one jump and the next
 const JUMP_FIRST = 700;    // beat after the camera parks before the first
 
-let jumpTile = null;       // the block currently in the air, if any
-let jumpLast = null;       // so the same block does not go twice in a row
+let jumpTile = null;       // the block that was drawn, and stands for its part
+let jumpSet  = null;       // every block in the air with it
+let jumpLast = null;       // so the same part does not go twice in a row
 let jumpT0   = 0;          // when the current jump began
 let jumpNext = 0;          // earliest the next one may begin
 
@@ -3078,11 +3190,25 @@ let jumpNext = 0;          // earliest the next one may begin
    changes with the stop: the floorplan's regions at one, a core's blocks at
    another, nothing at all inside the metal stack. Asking `selectable` is the
    same test the picker and the hover use, so the demo can never lift a block
-   the viewer could not have clicked. */
+   the viewer could not have clicked.
+
+   One entry per PART, not per block, for the same reason hover lifts the part:
+   the demo is a preview of what a cursor does, so a demo that raised a lone
+   regfile quarter would be previewing something that cannot happen. Deduping
+   also fixes the weighting it would otherwise have — four identical lanes in the
+   pool make the vector unit four times likelier to be picked than the block
+   beside it, which is the opposite of "eventually covers the whole die". */
 function pickJumpTile() {
   const pool = [];
-  for (const tl of tiles)     if (tl !== hovered && selectable(tl)) pool.push(tl);
-  for (const tl of coreTiles) if (tl !== hovered && selectable(tl)) pool.push(tl);
+  const taken = new Set();
+  const consider = (tl) => {
+    if (hoverSet.has(tl) || !selectable(tl)) return;
+    const subj = SUBJECT_OF[tl.body.userData.pick];
+    if (subj) { if (taken.has(subj)) return; taken.add(subj); }
+    pool.push(tl);
+  };
+  for (const tl of tiles)     consider(tl);
+  for (const tl of coreTiles) consider(tl);
   if (!pool.length) return null;
   let pick = pool[(Math.random() * pool.length) | 0];
   /* One retry when the dice repeat. Not a loop: with a pool of two, insisting
@@ -3102,18 +3228,24 @@ function updateJump(live) {
     /* Mid-flight, frozen behind a sheet, or the cursor is on a block. Drop any
        jump in progress and hold the next one off, so nothing is in the air the
        instant the camera lands or the sheet closes. */
-    jumpTile = null;
+    jumpTile = null; jumpSet = null;
     jumpNext = t + JUMP_FIRST;
     return;
   }
-  if (jumpTile && t - jumpT0 >= JUMP_MS) { jumpTile = null; jumpNext = t + JUMP_GAP; }
-  if (!jumpTile && t >= jumpNext) { jumpTile = pickJumpTile(); jumpT0 = t; }
+  if (jumpTile && t - jumpT0 >= JUMP_MS) {
+    jumpTile = null; jumpSet = null; jumpNext = t + JUMP_GAP;
+  }
+  if (!jumpTile && t >= jumpNext) {
+    jumpTile = pickJumpTile();
+    jumpSet = jumpTile ? litPart(jumpTile) : null;
+    jumpT0 = t;
+  }
 }
 
 /* A sine bump rather than a ramp in and a ramp out: it leaves and arrives at
    exactly zero with zero slope, so the block never twitches at either end. */
 function jumpLevel(tl) {
-  if (tl !== jumpTile) return 0;
+  if (!jumpSet || !jumpSet.has(tl)) return 0;
   return Math.sin(Math.PI * THREE.MathUtils.clamp((now() - jumpT0) / JUMP_MS, 0, 1));
 }
 
@@ -3956,6 +4088,13 @@ Promise.all([
           fill: +hovered.fill.opacity.toFixed(3),
           wall: +hovered.side.opacity.toFixed(3),
           hov: +(hovered.hov || 0).toFixed(3),
+          /* The part the cursor is on, so a harness can prove the OTHER blocks
+             of a split part came up too. `part` is how many blocks it has, and
+             `lifted` how many of them are actually off the die right now — they
+             should agree once the ease has run. */
+          part: hoverSet.size,
+          lifted: [...hoverSet].filter((x) => (x.hov || 0) > 0.5).length,
+          hovs: [...hoverSet].map((x) => +(x.hov || 0).toFixed(2)),
         } : null,
         dpr: +renderer.getPixelRatio().toFixed(2),
         aa: renderer.getContext().getContextAttributes().antialias,

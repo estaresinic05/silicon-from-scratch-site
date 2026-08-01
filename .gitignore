@@ -35,6 +35,8 @@ assets/Meet-The-Processor/delid-grayscaled_dies-on-substrate.jpg
 # The whole prototypes/ tree is scratch work and never ships.
 prototypes/
 
-# Throwaway screenshots written by meet-the-processor/verify/*.py
+# Throwaway screenshots written by meet-the-processor/verify/*.py. Both paths:
+# some scripts shoot into the page directory, some into verify/ beside themselves.
 meet-the-processor/*.png
+meet-the-processor/verify/*.png
 meet-the-processor/render/
