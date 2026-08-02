@@ -2747,16 +2747,17 @@ function layoutCell(lift) {
    0.058 is about a tenth of the cell's width. Enough to see daylight under the
    metal at the angle stop 07 parks at, and not so much that the cell stops
    reading as one object. */
-/* The switching loop is OFF. The cell has a lot to say structurally — six pieces
-   of metal, six posts, two devices and a shared gate — and a light running
-   around it while a reader is still working out which post goes where competes
-   with exactly the thing it is there to reward. Read the layout first.
+/* Whether the cell switches at all. It was off for a while, on the grounds that a
+   light running around the layout competes with a reader still working out which
+   post goes where — and that was right while the layout itself was still being
+   settled. Now that it reads, the switch is the payoff, and it is occasional
+   rather than continuous precisely so it does not go back to being wallpaper.
+   See the timing in updateScene.
 
-   The loop itself is untouched and still runs: every term in it is multiplied by
-   swA, so it resolves to the resting state and flipping this back to true brings
-   it all back with no other edit. verify/cell-switch.py reports the flag rather
-   than failing when it is off. */
-const CELL_SWITCHING = false;
+   Every term in the loop is multiplied by swA, so setting this to false resolves
+   the whole thing to its rest state with no other edit, and verify/cell-switch.py
+   reports the flag rather than failing. */
+const CELL_SWITCHING = true;
 
 const LIFT = 0.058;
 const liftAt = (t) => LIFT * ramp(t, 0.970, 0.986);
@@ -4377,29 +4378,39 @@ function updateScene(t) {
   }
   coreTileGroup.visible = coreTilesLive;
 
-  /* --- the cell switches ----------------------------------------------
-     Computed here, above the stack, because the stack reads one number out of
-     it: the pulse that leaves the cell has to arrive somewhere, and where it
-     arrives is M1's bars.
+  /* --- the cell switches, now and then --------------------------------
+     The one thing a picture of a gate cannot say is what a gate DOES, so every so
+     often it does it: the input rises, one device opens while the other shuts,
+     the output falls, and then it goes back to rest.
 
-     The one thing a picture of a gate cannot say is what a gate DOES, so it does
-     it, on the wall clock, in the same spirit as the pulse climbing the stack.
-     5200 ms rather than something brisker for the same reason the travelling
-     bead was given 3200: this is one sentence with four clauses in it — the
-     input rises, one device opens while the other shuts, the output falls, and a
-     pulse leaves through the via — and a sentence read in under two seconds is a
-     flicker rather than a fact.
+     OCCASIONAL RATHER THAN CONTINUOUS, and that is the whole design of the
+     timing. A gate blinking on a loop is wallpaper — after two cycles the eye
+     files it as decoration and stops reading it, which is the opposite of what a
+     one-off event does. Most of the period is spent at rest, so the switch is
+     something that HAPPENS while you are looking at the layout rather than a
+     texture the layout is wearing.
+
+     4400 ms of that is the switch itself, and it is not shorter for the reason
+     the travelling bead was given 3200: this is one sentence with three clauses
+     in it, and a sentence read in under two seconds is a flicker rather than a
+     fact. The remaining seven seconds are the pause that makes the next one
+     register as a new event.
 
      Everything below is a pure function of the phase. No edge detection, no
      comparison against the last frame, so seeking straight to a t gives exactly
      the same frame every time and the video renderer's clock override still
      makes this a function of the frame index. */
-  const SW_PERIOD = 5200;
-  const SW_EDGE   = 0.11;                 // share of a period one edge takes
-  const swPh = (now() % SW_PERIOD) / SW_PERIOD;
-  /* A is high for the middle half of the cycle: it rises at phase 0 and falls at
-     phase 0.5, so both edges get an equal share of the loop and neither state
-     reads as the resting one. */
+  const SW_PERIOD = 11400;                // one full loop, most of it at rest
+  const SW_ACTIVE = 4400;                 // the part of it that actually switches
+  const SW_EDGE   = 0.11;                 // share of the active window one edge takes
+  /* Runs 0..1 across the active window and then HOLDS at 1 for the pause. At 1
+     both terms below are 1 and cancel, so the rest state is A low — the PMOS
+     conducting and the output high, which is where an idle inverter with a low
+     input actually sits. */
+  const swPh = Math.min((now() % SW_PERIOD) / SW_ACTIVE, 1);
+  /* A is high for the middle half of the active window: it rises at phase 0 and
+     falls at 0.5, so both edges get an equal share and neither reads as the
+     resting one. */
   const sigA = smoothstep(THREE.MathUtils.clamp(swPh / SW_EDGE, 0, 1))
              - smoothstep(THREE.MathUtils.clamp((swPh - 0.5) / SW_EDGE, 0, 1));
   const sigY = 1 - sigA;
@@ -4412,16 +4423,21 @@ function updateScene(t) {
      the bumps land on top once the cascade is done, a pulse of light runs up the
      whole thing throughout, and then it all folds back down into a ceiling. */
   const stackIn  = ramp(t, 0.826, 0.868);
-  /* The bumps arrive as the leg to stage 6 begins, and are fully seated well
-     before anybody can see the top of the stack.
+  /* The bumps fade in ON EXACTLY THE SAME RAMP AS THE STACK, deliberately sharing
+     the variable rather than tracking it. Nothing about them is a separate event.
 
-     Both halves of that matter. They used to land at 0.898-0.922, which is
-     exactly the window in which the camera rises past the top tier, so the one
-     moment they were first visible was the moment they were fading in and
-     dropping into place — they read as appearing from nowhere. Starting at the
-     stop and finishing by 0.904 means the whole arrival happens while the camera
-     is still down inside the stack with the top out of shot. */
-  const bumpIn   = ramp(t, 0.888, 0.904);
+     Two earlier attempts both popped, and for the same reason. Landing them at
+     0.898-0.922 put the arrival inside the window in which the camera rises past
+     the top tier. Moving it to 0.888-0.904 looked safe, because at the stop the
+     camera is inside the stack looking level — but by 0.902 it has swung upward
+     and the top of the stack is back in frame with a couple of hundredths of the
+     fade still to run, so the balls still appeared out of nowhere on a bare top.
+
+     There is no window late enough to be "as the leg begins" and early enough to
+     be out of sight, because the leg IS the camera going up there. So they
+     arrive with the stack instead, while the whole thing is materialising from
+     nothing and a fade is what everything on screen is doing. */
+  const bumpIn   = stackIn;
   /* There is no stackOut any more, and its absence is deliberate. The stack used
      to fade away to make room for what came next; now it folds instead, and what
      comes next happens UNDERNEATH it. It is the ceiling of the last two stops and

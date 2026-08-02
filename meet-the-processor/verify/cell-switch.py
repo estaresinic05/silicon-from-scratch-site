@@ -6,15 +6,16 @@ function of its phase. Checks, over one full period:
   - exactly one device is lit at a time, never both and never neither
   - the gate is lit with the NMOS, since A drives both
   - A and Y are complementary
-  - the pulse leaves the via low and arrives high, in order
-  - the output wire lights only after the pulse has climbed
+  - the cell spends most of the period AT REST, which is the point of the timing:
+    a gate blinking on a loop stops being read after two cycles
 """
 import sys
 from playwright.sync_api import sync_playwright
 
 URL = "http://127.0.0.1:8777/meet-the-processor/"
-PERIOD = 5200
-N = 20
+PERIOD = 11400          # one full loop, most of it at rest
+ACTIVE = 4400           # the part of it that actually switches
+N = 24
 
 bad = []
 
@@ -38,7 +39,7 @@ with sync_playwright() as pw:
     pg.wait_for_timeout(400)
 
     # CELL_SWITCHING gates the whole loop. Off is a deliberate state, not a
-    # regression, so say so and stop rather than reporting six failed assertions
+    # regression, so say so and stop rather than reporting failed assertions
     # about a light that was asked not to run.
     if not pg.evaluate("window.__die.state.switching"):
         print("CELL_SWITCHING is off: the cell is held at its resting state "
@@ -47,12 +48,11 @@ with sync_playwright() as pw:
         b.close()
         raise SystemExit(0)
 
-    print(f"{'phase':>6} {'PMOS':>6} {'NMOS':>6} {'gate':>6} {'A':>6} {'Y':>6}"
-          f"  {'via, low to high':<28} {'wire':>6}")
+    print(f"{'ms':>7} {'PMOS':>6} {'NMOS':>6} {'gate':>6} {'A':>6} {'Y':>6}   phase")
     rows = []
     for i in range(N + 1):
-        ph = i / N
-        pg.evaluate("(ms)=>window.__die.clock = ms", ph * PERIOD)
+        ms = i / N * PERIOD
+        pg.evaluate("(ms)=>window.__die.clock = ms", ms)
         # Two real animation frames, not a timeout. state reads back what was
         # last DRAWN, so a wall-clock wait samples whichever frame happened to
         # land and the readout comes out in identical blocks that look like the
@@ -63,36 +63,36 @@ with sync_playwright() as pw:
         if not c:
             note("the cell is not visible at t 0.99")
             break
-        rows.append((ph, c))
-        via = " ".join(f"{v:4.2f}" for v in c["via"])
-        print(f"{ph:6.2f} {c['pmos']:6.2f} {c['nmos']:6.2f} {c['gate']:6.2f}"
-              f" {c['a']:6.2f} {c['y']:6.2f}  {via:<28} {c['wire']:6.2f}")
+        rows.append((ms, c))
+        print(f"{ms:7.0f} {c['pmos']:6.2f} {c['nmos']:6.2f} {c['gate']:6.2f}"
+              f" {c['a']:6.2f} {c['y']:6.2f}   {'switching' if ms < ACTIVE else 'at rest'}")
 
     if rows:
-        FIN_DIM, GATE_DIM = 0.34, 0.24
-        for ph, c in rows:
-            hot_p = c["pmos"] > FIN_DIM + 0.35
-            hot_n = c["nmos"] > FIN_DIM + 0.35
-            # mid-edge is legitimately neither; only the settled states are checked
-            settled = ph < 0.05 or 0.20 < ph < 0.45 or 0.60 < ph < 0.95
+        # base values, read off the resting frame rather than hardcoded
+        rest = rows[-1][1]
+        DIM_P, DIM_N, DIM_G = rest["pmos"], rest["nmos"], rest["gate"]
+        for ms, c in rows:
+            ph = ms / ACTIVE
+            hot_p = c["pmos"] > DIM_P - 0.3      # PMOS rests LIT, so it dims when off
+            hot_n = c["nmos"] > DIM_N + 0.3
+            # mid-edge is legitimately neither; only settled states are checked
+            settled = ph < 0.04 or 0.20 < ph < 0.45 or 0.62 < ph
             if settled and hot_p == hot_n:
-                note(f"phase {ph:.2f}: both devices {'lit' if hot_p else 'dark'} "
+                note(f"{ms:.0f} ms: both devices {'lit' if hot_p else 'dark'} "
                      f"(pmos {c['pmos']}, nmos {c['nmos']})")
-            if settled and (c["gate"] > GATE_DIM + 0.35) != hot_n:
-                note(f"phase {ph:.2f}: gate does not follow the NMOS")
+            if settled and (c["gate"] > DIM_G + 0.3) != hot_n:
+                note(f"{ms:.0f} ms: the gate does not follow the NMOS")
 
-        # the pulse: the bottom of the via must peak before the top of it
-        def peak(idx):
-            return max(range(len(rows)), key=lambda k: rows[k][1]["via"][idx])
-        lo, hi = peak(0), peak(len(rows[0][1]["via"]) - 1)
-        print(f"\npulse: bottom of the via peaks at phase {rows[lo][0]:.2f}, "
-              f"top at {rows[hi][0]:.2f}")
-        if not lo < hi:
-            note("the pulse does not travel upward")
-        wire_peak = max(range(len(rows)), key=lambda k: rows[k][1]["wire"])
-        print(f"       the output wire peaks at {rows[wire_peak][0]:.2f}")
-        if wire_peak < hi:
-            note("the wire lights before the pulse reaches it")
+        # the rest state must actually be reached, and be most of the loop
+        at_rest = [c for ms, c in rows if ms >= ACTIVE]
+        if not at_rest:
+            note("the loop never reaches its rest state")
+        elif any(abs(c["nmos"] - DIM_N) > 0.05 for c in at_rest):
+            note("the cell is still moving during what should be the pause")
+        share = 1 - ACTIVE / PERIOD
+        print(f"\nat rest for {share*100:.0f}% of the {PERIOD/1000:.1f}s loop")
+        if share < 0.5:
+            note("the switch is on screen too much of the time to read as an event")
 
     if errs:
         note(f"console: {errs[:3]}")
