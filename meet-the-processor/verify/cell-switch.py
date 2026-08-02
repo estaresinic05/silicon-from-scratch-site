@@ -68,29 +68,38 @@ with sync_playwright() as pw:
               f" {c['a']:6.2f} {c['y']:6.2f}   {'switching' if ms < ACTIVE else 'at rest'}")
 
     if rows:
-        # base values, read off the resting frame rather than hardcoded
+        # base values, read off the resting frame rather than hardcoded. The cell
+        # rests with NOTHING lit now, so this frame is the plain base colour of
+        # every part and the checks below are all relative to it.
         rest = rows[-1][1]
         DIM_P, DIM_N, DIM_G = rest["pmos"], rest["nmos"], rest["gate"]
+        lit = lambda v, dim: v > dim + 0.3
+
         for ms, c in rows:
             ph = ms / ACTIVE
-            hot_p = c["pmos"] > DIM_P - 0.3      # PMOS rests LIT, so it dims when off
-            hot_n = c["nmos"] > DIM_N + 0.3
+            if ph >= 1:
+                # the pause: the layout on its own, exactly as it looks with the
+                # loop switched off
+                if lit(c["pmos"], DIM_P) or lit(c["nmos"], DIM_N):
+                    note(f"{ms:.0f} ms: something is still lit during the pause")
+                continue
             # mid-edge is legitimately neither; only settled states are checked
-            settled = ph < 0.04 or 0.20 < ph < 0.45 or 0.62 < ph
-            if settled and hot_p == hot_n:
-                note(f"{ms:.0f} ms: both devices {'lit' if hot_p else 'dark'} "
+            if not (0.20 < ph < 0.45):
+                continue
+            if lit(c["pmos"], DIM_P) == lit(c["nmos"], DIM_N):
+                note(f"{ms:.0f} ms: both devices "
+                     f"{'lit' if lit(c['pmos'], DIM_P) else 'dark'} "
                      f"(pmos {c['pmos']}, nmos {c['nmos']})")
-            if settled and (c["gate"] > DIM_G + 0.3) != hot_n:
+            if lit(c["gate"], DIM_G) != lit(c["nmos"], DIM_N):
                 note(f"{ms:.0f} ms: the gate does not follow the NMOS")
 
-        # the rest state must actually be reached, and be most of the loop
-        at_rest = [c for ms, c in rows if ms >= ACTIVE]
-        if not at_rest:
-            note("the loop never reaches its rest state")
-        elif any(abs(c["nmos"] - DIM_N) > 0.05 for c in at_rest):
-            note("the cell is still moving during what should be the pause")
+        # the switch must actually happen, or every check above passes vacuously
+        if not any(lit(c["nmos"], DIM_N) for _, c in rows):
+            note("the NMOS never conducts: the loop is not running at all")
+
         share = 1 - ACTIVE / PERIOD
-        print(f"\nat rest for {share*100:.0f}% of the {PERIOD/1000:.1f}s loop")
+        print()
+        print(f"at rest for {share*100:.0f}% of the {PERIOD/1000:.1f}s loop")
         if share < 0.5:
             note("the switch is on screen too much of the time to read as an event")
 

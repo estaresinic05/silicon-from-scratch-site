@@ -2068,6 +2068,17 @@ for (let g = 0; g < N_METAL - 1; g++) {
 }
 const vias = new THREE.InstancedMesh(viaGeo, viaMat, viaSeeds.length);
 vias.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+/* Frustum culling OFF, and this is not an optimisation being declined — it is a
+   correctness fix for a mesh whose instances move.
+
+   three.js culls an InstancedMesh against a boundingSphere it computes ONCE, the
+   first time it needs one, from wherever the instances happened to be at that
+   moment. These are re-composed every frame and travel the whole height of the
+   stack as the gaps open, so the cached sphere is stale within a frame of being
+   made and describes a volume the geometry has long since left. The renderer
+   then culls the mesh whenever the camera looks at where the instances actually
+   are, and it reappears when the camera swings back over the stale sphere. */
+vias.frustumCulled = false;
 vias.userData.pick = 'metal-via';
 stack.add(vias);
 
@@ -2081,6 +2092,14 @@ const bumpMat = new THREE.MeshPhysicalMaterial({
 });
 const bumps = new THREE.InstancedMesh(
   new THREE.SphereGeometry(0.17, 16, 12), bumpMat, BUMP_NX * BUMP_NZ);
+/* Same stale-boundingSphere problem as the vias above, and this is the one that
+   was visible: the bumps ride the top tier from y 0.02 up to 4.22 as the stack
+   opens, so a sphere computed while they were still down at the bottom culls
+   them for the whole climb. Panning up gave a bare top, and they "spawned" the
+   moment the camera moved far enough for that old sphere to re-enter the
+   frustum. Nothing was wrong with the fade — they were being drawn correctly and
+   then thrown away. */
+bumps.frustumCulled = false;
 bumps.userData.pick = 'metal-bump';
 stack.add(bumps);
 const bumpSeeds = [];
@@ -2421,8 +2440,15 @@ const DEV_BASE = [PMOS_COL, PMOS_COL, NMOS_COL, NMOS_COL].map((hex) => {
 });
 /* Conducting is the same colour lifted past 1.0 rather than a different hue.
    ACES rolls the overshoot into a highlight, so a channel that turns on reads as
-   the same silicon carrying current instead of as a lamp swapped in behind it. */
-const DEV_HOT = DEV_BASE.map((c) => c.map((v) => v * 2.0 + 0.95));
+   the same silicon carrying current instead of as a lamp swapped in behind it.
+
+   MOSTLY MULTIPLIED, barely offset, and the balance between those two numbers is
+   the whole thing. A flat offset lifts every channel by the same amount, which is
+   the definition of desaturating toward white — at +0.95 a conducting PMOS came
+   out near enough white that the green was gone, and since the cell RESTS with
+   the PMOS on, that was most of the time. Multiplying preserves the ratios
+   between the channels, so a bright green stays green. */
+const DEV_HOT = DEV_BASE.map((c) => c.map((v) => v * 3.2 + 0.06));
 
 /* Three strips of poly, and only the middle one is the gate. The other two sit
    on the cell boundaries, which is what a real cell carries: a dummy strip at
@@ -2456,7 +2482,7 @@ fets.add(gates);
 }
 const GATE_LIVE = 1;                    // the middle strip is the one being driven
 const GATE_BASE = (() => { _dc.set(GATE_COL); return [_dc.r, _dc.g, _dc.b]; })();
-const GATE_HOT  = GATE_BASE.map((v) => v * 2.0 + 1.05);
+const GATE_HOT  = GATE_BASE.map((v) => v * 2.4 + 0.30);
 /* The two dummies are a dull grey-brown, not a dimmer salmon. Dimming alone was
    not enough: three salmon strips across a cell read as three gates, and this
    cell has exactly one. Poly is poly in a real layout and these really are the
@@ -2607,8 +2633,11 @@ const M1_BASE = M1_PINS.map((pin) => {
    switched, which threw away the colour the previous stage had just spent the
    whole floor establishing — and the lit rail is exactly the moment you most
    want to know which rail it is. The lift past 1.0 is the usual trick: ACES
-   rolls it off into a highlight instead of clipping. */
-const M1_HOT = M1_BASE.map((c) => c.map((v) => v * 1.8 + 1.15));
+   rolls it off into a highlight instead of clipping — weighted toward the
+   multiply, for the reason spelled out at DEV_HOT: a large flat offset is
+   desaturation by another name, and the output strap rests LIT, so it spent most
+   of the loop as a white bar. */
+const M1_HOT = M1_BASE.map((c) => c.map((v) => v * 2.2 + 0.45));
 
 /* Every contact is tinted by the NET it carries rather than by the metal it is
    made of, and that one change is what makes the wiring readable. Drawn all the
@@ -2718,11 +2747,14 @@ function layoutCell(lift) {
 
 
   /* A label rides whatever it is written on, and sits a hair above ITS OWN
-     surface. The two on the rails need much more clearance than the two on the
-     signal straps, because a rail is 0.026 thick against a strap's 0.007 — given
-     the strap's offset they sat inside the rail and were invisible. */
+     surface — derived from that surface's thickness rather than hand-set, which
+     is what stops the two drifting apart. The 0.017 this used to carry was the
+     clearance a 0.026-thick rail needed; once the rail became a 0.010 film the
+     label was left floating 0.012 above it, and a plane hovering over a strip
+     projects offset from it at any angle but straight down, so VDD and GND read
+     as sitting off their rails rather than on them. */
   for (const l of cellLabels) {
-    l.position.y = l.userData.lift ? pinY + 0.006 : RAIL_Y_OFF + 0.017;
+    l.position.y = l.userData.lift ? pinY + 0.006 : RAIL_Y_OFF + RAIL_T / 2 + 0.003;
   }
 
 }
@@ -4414,9 +4446,17 @@ function updateScene(t) {
   const sigA = smoothstep(THREE.MathUtils.clamp(swPh / SW_EDGE, 0, 1))
              - smoothstep(THREE.MathUtils.clamp((swPh - 0.5) / SW_EDGE, 0, 1));
   const sigY = 1 - sigA;
+  /* And the whole thing fades OUT between switches, back to the plain base
+     colours the cell is drawn in. Without this the resting state still has the
+     PMOS conducting — which is electrically true, and meant the cell spent two
+     thirds of every loop with one device lit and the output strap a bright white. The
+     layout is the subject; the switch is a thing that happens to it. So at rest
+     nothing is lit at all and the cell looks exactly as it does with the loop
+     turned off, which is also the version that was signed off. */
+  const swEnv = ramp(swPh, 0.0, 0.06) * (1 - ramp(swPh, 0.86, 1.0));
 
   const invIn  = ramp(t, 0.960, 0.984);
-  const swA    = CELL_SWITCHING ? ramp(t, 0.980, 0.988) * invIn : 0;
+  const swA    = CELL_SWITCHING ? ramp(t, 0.980, 0.988) * invIn * swEnv : 0;
 
   /* --- metal stack ---
      Timing, in order: the tiers fade in, the gaps cascade open from the bottom,
