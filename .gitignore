@@ -35,6 +35,22 @@ assets/Meet-The-Processor/delid-grayscaled_dies-on-substrate.jpg
 # The whole prototypes/ tree is scratch work and never ships.
 prototypes/
 
+# --- Video -------------------------------------------------------------------
+# Two classes of file live in this repo and the split is the whole point.
+#
+# MASTERS: video-masters/. Camera originals, ~200 MB each, HLG HDR in BT.2020.
+# Never committed — GitHub rejects anything over 100 MB outright. Nothing here
+# backs them up, so keep a copy somewhere else too.
+video-masters/
+*.mov
+#
+# WEB ENCODES: tracked, and they ARE the site. Tone-mapped to Rec.709 and cut to
+# 720p30 H.264 with faststart.
+#   meet-the-processor/assets/video/<slug>.mp4   block-sheet explainers, by slug
+#   assets/home/*.mp4                            home page loops
+# The encode chain and the reasoning are in meet-the-processor/README.md under
+# "The sheet videos".
+
 # Throwaway screenshots written by meet-the-processor/verify/*.py. Both paths:
 # some scripts shoot into the page directory, some into verify/ beside themselves.
 meet-the-processor/*.png

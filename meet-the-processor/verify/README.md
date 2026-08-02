@@ -1,6 +1,6 @@
 # Verification harnesses
 
-Seven small scripts that check things about `scene.js` that are tedious or
+Small scripts that check things about `scene.js` that are tedious or
 impossible to judge by eye. They were written one at a time while building the
 descent, and each one exists because eyeballing had already got something
 wrong at least once.
@@ -22,6 +22,7 @@ with SwiftShader, so they work on a machine with no GPU — slowly.
 |---|---|
 | `scroll-check.py` | Walks the whole scroll and reports console errors and warnings. Run this after every change; it is the cheapest way to catch a typo that kills the module. |
 | `shot.py` | Screenshots the scene at given scroll positions: `python shot.py 0.46 0.70`. Waits for `window.__die.t` to converge rather than on a fixed timeout, because the scroll is damped, and disables the camera drift so captures are reproducible. |
+| `cell-switch.py` | Drives the inverter's switching loop at stop 07 through a full period via `__die.clock`, and checks the contract: exactly one device lit at a time, the gate following the NMOS, A and Y complementary, and the pulse peaking low-to-high up the output via before `outWire` lights. Waits on real animation frames rather than a timeout, because `__die.state` reads back what was last *drawn* and a wall-clock wait samples whichever frame happened to land. |
 | `camera-speed.py` | Distance ÷ time for every camera segment. Flags lurches. `sampleCamera` eases *inside* each segment, so the camera comes to rest at every key — a short segment between two distant keys is not a fast move, it is a jolt. This found a bug the user had not reported. |
 | `first-frame.py` | Time to first frame on a throttled connection, and which assets blocked it versus streamed after. Use it before adding any texture. |
 | `region-overlap.py` | Rasterises every core region, erodes 1 px, intersects. Flush regions share boundary pixels by design, so the erode is what separates "touching" from "overlapping". Also prints each region's area. |

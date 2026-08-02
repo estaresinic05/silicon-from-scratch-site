@@ -14,7 +14,14 @@ one move, it is a lunge followed by a drift, however smooth each part is.
 from playwright.sync_api import sync_playwright
 
 URL = "http://127.0.0.1:8777/meet-the-processor/"
-STOPS = [0.000, 0.398, 0.512, 0.800, 0.888, 0.976]
+# Read from source rather than copied here: a hardcoded stop list in a harness
+# goes stale silently, reports the wrong legs, and is worse than not measuring.
+# This one had been wrong since the tail was last retimed.
+import os, re as _re
+_stops_src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               "..", "scene.js"), encoding="utf-8").read()
+STOPS = [float(x) for x in
+         _re.search(r"const STOPS = \[([^\]]+)\]", _stops_src).group(1).split(",")]
 # Read from source rather than copied here: a stale duration in the harness
 # silently reports the wrong speeds, which is worse than not measuring.
 import os, re

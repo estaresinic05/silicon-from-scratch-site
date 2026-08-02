@@ -13,7 +13,7 @@ are defined in `scene.js` and are not a design deliverable.
 ## 1. What the product is
 
 A single page. A fixed 3D viewport fills the viewport; scrolling drives a
-camera descent through a real processor in nine stages, from the packaged
+camera descent through a real processor in seven stages, from the packaged
 chip down to individual transistors. All interface elements float over that
 viewport. There is no page scroll in the conventional sense — scroll position
 is a timeline scrubber.
@@ -211,21 +211,28 @@ The 3D viewport always fills the screen. Never letterbox it.
 
 ## 8. Content inventory
 
-Nine stages, in order:
+Seven stages, in order:
 
 1. **The packaged chip** — the AM5 package under its nickel lid
-2. **Underneath** — 1718 gold LGA contact pads
-3. **The lid comes off** — the heat spreader rises away
-4. **Two dies, not one** — CCD and I/O die on the substrate
-5. **Bare silicon** — raking light across the polished die backside
-6. **The floorplan beneath** — regions reveal, then settle to outlines
-7. **Inside one core** — L1d, L2, vector, load/store, fetch/decode
-8. **The metal stack** — 15 copper tiers separate upward
-9. **Down to the transistors** — FinFET fins and gates
+2. **Bare silicon** — the lid rises away, both dies, raking light across the
+   polished die backside
+3. **The floorplan beneath** — regions reveal, then settle to outlines
+4. **Inside one core** — L1d, L2, vector, load/store, fetch/decode
+5. **The metal stack** — 15 copper tiers separate upward
+6. **The cell rows** — the stack folds back down into a ceiling, M1 turns to
+   glass, and a field of standard cells shows through the floor
+7. **One cell, one gate** — one tile resolves into a CMOS inverter and switches
 
-Clickable subjects with panels: heat spreader, contact pads, I/O die, compute
-die, Zen 5 core, L3 cache, SMU / power management, Test / Debug, IFOP PHY,
-each metal tier, the transistors.
+Clickable subjects with panels: heat spreader, I/O die, compute die, Zen 5 core,
+L3 cache, SMU / power management, Test / Debug, IFOP PHY.
+
+The metal tiers and the transistors are **not** clickable, though `SUBJECTS`
+carries copy for both, parked in `SUBJECTS_UNWIRED`. `pick()` raycasts only the
+two tile groups and gates on a tile record with a `.side` material; the stack and
+the cell field have no such record, so wiring them up means a second path in
+`pick()` and teaching `updateHints()` about a third population. It is the obvious
+next move now that the last two stops are each about one nameable object, and it
+is its own piece of work.
 
 ---
 

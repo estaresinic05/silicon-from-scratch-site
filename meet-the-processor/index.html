@@ -106,7 +106,7 @@
 
   <!-- current stage caption -->
   <div id="caption">
-    <div class="cap-index"><span id="cap-num">01</span><span class="cap-of">/ 06</span></div>
+    <div class="cap-index"><span id="cap-num">01</span><span class="cap-of">/ 07</span></div>
     <h2 id="cap-title">Silicon backside</h2>
     <p id="cap-body">What you actually see when you lift the lid.</p>
   </div>
@@ -135,12 +135,9 @@
   </div>
 
 
-  <!-- Two labels pinned to points on the traced net at stage 06, projected from
-       world space each frame. The caption can say "it climbs to the eleventh
-       layer"; only a label on the wire itself can say WHICH run that is. -->
-  <div id="pins" hidden>
-    <div class="pin" id="pin-lo"><b>M1 &ndash; M4</b><span>short local hops</span></div>
-    <div class="pin" id="pin-hi"><b>M11</b><span>the long haul</span></div>
+    <div class="pin pin-pwr" id="pin-gnd"><b>GND</b><span>ground rail</span></div>
+    <div class="pin" id="pin-a"><b>A</b><span>input</span></div>
+    <div class="pin" id="pin-y"><b>Y</b><span>output</span></div>
   </div>
 
   <!-- Attribution and disclaimer. This page has no footer to put them in, so they
@@ -211,7 +208,7 @@
     <button id="nav-prev" class="nav-btn nav-back" aria-label="Previous stage" disabled>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>
     </button>
-    <span id="nav-count" aria-live="polite">1 / 6</span>
+    <span id="nav-count" aria-live="polite">1 / 7</span>
     <button id="nav-next" class="nav-btn nav-fwd" aria-label="Next stage">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
     </button>
@@ -225,6 +222,11 @@
   <div class="sheet-copy">
     <h2 id="sheet-title">&mdash;</h2>
     <div class="sheet-body" id="sheet-body"></div>
+    <!-- Lesson cards, built by openSheet from the subject's own `links` list.
+         A block on this die is often something the site already teaches in full,
+         and this is the way across. Hidden entirely for the subjects that have
+         no lesson yet, rather than shown empty. -->
+    <div class="sheet-links" id="sheet-links" hidden></div>
   </div>
   <div class="sheet-media">
     <video id="sheet-video" playsinline controls preload="metadata"></video>

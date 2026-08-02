@@ -21,7 +21,7 @@ SETTLE_FRAMES = 4      # frames a negative assertion is given to be wrong in
 
 # t, and whether the click hint should be up there
 HINT = [(0.000, False), (0.398, False), (0.512, True),
-        (0.800, True), (0.888, False), (0.944, False), (0.978, False)]
+        (0.800, True), (0.888, False), (0.966, False), (0.990, False)]
 
 fails = []
 

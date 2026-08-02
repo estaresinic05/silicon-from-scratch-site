@@ -30,17 +30,17 @@ This folder is completely self-contained and **cannot affect the live site**:
 - `<meta name="robots" content="noindex, nofollow">`
 - deleting `prototypes/` removes it entirely
 
-## The nine stages
+## The seven stages
 
 | # | Stage | What happens |
 |---|-------|--------------|
 | 01 | The packaged chip | The AM5 package under its nickel lid, slowly settling square |
-| 02 | Underneath | Flips over to the 1718 gold LGA contact pads |
-| 03 | Bare silicon | The IHS rises and drifts away, both dies are revealed, and the camera comes to eye level beside them |
-| 04 | The floorplan beneath | Delayers, then regions bloom in as flat colour; parks with every region up and fully filled |
-| 05 | Inside one core | Descends into the bottom-left core; its 29 blocks rise as glass slabs a beat at a time, in the order an instruction meets them, while the camera orbits low |
-| 06 | The metal stack | 15 graded copper tiers cascade apart from the bottom up, a pulse of light climbs them, and the camera flies in among them |
-| 07 | Down to the transistors | FinFET fins with gates crossing over them |
+| 02 | Bare silicon | The IHS rises and drifts away, both dies are revealed, and the camera comes to eye level beside them |
+| 03 | The floorplan beneath | Delayers, then regions bloom in as flat colour; parks with every region up and fully filled |
+| 04 | Inside one core | Descends into the bottom-left core; its 29 blocks rise as glass slabs a beat at a time, in the order an instruction meets them, while the camera orbits low |
+| 05 | The metal stack | 15 graded copper tiers cascade apart from the bottom up, a pulse of light climbs them, and the camera flies in among them |
+| 06 | The cell rows | The stack folds back down, top first, leaving its lowest gap open as a room; M1 turns to glass and a field of standard cell rows shows through the floor |
+| 07 | One cell, one gate | A dive into one tile, which resolves into a CMOS inverter and then switches, on a loop, driving a pulse up its output via into the copper overhead |
 
 The arrows drive everything — see below. Clicking a region opens a detail panel,
 but only while parked at a stop.
@@ -61,7 +61,7 @@ but only while parked at a stop.
 
 ### The region highlight
 
-During stage 06 the regions reveal in sequence — the eight cores, then L3,
+During stage 03 the regions reveal in sequence — the eight cores, then L3,
 then the SMU/IFOP strip — as flat colour fills that mimic the annotated
 reference die shot, then cross-fade to glowing outlines so the real silicon
 comes back before the camera dives into a core.
@@ -1007,12 +1007,15 @@ Each stop is pinned to a fact about the animation rather than to a round number:
 | # | t | why exactly there |
 |---|---|---|
 | 1 | 0.000 | the packaged chip, as the page opens |
-| 2 | 0.130 | `flipTo` completes at 0.118 and `flipBack` starts at 0.142, so this is the only window where the package is fully and steadily inverted |
-| 3 | 0.398 | a camera key: the composed eye-level bare-silicon shot |
-| 4 | 0.512 | `groupIn.strip` completes at 0.512 and `toOutline` starts at 0.512 — the single instant every macro region is up and none has begun settling to an outline |
-| 5 | 0.800 | `blockIn` reaches 1 at exactly 0.560 + 0.240 |
-| 6 | 0.888 | a camera key, level and side-on among the tiers. **Not** the 0.902 key further in: there the camera sits 0.12 under a tier and it fills the frame |
-| 7 | 0.976 | a camera key, after `fetIn` completes at 0.962 |
+| 2 | 0.398 | a camera key: the composed eye-level bare-silicon shot |
+| 3 | 0.512 | `groupIn.strip` completes at 0.512 and `toOutline` starts at 0.512 — the single instant every macro region is up and none has begun settling to an outline |
+| 4 | 0.800 | `blockIn` reaches 1 at exactly 0.640 + 0.160 |
+| 5 | 0.888 | a camera key, level and side-on among the tiers. **Not** the 0.902 key further in: there the camera sits 0.12 under a tier and it fills the frame |
+| 6 | 0.966 | `cellIn` completes at 0.964 and nothing has begun to fade. It is also the first `t` at which the whole picture is up: the fold finishes at 0.951 and the room finishes opening at 0.952 |
+| 7 | 0.990 | a camera key, after `invIn` completes at 0.984. Not 0.994, where the rail tick sits flush against the end of the rail and reads as broken rather than as arrived |
+
+There **was** a stop at 0.130, the package turned over to read its 1718 contact
+pads, and it is long gone along with the flip that reached it.
 
 Leg durations (`LEG_MS`) are hand-set rather than derived from distance in `t`,
 because the legs are not equally full: the fourth is the entire 22-beat core
@@ -1165,61 +1168,372 @@ Two things this forced:
   bottom edge and nav, hint and caption each step up by that row's height — each
   offset derived from the one below it rather than chosen.
 
-## Stage 06: one net, end to end
+## Stages 06 and 07: the fold, the cell rows, and one gate
 
-The metal stack stage shows fifteen layers of copper and says what each is for.
-The question it leaves is the one this stage answers: given all that, how does a
-signal actually get from one transistor to another?
+These two replaced *one wire, end to end* and *down to the transistors*. The wire
+stage was a good picture answering a question the stack had already mostly
+answered; the transistor stage was a free-floating patch of fins at no stated
+scale, connected to nothing the viewer had been shown. What sat between copper
+and transistors and was never said is the **standard cell**: that every gate on
+the die is one of a few hundred prebuilt tiles, all drawn to the same row height,
+abutted with nothing in between, and that the copper above is reaching for
+*their* pins. That is the bridge from this page to the logic-gate lessons on the
+rest of the site, and it is what these two stages are for.
 
-So a single net is traced through the stack, and every property of it is a
-consequence of something the stack stage already established:
+The FinFET geometry was not thrown away. `fets`, `fins`, `gates` and `wafer` are
+the same objects re-parameterised at cell scale, so they finally have a home.
 
-- A run on tier *i* travels along **that tier's own routing axis** — the same
-  even-x/odd-z alternation the bars use. That is why the path is a staircase in
-  plan as well as in height: it cannot turn a corner without changing layer,
-  which is precisely why real stacks alternate.
-- The wire **thickens as it climbs**, on the same curve the bars grade on.
-- It spends its length at the bottom on short hops, climbs a **via stack to
-  M11** for one long haul across the die, and comes straight back down. That is
-  what a router actually does, and it is the reason the upper layers are fat.
+### The fold
 
-Two independent things happen to it, and keeping them separate is what makes the
-stage read. The net **draws itself**, once, along its own length, as the camera
-arrives; then a bead **runs it**, on a loop. The gradient alone reads as
-decoration — the bead is what makes it a signal that arrives somewhere.
+The stack goes back together, and it is deliberately **not** the opening cascade
+played backwards. Three differences carry it, all argued at `gapClose`:
 
-Five things that had to be got right:
+- **It closes from the top.** The open peels upward from M1 because M1 is what
+  the stack is anchored to; the fold has to come back down onto M1 for the same
+  reason, so the last thing to move is the thing the camera is about to stand on.
+- **It is quicker and tighter** — 0.026 of `t` against the open's 0.077, with the
+  gaps overlapping three times as hard. A shape the eye already knows does not
+  need the reading time the first reveal needed.
+- **It does not close to zero.** Fifteen coplanar transparent planes is a z-fight
+  with fifteen times the overdraw in one band, and "M1 is the floor" means
+  nothing if M15 is also the floor. `CLOSED_FRAC` leaves a real pitch, which is
+  also the more honest reading: the exploded view was the exaggeration.
 
-- **The draw is a scale ramp, not a fade.** A piece not yet laid must be
-  *absent*, not dark: a black wire blending over the stack behind it is a ghost
-  of the path, and it gives the ending away.
-- **The dimming LEADS the wire.** A first pass tied it to `routeA`, so the stack
-  was at full brightness through the first half of the draw — and unlit copper
-  against lit copper sheets is invisible. The route quietly laid half its length
-  where nobody could see it and then appeared to blink into existence. `dimA`
-  now completes at 0.932, before the draw is half done. It is also the better
-  beat: the stage goes quiet, and *then* one thing lights.
-- **The stack dims to 26%, not to nothing.** The shot is a wire seen passing
-  *through* fifteen layers. A wire alone in an empty volume is a diagram of
-  nothing. The travelling pulse does go almost all the way out, because two
-  lights climbing the same stack at different speeds is just confusing.
-- **The look-at is 1.5 units left of the route's own centre.** The caption owns
-  the bottom-left of the frame at every stop and this route begins in the far
-  corner of the die: aimed at its centre, the first three hops projected
-  straight through the title. The low pin moved to the *descending* zig-zag for
-  the same reason, and it is where the bead arrives, so it is where the eye is.
-- **Long runs are cut into 0.26-unit boxes.** The glow has to be a gradient along
-  the wire; a whole five-unit segment flashing at once is a lamp, not a signal.
+  **`CLOSED_FRAC` is set by the vias, not by how the copper looks.** A via is
+  exactly as tall as the gap it crosses, so at the original 0.10 the folded gaps
+  were 0.03 and every via in them disappeared into the slab halfway through the
+  move — the fold read as the *connections being deleted* rather than as the
+  layers closing up. At 0.28 the gap is 0.084, the upper vias are wider than they
+  are tall and read as studs between the sheets, and nothing ever vanishes. It is
+  still a 3.5x compression, which is plenty to read as a fold.
 
-The net's colours run past 1.0 on purpose — ACES rolls them off into a hot
-highlight rather than clipping, the same lesson the copper pulse learned at 2.3.
+**Gap 0 is the exception and it is the point.** The fold closes the fourteen gaps
+above it and opens this one into a *room*: M1 underfoot, the other fourteen tiers
+compacted into a ceiling overhead, the cell rows showing through the floor. There
+is no other way to be under the copper and above the cells at once — the camera's
+near plane is 0.05 and a folded gap is 0.03, so a camera between two folded tiers
+is inside both of them.
 
-**Retiming the tail.** The stop is a camera key at 0.944, chosen where `routeIn`
-has finished and `routeOut` has not begun: the whole path up, none of it fading,
-the same rule stop 4 is pinned by. Everything downstream moved out from under it:
-`stackOut` 0.930 to 0.948, `fetIn` 0.932 to 0.950, and the two transistor keys by
-0.006 and 0.002, with `fetIn` still complete before stop 7. Its leg is 8000 ms
-rather than the 6500 the old stack-to-transistors leg had, because it is a leg
-that has to teach something: a route drawn faster than it can be followed is a
-squiggle. `camera-speed.py` reads 375, 337, 352, 313, 292, 202, 167 across the
-tail, so it still decelerates the whole way into the transistors.
+`stackOut` is gone. The stack used to fade away to make room for what came next;
+now what comes next happens *underneath* it, so it has to survive to the end. Only
+the **bumps** retire, and they are out of frame from the moment the room opens.
+
+The **vias stay**, and getting that wrong first is worth recording. The first pass
+retired them alongside the bumps, on the reasoning that a folded gap is 0.03 tall
+and a via in it is a sliver worth nothing. That is true of thirteen of the
+fourteen gaps and false of the one that matters: gap 0 is the room, so its vias do
+not shrink, they *stretch*, and they become the columns you stand among. They are
+the only thing in the shot that says the floor and the ceiling are connected —
+which is what a via is — and the room was flat without them, being a floor, a roof
+and some air. Nothing special-cases it: a via's length is already its own gap's
+height, so the folded ones collapse and the ones in the room grow, from one line.
+
+Gap 0 carries **a fifth** of the vias the other gaps do, and it is thinned at
+build time rather than during the fold. At the density that is right for the
+stack — thousands of short local connections, which is the point being made
+there — a camera standing *inside* the gap is standing in a forest, with the
+nearest columns 70px wide and the floor completely walled off.
+
+An earlier pass kept the full count and shrank the surplus away as the room
+opened. That was worse, and visibly so: the fold is watched from outside, and
+five sixths of the columns quietly evaporating mid-flight reads as the scene
+breaking rather than as a density choice. **Nothing disappears now** — there are
+simply fewer of them, from the first frame to the last.
+
+They are seeded with an LCG for the same reason the cells are: they went from
+being background stippling nobody composes against to being the most prominent
+geometry in a composed shot.
+
+`perf.py` measures both new stops at 29.9k triangles against the stack's 23.4k,
+and every stage is still vsync-limited.
+
+### The cell rows
+
+Nothing in this stage moves. The field is built once and the whole thing is a
+fade, which is the right shape: the rows are not arriving, they were always
+there, and the only reason they were not visible is that fifteen layers of copper
+were in the way. The stage is the copper getting out of the way.
+
+- **One height, many widths.** The rows are identical and the cells inside them
+  are not, and that contrast *is* the teaching point.
+- **Rails on every boundary**, shared between the row above and the row below.
+  Supply is warm and ground is cool, decided once in `VDD_COL` / `GND_COL`, and
+  the inverter's own straps read those same two constants — the rail along the
+  hero cell's PMOS edge is the same colour as the rail along every other cell's,
+  so crossing from the floor into the cell is not learning a second scheme. Which
+  boundary is supply is fixed *relative to the hero row*, not by the raw index:
+  keyed off `b % 2` it depended on `ROW_N`'s parity, and the cell's VDD strap
+  ended up sitting underneath the field's ground rail.
+- **Abutment, not spacing.** A 0.006 seam, not a gap. Tiles with air between them
+  are a picture of a floorplan, not of a cell row.
+- **M1's plane goes translucent; its bars do not.** A floor that dissolves under
+  you is a hole, and the rows read better through the gaps between real bars than
+  through one uniformly faded sheet.
+- **Seeded with an LCG, not `Math.random`**, unlike the vias and the bar jogs,
+  which are right to use it. Nothing composes a shot against an individual via. A
+  camera key *does* aim at one named cell here, so the hero cell is authored as a
+  constant and its footprint left empty in the instanced field.
+
+### One cell, one gate
+
+**The switching loop is currently off** (`CELL_SWITCHING` in `scene.js`). The cell
+has a lot to say structurally — six pieces of metal, six posts, two devices and a
+shared gate — and a light running around it while a reader is still working out
+which post goes where competes with the thing it is there to reward. The loop is
+untouched and every term in it is multiplied by `swA`, so flipping the flag back
+brings it all back with no other edit; `cell-switch.py` reports the flag rather
+than failing.
+
+**Contacts are tinted by the net they carry**, not by the metal they are made of,
+and that is what makes the wiring readable. Drawn all one tungsten grey, six
+identical posts stood between the metal and the silicon and gave no clue which
+belonged to which — you could see that the supply rail came down somewhere and
+that the output strap went down somewhere, but not that they reached different
+terminals of different devices.
+
+An inverter, because an inverter is the smallest thing that is still honestly
+CMOS.
+
+**The cell owns no rails.** It did briefly, and that was a wrong picture rather
+than just clutter: a standard cell has no power straps of its own, it has the
+*row's* rails running along its top and bottom edges, shared with the row above
+and below, and that sharing is half the reason a row exists. The inverter reaches
+up and out to the field's rails instead. Four pieces of metal, none of them a
+rail: **A** over the gate, **Y** joining the two drains, and two **ties** running
+in z from each source out to the rail line.
+
+`lift` is what separates them. The signal metal rises at stop 07 so it stops
+covering the devices it is wired to; the ties do not, because they end on a rail
+that is not going anywhere. **Power stays down at the row, signal lifts out for
+inspection**, and the difference in height is itself the explanation. The contacts
+follow: the two source posts are short and stop at rail height, the two drain
+posts and the gate post stretch with the lift. That difference is the clearest
+statement in the cell of which terminal is which — short posts go to power, tall
+ones go to the circuit.
+
+**Devices are blocks, not fins.** Four ridges per device read as texture rather
+than structure at the size this renders. Source and drain are drawn *identically*
+and deliberately: in a MOSFET they are the same object and only the wiring tells
+them apart, so colouring them differently would invent a distinction the silicon
+does not have.
+
+Colour carries the rest, following the reference: **green P-type**, **teal
+N-type** (pushed off flat blue so it cannot be read as the cool GND rail),
+**salmon gate**, a sliver of **yellow gate oxide**, and every connection — posts,
+straps, output via and output wire — in **one neutral grey**. Two coloured bars at
+the edges are power; everything grey between them is the circuit.
+
+Two colour details that are not obvious from the code:
+
+- **`SIGNAL_COL` is darker than `CONTACT_COL` on purpose.** The posts are a
+  physical material and are lit; the straps above them are a *basic* material and
+  are not, because the switching loop has to drive them past 1.0 and only an
+  unlit material can be. Given the same hex the straps rendered visibly paler and
+  the circuit looked like two different greys.
+- **The power ties are built from `railMat` itself**, not from a matching colour:
+  same material, same instanceColor, same height, same thickness, overlapping the
+  rail's near half so there is no seam. A hand-matched colour reads as a near
+  miss, which is worse than an obvious difference — a strap that is *almost* the
+  rail's colour looks like a mistake, one that is exactly it looks like the rail.
+
+The last two camera keys sit about **15 degrees to the left** of what they aim at.
+Square-on was the right correction from the 45-degree diagonal these used to have,
+and it overshot: a layout with no azimuth has no near corner, so nothing tells you
+the metal is *above* the silicon rather than printed on it. Fifteen degrees sees
+under the lifted straps without rotating the axes back into a diamond.
+
+Moving left put a stack column straight through the cell, so the vias now fade to
+3% at stop 07 rather than the 20% the sheets fade to. A tier is a thin plane seen
+edge-on and survives being a ghost; a column is a metre of copper standing between
+the camera and a cell half a unit wide.
+
+**Keeping the cell in front of the copper — and the wrong fix first.** A via
+crossing the inverter used to hide it, so `viaMat.depthWrite` was turned off. That
+cured the symptom and broke the vias everywhere else: depth writes are exactly what
+make a via read as a solid rod rather than a coloured film, and every column in the
+room and every via in stage 05 went see-through at once.
+
+The right fix is on the object that has to win, not on every object it might lose
+to. `viaMat` writes depth again; instead the whole `fets` group turns **depth
+testing off**, so the cell simply stops asking. With no depth test the painter's
+algorithm is all that remains, so the group carries an explicit `renderOrder` per
+layer ascending in build order — substrate, well, devices, oxide, gate, contacts,
+metal, labels — or the parts would swap places as the camera moved and the cell
+would turn itself inside out. The etched labels sit above all of it at 230; at 224
+the metal at 227 painted straight over IN and OUT.
+
+`tieMat` is a **clone** of `railMat` for the same reason: the ties have to stop
+depth-testing with the rest of the cell, and `railMat` is shared with the floor's
+rails, which must keep theirs. `updateScene` copies colour and opacity across each
+frame so the clone cannot drift.
+
+**The cell publishes a pin, not a route.** The output via and the long wire that
+led away from it are gone. That run of metal was describing the *next* cell's
+problem, and at this magnification it read as part of this one.
+
+### Pin names are etched on the metal
+
+`in`, `out`, `vdd` and `gnd`, drawn on the thing they name with `faceLabel()`, the
+same silkscreen helper the die names use. They replaced four projected DOM tags
+that had to be re-positioned every frame, clamped back inside the viewport when
+they fell off the edge, and hidden entirely on a phone. A plane lying on the strap
+has none of those problems and reads as part of the object, which is what a pin
+name on a layout is.
+
+Each label sits on a piece of metal that **runs the way the text reads** — which
+is why `out` is on the output wire rather than the Y strap it continues: the strap
+runs in z and the word would be sideways. The two on the rails need far more
+vertical clearance than the two on the signal straps, because a rail is 0.026
+thick against a strap's 0.007; given the strap's offset they sat *inside* the rail
+and were invisible.
+
+**The bumps arrive with the stack** (`bumpIn` 0.826-0.864), not after the cascade.
+They used to land at 0.898-0.922, which is exactly the window the camera rises
+past the top tier in, so the one moment they were first visible was the moment
+they were fading in and dropping into place. They read as appearing from nowhere.
+The climb they are the reward for is the camera's, and the reward has to be there
+before the climb ends.
+
+Lit colour is derived **from each piece's own base**, not from one shared bright
+value, so a conducting ground rail goes bright blue and a conducting supply rail
+goes bright copper. Shared, both washed to the same warm white the instant they
+switched, throwing away the colour the floor had just spent a whole stage
+establishing — at exactly the moment you most want to know which rail it is. The switching loop is a pure function of its phase — no edge detection, no
+comparison against the last frame — so seeking to a `t` gives the same frame every
+time and the video renderer's clock override still works. Exactly one device is
+lit at a time, which is the lesson; the pulse leaves on the rising edge of Y and
+climbs the output via in five pieces, for the same reason the old net's long runs
+were cut into short boxes.
+
+It lands in `outWire`, not in the tier. The tier is authored at die scale, where
+one bar spans the chip, and by stop 07 it has been faded to a ghost so that it
+stops crossing the subject — a flash in a ghost is not an arrival. `outWire` is
+the same metal at the scale the camera is actually at.
+
+**The metal lifts off**, and this is the change that made the stage readable at
+all. Drawn flat, the cell is honest and illegible at the same time: the supply
+and ground straps run the full width of the tile and the output strap runs its
+full height, so between them the metal covers most of the devices it is connected
+to — and the relationship between those two things is the whole point. There is
+no camera angle that shows both while they are touching. So everything above the
+devices rises clear of them and the contacts stretch to stay joined to it, which
+is the language the page has spoken since the floorplan tiles rose as glass slabs
+and the fifteen tiers peeled apart.
+
+The elevation climbs 8, 21 and 37 degrees across the last three keys. Stop 06 is
+nearly level because it is a room being stood in; a cell is a *layout*, and a
+layout is read from above. It stops at 37 and not 90 because the argument of a
+cell is that it is built in layers, and a plan view is the one angle that cannot
+show a stack — the lift only reads from somewhere that can see under it.
+
+**Azimuth mattered as much as elevation** and took longer to get right. These keys
+used to look in along the die's diagonal, which put the cell on screen at 45
+degrees, and a layout read cornerwise is a diamond of overlapping slabs: the fins,
+the poly crossing them and the straps above ran in three different screen
+directions and none of them looked like an axis. The view is now nearly down `-z`,
+so the cell's width lies across the frame, the fins run with it and the poly runs
+against it, and everything in the picture is either horizontal or vertical.
+
+The cell is pushed right of the caption by moving the **camera and the aim
+together**, not by panning the aim across it. Panning is what the traced net did
+and it is wrong here: panning is what introduces the azimuth that turns the layout
+back into a diamond.
+
+### The top bar tucks away
+
+Pinned on arrival and only on arrival — that first screen is where a visitor works
+out whose site this is and how to leave it. From the first press of the forward
+arrow the scene owns the whole frame; reaching the top edge brings the bar back,
+leaving sends it away. It tucks on the first *forward* move only, so retreating to
+stop 1 does not re-pin it.
+
+Driven by a **coordinate test**, not `pointerenter`/`pointerleave`. The first
+version armed an invisible strip and listened for enter on it and leave on the
+bar, and it desynced immediately: a bar sliding down under a *stationary* pointer
+fires no enter, so moving away fired a leave nothing was listening for and the bar
+stuck open. "Is the cursor within 64px of the top" has no such corners, and 8px of
+hysteresis stops a pointer resting on the boundary from flickering it.
+
+`:focus-within` overrides the tuck for anyone who tabs to it, and `@media (hover:
+none)` disables the scheme entirely — on a touch device there is no gesture that
+would bring it back that would not also fight the scene.
+
+### Lesson cards in the sheet
+
+A subject can carry a `links` array, and `openSheet()` builds a card per entry
+under the copy: thumbnail, kicker, title, arrow. Shaped after the home page's
+`.mtp-card` and reproduced in this page's own tokens, for the same reason the top
+bar is — this page loads none of the site's CSS.
+
+The thumbnail is a real lesson figure rather than an icon, because a reader who
+has seen the R-type diagram knows where they are being sent before they read the
+title. Subjects with no `links` hide the row outright, unlike the video player,
+which is deliberately shown blank: a missing video is a promise, a missing lesson
+is not.
+
+Wired so far: `instruction-fetch` → *The Basics of Instructions* and
+*Fetch, Decode, Execute*, in course order.
+
+### The sheet videos
+
+One file per slug at `assets/video/<slug>.mp4`. `HAVE_VIDEO` in `scene.js` is the
+switch — a slug not in that set gets a blank player and the "video coming soon"
+note, which `.has-video` hides once there is something to play. Wired so far:
+
+| slug | block | length | size |
+|---|---|---|---|
+| `zen5-core` | Zen 5 Core | 1:55 | 23 MB |
+| `instruction-fetch` | Instruction Fetch and Decode | 2:03 | 25 MB |
+
+**Where the files live.** Masters in `video-masters/` at the repo root, never
+committed, ~200 MB each. Web encodes under `assets/video/`, tracked, because they
+*are* the site. `.gitignore` spells the split out.
+
+**The encode, and the part that is easy to get wrong.** The masters are **HLG HDR
+in BT.2020**, which is what a phone shoots by default and never mentions. Encoded
+straight to 8-bit H.264 the result does not error, does not warn, and is visibly
+grey and desaturated on every normal display. It has to be tone-mapped first:
+
+```sh
+ffmpeg -i video-masters/<name>.mov   -vf "zscale=w=1280:h=720:f=lanczos:t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p"   -r 30 -c:v libx264 -profile:v high -level 4.0 -crf 22 -preset medium   -c:a aac -b:a 128k -ac 2 -movflags +faststart   meet-the-processor/assets/video/<slug>.mp4
+```
+
+Run `ffprobe` first and check `color_transfer`: `arib-std-b67` or `smpte2084`
+means tone-map, `bt709` means it is already SDR and the chain can be dropped.
+The `format=gbrpf32le` step is not optional — tone-mapping in integer space bands
+the gradients.
+
+**720p is not a compromise here, it is the measurement.** The player renders
+1268 × 714 device pixels on a 1440 laptop at DPR 2 and 1053 × 591 on a phone at
+DPR 3, so a 1280 × 720 file is within twelve pixels of exact and 1080p would be
+resampled away. It only loses in fullscreen. For reference, the same source at
+1080p30 CRF23 is 45 MB and near-lossless 1080p60 is 356 MB, over GitHub's hard
+100 MB limit.
+
+`-movflags +faststart` puts the index at the front so playback starts before the
+download finishes, and `preload="metadata"` on the element means none of the file
+is fetched until somebody presses play.
+
+The full reasoning, including the mistakes, is in the Obsidian build log for
+2026-08-01.
+
+`verify/cell-switch.py` drives the loop through a full period and checks all of
+it: one device at a time, the gate following the NMOS, A and Y complementary, and
+the pulse peaking low to high before the wire lights.
+
+**Retiming the tail.** Stop 6 is 0.966 and stop 7 is 0.990, on legs of 11000 and
+6500 ms. The fifth leg now carries four beats where the wire carried one: the rise
+out of the stack, the bumps landing, the whole fold, and the reveal.
+
+The keys from 0.902 to 0.966 are shaped as **one arc over the top** rather than a
+rise followed by a fall. The first attempt reversed in all three axes at its apex,
+and a monotone-cubic spline answers a simultaneous reversal with a zero tangent,
+so the camera stopped dead in the middle of the fold — `camera-continuity.py`
+measured 0.24 of the leg's median speed. `x` now climbs straight through the apex
+while `y` and `z` turn over, and it reads 0.34. Check any change here with the
+harness rather than by eye: a stall that brief reads as a stutter and is very easy
+to talk yourself out of seeing.
+
+`camera-pace.py` still reports this leg as a lunge at 2.97, peaking on the exit
+from the stack at 0.918. That is **pre-existing** — the same key measured 3.12
+before any of this — and it is the one thing in the tail still worth fixing.

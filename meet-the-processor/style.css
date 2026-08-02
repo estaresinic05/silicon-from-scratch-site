@@ -106,15 +106,40 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
    Metrics copied from styles/main.css, not eyeballed: 4rem tall, a 1400px
    rail with 40px inset, 80% ground behind a 24px blur, and an 8% white
    hairline. Keep these in step if the site's bar changes. */
+/* The bar gets out of the way once the descent starts. It is permanent on
+   arrival, because that is when a visitor needs to know whose site this is and
+   how to leave it; from the first press of the forward arrow the scene owns the
+   viewport and a fixed band of chrome across the top of it is just a border.
+
+   Hovering the top edge brings it back and leaving it sends it away again, so it
+   behaves like the browser's own auto-hiding fullscreen chrome — a convention
+   people already have.
+
+   `visibility` rides the transition so a tucked bar cannot be tabbed into by
+   accident, and `:focus-within` overrides that for anyone who tabs to it
+   deliberately, which is the case a pointer-only rule would strand. */
 #sitebar {
   position: absolute; top: 0; left: 0; right: 0;
   z-index: 40;
   height: 4rem;
+  transition: transform .42s cubic-bezier(.2,.7,.3,1), visibility 0s;
   background: color-mix(in srgb, var(--void) 80%, transparent);
   -webkit-backdrop-filter: saturate(1.1) blur(24px);
   backdrop-filter: saturate(1.1) blur(24px);
   border-bottom: 1px solid var(--line);
 }
+#sitebar.tucked {
+  transform: translateY(-100%);
+  visibility: hidden;
+  transition: transform .42s cubic-bezier(.2,.7,.3,1), visibility 0s .42s;
+}
+#sitebar.tucked.peek,
+#sitebar.tucked:focus-within {
+  transform: none;
+  visibility: visible;
+  transition: transform .34s cubic-bezier(.2,.7,.3,1), visibility 0s;
+}
+
 .sitebar__inner {
   height: 100%;
   max-width: 1400px;
@@ -363,34 +388,6 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
 
 /* ------------------------------------------------------------------ *
-   Route pins — labels anchored to points on the traced net at stage 06
-   Smaller and quieter than the tag: these annotate, they do not invite.
- * ------------------------------------------------------------------ */
-#pins { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
-#pins[hidden] { display: none; }
-.pin {
-  position: absolute; left: 0; top: 0;
-  display: grid; gap: .1rem;
-  padding: .34rem .6rem .38rem;
-  border-radius: 7px;
-  border: 1px solid rgba(217, 138, 68, .34);
-  background: rgba(12, 9, 6, .68);
-  backdrop-filter: blur(7px);
-  -webkit-backdrop-filter: blur(7px);
-  text-align: left;
-  opacity: 0;
-  transition: opacity .45s ease;
-}
-.pin.show { opacity: 1; }
-.pin b {
-  font-family: var(--font-mono); font-size: .64rem;
-  letter-spacing: .1em; color: #f0b471; font-weight: 500;
-}
-.pin span {
-  font-size: .68rem; color: var(--muted); white-space: nowrap;
-}
-
-/* ------------------------------------------------------------------ *
    Block sheet — title and text on the left, video player on the right, both
    sitting directly on the blurred scene. Freezes the descent while open.
 
@@ -437,6 +434,78 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .sheet-body { color: #c2c9d6; font-size: clamp(.94rem, 1.05vw, 1.02rem); line-height: 1.65; }
 .sheet-body p { margin: 0 0 .9rem; }
 .sheet-body p:last-child { margin-bottom: 0; }
+
+/* --- lesson cards: the way out to the lesson that teaches this block ---
+   Shaped after the home page's `.mtp-card`: thumbnail, a kicker and a title, an
+   arrow that slides on hover. Reproduced here in this page's own tokens rather
+   than shared, for the same reason the top bar is reproduced — this page loads
+   none of the site's CSS. Keep the two in step by eye if the home card changes.
+
+   The thumbnail is a real lesson figure, not an icon. A reader who has seen the
+   R-type diagram recognises where they are being sent before they read the
+   title, which is the whole job of the picture. */
+.sheet-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: .7rem;
+  margin-top: 1.6rem;
+  animation: sheetSlide .38s .12s cubic-bezier(.2,.7,.3,1) both;
+}
+.sheet-links[hidden] { display: none; }
+
+.lesson-card {
+  display: grid;
+  grid-template-columns: 4.4rem 1fr auto;
+  align-items: center;
+  gap: .8rem;
+  padding: .6rem .8rem .6rem .6rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(20, 20, 28, .62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  text-decoration: none;
+  transition: border-color .22s ease, background .22s ease, transform .22s ease;
+}
+.lesson-card:hover,
+.lesson-card:focus-visible {
+  border-color: color-mix(in srgb, var(--accent-lit) 46%, transparent);
+  background: rgba(28, 24, 42, .78);
+  transform: translateY(-2px);
+}
+.lesson-card:focus-visible { outline: 2px solid var(--accent-lit); outline-offset: 3px; }
+
+/* The figures are light diagrams on white, so they keep their own background
+   and sit on a plain surface. Tinting them to match the panel would misrepresent
+   the artwork the reader is about to land on. */
+.lesson-card__art {
+  width: 4.4rem; aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 7px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.lesson-card__label { display: grid; gap: .15rem; min-width: 0; }
+.lesson-card__kicker {
+  font-family: var(--font-mono); font-size: .58rem;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent-lit);
+}
+.lesson-card__title {
+  font-size: .92rem; font-weight: 500; color: var(--text);
+  line-height: 1.25;
+}
+.lesson-card__arrow {
+  color: var(--muted);
+  transition: transform .22s ease, color .22s ease;
+}
+.lesson-card__arrow svg { width: 18px; height: 18px; display: block;
+  fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round; }
+.lesson-card:hover .lesson-card__arrow,
+.lesson-card:focus-visible .lesson-card__arrow {
+  transform: translateX(3px); color: var(--text);
+}
 
 /* --- right: the player, blank until a video is dropped in --- */
 .sheet-media { justify-self: stretch; animation: sheetSlide .38s .05s cubic-bezier(.2,.7,.3,1) both; }
@@ -498,6 +567,12 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
  * ------------------------------------------------------------------ */
 @media (max-width: 860px) {
   .specs { display: none; }
+  /* The cell pins come off on a phone. In portrait the caption is a full-width
+     block across the middle of the screen and the cell sits behind it, so all
+     four labels land on top of a paragraph — four floating boxes over running
+     text is worse than no labels at all. The caption still names every terminal
+     in prose, which is the same trade the keyboard hint makes below: an
+     affordance that only works with room to put it in is desktop-only. */
   /* Clears the hint and the centred nav stacked beneath it. */
   #caption { bottom: 8.8rem; max-width: none; right: clamp(1rem,4vw,2.6rem); }
   #caption h2 { font-size: 1.4rem; }
@@ -523,7 +598,6 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
     right: 50%; transform: translateX(50%);
     width: 92vw; font-size: .7rem;
   }
-  .pin { font-size: .9em; }
   /* Full-width thumb targets beat a pretty pill on a phone. The vertical
      stacking of nav, hint, caption and credit at this width is not here: it has
      to come after the nav section to win the cascade, so it is at the foot of
@@ -538,12 +612,22 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
    Reduced motion — the scene still renders, but the camera settles
    immediately instead of easing, and decorative loops stop.
  * ------------------------------------------------------------------ */
+/* No hover, no way back. On a touch device the bar stays put: the whole scheme
+   depends on a pointer being able to reach the top edge, and there is no
+   equivalent gesture here that would not also fight the scene's own drag. */
+@media (hover: none) {
+  #sitebar.tucked { transform: none; visibility: visible; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .spark, .arrow { animation: none; }
   .nav-fwd::after, .nav-fwd svg { animation: none; }
   #caption.swap h2, #caption.swap p, #caption.swap .cap-index { animation: none; }
   #sheet, .sheet-card { animation: none; }
   #credit-panel { animation: none; }
+  /* The bar still hides and still comes back; it just stops sliding. */
+  #sitebar { transition: none; }
+  #sitebar.tucked { transition: none; }
 }
 
 /* ------------------------------------------------------------------ *

@@ -136,11 +136,11 @@ const STAGES = [
   { t: 0.800, num: '04', title: 'Inside one core',
     body: 'A single core is itself a floorplan, and it came apart in the order an instruction meets it: fetch and decode, the registers and integer units, load/store, then the caches behind it all.' },
   { t: 0.888, num: '05', title: 'The metal stack',
-    body: 'Above the transistors sit layer upon layer of copper wiring. Thin and densely pitched at the bottom for local connections, thick and sparse at the top for power and clock, and each layer routing at right angles to the one below so wires can cross without touching.' },
-  { t: 0.944, num: '06', title: 'One wire, end to end',
-    body: 'All that copper only matters if a signal can get from one transistor to another, and this is a single connection making the trip. It sets off in short hops on the lowest layers, turning a corner every time it changes layer, because a layer can only run one direction. To cross the die it climbs a stack of vias to the eleventh layer, where the metal is thick enough to carry it the whole way in one run, then steps back down to the gate waiting at the other end.' },
-  { t: 0.978, num: '07', title: 'Down to the transistors',
-    body: 'Beneath all the wiring are the switches themselves. On N4P the silicon channel stands up as a fin and the gate wraps over three of its sides, which is what a FinFET is: far more control over the channel than a flat transistor could manage.' },
+    body: 'Above the transistors sit layer upon layer of copper wiring. Thin and densely pitched at the bottom for local connections, thick and sparse at the top for power and clock, and each layer routing at right angles to the one below so wires can cross without touching. The short pillars standing between the layers are vias, which are the only way a signal changes level. The balls that settle on top at the end are the solder bumps, where the finished die is soldered face down onto its package.' },
+  { t: 0.966, num: '06', title: 'The cell rows',
+    body: 'The stack folds back down onto the lowest layer of metal, and underneath it the design stops being wiring and becomes logic. Every gate in the processor is one of a few hundred prebuilt tiles taken from a standard cell library, and each of those tiles is drawn to exactly the same height so that it can be dropped into a row and pushed up against its neighbours with nothing wasted in between. Power and ground run the length of every row boundary and are shared by the rows above and below, which is why one row is the mirror of the next. A router working in the copper overhead can then treat the whole surface as a grid and always know where a pin will be.' },
+  { t: 0.990, num: '07', title: 'One cell, one gate',
+    body: 'Drop into one of those tiles and it resolves into a CMOS inverter, the smallest thing that is still honestly a logic gate. The upper half sits inside an n-well and carries the PMOS transistors, the lower half carries the NMOS, and a single strip of poly crosses both of them as one shared gate. Drive the input high and the NMOS conducts while the PMOS shuts off, so the output is pulled down to ground. Drive it low and the pair swap jobs and the output is pulled up to the supply. Every gate on this die, and every 2x1 multiplexer built out of them, is that same complementary pair repeated.' },
 ];
 
 /* ------------------------------------------------------------------ *
@@ -1622,9 +1622,9 @@ const corePlanar = (geo) => {
    mosaic behind it.
 
    This used to be two flat planes over the core photograph, crossfading fill
-   into outline. That made stage 07 the one reveal in the piece that was a
+   into outline. That made stage 04 the one reveal in the piece that was a
    diagram being coloured in rather than silicon coming apart, and it did not
-   match the language stage 06 had already established one stage earlier. */
+   match the language stage 03 had already established one stage earlier. */
 const coreTiles = [];
 const coreTileGroup = new THREE.Group();
 chip.add(coreTileGroup);
@@ -1779,7 +1779,7 @@ chip.add(coreTileGroup);
    Fifteen tiers of copper lifting apart, with vias standing between them, bond
    bumps capping the top, and a pulse of light climbing the whole thing.
 
-   Four things carry this stage, and each is here for a reason:
+   Five things carry this stage, and each is here for a reason:
 
    TIER GRADING. A real stack is not fifteen copies of one thing. The lowest
    levels are thin, tightly pitched and duller — barely copper to look at — and
@@ -1804,7 +1804,14 @@ chip.add(coreTileGroup);
    through tiers. A textured plane crossing the near plane is a full-screen flash
    of copper. Each tier therefore fades as the camera approaches its plane, so a
    crossing reads as passing through a veil. Without this the immersive camera is
-   unusable. */
+   unusable.
+
+   THE FOLD. Having been taken apart, the stack goes back together, top first,
+   onto a resting pitch rather than onto nothing, and leaves the lowest gap open
+   as a room to stand in. This is the stage's exit and it is also the entrance to
+   the two that follow it: the copper does not fade away to make space for the
+   cells, it becomes the ceiling above them. The argument for each of those three
+   choices sits with gapClose and gapSpan below. */
 
 const stack = new THREE.Group();
 stack.visible = false;
@@ -1901,8 +1908,14 @@ for (let i = 0; i < N_METAL; i++) {
   }
   for (let k = 0; k < nj; k++) {
     const len = pitch * THREE.MathUtils.lerp(1.6, 3.4, Math.random());
-    const a = (Math.random() - 0.5) * across * 0.9;
-    const b = (Math.random() - 0.5) * span * 0.9;
+    /* Clamped so a jog cannot hang off the edge of the die. The centre used to be
+       drawn across 0.9 of the span with no regard for the jog's own length, and a
+       long one placed near the rim stuck out past the silicon — most visibly on
+       the top tiers, where the pitch is widest and a jog can be nearly half the
+       die deep. The half-length has to come out of the range, not be added to it. */
+    const lim = (v, half) => (Math.random() - 0.5) * 2 * Math.max(v * 0.485 - half, 0);
+    const a = lim(across, len / 2);
+    const b = lim(span, w / 2);
     items.push(alongX ? { sx: w, sz: len, x: b, z: a }
                       : { sx: len, sz: w, x: a, z: b });
   }
@@ -1931,6 +1944,65 @@ for (let i = 0; i < N_METAL; i++) {
 const GAP_T0 = 0.832, GAP_DUR = 0.028, GAP_STEP = 0.0032;
 const gapOpen = (g, t) => ramp(t, GAP_T0 + g * GAP_STEP,
                                   GAP_T0 + g * GAP_STEP + GAP_DUR);
+
+/* ...and then it folds back up, TOP first, which is not the opening cascade
+   played backwards and must not be written as one. Three things differ, and each
+   of them is the difference between a fold and a rewind:
+
+   IT CLOSES FROM THE TOP. The open peels upward from M1 because M1 is what the
+   stack is anchored to, and the fold has to come back DOWN onto M1 for the same
+   reason: the last thing to move must be the thing the camera is about to stand
+   on. Running gapOpen in reverse would fold M1 into M2 first and leave the top
+   of the stack hanging in the air with nothing under it.
+
+   IT IS QUICKER AND TIGHTER. 0.026 of t against the open's 0.077, with the gaps
+   overlapping three times as hard. A shape the eye already knows does not need
+   the reading time the first reveal needed, and the camera is descending with it
+   anyway, so the motion is already being paid for twice.
+
+   AND IT DOES NOT CLOSE TO ZERO. Fifteen coplanar transparent planes is not a
+   stack, it is a z-fight with fifteen times the overdraw in one band, and "M1 is
+   the floor" means nothing if M15 is also the floor. CLOSED_FRAC leaves a real
+   pitch. That is also the more honest reading of the two: the exploded view was
+   the exaggeration, and this is closer to what the stack is.
+
+   CLOSED_FRAC is 0.28 and not the 0.10 it started at, and the number is set by
+   the VIAS rather than by how the copper looks. A via is exactly as tall as the
+   gap it crosses, so at 0.10 the folded gaps were 0.03 and every via in them
+   disappeared into the slab halfway through the move — the fold read as the
+   connections being deleted rather than as the layers closing up. At 0.28 the
+   gap is 0.084, the upper vias are wider than they are tall and read as studs
+   between the sheets, and nothing ever vanishes. It is still a 3.5x compression,
+   which is more than enough to read as a fold. */
+const CLOSE_T0 = 0.926, CLOSE_DUR = 0.012, CLOSE_STEP = 0.0011;
+const CLOSED_FRAC = 0.28;                 // resting pitch, as a share of LAYER_GAP
+const gapClose = (g, t) => (g === 0 ? 0 : ramp(
+  t, CLOSE_T0 + (N_METAL - 2 - g) * CLOSE_STEP,
+     CLOSE_T0 + (N_METAL - 2 - g) * CLOSE_STEP + CLOSE_DUR));
+
+/* Gap 0 is the exception, and it is the point of the whole stage. The fold
+   closes the fourteen gaps above it and leaves this one — widened — as the room
+   the reader is left standing in: M1 underfoot, the other fourteen tiers
+   compacted into a ceiling overhead, and the cell rows showing through the floor.
+
+   There is no other way to be under the copper and above the cells at the same
+   time. The camera's near plane is 0.05 and a folded gap is 0.03, so a camera
+   between two folded tiers is inside both of them. */
+const ROOM = 1.50;
+const roomOpen = (t) => ramp(t, 0.930, 0.952);
+
+/* The height of gap g right now: opened, then folded back toward its resting
+   pitch, except gap 0 which is opened further into the room. Written as a pure
+   function of BOTH ramps rather than as a switch on which phase we are in, so
+   that scrubbing backwards through the fold is exact rather than approximately
+   reversible. */
+const gapSpan = (g, t) => {
+  const o = gapOpen(g, t);
+  if (g === 0) return LAYER_GAP * o + (ROOM - LAYER_GAP) * roomOpen(t);
+  const c = gapClose(g, t);
+  return LAYER_GAP * (o * (1 - c) + CLOSED_FRAC * c);
+};
+
 /* Running height of each tier, given how far every gap below it has opened.
    Written into this array once per frame and read by the tiers, the vias and the
    bumps, so the three can never disagree about where a tier is. */
@@ -1941,19 +2013,57 @@ const tierY = new Float32Array(N_METAL);
    this way: thousands of short local connections at the bottom, a handful of fat
    power pillars at the top. */
 const viaGeo = new THREE.BoxGeometry(1, 1, 1);
+/* depthWrite stays ON, unlike most transparent things here, and that is what
+   makes a via read as a solid rod rather than a coloured film. It was turned off
+   once to stop a column hiding the inverter and the cure was far worse than the
+   disease: every via in the stack and every column in the room went see-through
+   at the same time. The cell is kept in front by disabling depth TESTING on the
+   cell instead, which is a property of the thing that needs to win rather than
+   of every object it might lose to. */
 const viaMat = new THREE.MeshStandardMaterial({
   color: 0xd79a5f, emissive: new THREE.Color(0xff8a3c), emissiveIntensity: 0,
   metalness: 0.72, roughness: 0.34, transparent: true, opacity: 0,
 });
+/* Placed with a seeded generator rather than Math.random, unlike the bar jogs
+   above, which are right to use it. The difference is what the gap-0 vias become
+   once the stack folds: the fold leaves that gap open as a room, so those vias
+   stretch into the columns the stop 06 camera stands among, and they are the
+   most prominent geometry in that shot. A composed shot cannot have its
+   foreground rearrange itself on every reload, and the video renderer diffs
+   frames. The jogs are never anybody's subject; these are. */
+const viaRnd = (() => {
+  let s = 0x9e3779b1 >>> 0;
+  return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+})();
 const viaSeeds = [];
 for (let g = 0; g < N_METAL - 1; g++) {
   const u = g / (N_METAL - 2);
-  const n = Math.round((isSmall ? 70 : 150) * (1 - 0.62 * u));   // fewer, higher up
+  /* Gap 0 carries a fifth of what the others do, and it is thinned HERE at build
+     time rather than during the fold. It is the gap the stack leaves open as a
+     room, so its vias are the only ones that end up metres tall and standing
+     where the camera walks: at the density the other gaps use, the room is a
+     forest and the nearest columns are seventy pixels wide.
+
+     An earlier pass kept the full count and shrank the surplus away as the room
+     opened. That was worse, and visibly so: the fold is watched from outside,
+     and five sixths of the columns quietly evaporating mid-flight reads as the
+     scene breaking. Nothing here disappears now. There are simply fewer of them,
+     from the first frame to the last. */
+  let n = Math.round((isSmall ? 70 : 150) * (1 - 0.62 * u));     // fewer, higher up
+  if (g === 0) n = Math.round(n / 5);
   const w = 0.026 + 0.10 * Math.pow(u, 1.5);                     // fatter, higher up
   for (let k = 0; k < n; k++) {
+    /* Gap 0 is the one the fold leaves open, so these are the vias that become
+       the room's columns. Only a sample of them stays: at the density that is
+       right for the stack — thousands of short local connections, which is the
+       whole point being made there — a camera standing INSIDE the gap is inside
+       a forest, and the near ones are 70px wide and wall off the frame. The rest
+       retire as the room opens. The room is a 500x exaggeration of a 30nm gap;
+       drawing a representative few of its vias is the same order of licence, and
+       it is the only version you can see the floor through. */
     viaSeeds.push({ gap: g, w,
-      x: (Math.random() - 0.5) * DIE_W * 0.94,
-      z: (Math.random() - 0.5) * DIE_H * 0.94 });
+      x: (viaRnd() - 0.5) * DIE_W * 0.94,
+      z: (viaRnd() - 0.5) * DIE_H * 0.94 });
   }
 }
 const vias = new THREE.InstancedMesh(viaGeo, viaMat, viaSeeds.length);
@@ -1983,240 +2093,745 @@ for (let ix = 0; ix < BUMP_NX; ix++) {
   }
 }
 
-/* --- one net, end to end ----------------------------------------------
-   The stack stage shows fifteen layers of copper and says what each is for. The
-   question it leaves is the one this stage answers: given all that, how does a
-   signal actually get from one transistor to another?
+/* --- the standard cell rows -------------------------------------------
+   The stack stage says what the copper IS. This one says what it is for.
 
-   So a single net is traced through the stack, and every property of it is the
-   consequence of something the previous stage already established:
+   Beneath the lowest layer of metal the design stops being wiring and starts
+   being logic, and the first surprising thing about that logic is how regular it
+   looks. There is no sea of bespoke transistors down here. There is a field of
+   prebuilt tiles, every one of them the same height, snapped into rows and
+   pushed up against its neighbours with nothing in between.
 
-   · A run on tier i travels along tier i's OWN routing axis, the same
-     alternation the bars use — even tiers along x, odd along z. That is why the
-     path is a staircase in plan as well as in height: it cannot turn a corner
-     without changing layer, which is precisely why real stacks alternate.
-   · The wire THICKENS as it climbs, on the same curve the bars grade on.
-   · It spends its length at the bottom on short hops, climbs a via stack to M11
-     for one long haul across the die, and comes straight back down. This is what
-     a router actually does, and it is the reason the upper layers are fat: a
-     five-unit run on M1 would lose far more of the signal than the climb costs.
+   Three properties carry the stage, and only three, because the camera stands
+   three units off a field eight units across and anything finer than this is a
+   shimmer at that distance:
 
-   Held in its own group rather than inside `stack`, because the stack fades out
-   from under it while the route is still being read.
+   ONE HEIGHT, MANY WIDTHS. The rows are identical and the cells inside them are
+   not. That contrast IS the teaching point. A fixed height is what lets a tile
+   be dropped anywhere in any row; a free width is what lets an inverter cost a
+   quarter of the area an adder does.
 
-   Geometry is STATIC. Every gap has finished opening by t 0.905 and the route
-   does not appear until 0.930, so tierY is frozen for the whole life of this
-   stage and there is nothing to recompute per frame except the light on it. */
-const netGroup = new THREE.Group();
-netGroup.visible = false;
-chip.add(netGroup);
+   RAILS ON EVERY BOUNDARY. Power and ground run the full length of each row
+   edge and are SHARED between the row above and the row below, which is why real
+   rows alternate their orientation and why a row height is a hard number in the
+   library rather than a preference.
 
-const tierYNominal = (i) => 0.02 + i * LAYER_GAP;
-const routeW = (i) => 0.055 + 0.105 * Math.pow(i / (N_METAL - 1), 1.1);
+   ABUTMENT, NOT SPACING. The cells touch. A field of tiles with air between them
+   is a picture of a floorplan; a field with no air is a picture of a standard
+   cell row, and that difference is the entire point of the stage. The 0.006 gap
+   below is a seam, not a space: without it neighbouring cells fuse into one long
+   bar and the row stops having cells in it at all.
 
-/* [tier, x, z]. Consecutive entries differ in EITHER the tier, which is a via
-   riser, OR exactly one of x and z, which is a run — and a run must be along the
-   tier's own axis. Hand-authored rather than generated: this is a composed shot
-   and the path has to read across the frame from the one camera that sees it. */
-const ROUTE = [
-  [ 0, -3.60,  2.95], [ 0, -2.80,  2.95],     // M1  local hop, along x
-  [ 1, -2.80,  2.95], [ 1, -2.80,  2.10],     // M2  turn, along z
-  [ 2, -2.80,  2.10], [ 2, -2.05,  2.10],     // M3  along x
-  [ 3, -2.05,  2.10], [ 3, -2.05,  1.45],     // M4  along z
-  [ 4, -2.05,  1.45], [10, -2.05,  1.45],     // the via stack, straight up
-  [10,  2.95,  1.45],                         // M11 the long haul, along x
-  [ 3,  2.95,  1.45], [ 3,  2.95, -0.45],     // straight back down, then along z
-  [ 2,  2.95, -0.45], [ 2,  1.95, -0.45],     // M3  along x
-  [ 1,  1.95, -0.45], [ 1,  1.95, -1.35],     // M2  along z
-  [ 0,  1.95, -1.35], [ 0,  1.15, -1.35],     // M1  and into the far gate
-];
+   SEEDED DETERMINISTICALLY, unlike the vias and the bar jogs above, which reach
+   for Math.random() at module load and are right to. Nothing in the piece
+   composes a shot against an individual via, so it does not matter where they
+   land. A camera key DOES aim at one named cell here, and both shot.py and the
+   video renderer diff frames against previous captures, so a field that
+   reshuffled on every reload would slide the subject out from under the lens and
+   make every capture a different picture. */
+const cellField = new THREE.Group();
+cellField.visible = false;
+chip.add(cellField);
 
-/* Long runs are cut into short boxes so the travelling light can be a gradient
-   ALONG the wire rather than a whole five-unit segment flashing at once. */
-const NET_STEP = 0.26;
-const netPieces = [];                 // {s: arc-length at its centre}
-let netLen = 0;
-{
-  const push = (cx, cy, cz, sx, sy, sz, s) => {
-    netPieces.push({ x: cx, y: cy, z: cz, sx, sy, sz, s });
-  };
-  for (let k = 0; k < ROUTE.length - 1; k++) {
-    const [ia, xa, za] = ROUTE[k], [ib, xb, zb] = ROUTE[k + 1];
-    const w = routeW(Math.max(ia, ib));
-    if (ia !== ib) {                                   // a via riser
-      const y0 = tierYNominal(ia), y1 = tierYNominal(ib);
-      const len = Math.abs(y1 - y0);
-      const n = Math.max(1, Math.ceil(len / NET_STEP));
-      /* Risers are square in plan and a touch fatter than the wire they join, so
-         a via reads as a via and not as the wire briefly standing on end. */
-      const vw = w * 1.15;
-      for (let j = 0; j < n; j++) {
-        const f = (j + 0.5) / n;
-        push(xa, THREE.MathUtils.lerp(y0, y1, f), za, vw, len / n, vw,
-             netLen + len * f);
-      }
-      netLen += len;
-    } else {                                           // a run along the tier
-      const y = tierYNominal(ia);
-      const dx = xb - xa, dz = zb - za;
-      const len = Math.abs(dx) + Math.abs(dz);
-      const n = Math.max(1, Math.ceil(len / NET_STEP));
-      for (let j = 0; j < n; j++) {
-        const f = (j + 0.5) / n;
-        push(xa + dx * f, y, za + dz * f,
-             dx ? len / n : w, w * 0.82, dz ? len / n : w,
-             netLen + len * f);
-      }
-      netLen += len;
-    }
+/* ROW_N is odd at BOTH breakpoints deliberately, and the rows are laid out from
+   the centre outward rather than from one edge, so there is always a row centred
+   exactly on z = 0 however many of them there are. That is what lets the hero
+   cell be a fixed world point instead of an index into a field whose spacing
+   changes with the viewport — the stop 06 camera key has to aim at the same
+   object on a phone as it does on a desktop. */
+const ROW_N     = isSmall ? 13 : 21;
+const ROW_PITCH = DIE_H * 0.92 / ROW_N;
+/* A cell is as tall as its row. That is not a detail, it is the definition:
+   the library picks one height, every cell is drawn to it, and the power rails
+   run along the top and bottom EDGES where they are shared with the row above
+   and below. Drawn shorter, as this was at first, the rows stop abutting, the
+   rails float in the space between them, and the cell has no edge for its own
+   supply strap to sit on. The 0.97 is the same seam the widths carry. */
+const CELL_H    = ROW_PITCH * 0.97;
+const CELL_T    = 0.070;                     // how far a cell stands proud
+/* The device layer, below M1 at 0.02. The exact depth is set by the stage that
+   follows rather than by this one: the output via at stop 07 has to climb from
+   the cell's own metal up into M1, and at anything shallower than this that
+   climb is a couple of pixels and the pulse has nowhere to travel. */
+const CELL_Y    = -0.160;
+const CELL_UNIT = 0.082;                     // one track pitch; widths are multiples
+const CELL_W_U  = [2, 3, 3, 4, 4, 6, 8];     // an inverter is 2 wide, an adder is 8
+const CELL_GAP  = 0.006;                     // a seam, not a space. See above.
+const FIELD_X   = DIE_W * 0.46;
+const rowZ = (r) => (r - (ROW_N - 1) / 2) * ROW_PITCH;
+
+/* The hero cell is AUTHORED rather than looked up out of the generated field,
+   for the reason given above: a camera key has to be written against a fixed
+   point. Six tracks wide, which is a realistic inverter once its well taps are
+   counted, and wide enough to read at the standoff stop 07 lands at. */
+const HERO_ROW = (ROW_N - 1) / 2;
+const CELL_W   = CELL_UNIT * 6;
+const CELL_C   = new THREE.Vector3(0.60, CELL_Y, rowZ(HERO_ROW));
+const HERO_L   = CELL_C.x - CELL_W / 2;
+const HERO_R   = CELL_C.x + CELL_W / 2;
+
+/* A plain 32-bit LCG. Deliberately not Math.random: see the note above. */
+const cellRnd = (() => {
+  let s = 0x2f6e2b1 >>> 0;
+  return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+})();
+const cellW = () => CELL_UNIT * CELL_W_U[Math.floor(cellRnd() * CELL_W_U.length)];
+
+const cellSeeds = [];
+for (let r = 0; r < ROW_N; r++) {
+  const z = rowZ(r);
+  if (r === HERO_ROW) {
+    /* The hero row is packed OUTWARD from the hero cell in both directions, so
+       that its two neighbours abut it exactly. Packing this row left to right
+       like the others and jumping over the reserved slot would leave a ragged
+       hole against the one cell the camera actually lands on, and a hole in a
+       row of abutted cells reads as a mistake rather than as a gap. */
+    for (let x = HERO_R + CELL_GAP, w = cellW(); x + w <= FIELD_X; x += w + CELL_GAP, w = cellW())
+      cellSeeds.push({ x: x + w / 2, z, w, g: cellRnd() });
+    for (let x = HERO_L - CELL_GAP, w = cellW(); x - w >= -FIELD_X; x -= w + CELL_GAP, w = cellW())
+      cellSeeds.push({ x: x - w / 2, z, w, g: cellRnd() });
+    continue;
   }
+  for (let x = -FIELD_X, w = cellW(); x + w <= FIELD_X; x += w + CELL_GAP, w = cellW())
+    cellSeeds.push({ x: x + w / 2, z, w, g: cellRnd() });
 }
 
-const netMat = new THREE.MeshBasicMaterial({
-  transparent: true, opacity: 0, depthWrite: false,
+/* One draw call for every cell in the field. The file's own note above says this
+   scene is fill-rate bound rather than geometry bound, and five hundred small
+   boxes lying nearly flat is close to free: they cover the lower half of the
+   frame once, at almost no overdraw, which is a fraction of what a single
+   floorplan tile costs. */
+const _cellCol = new THREE.Color();
+const cellMat = new THREE.MeshStandardMaterial({
+  metalness: 0.15, roughness: 0.55, transparent: true, opacity: 0,
+  depthWrite: false,
 });
-const net = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), netMat,
-                                    netPieces.length);
-/* Drawn after the stack it passes through. The stack is heavily dimmed under
-   this stage and none of it writes depth at that opacity, so a high render order
-   is all it takes for the wire to read through the tiers rather than being
-   swallowed by whichever one happens to be nearer the camera. */
-net.renderOrder = 200;
-net.frustumCulled = false;
-netGroup.add(net);
+const cells = new THREE.InstancedMesh(
+  new THREE.BoxGeometry(1, 1, 1), cellMat, cellSeeds.length);
+/* renderOrder is explicit rather than left to the distance sort, here and on the
+   rails, because the idle camera drift perturbs every distance a little on every
+   frame, and a floor that occasionally sorts behind its own ceiling is not
+   something to leave to a tiebreak. */
+cells.renderOrder = 5;
+cells.frustumCulled = false;
+cellField.add(cells);
 {
   const m = new THREE.Matrix4(), q = new THREE.Quaternion();
   const tv = new THREE.Vector3(), sv = new THREE.Vector3();
-  for (let k = 0; k < netPieces.length; k++) {
-    const p = netPieces[k];
-    tv.set(p.x, p.y, p.z); sv.set(p.sx, p.sy, p.sz);
-    net.setMatrixAt(k, m.compose(tv, q, sv));
+  for (let k = 0; k < cellSeeds.length; k++) {
+    const c = cellSeeds[k];
+    tv.set(c.x, CELL_Y, c.z);
+    sv.set(c.w, CELL_T, CELL_H);
+    cells.setMatrixAt(k, m.compose(tv, q, sv));
+    /* A narrow spread of cool grey. Wider than this and the field reads as a
+       mosaic of different MATERIALS, when the thing that actually differs
+       between two cells is only what they compute.
+
+       Bright, though, and that is not a taste call. The cells are seen THROUGH
+       the gaps between M1's bars from a camera above them, so they are competing
+       with lit copper for the same pixels; at the lightness this started at they
+       lost, and the floor read as a sheet of metal with a dark basement under it
+       rather than as a field of tiles. */
+    cells.setColorAt(k, _cellCol.setHSL(0.58, 0.10, 0.42 + c.g * 0.13));
   }
-  net.instanceMatrix.needsUpdate = true;
-  net.instanceColor = new THREE.InstancedBufferAttribute(
-    new Float32Array(netPieces.length * 3), 3);
+  cells.instanceMatrix.needsUpdate = true;
+  cells.instanceColor.needsUpdate = true;
 }
 
-/* The two gates the net connects. Flat pads at M1 rather than transistors: the
-   next stage is the transistors, and drawing them here would spend that reveal
-   early. They read as terminals, which is all this stage needs them to be. */
-const netPadMat = new THREE.MeshBasicMaterial({
-  color: 0xffcf96, transparent: true, opacity: 0, depthWrite: false,
-});
-const netPads = [];
-for (const [x, z] of [[ROUTE[0][1], ROUTE[0][2]],
-                      [ROUTE[ROUTE.length - 1][1], ROUTE[ROUTE.length - 1][2]]]) {
-  const pad = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.05, 0.34), netPadMat);
-  pad.position.set(x, tierYNominal(0) - 0.02, z);
-  pad.renderOrder = 200;
-  netGroup.add(pad);
-  netPads.push(pad);
-}
+/* Supply is warm and ground is cool, and these two constants are the only place
+   that is decided. The inverter's own straps read them straight out of here, so
+   the rail running along the top of the hero cell is the same colour as the rail
+   running along the top of every other cell in the field, and a reader crossing
+   from the floor to the cell is not asked to learn a second scheme. */
+const VDD_COL = 0xd9924e, GND_COL = 0x7f8fa8;
 
-/* The travelling charge. A single bright bead at the head of the glow, which is
-   what turns a drawn path into a signal going somewhere: the gradient alone
-   reads as decoration, a bead reads as an arrival. Colour runs past 1.0 on
-   purpose — ACES rolls it off into a hot highlight rather than clipping. */
-const beadMat = new THREE.MeshBasicMaterial({
-  color: new THREE.Color(2.6, 2.05, 1.35), transparent: true, opacity: 0,
+/* The rails: one per row BOUNDARY, hence ROW_N + 1 of them, alternating supply
+   and ground. Sharing them is the reason a row is worth having — two adjacent
+   rows draw their power from the same strip of metal, which is also why every
+   other row is mirrored top to bottom in a real layout. */
+const RAIL_H = ROW_PITCH * 0.15;
+/* How far above a cell's own body the M1 layer sits. The field's rails and the
+   inverter's straps both read this, so the metal in the hero cell lines up with
+   the metal running past it instead of floating a hair above or below it. */
+const RAIL_Y_OFF = 0.045;
+const railMat = new THREE.MeshStandardMaterial({
+  metalness: 0.72, roughness: 0.30, transparent: true, opacity: 0,
   depthWrite: false,
 });
-const bead = new THREE.Mesh(new THREE.SphereGeometry(0.11, 14, 10), beadMat);
-bead.renderOrder = 201;
-netGroup.add(bead);
+/* Unbroken, all the way across, including past the hero cell. The cell does not
+   draw rails of its own and never should have: a standard cell has no power
+   straps, it has the ROW's rails running along its top and bottom edges, shared
+   with the row above and the row below. That sharing is half the reason a row
+   exists. Drawing a second pair over the hero cell said the opposite, and cutting
+   a notch for them only made the seam tidier without making the claim true.
 
-/* Anchors for the two screen labels: a point on the low zig-zag and a point in
-   the middle of the long haul. Kept as world positions next to the route that
-   defines them, so moving the route moves its labels. */
-/* The low pin anchors on the DESCENDING zig-zag rather than the ascending one,
-   even though "short local hops" is equally true of both. The ascending end
-   projects into the bottom-left of the frame, which is the caption's, and the
-   label landed across the title. This end is clear of it, and it is where the
-   bead arrives, so it is where the eye already is. */
-const NET_PINS = [
-  new THREE.Vector3( 2.45, tierYNominal(2), -0.45),
-  new THREE.Vector3( 0.45, tierYNominal(10), 1.45),
-];
-
-/* How the net is drawn and lit.
-
-   NET_PERIOD is 3200 rather than something brisker because the wire is about
-   nine units long and a bead that crosses it in under a second is a flicker, not
-   a journey. NET_SIGMA is a little wider than the piece spacing, so the glow is
-   a smooth run of light rather than a bead with three lit boxes under it. */
-const NET_DRAW_SOFT = 0.9;      // world units of soft edge on the drawing head
-const NET_PERIOD    = 3200;     // ms for one pass, entry and exit included
-const NET_LEAD      = 1.4;      // world units of overshoot at each end
-const NET_SIGMA     = 0.62;
-const NET_DIM = [0.44, 0.26, 0.135];    // unlit copper, still clear of the tiers
-const NET_HOT = [2.60, 2.00,  1.30];    // past 1.0 on purpose: ACES rolls it off
-let netDrawn = -1;              // last drawn length, so matrices rebuild only on change
-let routeVis = 0;               // read by the pin labels in the render loop
-
-/* A point at arc length s along the route. Interpolated between neighbouring
-   piece centres rather than snapped to the nearest one, or the bead would
-   advance in visible 0.26-unit steps. */
-function netPointAt(s, out) {
-  let i = 0;
-  while (i < netPieces.length - 1 && netPieces[i + 1].s < s) i++;
-  const a = netPieces[i], b = netPieces[Math.min(i + 1, netPieces.length - 1)];
-  const f = b.s > a.s ? THREE.MathUtils.clamp((s - a.s) / (b.s - a.s), 0, 1) : 0;
-  return out.set(THREE.MathUtils.lerp(a.x, b.x, f),
-                 THREE.MathUtils.lerp(a.y, b.y, f),
-                 THREE.MathUtils.lerp(a.z, b.z, f));
+   So the inverter reaches UP AND OUT to these instead. Its power connections stop
+   at rail height and run in z to meet the line, which is also why the metal lift
+   at stop 07 raises only the signal metal: the rails are not the cell's to lift. */
+const rails = new THREE.InstancedMesh(
+  new THREE.BoxGeometry(1, 1, 1), railMat, ROW_N + 1);
+rails.renderOrder = 6;
+rails.frustumCulled = false;
+cellField.add(rails);
+{
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion();
+  const tv = new THREE.Vector3(), sv = new THREE.Vector3();
+  for (let b = 0; b <= ROW_N; b++) {
+    tv.set(0, CELL_Y + RAIL_Y_OFF, rowZ(b) - ROW_PITCH / 2);
+    sv.set(FIELD_X * 2, 0.026, RAIL_H);
+    rails.setMatrixAt(b, m.compose(tv, q, sv));
+    /* Which boundary is supply is fixed RELATIVE TO THE HERO ROW rather than by
+       the raw index, so the rail along that cell's PMOS edge is always the supply
+       one. Keyed off b % 2 it depended on ROW_N's parity. */
+    const vdd = (((b - HERO_ROW) % 2) + 2) % 2 === 1;
+    rails.setColorAt(b, _cellCol.set(vdd ? VDD_COL : GND_COL));
+  }
+  rails.instanceMatrix.needsUpdate = true;
+  rails.instanceColor.needsUpdate = true;
 }
 
-// --- transistors ---
+/* The hero cell's own tile, drawn as a separate mesh with its footprint left
+   empty in the instanced field above. It exists so the inverter at stop 07 can
+   crossfade OUT of a plain tile, which is the whole rhetorical move of that
+   stage: the thing you were looking at all along turns out to be a gate. Doing
+   that with one instance of a shared mesh would mean scaling it away on a
+   threshold and hoping the sort held. */
+const heroMat = new THREE.MeshStandardMaterial({
+  color: 0x9aa8bd, metalness: 0.15, roughness: 0.50,
+  transparent: true, opacity: 0, depthWrite: false,
+});
+const heroCell = new THREE.Mesh(
+  new THREE.BoxGeometry(CELL_W, CELL_T, CELL_H), heroMat);
+heroCell.position.copy(CELL_C);
+heroCell.renderOrder = 5;
+cellField.add(heroCell);
+
+/* --- one cell, one gate ------------------------------------------------
+   The last stage, and the only one on the whole descent that shows something
+   DOING rather than something being.
+
+   This is the same `fets` group the page has always had, re-parameterised rather
+   than replaced. It used to be a free-floating patch of fins and crossed gate
+   bars at no stated scale, sitting in space with no relationship to anything the
+   viewer had just been shown. Now it is the inside of one tile in the field
+   above, at that tile's real size and in that tile's real place, and the plain
+   box drawn there crossfades out from underneath it. That is the whole move of
+   the stage: the thing you were looking at all along turns out to be a gate.
+
+   It is an inverter because an inverter is the smallest thing that is still
+   honestly CMOS. Two devices, complementary, sharing one gate. Everything larger
+   on the die is this argument repeated.
+
+   Note on hygiene, because two of the file's own rules look like they apply here
+   and do not:
+
+   · centreGeometry is NOT called on any of this. Its contract is re-origining an
+     extruded tile that gets laid flat by a -90 degree rotation about x, and it
+     returns the parent-space offset that rotation implies. Every object below is
+     an origin-centred BoxGeometry and none of them is rotated, so a call would
+     silently translate the cell rather than fix it.
+   · DIE_FACE_OFFSET is used on the n-well and nowhere else, because the n-well
+     is the only genuinely coplanar pair in here. The metal pads sit at their own
+     height above the contacts and do not need it. */
 const fets = new THREE.Group();
 fets.visible = false;
+fets.position.copy(CELL_C);
 chip.add(fets);
 
-const PATCH_W = 2.8, PATCH_H = 2.1;
+/* Local space is the cell's own: x across its width, z across its height, y up
+   from the middle of its body. M1 sits at world 0.02, so it is at local M1_Y. */
+const INV_W = CELL_W, INV_H = CELL_H;
+const M1_Y  = 0.02 - CELL_Y;
 
-const FIN_N = isSmall ? 22 : 34;
-const FIN_PITCH = PATCH_H / FIN_N;
-const finMat = new THREE.MeshPhysicalMaterial({
-  color: 0x8fa0b8, metalness: 0.3, roughness: 0.34, transparent: true, opacity: 0, clearcoat: 0.45,
+/* --- the two devices ---------------------------------------------------
+   Each transistor is drawn the way the reference draws it: two doped blocks
+   with a gate standing between them, rather than as an array of fins.
+
+   The fins were more accurate to N4P and less legible than anything else in the
+   piece. Four ridges per device, at a size where the whole cell is half a unit
+   wide, read as texture rather than as structure — and the thing this stage has
+   to say is not what a fin is, it is which terminal is which and what each one
+   is wired to. The caption two stops earlier already spent its words on the
+   process. Here, one block per terminal.
+
+   SOURCE AND DRAIN ARE THE SAME OBJECT, deliberately. In a MOSFET they are
+   physically identical and interchangeable; what makes one a source and the
+   other a drain is only what it is connected to. So they are drawn identically
+   and the WIRING tells them apart: the sources reach out to the rails, the two
+   drains are strapped to each other and that junction is the output. Colouring
+   them differently would be inventing a distinction the silicon does not have.
+
+   The colour coding is the reference's: P-type green, N-type a teal blue, the
+   gate salmon, and a thin band of gate oxide in yellow between the gate and the
+   channel it controls. The N-type is pushed toward teal rather than the
+   reference's flat blue so that it cannot be read as the cool GND rail, which
+   is a colour this page had already committed to. */
+const DEV_Z  = INV_H * 0.255;          // centre of each device band
+const DEV_D  = INV_H * 0.30;           // how deep a band runs in z
+const DEV_X  = INV_W * 0.265;          // source and drain, either side of the gate
+const DEV_W  = INV_W * 0.34;
+const DEV_Y  = 0.010, DEV_T = 0.040;
+
+const PMOS_COL = 0x4c9e5c, NMOS_COL = 0x2f8fa8;
+
+/* One mesh, four blocks: PMOS source and drain, then NMOS source and drain. The
+   split is by index and the switching loop walks it, so there is one array to
+   keep in step rather than two meshes to keep in agreement. */
+const DEVS = [
+  [-DEV_X,  DEV_Z], [ DEV_X,  DEV_Z],
+  [-DEV_X, -DEV_Z], [ DEV_X, -DEV_Z],
+];
+const DEV_PER = 2;                     // blocks per device, so index < 2 is PMOS
+const devMat = new THREE.MeshPhysicalMaterial({
+  color: 0xffffff, metalness: 0.12, roughness: 0.48,
+  transparent: true, opacity: 0, clearcoat: 0.3,
 });
-const fins = new THREE.InstancedMesh(
-  new THREE.BoxGeometry(PATCH_W, 0.085, FIN_PITCH * 0.42), finMat, FIN_N);
-fins.userData.pick = 'fets';
-fets.add(fins);
+const devs = new THREE.InstancedMesh(
+  new THREE.BoxGeometry(1, 1, 1), devMat, DEVS.length);
+devs.userData.pick = 'fets';
+fets.add(devs);
 {
-  const m = new THREE.Matrix4();
-  for (let i = 0; i < FIN_N; i++) {
-    m.makeTranslation(0, 0.043, (i + 0.5) * FIN_PITCH - PATCH_H / 2);
-    fins.setMatrixAt(i, m);
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion();
+  const tv = new THREE.Vector3(), sv = new THREE.Vector3();
+  sv.set(DEV_W, DEV_T, DEV_D);
+  for (let i = 0; i < DEVS.length; i++) {
+    tv.set(DEVS[i][0], DEV_Y, DEVS[i][1]);
+    devs.setMatrixAt(i, m.compose(tv, q, sv));
   }
-  fins.instanceMatrix.needsUpdate = true;
+  devs.instanceMatrix.needsUpdate = true;
+  devs.instanceColor = new THREE.InstancedBufferAttribute(
+    new Float32Array(DEVS.length * 3), 3);
 }
+const _dc = new THREE.Color();
+const DEV_BASE = [PMOS_COL, PMOS_COL, NMOS_COL, NMOS_COL].map((hex) => {
+  _dc.set(hex);
+  return [_dc.r, _dc.g, _dc.b];
+});
+/* Conducting is the same colour lifted past 1.0 rather than a different hue.
+   ACES rolls the overshoot into a highlight, so a channel that turns on reads as
+   the same silicon carrying current instead of as a lamp swapped in behind it. */
+const DEV_HOT = DEV_BASE.map((c) => c.map((v) => v * 2.0 + 0.95));
 
-const GATE_N = isSmall ? 9 : 14;
-const GATE_PITCH = PATCH_W / GATE_N;
+/* Three strips of poly, and only the middle one is the gate. The other two sit
+   on the cell boundaries, which is what a real cell carries: a dummy strip at
+   each edge so the device beside the boundary sees the same neighbourhood as one
+   in the middle of a row. They are also what makes the abutment legible from
+   inside a cell.
+
+   Salmon, and standing taller than the blocks it crosses, because the gate is
+   the one part of this picture that is doing something. */
+const GATE_N = 3;
+const GATE_COL = 0xdd6a4a;
 const gateMat = new THREE.MeshPhysicalMaterial({
-  color: 0xd8dee9, metalness: 0.9, roughness: 0.18, transparent: true, opacity: 0,
+  color: 0xffffff, metalness: 0.25, roughness: 0.42,
+  transparent: true, opacity: 0,
 });
 const gates = new THREE.InstancedMesh(
-  new THREE.BoxGeometry(GATE_PITCH * 0.34, 0.155, PATCH_H), gateMat, GATE_N);
+  new THREE.BoxGeometry(1, 1, 1), gateMat, GATE_N);
 gates.userData.pick = 'fets';
 fets.add(gates);
 {
-  const m = new THREE.Matrix4();
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion();
+  const tv = new THREE.Vector3(), sv = new THREE.Vector3();
+  sv.set(INV_W * 0.12, 0.066, INV_H * 0.92);
   for (let i = 0; i < GATE_N; i++) {
-    m.makeTranslation((i + 0.5) * GATE_PITCH - PATCH_W / 2, 0.078, 0);
-    gates.setMatrixAt(i, m);
+    tv.set((i - 1) * INV_W * 0.5, 0.020, 0);
+    gates.setMatrixAt(i, m.compose(tv, q, sv));
   }
   gates.instanceMatrix.needsUpdate = true;
+  gates.instanceColor = new THREE.InstancedBufferAttribute(
+    new Float32Array(GATE_N * 3), 3);
+}
+const GATE_LIVE = 1;                    // the middle strip is the one being driven
+const GATE_BASE = (() => { _dc.set(GATE_COL); return [_dc.r, _dc.g, _dc.b]; })();
+const GATE_HOT  = GATE_BASE.map((v) => v * 2.0 + 1.05);
+/* The two dummies are a dull grey-brown, not a dimmer salmon. Dimming alone was
+   not enough: three salmon strips across a cell read as three gates, and this
+   cell has exactly one. Poly is poly in a real layout and these really are the
+   same material, but only one of them is connected to anything, and that is the
+   distinction worth drawing here. */
+const GATE_DIM = (() => { _dc.set(0x6b5c57); return [_dc.r, _dc.g, _dc.b]; })();
+
+/* Gate oxide: the sliver of insulator that is the entire reason a MOS gate
+   works. It is a couple of atoms thick in reality and it is drawn at a
+   thousand times that here, for the same reason the metal stack is exaggerated
+   400x — a layer you cannot see is a layer nobody learns. Yellow, as the
+   reference has it, and the only warm-light colour in the cell that is not
+   copper. */
+const OXIDE_N = 2;
+const oxideMat = new THREE.MeshPhysicalMaterial({
+  color: 0xe9c25c, metalness: 0.0, roughness: 0.55,
+  transparent: true, opacity: 0,
+});
+const oxides = new THREE.InstancedMesh(
+  new THREE.BoxGeometry(1, 1, 1), oxideMat, OXIDE_N);
+fets.add(oxides);
+{
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion();
+  const tv = new THREE.Vector3(), sv = new THREE.Vector3();
+  sv.set(INV_W * 0.022, 0.050, INV_H * 0.92);
+  for (let i = 0; i < OXIDE_N; i++) {
+    tv.set((i === 0 ? -1 : 1) * INV_W * 0.077, 0.014, 0);
+    oxides.setMatrixAt(i, m.compose(tv, q, sv));
+  }
+  oxides.instanceMatrix.needsUpdate = true;
 }
 
-const wafer = new THREE.Mesh(
-  new THREE.BoxGeometry(PATCH_W * 1.18, 0.09, PATCH_H * 1.18),
+/* The n-well: the tub the PMOS sits in, and the reason the PMOS half of every
+   cell in the field is the PMOS half. Coplanar with the cell body it lies on,
+   hence the polygon offset. */
+const nwell = new THREE.Mesh(
+  new THREE.BoxGeometry(INV_W, 0.008, INV_H * 0.46),
   new THREE.MeshPhysicalMaterial({
-    color: 0x2a2f38, metalness: 0.4, roughness: 0.46, transparent: true, opacity: 0,
+    color: 0x38507a, metalness: 0.1, roughness: 0.62,
+    transparent: true, opacity: 0, ...DIE_FACE_OFFSET,
   })
 );
-wafer.position.y = -0.045;
+nwell.position.set(0, -0.004, DEV_Z);
+fets.add(nwell);
+
+/* Contacts. Neutral grey and nothing else — this is the "different grey metal"
+   the local wiring is made of, and keeping every connection one colour is what
+   lets the two RAILS keep theirs. One contact per terminal, four in all; the
+   well and substrate taps that used to sit out at the cell edge are gone,
+   because they are a detail of a real layout that the reference does not draw
+   and that only added two more posts to tell apart. */
+const CONTACT_COL = 0xb8c0c9;
+/* The same metal as the contacts, two stops darker, and the difference is a
+   rendering one rather than a design one. The posts are a PHYSICAL material and
+   are lit; the straps above them are a BASIC material and are not, because they
+   have to be driven past 1.0 when the cell switches and only an unlit material
+   can be. Given the same hex the unlit ones came out visibly paler and the
+   circuit looked like it was made of two different greys. This is the value that
+   renders as the same grey the lit posts do. */
+const SIGNAL_COL = 0x6f777f;
+const contactMat = new THREE.MeshPhysicalMaterial({
+  color: CONTACT_COL, metalness: 0.5, roughness: 0.4,
+  transparent: true, opacity: 0,
+});
+/* {x, z, from, lift}. `from` is the top of whatever it stands on, and `lift`
+   says whether it chases the signal metal upward or stops at rail height. The
+   two SOURCE posts are short and end on the rails; the two DRAIN posts and the
+   gate post stretch with the lift, because that is where the signal metal went.
+
+   That difference is not incidental — it is the clearest statement in the cell
+   of which terminal is which. The short posts go to power, the tall ones go to
+   the circuit. */
+const CONTACTS = [
+  { x: -DEV_X, z:  DEV_Z, from: 0.026, lift: false },   // PMOS source -> VDD
+  { x:  DEV_X, z:  DEV_Z, from: 0.026, lift: true  },   // PMOS drain  -> Y
+  { x: -DEV_X, z: -DEV_Z, from: 0.026, lift: false },   // NMOS source -> GND
+  { x:  DEV_X, z: -DEV_Z, from: 0.026, lift: true  },   // NMOS drain  -> Y
+  { x: 0,      z:  0,     from: 0.050, lift: true  },   // the gate     -> A
+];
+const contacts = new THREE.InstancedMesh(
+  new THREE.BoxGeometry(1, 1, 1), contactMat, CONTACTS.length);
+fets.add(contacts);
+
+
+/* The cell's own metal, in the order the pin labels name them: supply, ground,
+   input, output. Basic rather than physical, and driven past 1.0 by the
+   switching loop, which is the same trick the travelling bead used: ACES rolls
+   the overshoot off into a highlight instead of clipping it flat.
+
+   Y is a strap running the full height of the cell because that is what an
+   output has to be — it has to reach the drain of the PMOS at the top and the
+   drain of the NMOS at the bottom and tie them together. A is a short stub over
+   the middle of the gate, in the channel between the two device bands, which is
+   the only place in the cell where there is room for it. */
+const PIN_Y = RAIL_Y_OFF;
+/* Six pieces of metal, and between them they are the whole circuit.
+
+   The two RAILS run along the cell's top and bottom edges, which is the row
+   boundary, which is where the field's own rails run — same place, same colour,
+   because they are the same rails. They overhang the cell slightly at each end
+   for the same reason a real one does: it carries on into the cell next door.
+
+   The two TIES are the point of this arrangement and were missing before. A rail
+   overhead does nothing until something joins it to a device, so each rail drops
+   a strap down to the SOURCE of the transistor it feeds: supply to the PMOS
+   source, ground to the NMOS source. That is the connection the whole gate is
+   built on, and drawing the rails without it left two bars hanging over a cell
+   they had no relationship to.
+
+   Then A over the gate, and Y as a strap running the height of the cell to tie
+   the two DRAINS together. Source to the rails, drains to each other: that
+   sentence is the inverter. */
+const RAIL_Z = ROW_PITCH / 2;          // where the row's rails actually run
+const TIE_X  = -DEV_X;
+/* Four pieces of metal, and NONE of them is a rail.
+
+   A and Y are the SIGNAL metal and they are grey, the same grey as the contacts
+   under them. Everything carrying logic is one material; everything carrying
+   power keeps its rail colour. That split is the fastest way to read the cell:
+   the two coloured bars are the row's supply and ground, and every grey thing
+   between them is the circuit.
+
+   The two TIES are the whole point of the arrangement. Each runs in z from a
+   source out to the rail line and stops there — the connection the gate is built
+   on, made to the rail that was already there rather than to a private copy of
+   it.
+
+   `lift` is what separates them. The signal metal rises at stop 07 so it stops
+   covering the devices it is wired to; the ties do not, because they end on a
+   rail that is not going anywhere. Power stays down at the row, signal lifts out
+   for inspection, and the difference in height is itself the explanation. */
+const M1_PINS = [
+  { x: 0, z: 0, sx: INV_W * 0.15, sz: INV_H * 0.09, col: SIGNAL_COL, lift: true },
+  { x: DEV_X, z: 0, sx: INV_W * 0.10, sz: INV_H * 0.46, col: SIGNAL_COL, lift: true },
+];
+const PIN_A = 0, PIN_Y_ = 1;
+/* Base colours, unpacked once. m1Mat is a BASIC material, so instanceColor is
+   the final pixel and these are read straight off the same two constants the
+   field's rails use rather than being matched by eye. */
+const _mc = new THREE.Color();
+const M1_BASE = M1_PINS.map((pin) => {
+  _mc.set(pin.col);
+  return [_mc.r, _mc.g, _mc.b];
+});
+/* Lit is derived FROM the base rather than being one shared bright value, so a
+   conducting ground rail goes bright blue and a conducting supply rail goes
+   bright copper. Shared, they both washed to the same warm white the moment they
+   switched, which threw away the colour the previous stage had just spent the
+   whole floor establishing — and the lit rail is exactly the moment you most
+   want to know which rail it is. The lift past 1.0 is the usual trick: ACES
+   rolls it off into a highlight instead of clipping. */
+const M1_HOT = M1_BASE.map((c) => c.map((v) => v * 1.8 + 1.15));
+
+/* Every contact is tinted by the NET it carries rather than by the metal it is
+   made of, and that one change is what makes the wiring readable. Drawn all the
+   same tungsten grey, six identical posts stood between the metal and the
+   silicon and gave no clue which belonged to which: you could see THAT the
+   supply rail came down somewhere and THAT the output strap went down
+   somewhere, but not that they went to different terminals of different
+   devices. Coloured, the path reads in one look — warm rail, warm strap, warm
+   post, into the source of the PMOS; and the same story in cool for ground.
+
+   The output's two posts take the signal colour, which is what says the thing
+   the schematic says: the two drains are tied together and that junction IS the
+   output. */
+/* The contacts are no longer tinted per net. Tinting them was the right call
+   when the local straps were all one cream colour and the posts were the only
+   thing that could say which net was which; now the straps themselves carry it —
+   the rails are coloured, the signal metal is grey — and colouring the posts as
+   well made a cell of five different metals. One grey for everything that
+   connects, which is what the reference does. */
+const m1Mat = new THREE.MeshBasicMaterial({
+  transparent: true, opacity: 0, depthWrite: false,
+});
+const m1pins = new THREE.InstancedMesh(
+  new THREE.BoxGeometry(1, 1, 1), m1Mat, M1_PINS.length);
+m1pins.renderOrder = 210;
+fets.add(m1pins);
+/* Thin. Metal one is a FILM, and a pad drawn as a slab reads as a girder lying
+   across the devices rather than as the top layer of them. Placed by layoutCell
+   below, because its height is not a constant. */
+m1pins.instanceColor = new THREE.InstancedBufferAttribute(
+  new Float32Array(M1_PINS.length * 3), 3);
+
+/* The two power connections, and they are not the cell's metal at all — they are
+   the ROW'S RAILS, carried inward to the source they feed.
+
+   So they are built from railMat itself rather than from a matching colour: the
+   same material, the same instanceColor, the same height above the cell and the
+   same thickness. Given a hand-matched colour on the signal material they read as
+   a near miss, which is worse than an obvious difference — a strap that is almost
+   the rail's colour looks like a mistake, where one that is exactly it looks like
+   the rail. They overlap the rail's near half in z so there is no seam to see.
+
+   They are also the reason nothing here lifts: a rail is not the cell's to raise,
+   so these stay put while the signal metal above them rises. */
+const TIE_LEN = RAIL_Z - DEV_Z + RAIL_H * 0.5;
+/* railMat ITSELF, not a clone. These are the row's rails carried inward, so they
+   should be lit and faded by exactly the same numbers, and sharing the material
+   is the only way that cannot drift. A clone was tried while the cell was
+   skipping depth tests and it was invisible for its whole life: cloning copies
+   the opacity at that instant, which is 0, and nothing was updating it after. */
+const ties = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), railMat, 2);
+ties.renderOrder = 6;
+fets.add(ties);
+{
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion();
+  const tv = new THREE.Vector3(), sv = new THREE.Vector3();
+  sv.set(INV_W * 0.09, 0.026, TIE_LEN);
+  for (let i = 0; i < 2; i++) {
+    const dir = i === 0 ? 1 : -1;
+    tv.set(TIE_X, RAIL_Y_OFF, dir * (DEV_Z + TIE_LEN / 2));
+    ties.setMatrixAt(i, m.compose(tv, q, sv));
+  }
+  ties.instanceMatrix.needsUpdate = true;
+  ties.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(6), 3);
+  ties.setColorAt(0, _dc.set(VDD_COL));
+  ties.setColorAt(1, _dc.set(GND_COL));
+  ties.instanceColor.needsUpdate = true;
+}
+
+/* There is no output via and no wire leading away from it. The cell's output is
+   the Y strap and nothing else — a pin, which is all a standard cell publishes.
+   The long run of metal that used to leave here was describing the NEXT cell's
+   problem, and at this magnification it read as part of this one. */
+
+
+/* Places everything that moves with the lift: the pads, the contacts holding
+   them up, and the output via bridging whatever gap is left to M1. Recomputed
+   only when the lift actually changes, which is across sixteen thousandths of t
+   and then never again. */
+let liftDrawn = -1;
+function layoutCell(lift) {
+  if (Math.abs(lift - liftDrawn) < 1e-5) return;
+  liftDrawn = lift;
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion();
+  const tv = new THREE.Vector3(), sv = new THREE.Vector3();
+  const pinY = PIN_Y + lift;
+
+  for (let i = 0; i < M1_PINS.length; i++) {
+    const pin = M1_PINS[i];
+    tv.set(pin.x, pin.lift ? pinY : PIN_Y, pin.z);
+    sv.set(pin.sx, 0.007, pin.sz);
+    m1pins.setMatrixAt(i, m.compose(tv, q, sv));
+  }
+  m1pins.instanceMatrix.needsUpdate = true;
+
+  /* A contact is however tall it has to be to still reach what it feeds. That is
+     what a contact IS, and it is the same rule the stack's vias follow. */
+  for (let i = 0; i < CONTACTS.length; i++) {
+    const c = CONTACTS[i];
+    const top = (c.lift ? pinY : PIN_Y) - 0.0035;
+    const len = Math.max(top - c.from, 0.004);
+    tv.set(c.x, c.from + len / 2, c.z);
+    sv.set(INV_W * 0.065, len, INV_H * 0.085);
+    contacts.setMatrixAt(i, m.compose(tv, q, sv));
+  }
+  contacts.instanceMatrix.needsUpdate = true;
+
+
+  /* A label rides whatever it is written on, and sits a hair above ITS OWN
+     surface. The two on the rails need much more clearance than the two on the
+     signal straps, because a rail is 0.026 thick against a strap's 0.007 — given
+     the strap's offset they sat inside the rail and were invisible. */
+  for (const l of cellLabels) {
+    l.position.y = l.userData.lift ? pinY + 0.006 : RAIL_Y_OFF + 0.017;
+  }
+
+}
+
+/* --- the metal lifts off ------------------------------------------------
+   Everything above the devices rises clear of them as the stage resolves, and
+   the contacts stretch to stay joined to it.
+
+   This is the one change that made the cell readable. Drawn flat, it is honest
+   and illegible at the same time: the supply and ground straps run the full
+   width of the tile and the output strap runs its full height, so between them
+   the metal covers most of the devices it is connected to — and the relationship
+   between those two things is the entire point of the stage. There is no camera
+   angle that shows the metal and the silicon at once while they are touching.
+
+   Lifting it is not a new idea here either. It is the language the page has been
+   speaking since the floorplan tiles rose as glass slabs and the fifteen tiers
+   peeled apart: a layer moving away from the thing beneath it is how this piece
+   has already said "these are separate layers" three times, and the contacts
+   stretching to follow is exactly what the stack's vias do.
+
+   0.058 is about a tenth of the cell's width. Enough to see daylight under the
+   metal at the angle stop 07 parks at, and not so much that the cell stops
+   reading as one object. */
+/* The switching loop is OFF. The cell has a lot to say structurally — six pieces
+   of metal, six posts, two devices and a shared gate — and a light running
+   around it while a reader is still working out which post goes where competes
+   with exactly the thing it is there to reward. Read the layout first.
+
+   The loop itself is untouched and still runs: every term in it is multiplied by
+   swA, so it resolves to the resting state and flipping this back to true brings
+   it all back with no other edit. verify/cell-switch.py reports the flag rather
+   than failing when it is off. */
+const CELL_SWITCHING = false;
+
+const LIFT = 0.058;
+const liftAt = (t) => LIFT * ramp(t, 0.970, 0.986);
+
+
+
+/* The substrate the whole thing is built into. Kept from the old patch, resized:
+   it was a floating slab there and it is the p-type bulk here, which is what the
+   n-well above is a well IN. */
+const wafer = new THREE.Mesh(
+  new THREE.BoxGeometry(INV_W, 0.030, INV_H),
+  new THREE.MeshPhysicalMaterial({
+    color: 0x2a2f38, metalness: 0.4, roughness: 0.46,
+    transparent: true, opacity: 0,
+  })
+);
+wafer.position.y = -0.020;
 fets.add(wafer);
+
+/* The cell draws after the copper, and otherwise renders like everything else in
+   the scene: depth testing ON, occluding itself correctly, sorted by distance
+   within the group.
+
+   It briefly did the opposite — depth testing off across the whole group with a
+   hand-written painter's order per layer — to stop a via column blending over the
+   top of it. That worked and cost more than it bought: with no depth test the
+   cell stopped occluding ITSELF, and eight flat layers drawn in a fixed order
+   read as cut paper rather than as an object. The occlusion problem is solved
+   where it belongs instead, by switching the columns off entirely at the stop
+   where they are not the subject. */
+fets.traverse((o) => { if (o.isMesh) o.renderOrder = 220 + (o.renderOrder > 200 ? 1 : 0); });
+
+/* --- the words, etched on the metal ------------------------------------
+   Four labels, drawn ON the thing they name instead of floating beside it in
+   HTML. The DOM tags they replace had to be projected every frame, clamped back
+   inside the viewport when they fell off the edge, and hidden entirely on a
+   phone; a plane lying on the strap has none of those problems and reads as part
+   of the object, which is what a pin name on a layout actually is.
+
+   Each one sits on a piece of metal that RUNS THE WAY THE TEXT READS. That is
+   why OUT is on the output wire rather than on the Y strap it continues: the
+   strap runs in z and the word would be sideways. Same reason VDD and GND sit on
+   the rails, which run the full width of the die. */
+const cellLabels = [];
+function cellLabel(text, w, h, x, z, lift, turn, scale) {
+  const m = faceLabel(w, h, text, scale || 0.30, 0);
+  /* `turn` spins a label a quarter turn in its own plane, for metal that runs the
+     wrong way for the word. The output strap runs in z, so OUT reads along it
+     rather than across a piece four times narrower than the text. */
+  if (turn) m.rotation.set(-Math.PI / 2, 0, turn);
+  m.position.set(x, 0, z);
+  m.renderOrder = 224;
+  m.userData.lift = lift;
+  fets.add(m);
+  cellLabels.push(m);
+  return m;
+}
+/* All four sit close in to the cell. The first placement pushed VDD and GND out
+   to where the rails leave the frame and OUT nearly off the right edge, which is
+   where there is most room on the metal and least on the screen. A label is only
+   useful beside the thing it names. */
+const LBL_IN  = cellLabel('in',  INV_W * 0.20, INV_H * 0.085, 0, 0, true);
+/* On the Y strap itself now. It used to sit on the output wire, which was the
+   right home for a horizontal word and is gone: the cell publishes a pin, not a
+   route. */
+const LBL_OUT = cellLabel('out', INV_H * 0.34, INV_W * 0.10,
+                          DEV_X, 0, true, Math.PI / 2);
+/* The two on the rails take a smaller face than the two on the signal straps, and
+   the reason is faceLabel's own arithmetic rather than taste. It sets the font to
+   `scale` of the canvas WIDTH, and the canvas height is width over aspect — so on
+   a plane five times wider than it is tall, a 0.30 face is drawn taller than the
+   canvas and the glyphs run off the top and bottom of the rail they are lying on.
+   0.17 is the size that fits inside a rail's own depth. */
+const LBL_VDD = cellLabel('vdd', INV_W * 0.40, RAIL_H * 0.78, -INV_W * 0.34,  RAIL_Z, false, 0, 0.17);
+const LBL_GND = cellLabel('gnd', INV_W * 0.40, RAIL_H * 0.78, -INV_W * 0.34, -RAIL_Z, false, 0, 0.17);
+
+/* Once at build, so nothing is ever drawn on an identity matrix: the warm-up
+   pass renders every material in the scene before the first real frame.
+
+   THIS CALL MUST STAY LAST IN THE SECTION. layoutCell reaches for the pads, the
+   contacts, the output via, the output wire and now the labels, and every one of
+   those is a `const` declared above it — a const cannot be read before its own
+   declaration runs, so moving this call up kills the module on load with a
+   temporal-dead-zone error rather than a warning. It has been moved up by
+   accident three times. If you add something to layoutCell, add it above here. */
+layoutCell(0);
+
 
 /* ------------------------------------------------------------------ *
    6. HIT REGIONS & PANEL COPY
@@ -2404,7 +3019,7 @@ const KEYS = [
      them. The old path watched the whole thing from outside and above, which is
      the one vantage that makes a fifteen-layer stack look like a diagram.
 
-     0.884 and 0.906 sit INSIDE the footprint, in a gap, with tiers above and
+     0.888 and 0.902 sit INSIDE the footprint, in a gap, with tiers above and
      below — that is the immersive beat, and it is what the near-fade in
      updateScene exists to make possible: the camera crosses roughly five tiers on
      the way up, and a textured plane crossing the near plane is otherwise a
@@ -2432,34 +3047,108 @@ const KEYS = [
   /* Leaving takes TWO keys. One was not enough: a single jump from inside to
      above put the camera still among the tiers at 0.926, below the top of the
      stack and metres from a plane, which read as chaos rather than as emerging.
-     0.918 clears the footprint, 0.934 clears the height — and only from up there
-     do the bond bumps on top read as the thing the stack was climbing toward. */
-  { t: 0.918, p: [ 2.60, 4.60,  5.40], l: [ 0.0, 3.40,  0.0], f: 36 },
-  { t: 0.934, p: [ 5.20, 7.60,  9.40], l: [ 0.0, 3.00,  0.0], f: 34 },
-  /* --- one net, end to end ---
-     Not a new vantage so much as a new subject: the camera has just risen clear
-     of the stack, and this drops it back down and swings it round until the
-     whole footprint and the whole height are in one frame at once. Both are
-     needed, because the thing being shown is a path that crosses the die AND
-     climbs it, and a shot that loses either axis loses half of the route.
+     0.916 clears the footprint, 0.928 clears the height — and only from up there
+     do the bond bumps on top read as the thing the stack was climbing toward.
 
-     Its position is what it is because of the velocity, not in spite of it. The
-     tail now reads 350, 313, 293, 202, 167 units of camera travel per unit t
-     across its five legs, so it decelerates the whole way into the transistors
-     — the same rule the run-up to the floorplan sweep is held to. */
-  /* The look-at is 1.5 to the LEFT of the route's own centre on purpose. The
-     caption owns the bottom-left of the frame at every stop, and this route
-     begins in the far corner of the die: aimed at its centre, the first three
-     hops projected straight through the title. Panning the aim left pushes the
-     whole path into the right two thirds, where nothing else is. */
-  { t: 0.944, p: [ 7.60, 5.60,  9.20], l: [-2.6, 2.10,  0.5], f: 33 },
-  /* --- transistors ---
-     Both keys sit 0.006 and 0.002 later than they used to. The route needs the
-     stack still standing while it is read, so stackOut and fetIn both had to
-     move out from under it, and fetIn has to be COMPLETE at the stop. */
-  { t: 0.958, p: [ 7.00, 2.20, 7.00], l: [0, 0.40, 0], f: 32 },
-  { t: 0.978, p: [ 4.20, 0.55, 4.60], l: [0, 0.16, 0], f: 32 },
-  { t: 1.000, p: [ 1.70, 0.70, 1.90], l: [0, 0.07, 0], f: 30 },
+     Both sit a little earlier and a good deal lower than they used to, and both
+     changes are the fold's doing. Earlier, because the bumps now have to be ON
+     TOP before the stack starts folding at 0.926, or the thing the climb was
+     climbing toward arrives after the climb is over. Lower, because the stack is
+     about to lose nine tenths of its height, and a camera framed for the tall
+     version spends the whole fold looking at the empty air above a ceiling. */
+  { t: 0.918, p: [ 2.60, 4.70,  5.20], l: [ 0.0, 3.40,  0.0], f: 36 },
+  { t: 0.930, p: [ 5.60, 6.40,  8.60], l: [ 0.0, 2.90,  0.0], f: 34 },
+  /* --- the stack folds, and the camera rides it down ---
+     These two are not new vantages. They are the SAME vantage descending with
+     the ceiling, and that is the entire point of the beat: the stack does not
+     shrink away from the viewer, the viewer comes down with it. The copper
+     therefore holds roughly its size in frame for the whole fold while the
+     ground rises to meet it, which is what makes the motion read as the stack
+     closing rather than as the camera pulling back.
+
+     The five keys from 0.902 to 0.966 are shaped as ONE ARC OVER THE TOP rather
+     than as a rise followed by a fall, and that is a correctness constraint, not
+     a preference. The first attempt turned around at its apex in all three axes
+     at once — out and up, then back and down — and a monotone-cubic spline
+     answers a simultaneous reversal with a zero tangent, so the camera came to a
+     dead stop for about a fifth of a second in the middle of the fold.
+     camera-continuity.py measured it at 0.24 of the leg's median speed. The fix
+     is that x keeps climbing straight through the apex while y and z turn over,
+     so there is always one axis carrying the motion. Anything moved here has to
+     preserve that: check it with camera-continuity.py, not by eye, because a
+     stall this brief reads as a stutter rather than as a stop and is very easy
+     to talk yourself out of seeing.
+
+     By 0.950 the camera is outside the footprint in both x and z and above the
+     folded ceiling, and it descends diagonally INTO the room over the last leg,
+     crossing below the ceiling's height before it crosses inside the die's
+     edge. That ordering is what stops it clipping through fifteen tiers on the
+     way in. */
+  { t: 0.948, p: [ 7.20, 2.30,  6.80], l: [ 0.2, 0.80,  0.2], f: 36 },
+  /* --- the cell rows ---
+     Standing ON M1, under a copper ceiling a little over a unit overhead,
+     looking down and across the rows.
+
+     The elevation is about eight degrees, and it is the whole shot. Level, and
+     the rows are a set of parallel lines with no depth in them; any steeper and
+     the ceiling leaves the top of the frame, which throws away the one thing
+     that makes this a room rather than a plan view.
+
+     f 40 is the widest lens anywhere on the path, deliberately. A 34 in a space
+     a unit and a half tall reads as a slot; the wider lens is what gets both the
+     floor and the roof into one frame from inside.
+
+     y 0.68 is a FLOOR, not a preference. The plane near-fade band in updateScene
+     runs 0.05 to 0.70, so a camera lower than this starts dissolving M1 on its
+     own, on top of the glass ramp that is already dissolving it deliberately,
+     and the floor's opacity ends up somewhere nobody chose. */
+  { t: 0.966, p: [ 2.30, 0.68,  3.10], l: [-0.40, 0.02, -0.50], f: 40 },
+  /* --- one cell ---
+     Two keys, because the standoff collapses from three and a half units to one
+     across this leg and that is the largest change of scale anywhere on the
+     path. 0.978 picks the hero cell out with its neighbours still around it,
+     which is what makes it read as ONE OF the tiles rather than as a new object
+     that has just been introduced.
+
+     Both aim at CELL_C, which is authored rather than looked up precisely so
+     that these two lines can be written against a fixed point. If the hero cell
+     moves, these move with it.
+
+     The camera stays ABOVE M1 and looks down through it. That is not a
+     compromise: M1 is translucent by now and the cell is genuinely underneath
+     it, so the last shot of the piece is the metal and the logic in the same
+     frame, which is what the previous six stops were for. */
+  /* The elevation climbs 8, 21, 37 degrees across these three, and that ramp is
+     the shot. Stop 06 is nearly level because it is a room being stood in; a
+     cell is a LAYOUT, and a layout is read from above. It stops at 37 and not at
+     90 because the whole argument of a cell is that it is built in layers, and a
+     plan view is the one angle that cannot show a stack — the lift only reads
+     from somewhere that can see under it.
+
+     The AZIMUTH matters as much as the elevation and took longer to get right.
+     These used to look in along the die's diagonal, which put the cell on screen
+     at 45 degrees, and a layout read cornerwise is a diamond of overlapping
+     slabs: the fins, the poly crossing them and the straps above all ran in
+     three different screen directions and none of them looked like an axis. The
+     view is now nearly down -z, so the cell's own width lies across the frame,
+     the fins run with it and the poly runs against it. Everything in the picture
+     is then either horizontal or vertical, which is what a layout looks like.
+
+     The last two keys sit to the LEFT of what they aim at, about 15 degrees
+     round, so the cell is seen a little from its supply side rather than square
+     on. Square on was the right correction from the 45-degree diagonal it used
+     to have, and it overshot: a layout with no azimuth at all has no near
+     corner, so nothing tells you the metal is above the silicon rather than
+     printed on it. Fifteen degrees is enough to see under the lifted straps and
+     not enough to start rotating the axes back into a diamond.
+
+     The aim still sits left of the cell's centre so the subject lands in the
+     right of the frame, where the caption is not. */
+  { t: 0.978, p: [ 0.62, 0.80,  2.00], l: [ 0.46, -0.06, 0.05], f: 34 },
+  { t: 0.990, p: [ 0.14, 0.70,  1.00], l: [ 0.44, -0.10, -0.02], f: 34 },
+  /* sampleCamera needs a key past the last stop for its final Hermite segment;
+     this one is never parked on. */
+  { t: 1.000, p: [ 0.08, 0.66,  0.92], l: [ 0.44, -0.10, -0.02], f: 34 },
 ];
 
 const _p = new THREE.Vector3(), _l = new THREE.Vector3();
@@ -2588,7 +3277,14 @@ function sampleCamera(t) {
      5  0.888  inside the stack. A camera key, level and side-on among the tiers.
                NOT the 0.902 key further in: at 0.902 the camera sits 0.12 under a
                tier and it fills the frame. Rendered both; 0.888 is the shot.
-     6  0.976  the transistors, a camera key, after fetIn completes at 0.962.
+     6  0.966  the cell rows, standing on M1 under the folded stack. cellIn
+               completes at 0.964 and nothing has begun to fade, which is the
+               same rule stops 3 and 4 are pinned by. It is also the first t at
+               which the whole picture is up: the fold finishes at 0.951 and the
+               room finishes opening at 0.952.
+     7  0.990  one cell, a camera key, after invIn completes at 0.984. Not 0.994,
+               where the rail tick would sit flush against the end of the rail
+               and read as broken rather than as arrived.
 
    There WAS a stop at 0.130, the package turned over to read its 1718 contact
    pads. It is gone, along with the flip that reached it, so the opening leg now
@@ -2625,17 +3321,22 @@ function sampleCamera(t) {
    the only honest lever left was the clock. This slows the camera sweep across
    the floorplan by the same factor, which is the trade, and on a leg whose job is
    reading rather than travelling that is the right way round. */
-/* Stop 6, the traced net, is a camera key at 0.944 — chosen as the point where
-   routeIn has finished drawing the wire (0.930 to 0.944) and routeOut has not
-   begun, so the whole path is up and none of it is fading. Same rule as stop 4.
+/* The last two legs are authored the same way the first one was, by asking what
+   has to happen inside them rather than by measuring how far they travel.
 
-   Its leg is 8000 rather than the 6500 that used to run from the stack to the
-   transistors, because it is the leg that has to teach something again: the wire
-   draws itself along its own length through it, and a route drawn faster than it
-   can be followed is a squiggle. The leg after it is one camera move and takes
-   5500, so the tail still shortens rather than lengthening. */
-const STOPS = [0.000, 0.398, 0.512, 0.800, 0.888, 0.944, 0.978];
-const LEG_MS = [10000, 14000, 19000, 5200, 8000, 5500];
+   The FIFTH is 11000, up from the 8000 the traced net used to have. It now
+   carries four beats where that carried one: the rise out of the stack, the bond
+   bumps landing on top, the entire fifteen-gap fold, and the reveal of the rows
+   under M1. Each of those has to be legible on its own, and the fold in
+   particular is the one piece of motion in the piece that plays backwards
+   against something the viewer has already watched play forwards.
+
+   The SIXTH is 6500, up from 5500, because the inverter now assembles INSIDE it
+   rather than simply being arrived at. A gate that resolves faster than it can
+   be parsed is a flicker rather than a reveal. The tail still shortens, 11000
+   into 6500, which is the rule the legs before it are held to as well. */
+const STOPS = [0.000, 0.398, 0.512, 0.800, 0.888, 0.966, 0.990];
+const LEG_MS = [10000, 14000, 19000, 5200, 11000, 6500];
 
 let frozen = false;                   // the sheet is open: arrows are inert
 /* The click rings key off both of these. parkedAt is when the current stop was
@@ -2687,6 +3388,7 @@ function advance() {
 const navPrev = document.getElementById('nav-prev');
 const navNext = document.getElementById('nav-next');
 const navCount = document.getElementById('nav-count');
+const siteBar = document.getElementById('sitebar');
 const stageEl = document.getElementById('stage');
 function syncNav() {
   /* The forward pill's pulse used to be retired here, once the viewer had moved
@@ -2698,13 +3400,67 @@ function syncNav() {
   navCount.textContent = `${stopIdx + 1} / ${STOPS.length}`;
   stageEl.classList.toggle('flying', flying);
 }
+/* --- the top bar tucks away once the descent starts --------------------
+   It is permanent on arrival and only on arrival. That first screen is where a
+   visitor works out whose site this is and how to get back out of it, so the bar
+   earns its band of the viewport there. The moment they press forward they have
+   answered both questions and the scene should have the whole frame.
+
+   After that it behaves like the browser's own fullscreen chrome: reach the top
+   edge and it drops down, leave and it goes away. That is a convention people
+   already have, which is the reason for choosing it over a button.
+
+   It tucks on the first FORWARD move only. Arriving at stop 1 by pressing back
+   should not re-pin it — the viewer has already been shown the bar, and a bar
+   that reappears whenever you retreat turns a piece of chrome into a thing that
+   follows you around.
+
+   REVEALED BY COORDINATE, not by pointerenter/pointerleave on the elements. The
+   first version armed an invisible strip at the top and listened for enter on it
+   and leave on the bar, and it desynced immediately: the bar sliding down under
+   a STATIONARY pointer fires no pointerenter, so moving away again fired a leave
+   on the strip that nothing was listening for, and the bar stayed down. Two
+   stacked elements handing a pointer back and forth is a state machine with
+   corners; "is the cursor within 64px of the top" has none.
+
+   The band to hide at is 8px lower than the band to show at. Without that
+   hysteresis a pointer resting exactly on the boundary flickers the bar. */
+const BAR_SHOW_Y = 64;                 // the bar's own height
+const BAR_HIDE_Y = 72;
+let barTucked = false;
+let barHovering = false;
+
+function syncBar() {
+  siteBar.classList.toggle('tucked', barTucked);
+  siteBar.classList.toggle('peek', barTucked && barHovering);
+}
+addEventListener('pointermove', (e) => {
+  if (!barTucked) return;
+  const want = barHovering ? e.clientY <= BAR_HIDE_Y : e.clientY <= BAR_SHOW_Y;
+  if (want !== barHovering) { barHovering = want; syncBar(); }
+});
+/* Leaving the window across the top edge never produces a move that clears the
+   band, so the bar would be left hanging down over a page nobody is pointing at. */
+document.addEventListener('pointerleave', () => {
+  if (!barHovering) return;
+  barHovering = false;
+  syncBar();
+});
+
+function tuckBar() {
+  if (barTucked) return;
+  barTucked = true;
+  barHovering = false;
+  syncBar();
+}
+
 navPrev.addEventListener('click', () => goTo(stopIdx - 1));
-navNext.addEventListener('click', () => goTo(stopIdx + 1));
+navNext.addEventListener('click', () => { tuckBar(); goTo(stopIdx + 1); });
 /* Keyboard too. The arrows are the primary control, but a control that can only
    be reached with a mouse is a control some people cannot reach at all. */
 addEventListener('keydown', (e) => {
   if (frozen) return;                 // Escape belongs to the sheet while it is up
-  if (e.key === 'ArrowRight' || e.key === 'PageDown') { goTo(stopIdx + 1); e.preventDefault(); }
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') { tuckBar(); goTo(stopIdx + 1); e.preventDefault(); }
   else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { goTo(stopIdx - 1); e.preventDefault(); }
 });
 syncNav();
@@ -2799,9 +3555,20 @@ const SUBJECTS = {
     'The L1d holds 48 KB of ultra-fast memory, while the L1i holds 32 KB, both tiny compared to the L2, which is more than ten times larger. But what L1 gives up in capacity it makes up in speed, running roughly three times faster than the L2 below it. That’s the bargain of the whole hierarchy: the closer a cache sits to the core, the smaller and faster it gets.',
   ] },
   /* No counterpart on Meet the Processor yet. Replace when it gets there. */
+  /* The first subject with `links`. This block is the one place on the die where
+     the site already teaches the whole idea end to end, so the sheet offers the
+     way across. Ordered as the course orders them: what an instruction IS before
+     what the core does with it. */
   'instruction-fetch': { title: 'Instruction Fetch and Decode', body: [
     'This is where an instruction begins its journey through the core. The block works out which instruction comes next, pulls its bytes from the L1 instruction cache beside it, and decodes them into the smaller internal operations that the rest of the core actually executes.',
     'Decoding is harder than it sounds. x86 instructions vary in length, so before the core can decode anything it has to work out where each instruction even starts, which is why this part of the die is so much denser than the arithmetic that follows it.',
+  ], links: [
+    { href: '../single-cycle-cpu/basics-of-instructions/',
+      img: '../assets/single-cycle-cpu/r-type.jpg',
+      title: 'The Basics of Instructions' },
+    { href: '../single-cycle-cpu/fetch-decode-execute/',
+      img: '../assets/single-cycle-cpu/fde.jpg',
+      title: 'Fetch, Decode, Execute' },
   ] },
   'integer-execution': { title: 'Integer Execution', body: [
     'These are the units that do the actual work on whole numbers: adding, comparing, shifting, and computing the addresses that loads and stores will use. Most instructions in most programs end up here.',
@@ -2882,7 +3649,7 @@ const SUBJECTS = {
 /* Slugs whose video has actually been uploaded. Add to this as they land; until
    a slug is in here the media half shows "video coming soon" instead of a
    broken player. */
-const HAVE_VIDEO = new Set([]);
+const HAVE_VIDEO = new Set(['zen5-core', 'instruction-fetch']);
 
 /* Written, but deliberately NOT in SUBJECT_OF below, so nothing on screen opens
    them yet: only the twelve blocks that were asked for are wired up. The copy is
@@ -2936,6 +3703,7 @@ const SUBJECT_OF = {
 
 const sheet = document.getElementById('sheet');
 const sheetVideo = document.getElementById('sheet-video');
+const sheetLinks = document.getElementById('sheet-links');
 const sheetMedia = document.querySelector('.sheet-media');
 const sTitle = document.getElementById('sheet-title');
 const sBody = document.getElementById('sheet-body');
@@ -2962,6 +3730,38 @@ function openSheet(id) {
   }));
   /* The player is always shown, blank when there is nothing to play: a black
      16:9 frame with its controls, rather than a placeholder standing in for it. */
+  /* Lesson cards. Hidden outright when the subject has none, rather than left as
+     an empty row: the player below is deliberately shown blank because a missing
+     video is a promise, and a missing lesson is not. */
+  sheetLinks.replaceChildren(...(sub.links || []).map((link) => {
+    const a = document.createElement('a');
+    a.className = 'lesson-card';
+    a.href = link.href;
+    const art = document.createElement('img');
+    art.className = 'lesson-card__art';
+    art.src = link.img;
+    /* Decorative: the title beside it already names the destination, so a screen
+       reader announcing the figure as well would read the card twice. */
+    art.alt = '';
+    art.loading = 'lazy';
+    const label = document.createElement('span');
+    label.className = 'lesson-card__label';
+    const kicker = document.createElement('span');
+    kicker.className = 'lesson-card__kicker';
+    kicker.textContent = 'Lesson';
+    const title = document.createElement('span');
+    title.className = 'lesson-card__title';
+    title.textContent = link.title;
+    label.append(kicker, title);
+    const arrow = document.createElement('span');
+    arrow.className = 'lesson-card__arrow';
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.innerHTML = '<svg viewBox="0 0 24 24"><path d="M5 12h13M12 5l7 7-7 7"/></svg>';
+    a.append(art, label, arrow);
+    return a;
+  }));
+  sheetLinks.hidden = !(sub.links && sub.links.length);
+
   const have = HAVE_VIDEO.has(slug);
   sheetMedia.classList.toggle('has-video', have);
   if (have) { sheetVideo.src = './assets/video/' + slug + '.mp4'; sheetVideo.load(); }
@@ -3309,36 +4109,6 @@ function updateHints() {
   hintClick.classList.toggle('show', live);
 }
 
-/* --- route pins ------------------------------------------------------
-   Two labels projected onto the traced net. The caption can say the wire climbs
-   to the eleventh layer; only a label sitting on the wire can say which run that
-   is, and without them the long haul is just the longest straight line in a
-   picture full of straight lines.
-
-   They arrive late in the fade so they land on a path that is already drawn, and
-   they are shown only above a threshold rather than tracking routeVis
-   continuously, because a label fading in step with the thing it labels is two
-   things happening at once where one would do. */
-const pinsEl = document.getElementById('pins');
-const pinEls = [document.getElementById('pin-lo'), document.getElementById('pin-hi')];
-const _pinV = new THREE.Vector3();
-function updatePins() {
-  const on = routeVis > 0.6;
-  pinsEl.hidden = routeVis < 0.02;
-  if (pinsEl.hidden) return;
-  for (let i = 0; i < pinEls.length; i++) {
-    const el = pinEls[i];
-    const v = _pinV.copy(NET_PINS[i]).project(camera);
-    /* Anchored bottom-centre on the point, so the label sits just above the wire
-       it names and the wire itself is never covered. */
-    const x = (v.x * 0.5 + 0.5) * innerWidth;
-    const y = (-v.y * 0.5 + 0.5) * innerHeight;
-    el.style.transform =
-      `translate(${Math.round(x)}px, ${Math.round(y)}px) translate(-50%, -135%)`;
-    el.classList.toggle('show', on && v.z < 1);
-  }
-}
-
 /* --- the credit panel ------------------------------------------------
    Opens upward out of the permanent credit line. Closes on a second press, on
    Escape, and on a click anywhere else, which is the set a viewer will try. */
@@ -3595,45 +4365,112 @@ function updateScene(t) {
   }
   coreTileGroup.visible = coreTilesLive;
 
+  /* --- the cell switches ----------------------------------------------
+     Computed here, above the stack, because the stack reads one number out of
+     it: the pulse that leaves the cell has to arrive somewhere, and where it
+     arrives is M1's bars.
+
+     The one thing a picture of a gate cannot say is what a gate DOES, so it does
+     it, on the wall clock, in the same spirit as the pulse climbing the stack.
+     5200 ms rather than something brisker for the same reason the travelling
+     bead was given 3200: this is one sentence with four clauses in it — the
+     input rises, one device opens while the other shuts, the output falls, and a
+     pulse leaves through the via — and a sentence read in under two seconds is a
+     flicker rather than a fact.
+
+     Everything below is a pure function of the phase. No edge detection, no
+     comparison against the last frame, so seeking straight to a t gives exactly
+     the same frame every time and the video renderer's clock override still
+     makes this a function of the frame index. */
+  const SW_PERIOD = 5200;
+  const SW_EDGE   = 0.11;                 // share of a period one edge takes
+  const swPh = (now() % SW_PERIOD) / SW_PERIOD;
+  /* A is high for the middle half of the cycle: it rises at phase 0 and falls at
+     phase 0.5, so both edges get an equal share of the loop and neither state
+     reads as the resting one. */
+  const sigA = smoothstep(THREE.MathUtils.clamp(swPh / SW_EDGE, 0, 1))
+             - smoothstep(THREE.MathUtils.clamp((swPh - 0.5) / SW_EDGE, 0, 1));
+  const sigY = 1 - sigA;
+
+  const invIn  = ramp(t, 0.960, 0.984);
+  const swA    = CELL_SWITCHING ? ramp(t, 0.980, 0.988) * invIn : 0;
+
   /* --- metal stack ---
      Timing, in order: the tiers fade in, the gaps cascade open from the bottom,
-     the bumps land on top once the cascade is done, and a pulse of light runs up
-     the whole thing throughout. */
+     the bumps land on top once the cascade is done, a pulse of light runs up the
+     whole thing throughout, and then it all folds back down into a ceiling. */
   const stackIn  = ramp(t, 0.826, 0.868);
-  const bumpIn   = ramp(t, 0.898, 0.922);
-  /* Out later than it used to be, and for one reason: the stack has to still be
-     standing while the net threading through it is read. */
-  const stackOut = ramp(t, 0.948, 0.968);
-  /* The traced net draws itself along its own length as the camera settles into
-     stop 6, and leaves before the descent to the transistors begins. */
-  const routeIn  = ramp(t, 0.928, 0.944);
-  const routeOut = ramp(t, 0.950, 0.962);
-  const routeA   = routeIn * (1 - routeOut);
-  const stackA = stackIn * (1 - stackOut);
-  /* How far the copper stands down while the net is up. Deliberately not all the
-     way: the point of the shot is a wire seen passing THROUGH fifteen layers,
-     and a wire alone in an empty volume is a diagram of nothing. The travelling
-     pulse goes almost all the way out, though, because two lights climbing the
-     same stack at different speeds is just confusing.
+  /* The bumps arrive as the leg to stage 6 begins, and are fully seated well
+     before anybody can see the top of the stack.
 
-     It LEADS the wire rather than tracking it. A first pass tied the dimming to
-     routeA, so the stack was still at full brightness through the first half of
-     the draw and an unlit copper wire against lit copper sheets is invisible:
-     the route quietly laid half its length where nobody could see it and then
-     appeared to blink into existence. Dimming first and drawing into the quiet
-     is also the better beat — the stage stops, and then one thing lights. */
-  const dimA = ramp(t, 0.920, 0.932) * (1 - routeOut);
-  const quiet = 1 - 0.74 * dimA;
-  const quietGlow = 1 - 0.92 * dimA;
+     Both halves of that matter. They used to land at 0.898-0.922, which is
+     exactly the window in which the camera rises past the top tier, so the one
+     moment they were first visible was the moment they were fading in and
+     dropping into place — they read as appearing from nowhere. Starting at the
+     stop and finishing by 0.904 means the whole arrival happens while the camera
+     is still down inside the stack with the top out of shot. */
+  const bumpIn   = ramp(t, 0.888, 0.904);
+  /* There is no stackOut any more, and its absence is deliberate. The stack used
+     to fade away to make room for what came next; now it folds instead, and what
+     comes next happens UNDERNEATH it. It is the ceiling of the last two stops and
+     it is where the output pulse goes, so it has to survive to the end. */
+  const stackA = stackIn;
+  /* The bumps retire, and only the bumps. They sit on top of a ceiling the
+     camera is about to be underneath, so they are out of frame from the moment
+     the room opens, and 72 spheres at 16x12 segments are the heaviest geometry
+     in the scene.
+
+     The VIAS deliberately do not. An earlier pass retired them alongside, on the
+     reasoning that a folded gap is 0.03 tall and a via in it is a sliver worth
+     nothing. That is true of thirteen of the fourteen gaps and false of the one
+     that matters: gap 0 is the room, so its vias do not shrink, they STRETCH,
+     and they become the columns you are standing among. They are the only thing
+     in the shot that says the floor and the ceiling are connected — which is
+     what a via IS — and without them the room is a floor, a roof, and a gap.
+     They also give it the vertical structure it otherwise completely lacks.
+
+     Nothing needs to special-case any of this: a via's length is already its own
+     gap's height, so the folded ones collapse to slivers and the ones in the
+     room grow to fill it, from the same line of code. */
+  const bumpOut = ramp(t, 0.944, 0.960);
+  /* The copper stands down so the thing in front of it can be read. This is the
+     same mechanism that used to serve the traced net, re-keyed: it LEADS the
+     reveal rather than tracking it, because dimming first and then lighting one
+     thing into the quiet is the better beat — the stage stops, and then
+     something arrives.
+
+     The glow stands down much further than the opacity does, and for the reason
+     it always did: two lights climbing the same stack at different speeds is
+     just confusing. From here on the only light that moves is the one leaving
+     the cell. */
+  const ceilingDim = ramp(t, 0.946, 0.962);
+  const quiet = 1 - 0.52 * ceilingDim;
+  const quietGlow = 1 - 0.88 * ceilingDim;
+  /* M1 stops being a layer and becomes a floor. Its PLANE goes translucent so
+     the rows show through it; its BARS do not. That distinction is the whole
+     trick. A floor that dissolves under you is a hole, and the rows read far
+     better through the gaps BETWEEN real bars than through one uniformly faded
+     sheet — which is the same argument this stage already makes about
+     see-through coming from structure rather than from material. */
+  const m1Glass = ramp(t, 0.948, 0.964);
+  /* And on the last leg the whole stack steps back again, much harder. This one
+     is a matter of scale rather than of emphasis: the copper is authored at die
+     scale, where a bar is a hairline, and stop 07 puts the camera one unit from
+     a cell half a unit wide. At that distance the same bars are beams, and they
+     cross the subject. Fading them to a ghost is the only honest way to keep
+     both the gate and the metal above it in one frame, and it is also roughly
+     what a real micrograph of this does. */
+  const cellFocus = ramp(t, 0.970, 0.986);
   stack.visible = stackA > 0.001;
   if (stack.visible) {
     /* Tier heights first, as a running sum of the gaps below each one, so the
        vias and bumps below can read the same numbers rather than recomputing
-       them and drifting. */
+       them and drifting. gapSpan carries both the opening cascade and the fold,
+       so there is exactly one place that knows where a tier is. */
     let y = 0.02;
     for (let i = 0; i < N_METAL; i++) {
       tierY[i] = y;
-      if (i < N_METAL - 1) y += LAYER_GAP * gapOpen(i, t);
+      if (i < N_METAL - 1) y += gapSpan(i, t);
     }
 
     /* The pulse: a gaussian centred on a position that climbs past the top and
@@ -3646,6 +4483,7 @@ function updateScene(t) {
     const camY = camera.position.y;
     for (let i = 0; i < N_METAL; i++) {
       const m = metalLayers[i];
+      const floor = i === 0;
       m.position.y = tierY[i];
       /* Fade a tier out as the camera closes on its plane. Without this, flying
          up through the stack fills the frame with copper for a frame or two as
@@ -3658,7 +4496,21 @@ function updateScene(t) {
          tier is further away than that and stays solid.
          The BARS are slats with gaps, so they can be much closer before they
          become a wall; 0.34 is enough to stop one filling the frame. */
-      const nearPlane = THREE.MathUtils.smoothstep(Math.abs(camY - tierY[i]), 0.05, 0.70);
+      const nearRaw = THREE.MathUtils.smoothstep(Math.abs(camY - tierY[i]), 0.05, 0.70);
+      /* M1 is released from the plane near-fade as the glass comes up. The band
+         is 0.70 wide and the camera parks two thirds of a unit above M1, so
+         without this there are two systems dissolving the same plane at once and
+         nudging the stop's camera down a tenth of a unit would put the floor's
+         opacity somewhere nobody chose. */
+      const nearPlane = floor ? THREE.MathUtils.lerp(nearRaw, 1, m1Glass) : nearRaw;
+      const glassF = floor ? 1 - 0.72 * m1Glass : 1;
+      /* The stand-down is mostly the CEILING's. M1 is the surface the reader is
+         standing on at stop 06, so it keeps far more of itself than the tiers
+         above it do — but not all of it: its bars are opaque slats lying between
+         the camera and the cells, and at full strength they win every pixel they
+         cover and the floor stops having anything under it. Then cellFocus takes
+         everything, floor included, down to a ghost for the last stop. */
+      const dim = (floor ? 1 - 0.40 * ceilingDim : quiet) * (1 - 0.80 * cellFocus);
       const near = THREE.MathUtils.smoothstep(Math.abs(camY - tierY[i]), 0.04, 0.34);
       const glow = Math.exp(-Math.pow((i - wave) / 1.9, 2));
       /* The bars ride the same height, glow and near-fade as their plane, but they
@@ -3668,11 +4520,17 @@ function updateScene(t) {
          moment a blended box's back faces are worth paying for. */
       const bar = metalBars[i], bm = bar.material;
       bar.position.y = tierY[i];
-      bm.opacity = stackA * near * quiet;
+      /* Bar thickness folds with the gap above it. The top tiers are 0.070 thick
+         and the folded pitch is 0.084, so without this they interpenetrate and
+         the ceiling reads as one solid slab rather than as fifteen sheets. The
+         thickness is baked into the instance matrices, so the mesh is scaled
+         instead, which is free: the instances all sit at local y 0. */
+      bar.scale.y = THREE.MathUtils.lerp(1, 0.30, gapClose(Math.max(i - 1, 0), t));
+      bm.opacity = stackA * near * dim;
       bm.depthWrite = bm.opacity > 0.98;
       bm.emissiveIntensity = stackA * (0.05 + 1.05 * glow) * quietGlow;
       bar.visible = bm.opacity > 0.004;
-      m.material.opacity = stackA * 0.92 * nearPlane * quiet;
+      m.material.opacity = stackA * 0.92 * nearPlane * dim * glassF;
       /* 1.05, not the 2.3 this started at. Emissive stacks on top of an already
          bright metal texture, so the peak was clipping to white and losing the
          copper the whole stage is about. The pulse should read as heat moving
@@ -3684,20 +4542,34 @@ function updateScene(t) {
        of the tiers — the signal is travelling up through the connections, so the
        connection should brighten before the sheet it feeds. */
     const viaGlow = Math.exp(-Math.pow(((wave + 0.55) - 7) / 6.0, 2));
-    viaMat.opacity = stackA * 0.82 * Math.min(1, gapOpen(0, t) * 1.4) * quiet;
+    /* The columns hold more of themselves than the ceiling does, for the same
+       reason M1 does: they are in the room rather than above it, and they are
+       being looked THROUGH at the rows, which only works if they are solid
+       enough to be seen at all. */
+    /* The columns go ALL the way out at stop 07, to zero, so `vias.visible` below
+       turns the mesh off outright. That is what lets every via in the piece keep
+       writing depth — and so keep reading as a solid rod — and still never hide
+       the cell: a mesh that is not drawn cannot occlude anything, so the cell
+       needs no special pleading of its own. They are the room's structure, and by
+       this stop the room is not what is being looked at. */
+    viaMat.opacity = stackA * 0.82 * Math.min(1, gapOpen(0, t) * 1.4)
+                   * (1 - 0.34 * ceilingDim) * (1 - cellFocus);
     viaMat.emissiveIntensity = stackA * (0.04 + 0.8 * viaGlow) * quietGlow;
-    for (let k = 0; k < viaSeeds.length; k++) {
-      const s = viaSeeds[k];
-      const len = Math.max(tierY[s.gap + 1] - tierY[s.gap], 0.0008);
-      _t.set(s.x, tierY[s.gap] + len / 2, s.z);
-      _s.set(s.w, len, s.w);
-      _m.compose(_t, _q, _s);
-      vias.setMatrixAt(k, _m);
+    vias.visible = viaMat.opacity > 0.002;
+    if (vias.visible) {
+      for (let k = 0; k < viaSeeds.length; k++) {
+        const s = viaSeeds[k];
+        const len = Math.max(tierY[s.gap + 1] - tierY[s.gap], 0.0008);
+        _t.set(s.x, tierY[s.gap] + len / 2, s.z);
+        _s.set(s.w, len, s.w);
+        _m.compose(_t, _q, _s);
+        vias.setMatrixAt(k, _m);
+      }
+      vias.instanceMatrix.needsUpdate = true;
     }
-    vias.instanceMatrix.needsUpdate = true;
 
     /* Bumps sit just clear of the top tier and drop the last of the way in. */
-    bumpMat.opacity = stackA * bumpIn * quiet;
+    bumpMat.opacity = stackA * bumpIn * quiet * (1 - bumpOut);
     bumps.visible = bumpMat.opacity > 0.002;
     if (bumps.visible) {
       const by = tierY[N_METAL - 1] + 0.17 + (1 - bumpIn) * 0.9;   // settle downward
@@ -3712,71 +4584,105 @@ function updateScene(t) {
     }
   }
 
-  /* --- the traced net -------------------------------------------------
-     Two independent things happen to it, and keeping them separate is what makes
-     the stage read:
+  /* --- the cell rows --------------------------------------------------
+     Nothing here moves. The field is built once and the whole stage is a fade,
+     which is the right shape for it: the rows are not arriving, they were always
+     there, and the only reason they were not visible is that fifteen layers of
+     copper were in the way. The stage is the copper getting out of the way.
 
-     The net DRAWS ITSELF, once, along its own length, as the camera arrives. The
-     draw is a scale ramp rather than a fade, so a piece that has not been laid
-     yet is absent rather than dark — a black wire blending over the stack behind
-     it would be a ghost of the path, which gives the ending away.
-
-     Then a bead RUNS it, on a loop. The gradient alone reads as decoration; the
-     bead is what makes it a signal that arrives somewhere. It enters from before
-     the start and leaves past the end, so there is a gap between passes instead
-     of a bead that teleports back to the beginning. */
-  routeVis = routeA;
-  netGroup.visible = routeA > 0.002;
-  if (netGroup.visible) {
-    netMat.opacity = routeA;
-    netPadMat.opacity = routeA * 0.9;
-
-    const draw = smoothstep(routeIn) * (netLen + NET_DRAW_SOFT);
-    if (Math.abs(draw - netDrawn) > 1e-4) {
-      netDrawn = draw;
-      for (let k = 0; k < netPieces.length; k++) {
-        const p = netPieces[k];
-        const on = smoothstep(THREE.MathUtils.clamp(
-          (draw - p.s) / NET_DRAW_SOFT, 0, 1));
-        _t.set(p.x, p.y, p.z);
-        _s.set(p.sx * on, p.sy * on, p.sz * on);
-        net.setMatrixAt(k, _m.compose(_t, _q, _s));
-      }
-      net.instanceMatrix.needsUpdate = true;
-    }
-
-    /* The bead's position in arc length, overshooting at both ends. */
-    const head = ((now() % NET_PERIOD) / NET_PERIOD)
-               * (netLen + 2 * NET_LEAD) - NET_LEAD;
-    const col = net.instanceColor.array;
-    for (let k = 0; k < netPieces.length; k++) {
-      const g = Math.exp(-Math.pow((netPieces[k].s - head) / NET_SIGMA, 2));
-      col[k * 3    ] = NET_DIM[0] + (NET_HOT[0] - NET_DIM[0]) * g;
-      col[k * 3 + 1] = NET_DIM[1] + (NET_HOT[1] - NET_DIM[1]) * g;
-      col[k * 3 + 2] = NET_DIM[2] + (NET_HOT[2] - NET_DIM[2]) * g;
-    }
-    net.instanceColor.needsUpdate = true;
-
-    /* The bead itself rides the head, and is only up once the whole path is
-       drawn: a charge arriving somewhere the wire does not go yet is nonsense. */
-    const onWire = head > 0 && head < netLen && routeIn > 0.999;
-    beadMat.opacity = onWire ? routeA : 0;
-    bead.visible = onWire;
-    if (onWire) netPointAt(head, bead.position);
-    /* The far pad lights as the charge lands on it, which is the sentence the
-       whole stage is making. */
-    const land = Math.exp(-Math.pow((netLen - head) / 0.9, 2));
-    netPads[1].scale.setScalar(1 + 0.35 * land);
-    netPads[0].scale.setScalar(1 + 0.35 * Math.exp(-Math.pow(head / 0.9, 2)));
+     It starts at 0.936 rather than with the fold, because the silicon die body
+     is hidden at 0.928 and a field of cells appearing while a solid slab of
+     silicon is still standing in the same volume reads as a clipping bug. */
+  const cellIn = ramp(t, 0.936, 0.964);
+  cellField.visible = cellIn > 0.002;
+  if (cellField.visible) {
+    cellMat.opacity = railMat.opacity = cellIn;
+    /* The neighbouring tiles stand down at stop 07 so the one being read is the
+       brightest thing in the frame. Not out, though: "one OF those tiles" is
+       half the sentence the stage is making, and a cell alone in the dark is
+       back to being the free-floating patch this replaced. Driven on the
+       material colour rather than on opacity, because these are the floor and
+       dropping their opacity would turn depthWrite off and let the room sort
+       through its own ground. */
+    const fieldQuiet = 1 - 0.42 * cellFocus;
+    cellMat.color.setScalar(fieldQuiet);
+    railMat.color.setScalar(fieldQuiet);
+    /* Depth write comes back on once they are up, following the same rule the
+       tiles and the bars use. These are the floor and they SHOULD occlude: it is
+       what keeps the overdraw honest underneath a translucent M1. */
+    cellMat.depthWrite = railMat.depthWrite = cellIn > 0.995;
+    /* The hero tile hands itself over to the gate it turns out to be. */
+    heroMat.opacity = cellIn * (1 - invIn);
+    heroMat.depthWrite = heroMat.opacity > 0.995;
+    heroCell.visible = heroMat.opacity > 0.004;
   }
 
-  // --- transistors ---
-  /* Both bounds moved out by 0.018 and 0.012 to clear the net stage, and the
-     upper one still lands before stop 7 at 0.978, which is the constraint that
-     fixes it: the stop is meant to be the transistors fully arrived. */
-  const fetIn = ramp(t, 0.950, 0.974);
-  fets.visible = fetIn > 0.001;
-  finMat.opacity = gateMat.opacity = wafer.material.opacity = fetIn;
+  /* --- one cell, one gate ---------------------------------------------
+     invIn completes at 0.984, before the stop at 0.990, which is the constraint
+     that fixes it: the stop is meant to be the gate fully arrived, not the gate
+     still arriving. The switching loop then starts a beat later still, because a
+     cell that begins working while it is still assembling has two things to say
+     at once and says neither. */
+  fets.visible = invIn > 0.001;
+  if (fets.visible) {
+    devMat.opacity = gateMat.opacity = contactMat.opacity = invIn;
+    oxideMat.opacity = invIn;
+    wafer.material.opacity = invIn;
+    nwell.material.opacity = invIn;
+    m1Mat.opacity = invIn;
+    for (const l of cellLabels) l.material.opacity = invIn;
+    layoutCell(liftAt(t));
+
+    /* One device conducts at a time, and that complement IS the lesson. The
+       NMOS band brightens with A and the PMOS band with its inverse, so the eye
+       never sees both of them lit and never has to be told which is which. */
+    const fc = devs.instanceColor.array;
+    for (let i = 0; i < DEVS.length; i++) {
+      const lit = swA * (i < DEV_PER ? sigY : sigA);
+      const b = DEV_BASE[i], h = DEV_HOT[i];
+      fc[i * 3    ] = b[0] + (h[0] - b[0]) * lit;
+      fc[i * 3 + 1] = b[1] + (h[1] - b[1]) * lit;
+      fc[i * 3 + 2] = b[2] + (h[2] - b[2]) * lit;
+    }
+    devs.instanceColor.needsUpdate = true;
+
+    /* Only the middle strip is being driven. The two on the cell boundaries are
+       dummies and stay dark, which is also the clearest way to say that they are
+       not gates. */
+    const gc = gates.instanceColor.array;
+    for (let i = 0; i < GATE_N; i++) {
+      const live = i === GATE_LIVE;
+      const base = live ? GATE_BASE : GATE_DIM;
+      const lit = live ? swA * sigA : 0;
+      for (let k = 0; k < 3; k++) {
+        gc[i * 3 + k] = base[k] + (GATE_HOT[k] - base[k]) * lit;
+      }
+    }
+    gates.instanceColor.needsUpdate = true;
+
+    /* The metal says where the current is coming from. With A high the cell is
+       pulling its output down, so ground and the input light; with A low it is
+       pulling up, so the supply and the output do. */
+    /* Supply and its tie light together, ground and its tie light together, so
+       the current path reads end to end rather than as a rail and a strap
+       happening to be bright at the same time. Each piece brightens from its OWN
+       base colour, which is what keeps a lit ground rail cool and a lit supply
+       rail warm instead of both washing to the same white. */
+    const pc = m1pins.instanceColor.array;
+    const pinLit = [sigA, sigY];               // A, Y
+    for (let i = 0; i < M1_PINS.length; i++) {
+      const lit = swA * pinLit[i], b = M1_BASE[i], h = M1_HOT[i];
+      pc[i * 3    ] = b[0] + (h[0] - b[0]) * lit;
+      pc[i * 3 + 1] = b[1] + (h[1] - b[1]) * lit;
+      pc[i * 3 + 2] = b[2] + (h[2] - b[2]) * lit;
+    }
+    m1pins.instanceColor.needsUpdate = true;
+
+    /* Each piece of the via reads the gaussian on its own height, which is the
+       same way the traced net's pieces read one on their arc length: five boxes
+       that flash in sequence are a signal travelling, one box that flashes is a
+       light being switched on. */
+  }
 
 }
 
@@ -3926,7 +4832,6 @@ function frame() {
      block the attract pass claimed this frame, and the hint needs the tile
      opacities that decide whether anything is selectable at all. */
   updateHints();
-  updatePins();
   renderer.render(scene, camera);
 }
 
@@ -3939,7 +4844,7 @@ function frame() {
    Only three things are required to draw stage 01 — the lid outline, the lid
    photograph and the substrate — about 1.5 MB. Waiting on the whole set meant
    holding the first frame for roughly 5.4 MB, and the single biggest item in it
-   (die-floorplan.jpg, 2.2 MB) is not wanted until stage 06, several hundred vh
+   (die-floorplan.jpg, 2.2 MB) is not wanted until stage 03, several hundred vh
    of scrolling later. The rest is fetched the moment the loop starts and
    applied as each one lands.
 
@@ -4044,6 +4949,8 @@ Promise.all([
     set clock(v) { vclock = (v === null ? null : +v); },  // drive self-animation by frame
     get state() {
       return {
+        switching: CELL_SWITCHING,
+        bar: barTucked ? (barHovering ? 'peek' : 'tucked') : 'pinned',
         t: +current.toFixed(3),
         back: +sBack.material.opacity.toFixed(2),
         floor: +sFloor.material.opacity.toFixed(2),
@@ -4058,6 +4965,17 @@ Promise.all([
         iodVisible: pkg.visible && iodGroup.visible,
         iodAlpha: +Math.max(iodSiliconMat.opacity, iodTopMat.opacity).toFixed(3),
         stack: stack.visible, fets: fets.visible,
+        /* The switching loop, read back off the geometry rather than recomputed,
+           so a harness is checking what was DRAWN and not a second copy of the
+           same arithmetic. One brightness per family, plus where the pulse has
+           got to, which is the only thing here that is not a plain fade. */
+        cell: fets.visible ? {
+          pmos: +devs.instanceColor.array[1].toFixed(2),
+          nmos: +devs.instanceColor.array[DEV_PER * 3 + 1].toFixed(2),
+          gate: +gates.instanceColor.array[GATE_LIVE * 3].toFixed(2),
+          a: +m1pins.instanceColor.array[PIN_A * 3].toFixed(2),
+          y: +m1pins.instanceColor.array[PIN_Y_ * 3].toFixed(2),
+        } : false,
         /* How far the core reveal has got: how many of the 29 are standing, and
            how high the tallest one is. The old `lift` reported the stage-08
            slabs, which no longer exist. */

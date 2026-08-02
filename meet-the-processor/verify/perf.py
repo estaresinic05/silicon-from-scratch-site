@@ -16,10 +16,15 @@ still compare medians across a run rather than against a previous run.
 import sys, statistics
 from playwright.sync_api import sync_playwright
 DSF = float(sys.argv[1]) if len(sys.argv) > 1 else 2.0
-STAGES = [(0.02,'01 package'),(0.22,'03 delid'),(0.36,'05 bare silicon'),
-          (0.46,'06 floorplan'),(0.50,'06 strip reveal'),(0.62,'07 core, few up'),
-          (0.72,'07 core, most up'),(0.80,'07 core, all 29'),
-          (0.88,'08 metal stack'),(0.96,'09 transistors')]
+# Renumbered off the nine-stage era these labels were written in. The fold is
+# sampled mid-flight as well as at its ends: it is the one moment the stack, the
+# vias, the bumps and the cell field are all on screen at once, so if anything
+# here is going to cost, it costs there.
+STAGES = [(0.020,'01 package'),(0.220,'02 delid'),(0.360,'02 bare silicon'),
+          (0.460,'03 floorplan'),(0.500,'03 strip reveal'),(0.620,'04 core, few up'),
+          (0.720,'04 core, most up'),(0.800,'04 core, all 29'),
+          (0.888,'05 metal stack'),(0.940,'05-06 the fold'),
+          (0.966,'06 cell rows'),(0.990,'07 one cell')]
 with sync_playwright() as p:
     b = p.chromium.launch(args=["--use-angle=d3d11","--enable-gpu",
                                 "--ignore-gpu-blocklist","--hide-scrollbars"])
