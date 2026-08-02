@@ -2303,9 +2303,18 @@ const railGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
    inverter's straps both read this, so the metal in the hero cell lines up with
    the metal running past it instead of floating a hair above or below it.
 
-   Just clear of the cell tops, because a rail has no underside to hide: it is
-   drawn as a flat plane rather than a box. See railGeo below. */
-const RAIL_Y_OFF = 0.037;
+   ABOVE THE DEVICES, not resting on them, because that is where metal one is: the
+   gate and the diffusion are silicon and poly, M1 is the first layer of wiring
+   over the top of them, and the contacts are the posts that climb from one to the
+   other. A rail level with the gate it is insulated from is not a wiring layer,
+   it is a kerb.
+
+   0.060 clears the gate at 0.053. It sat at 0.037 for one commit while the dark
+   line alongside every rail was being chased, and it was the wrong lever: the
+   line was the rail box own side face, and the rail is a plane now, which is what
+   actually fixed it. A plane has no underside to look into, so the height is free
+   to be whatever the stack says it should be. */
+const RAIL_Y_OFF = 0.060;
 const railMat = new THREE.MeshStandardMaterial({
   metalness: 0.72, roughness: 0.30, transparent: true, opacity: 0,
   depthWrite: false,
