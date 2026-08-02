@@ -2285,20 +2285,24 @@ const RAIL_H = ROW_PITCH * 0.15;
    was the odd one out. At 0.010 the side is a hairline and the top reads as one
    continuous colour. It also lifts the rail clear of the cell tops, which it had
    been intersecting by 0.003. */
-/* A rail is a PLANE, not a bar, and that is the fix for the dark line that used
-   to run alongside every one of them. A box standing proud of the floor has a
-   near side face, and a face pointing away from the one key light in this scene
-   renders very close to black — so every rail carried a hard dark edge that read
-   as a seam in the floor and bled into the rail's own colour at a grazing angle.
+/* A rail is a thin BAR, and the two numbers under it are the whole story of a
+   dark line that took three attempts to kill.
 
-   Thinning the box from 0.026 to 0.010 shrank that band without removing it,
-   because the band was never about thickness. A plane has no side at all.
+   The line was the rail's own near side face. At metalness 0.72 a face turned
+   away from the single key light in this scene falls to almost black, so every
+   rail carried a hard dark edge that read as a seam in the floor. Thinning the
+   box from 0.026 to 0.010 shrank it without removing it — thickness was never
+   what made it dark. Flattening it to a plane removed it completely and took the
+   rail's depth with it, which is worse: a power rail is a bar of metal and it
+   should look like one.
 
-   It is also what M1 actually is. The stage has been calling this metal a film
-   since the pads were set to 0.007; a rail is the same film, and drawing it as a
-   solid bar was the odd one out. Rotated into the ground plane at the geometry
-   level so instance matrices only have to carry width and length. */
-const railGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+   The fix is the FINISH, not the form. At 0.40 the side face is lit enough by
+   the ambient and the environment to read as copper in shadow rather than as a
+   black line, and the rail keeps an edge to catch the key light along its top.
+   The cell boxes underneath have been proving this the whole time: they sit at
+   metalness 0.15 and their sides have always read correctly. */
+const RAIL_T = 0.011;
+const railGeo = new THREE.BoxGeometry(1, 1, 1);
 /* How far above a cell's own body the M1 layer sits. The field's rails and the
    inverter's straps both read this, so the metal in the hero cell lines up with
    the metal running past it instead of floating a hair above or below it.
@@ -2316,7 +2320,7 @@ const railGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
    to be whatever the stack says it should be. */
 const RAIL_Y_OFF = 0.060;
 const railMat = new THREE.MeshStandardMaterial({
-  metalness: 0.72, roughness: 0.30, transparent: true, opacity: 0,
+  metalness: 0.40, roughness: 0.34, transparent: true, opacity: 0,
   depthWrite: false,
 });
 /* Unbroken, all the way across, including past the hero cell. The cell does not
@@ -2338,7 +2342,7 @@ cellField.add(rails);
   const tv = new THREE.Vector3(), sv = new THREE.Vector3();
   for (let b = 0; b <= ROW_N; b++) {
     tv.set(0, CELL_Y + RAIL_Y_OFF, rowZ(b) - ROW_PITCH / 2);
-    sv.set(FIELD_X * 2, 1, RAIL_H);
+    sv.set(FIELD_X * 2, RAIL_T, RAIL_H);
     rails.setMatrixAt(b, m.compose(tv, q, sv));
     /* Which boundary is supply is fixed RELATIVE TO THE HERO ROW rather than by
        the raw index, so the rail along that cell's PMOS edge is always the supply
@@ -2723,7 +2727,7 @@ fets.add(ties);
 {
   const m = new THREE.Matrix4(), q = new THREE.Quaternion();
   const tv = new THREE.Vector3(), sv = new THREE.Vector3();
-  sv.set(INV_W * 0.09, 1, TIE_LEN);
+  sv.set(INV_W * 0.09, RAIL_T, TIE_LEN);
   for (let i = 0; i < 2; i++) {
     const dir = i === 0 ? 1 : -1;
     tv.set(TIE_X, RAIL_Y_OFF, dir * (DEV_Z + TIE_LEN / 2));
@@ -2783,7 +2787,7 @@ function layoutCell(lift) {
      projects offset from it at any angle but straight down, so VDD and GND read
      as sitting off their rails rather than on them. */
   for (const l of cellLabels) {
-    l.position.y = l.userData.lift ? pinY + 0.006 : RAIL_Y_OFF + 0.003;
+    l.position.y = l.userData.lift ? pinY + 0.006 : RAIL_Y_OFF + RAIL_T / 2 + 0.003;
   }
 
 }
