@@ -2160,13 +2160,18 @@ chip.add(cellField);
    object on a phone as it does on a desktop. */
 const ROW_N     = isSmall ? 13 : 21;
 const ROW_PITCH = DIE_H * 0.92 / ROW_N;
-/* A cell is as tall as its row. That is not a detail, it is the definition:
-   the library picks one height, every cell is drawn to it, and the power rails
-   run along the top and bottom EDGES where they are shared with the row above
-   and below. Drawn shorter, as this was at first, the rows stop abutting, the
-   rails float in the space between them, and the cell has no edge for its own
-   supply strap to sit on. The 0.97 is the same seam the widths carry. */
-const CELL_H    = ROW_PITCH * 0.97;
+/* A cell is as tall as its row, and EXACTLY as tall — no seam. That is not a
+   detail, it is the definition: the library picks one height, every cell is drawn
+   to it, and the power rails run along the top and bottom edges where they are
+   shared with the row above and below.
+
+   The 0.97 this carried, matching the sliver the widths use, was wrong for a
+   reason worth recording. Cells within a row are separate objects and the seam
+   between them is what makes them read as separate. Rows are not: a row boundary
+   is where two cells ABUT, and the rail sits on that line. Left 3% short, every
+   boundary opened a gap the rail was then laid over, and the void showed as a
+   faint grey line running the length of each rail and taking its colour with it. */
+const CELL_H    = ROW_PITCH;
 const CELL_T    = 0.070;                     // how far a cell stands proud
 /* The device layer, below M1 at 0.02. The exact depth is set by the stage that
    follows rather than by this one: the output via at stop 07 has to climb from
@@ -2280,11 +2285,27 @@ const RAIL_H = ROW_PITCH * 0.15;
    was the odd one out. At 0.010 the side is a hairline and the top reads as one
    continuous colour. It also lifts the rail clear of the cell tops, which it had
    been intersecting by 0.003. */
-const RAIL_T = 0.010;
+/* A rail is a PLANE, not a bar, and that is the fix for the dark line that used
+   to run alongside every one of them. A box standing proud of the floor has a
+   near side face, and a face pointing away from the one key light in this scene
+   renders very close to black — so every rail carried a hard dark edge that read
+   as a seam in the floor and bled into the rail's own colour at a grazing angle.
+
+   Thinning the box from 0.026 to 0.010 shrank that band without removing it,
+   because the band was never about thickness. A plane has no side at all.
+
+   It is also what M1 actually is. The stage has been calling this metal a film
+   since the pads were set to 0.007; a rail is the same film, and drawing it as a
+   solid bar was the odd one out. Rotated into the ground plane at the geometry
+   level so instance matrices only have to carry width and length. */
+const railGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
 /* How far above a cell's own body the M1 layer sits. The field's rails and the
    inverter's straps both read this, so the metal in the hero cell lines up with
-   the metal running past it instead of floating a hair above or below it. */
-const RAIL_Y_OFF = 0.045;
+   the metal running past it instead of floating a hair above or below it.
+
+   Just clear of the cell tops, because a rail has no underside to hide: it is
+   drawn as a flat plane rather than a box. See railGeo below. */
+const RAIL_Y_OFF = 0.037;
 const railMat = new THREE.MeshStandardMaterial({
   metalness: 0.72, roughness: 0.30, transparent: true, opacity: 0,
   depthWrite: false,
@@ -2299,8 +2320,7 @@ const railMat = new THREE.MeshStandardMaterial({
    So the inverter reaches UP AND OUT to these instead. Its power connections stop
    at rail height and run in z to meet the line, which is also why the metal lift
    at stop 07 raises only the signal metal: the rails are not the cell's to lift. */
-const rails = new THREE.InstancedMesh(
-  new THREE.BoxGeometry(1, 1, 1), railMat, ROW_N + 1);
+const rails = new THREE.InstancedMesh(railGeo, railMat, ROW_N + 1);
 rails.renderOrder = 6;
 rails.frustumCulled = false;
 cellField.add(rails);
@@ -2309,7 +2329,7 @@ cellField.add(rails);
   const tv = new THREE.Vector3(), sv = new THREE.Vector3();
   for (let b = 0; b <= ROW_N; b++) {
     tv.set(0, CELL_Y + RAIL_Y_OFF, rowZ(b) - ROW_PITCH / 2);
-    sv.set(FIELD_X * 2, RAIL_T, RAIL_H);
+    sv.set(FIELD_X * 2, 1, RAIL_H);
     rails.setMatrixAt(b, m.compose(tv, q, sv));
     /* Which boundary is supply is fixed RELATIVE TO THE HERO ROW rather than by
        the raw index, so the rail along that cell's PMOS edge is always the supply
@@ -2688,13 +2708,13 @@ const TIE_LEN = RAIL_Z - DEV_Z + RAIL_H * 0.5;
    is the only way that cannot drift. A clone was tried while the cell was
    skipping depth tests and it was invisible for its whole life: cloning copies
    the opacity at that instant, which is 0, and nothing was updating it after. */
-const ties = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), railMat, 2);
+const ties = new THREE.InstancedMesh(railGeo, railMat, 2);
 ties.renderOrder = 6;
 fets.add(ties);
 {
   const m = new THREE.Matrix4(), q = new THREE.Quaternion();
   const tv = new THREE.Vector3(), sv = new THREE.Vector3();
-  sv.set(INV_W * 0.09, RAIL_T, TIE_LEN);
+  sv.set(INV_W * 0.09, 1, TIE_LEN);
   for (let i = 0; i < 2; i++) {
     const dir = i === 0 ? 1 : -1;
     tv.set(TIE_X, RAIL_Y_OFF, dir * (DEV_Z + TIE_LEN / 2));
@@ -2754,7 +2774,7 @@ function layoutCell(lift) {
      projects offset from it at any angle but straight down, so VDD and GND read
      as sitting off their rails rather than on them. */
   for (const l of cellLabels) {
-    l.position.y = l.userData.lift ? pinY + 0.006 : RAIL_Y_OFF + RAIL_T / 2 + 0.003;
+    l.position.y = l.userData.lift ? pinY + 0.006 : RAIL_Y_OFF + 0.003;
   }
 
 }
