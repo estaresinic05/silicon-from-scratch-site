@@ -66,7 +66,13 @@ CLIPS = [
     # object. The length grew in proportion to the widened span, so the lift
     # itself runs at the pace it always did.
     ('lid',   0.020, 0.400,  6.3, 1280,  560, 27),  # lid lifts, dies revealed
-    ('core',  0.580, 0.800,  5.6,  640,  480, 31),  # the core's blocks rising
+    # 11.2s, twice the 5.6 it ran at. The span is unchanged, so this is purely a
+    # slower read of the same 22-beat reveal: at 5.6 the blocks arrived faster
+    # than a viewer glancing at a 287px panel could follow, and the panel read as
+    # motion rather than as a core being assembled. The frame count doubles with
+    # the duration, so nothing is stretched or resampled — every frame is still
+    # rendered at its own t.
+    ('core',  0.580, 0.800, 11.2,  640,  480, 31),  # the core's blocks rising
     # 0.905 is the framing README.md warns off — the camera sits under a tier
     # and it fills the frame as unreadable brown. Stop while the tiers still
     # read as tiers.
