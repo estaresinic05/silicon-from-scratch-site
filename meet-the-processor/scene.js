@@ -2250,6 +2250,18 @@ const VDD_COL = 0xd9924e, GND_COL = 0x7f8fa8;
    rows draw their power from the same strip of metal, which is also why every
    other row is mirrored top to bottom in a real layout. */
 const RAIL_H = ROW_PITCH * 0.15;
+/* How thick a rail is drawn. 0.010 and not the 0.026 it started at, because at
+   0.026 the rail's own near side face was almost as tall on screen as its top
+   face was deep, and the edge between the two landed about two thirds of the way
+   across — a faint dark line running the length of every rail that read as a
+   seam in the metal rather than as the side of a bar.
+
+   Thin is also the truer reading. M1 is a FILM, and the cell's own pads on the
+   same layer are 0.007; a rail four times thicker than the metal it is part of
+   was the odd one out. At 0.010 the side is a hairline and the top reads as one
+   continuous colour. It also lifts the rail clear of the cell tops, which it had
+   been intersecting by 0.003. */
+const RAIL_T = 0.010;
 /* How far above a cell's own body the M1 layer sits. The field's rails and the
    inverter's straps both read this, so the metal in the hero cell lines up with
    the metal running past it instead of floating a hair above or below it. */
@@ -2278,7 +2290,7 @@ cellField.add(rails);
   const tv = new THREE.Vector3(), sv = new THREE.Vector3();
   for (let b = 0; b <= ROW_N; b++) {
     tv.set(0, CELL_Y + RAIL_Y_OFF, rowZ(b) - ROW_PITCH / 2);
-    sv.set(FIELD_X * 2, 0.026, RAIL_H);
+    sv.set(FIELD_X * 2, RAIL_T, RAIL_H);
     rails.setMatrixAt(b, m.compose(tv, q, sv));
     /* Which boundary is supply is fixed RELATIVE TO THE HERO ROW rather than by
        the raw index, so the rail along that cell's PMOS edge is always the supply
@@ -2653,7 +2665,7 @@ fets.add(ties);
 {
   const m = new THREE.Matrix4(), q = new THREE.Quaternion();
   const tv = new THREE.Vector3(), sv = new THREE.Vector3();
-  sv.set(INV_W * 0.09, 0.026, TIE_LEN);
+  sv.set(INV_W * 0.09, RAIL_T, TIE_LEN);
   for (let i = 0; i < 2; i++) {
     const dir = i === 0 ? 1 : -1;
     tv.set(TIE_X, RAIL_Y_OFF, dir * (DEV_Z + TIE_LEN / 2));
