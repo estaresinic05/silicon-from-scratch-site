@@ -1430,7 +1430,7 @@ Three consequences worth internalising:
    plus purple; region colour belongs to the die, never to a button or a border.
 
 **Serve it over HTTP.** ES modules and the import map do not load from `file://`.
-Use `python prototypes/cpu-layers/serve.py` (it sends `Cache-Control: no-store`)
+Use `python tools/serve.py` (it sends `Cache-Control: no-store`)
 rather than `python -m http.server`, which lets the browser serve a stale
 stylesheet. Symptom: new behaviour, old appearance.
 

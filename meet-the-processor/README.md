@@ -6,7 +6,7 @@ Open `prototypes/cpu-layers/index.html` **through a local web server**, not by
 double-clicking it. ES modules and the import map will not load from `file://`.
 
 ```
-python prototypes/cpu-layers/serve.py
+python tools/serve.py
 # then visit http://127.0.0.1:8777/prototypes/cpu-layers/
 ```
 

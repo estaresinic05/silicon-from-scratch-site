@@ -146,17 +146,26 @@ Most pages are plain files — open them directly, or serve the root.
 ES modules and the import map will not load otherwise.
 
 ```
-python prototypes/cpu-layers/serve.py
+python tools/serve.py
 # then http://127.0.0.1:8777/meet-the-processor/
 ```
 
-Use `serve.py` rather than `python -m http.server`. It serves the same root on
-the same port but sends `Cache-Control: no-store`. `http.server` sends no cache
-header at all, and a browser may then apply heuristic freshness and serve a stale
-stylesheet without revalidating.
+Use `tools/serve.py` rather than `python -m http.server`. It serves the same root
+on the same port and differs in two ways that both matter:
 
-**Symptom to remember: new behaviour, old appearance.** It is almost always the
-cache.
+- **`Cache-Control: no-store`.** `http.server` sends no cache header at all, and a
+  browser may then apply heuristic freshness and serve a stale stylesheet without
+  revalidating. **Symptom to remember: new behaviour, old appearance.** It is
+  almost always the cache.
+- **Byte ranges.** `http.server` ignores `Range` and answers 200 with the whole
+  file. A `<video>` then reports an empty `seekable` range, so its scrub bar goes
+  inert: the bead will not drag and clicking the timeline does nothing. GitHub
+  Pages answers 206, so the deployed videos have always scrubbed. **A player that
+  will not seek locally is this, not the page.**
+
+It lived at `prototypes/cpu-layers/serve.py` until 2026-08-03, which was inside
+the gitignored `prototypes/` tree — the documented way to run the site was a file
+no clone had.
 
 ---
 
