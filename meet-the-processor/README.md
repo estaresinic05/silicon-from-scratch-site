@@ -34,13 +34,13 @@ This folder is completely self-contained and **cannot affect the live site**:
 
 | # | Stage | What happens |
 |---|-------|--------------|
-| 01 | The packaged chip | The AM5 package under its nickel lid, slowly settling square |
-| 02 | Bare silicon | The IHS rises and drifts away, both dies are revealed, and the camera comes to eye level beside them |
-| 03 | The floorplan beneath | Delayers, then regions bloom in as flat colour; parks with every region up and fully filled |
-| 04 | Inside one core | Descends into the bottom-left core; its 29 blocks rise as glass slabs a beat at a time, in the order an instruction meets them, while the camera orbits low |
-| 05 | The metal stack | 15 graded copper tiers cascade apart from the bottom up, a pulse of light climbs them, and the camera flies in among them |
-| 06 | The cell rows | The stack folds back down, top first, leaving its lowest gap open as a room; M1 turns to glass and a field of standard cell rows shows through the floor |
-| 07 | One cell, one gate | A dive into one tile, which resolves into a CMOS inverter and then switches, on a loop, driving a pulse up its output via into the copper overhead |
+| 01 | The Packaged Chip | The AM5 package under its nickel lid, slowly settling square |
+| 02 | Bare Silicon | The IHS rises and drifts away, both dies are revealed, and the camera comes to eye level beside them |
+| 03 | The Floorplan Beneath | Delayers, then regions bloom in as flat colour; parks with every region up and fully filled |
+| 04 | Inside One Core | Descends into the bottom-left core; its 29 blocks rise as glass slabs a beat at a time, in the order an instruction meets them, while the camera orbits low |
+| 05 | The Metal Stack | 15 graded copper tiers cascade apart from the bottom up, a pulse of light climbs them, and the camera flies in among them |
+| 06 | The Cell Rows | The stack folds back down, top first, leaving its lowest gap open as a room; M1 turns to glass and a field of standard cell rows shows through the floor |
+| 07 | One Cell, One Gate | A dive into one tile, which resolves into a CMOS inverter and then switches, on a loop, driving a pulse up its output via into the copper overhead |
 
 The arrows drive everything — see below. Clicking a region opens a detail panel,
 but only while parked at a stop.

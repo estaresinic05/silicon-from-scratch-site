@@ -213,15 +213,15 @@ The 3D viewport always fills the screen. Never letterbox it.
 
 Seven stages, in order:
 
-1. **The packaged chip** — the AM5 package under its nickel lid
-2. **Bare silicon** — the lid rises away, both dies, raking light across the
+1. **The Packaged Chip** — the AM5 package under its nickel lid
+2. **Bare Silicon** — the lid rises away, both dies, raking light across the
    polished die backside
-3. **The floorplan beneath** — regions reveal, then settle to outlines
-4. **Inside one core** — L1d, L2, vector, load/store, fetch/decode
-5. **The metal stack** — 15 copper tiers separate upward
-6. **The cell rows** — the stack folds back down into a ceiling, M1 turns to
+3. **The Floorplan Beneath** — regions reveal, then settle to outlines
+4. **Inside One Core** — L1d, L2, vector, load/store, fetch/decode
+5. **The Metal Stack** — 15 copper tiers separate upward
+6. **The Cell Rows** — the stack folds back down into a ceiling, M1 turns to
    glass, and a field of standard cells shows through the floor
-7. **One cell, one gate** — one tile resolves into a CMOS inverter and switches
+7. **One Cell, One Gate** — one tile resolves into a CMOS inverter and switches
 
 Clickable subjects with panels: heat spreader, I/O die, compute die, Zen 5 core,
 L3 cache, SMU / power management, Test / Debug, IFOP PHY.

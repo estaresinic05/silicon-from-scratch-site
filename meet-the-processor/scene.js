@@ -127,19 +127,19 @@ const isSmall = window.matchMedia('(max-width: 860px)').matches;
    dies, not one" both fell inside the leg that ends at bare silicon, so their
    substance is folded into that card. */
 const STAGES = [
-  { t: 0.000, num: '01', title: 'The packaged chip',
+  { t: 0.000, num: '01', title: 'The Packaged Chip',
     body: 'A Ryzen 5 9600X as it arrives: a 40 mm square of fibreglass and copper under a nickel-plated lid. Nothing you can see yet does any computing.' },
-  { t: 0.398, num: '02', title: 'Bare silicon',
+  { t: 0.398, num: '02', title: 'Bare Silicon',
     body: 'The lid lifts away, and underneath sit two separate pieces of silicon: a compute die carrying the cores, and an I/O die handling memory and PCIe. Up close both are just polished silicon, scratched and dusty, because you are looking at the back of the die. Everything that matters is buried beneath this surface.' },
-  { t: 0.512, num: '03', title: 'The floorplan beneath',
-    body: 'Strip the silicon away and the compute die resolves into eight Zen 5 cores flanking a shared 32 MB L3 cache. On a 9600X, six of those eight cores are enabled.' },
-  { t: 0.800, num: '04', title: 'Inside one core',
-    body: 'A single core is itself a floorplan, and it came apart in the order an instruction meets it: fetch and decode, the registers and integer units, load/store, then the caches behind it all.' },
-  { t: 0.888, num: '05', title: 'The metal stack',
-    body: 'Above the transistors sit layer upon layer of copper wiring. Thin and densely pitched at the bottom for local connections, thick and sparse at the top for power and clock, and each layer routing at right angles to the one below so wires can cross without touching. The short pillars standing between the layers are vias, which are the only way a signal changes level. The balls that settle on top at the end are the solder bumps, where the finished die is soldered face down onto its package.' },
-  { t: 0.966, num: '06', title: 'The cell rows',
+  { t: 0.512, num: '03', title: 'The Floorplan Beneath',
+    body: 'The underside of the compute die is where the magic happens. Eight Zen 5 cores flank a shared 32 MB L3 cache, and a strip of support logic runs the width of the die beneath them. On a 9600X, six of those eight cores are enabled.' },
+  { t: 0.800, num: '04', title: 'Inside One Core',
+    body: 'A single core is a complete computer in miniature. It keeps its own private L1 and L2 caches close at hand, its own logic for fetching instructions and predicting branches, its own registers, and separate execution units for integer work, for vector and floating point calculations, and for the loads and stores that reach out to memory. All of it is repeated eight times across the die.' },
+  { t: 0.888, num: '05', title: 'The Metal Stack',
+    body: 'A transistor does nothing until something connects it, and that job belongs to the copper stacked overhead. The lowest tiers are thin and packed tightly together for short hops inside a block, while the highest are thick and widely spaced so they can carry power and the clock clear across the die. Each tier runs at right angles to the one beneath it, which is what lets wires cross without ever touching. The short pillars standing between the tiers are vias, and they are the only way a signal changes level. The balls settling on top at the end are solder bumps, where the finished die is joined face down to its package.' },
+  { t: 0.966, num: '06', title: 'The Cell Rows',
     body: 'The stack folds back down onto the lowest layer of metal, and underneath it the design stops being wiring and becomes logic. Every gate in the processor is one of a few hundred prebuilt tiles taken from a standard cell library, and each of those tiles is drawn to exactly the same height so that it can be dropped into a row and pushed up against its neighbours with nothing wasted in between. Power and ground run the length of every row boundary and are shared by the rows above and below, which is why one row is the mirror of the next. A router working in the copper overhead can then treat the whole surface as a grid and always know where a pin will be.' },
-  { t: 0.990, num: '07', title: 'One cell, one gate',
+  { t: 0.990, num: '07', title: 'One Cell, One Gate',
     body: 'Drop into one of those tiles and it resolves into a CMOS inverter, the smallest thing that is still honestly a logic gate. The upper half sits inside an n-well and carries the PMOS transistors, the lower half carries the NMOS, and a single strip of poly crosses both of them as one shared gate. Drive the input high and the NMOS conducts while the PMOS shuts off, so the output is pulled down to ground. Drive it low and the pair swap jobs and the output is pulled up to the supply. Every gate on this die, and every 2x1 multiplexer built out of them, is that same complementary pair repeated.' },
 ];
 
@@ -3507,13 +3507,22 @@ const BAR_SHOW_Y = 64;                 // the bar's own height
 const BAR_HIDE_Y = 72;
 let barTucked = false;
 let barHovering = false;
+/* An open block sheet is a full-screen blurred reading surface, and the peek
+   draws OVER it. Reaching for the video controls at the top of that sheet was
+   enough to pull site chrome down across it, so the peek is suppressed for as
+   long as a sheet is open.
+
+   Held as its own flag rather than read off `sheet.hidden` because this runs
+   ~300 lines before the sheet element is looked up, and because the block has
+   to survive the sheet being closed: see the reset in closeSheet. */
+let barBlocked = false;
 
 function syncBar() {
   siteBar.classList.toggle('tucked', barTucked);
-  siteBar.classList.toggle('peek', barTucked && barHovering);
+  siteBar.classList.toggle('peek', barTucked && barHovering && !barBlocked);
 }
 addEventListener('pointermove', (e) => {
-  if (!barTucked) return;
+  if (!barTucked || barBlocked) return;
   const want = barHovering ? e.clientY <= BAR_HIDE_Y : e.clientY <= BAR_SHOW_Y;
   if (want !== barHovering) { barHovering = want; syncBar(); }
 });
@@ -3847,6 +3856,11 @@ function openSheet(id) {
   sheet.hidden = false;
   frozen = true;
   sheetOpened = true;
+  /* Clear the peek as well as blocking it: the click that opened the sheet may
+     have been made with the bar already down. */
+  barBlocked = true;
+  barHovering = false;
+  syncBar();
   syncNav();
   document.getElementById('sheet-close').focus();
   return true;
@@ -3857,6 +3871,12 @@ function closeSheet() {
   sheetVideo.pause();
   sheet.hidden = true;
   frozen = false;
+  /* barHovering was left false while blocked, so the bar does not spring down
+     the instant the sheet clears under a cursor that is still near the top.
+     It waits for a fresh move into the band, which is the deliberate gesture
+     the peek is meant to answer. */
+  barBlocked = false;
+  syncBar();
   syncNav();
 }
 
