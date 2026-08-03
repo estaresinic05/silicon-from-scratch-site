@@ -595,6 +595,28 @@
         openToc(true);
       });
     }
+
+    /* Landing with ?directory opens the drawer on arrival. This is the same
+       gesture as a .js-open-proj-dir button, made by a page that cannot press
+       one: Meet the Processor ends with a "Start Building" pill, and that page
+       deliberately loads none of this script, so it hands the intent over in the
+       URL instead of reproducing the drawer.
+
+       A query parameter rather than a hash, because section 1 rewrites in-page
+       anchors and a #fragment would be competing with it.
+
+       Deferred two frames on purpose. openToc only adds .is-open, and the
+       comment on syncSide above explains why: a transform applied in the same
+       tick as the class has no "from" frame to animate out of, so opening
+       during init would snap the drawer into place instead of sliding it. */
+    if (/[?&]directory(=|&|$)/.test(location.search)) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          if (topbar) topbar.classList.remove("is-hidden");
+          if (!tocMenu.classList.contains("is-open")) openToc(true);
+        });
+      });
+    }
   }
 
   /* ---- 1b. The home hero card's three loops -----------------------------

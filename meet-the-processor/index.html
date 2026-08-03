@@ -213,16 +213,22 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
     </button>
     <!-- The hand-off. Rather than leave the forward pill disabled at stop 7, it
-         is swapped for a link out to the project directory, which is where the
-         whole learning path is laid out. Same destination as the Project
-         Directory pill in the top bar.
+         is swapped for a link to the project directory, landing with the
+         directory drawer already open — the same panel the Project Directory
+         pill opens everywhere else on the site.
+
+         `?directory` is what asks for that; scripts/main.js reads it on arrival
+         and runs the same openToc() a .js-open-proj-dir button would. It is done
+         by URL rather than in place because this page deliberately loads none of
+         main.js or main.css, and reproducing the drawer here would mean a second
+         copy of the whole lesson list to drift out of date.
 
          A real <a>, not a button that sets location: this leaves the page, so it
          should middle-click, preview its target on hover and open in a new tab
          like every other link on the site. It takes the same .nav-fwd styling so
          the swap reads as the same control gaining a label, not a new one
          appearing. -->
-    <a id="nav-build" class="nav-btn nav-fwd nav-cta" href="../" hidden>
+    <a id="nav-build" class="nav-btn nav-fwd nav-cta" href="../?directory" hidden>
       Start Building
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
     </a>
