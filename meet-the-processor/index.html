@@ -93,7 +93,13 @@
         <!-- This IS that page, so it announces itself rather than linking away. -->
         <a href="../meet-the-processor/" aria-current="page">Meet the Processor</a>
         <a href="../about/">About</a>
-        <a class="sitenav__pill" href="../">Project Directory</a>
+        <!-- Everywhere else on the site this pill is a button that opens the
+             directory drawer in place. Here it cannot be: the drawer lives in
+             scripts/main.js, which this page deliberately does not load. So it
+             carries `?directory` and the drawer opens on arrival instead, which
+             is the same panel one navigation later. Matches the Start Building
+             hand-off at stop 7, so both controls behave alike. -->
+        <a class="sitenav__pill" href="../?directory">Project Directory</a>
       </nav>
 
       <a class="ghlink" href="https://github.com/estaresinic05/Silicon-From-Scratch"
