@@ -509,6 +509,7 @@
       var isLeft = tocMenu.classList.contains("is-left");
       if (tab) tab.setAttribute("aria-expanded", isLeft ? "true" : "false");
       tocMenu.classList.add("is-open");
+      syncOpeners(true);
       backdrop.classList.add("is-open");
       // The mobile hamburger flips to an X only when it is the one holding the
       // drawer open.
@@ -537,6 +538,7 @@
       // opening move in reverse — no separate fade to sequence.
       closeSheet();
       tocMenu.classList.remove("is-open");
+      syncOpeners(false);
       if (tab) tab.setAttribute("aria-expanded", "false");
       backdrop.classList.remove("is-open");
       if (navToggle) navToggle.setAttribute("aria-expanded", "false");
@@ -598,9 +600,27 @@
     for (var oi = 0; oi < openers.length; oi++) {
       openers[oi].addEventListener("click", function () {
         if (topbar) topbar.classList.remove("is-hidden");
-        if (tocMenu.classList.contains("is-open")) return;
-        openToc(true);
+        /* TOGGLE, not open-only. This used to `return` when the drawer was
+           already up, which was invisible for the CTAs it was written for: a
+           button in the middle of a page sits under the backdrop once the
+           drawer opens and cannot be pressed again. The top bar's pill on
+           meet-the-processor stays above it, so there the same handler read as
+           a control that opened the drawer and then ignored every press after
+           it. The nav item on every other page has always toggled; this makes
+           the two agree. */
+        if (tocMenu.classList.contains("is-open")) closeToc();
+        else openToc(true);
       });
+    }
+    /* Keep any opener that declares aria-expanded in step with the drawer. The
+       generated nav tab manages its own; this covers ones written into a
+       page's markup, like the pill on meet-the-processor. */
+    function syncOpeners(open) {
+      for (var i = 0; i < openers.length; i++) {
+        if (openers[i].hasAttribute("aria-expanded")) {
+          openers[i].setAttribute("aria-expanded", open ? "true" : "false");
+        }
+      }
     }
 
     /* Landing with ?directory opens the drawer on arrival. This is the same
