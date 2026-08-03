@@ -97,13 +97,40 @@ These are not preferences to weigh. They are how the site is written.
 Most of the site shares `styles/main.css` + `styles/alu.css` + `styles/alu-widget.css`
 and the tokens in `STYLE_GUIDE.md`.
 
-**`meet-the-processor/` is fully self-contained and shares none of it.** It does
-not load `styles/main.css` or `scripts/main.js`, because the WebGL scene owns the
-entire viewport and the page never scrolls in the normal sense — the site's
-layout, scroll-reveal and drawer machinery have nothing to act on there and would
-only fight the canvas. Its top bar is *reproduced* in `meet-the-processor/style.css`
+**`meet-the-processor/` does not load `styles/main.css`**, because the WebGL scene
+owns the entire viewport and the page never scrolls in the normal sense — the
+site's layout and scroll-reveal rules have nothing to act on there and would only
+fight the canvas. Its top bar is *reproduced* in `meet-the-processor/style.css`
 at the site's exact metrics (1400px rail, 40px inset, 4rem tall, Geist wordmark,
 filled Project Directory pill trailing the links) so the seam is invisible.
+
+**It does load `scripts/main.js`, for exactly one component: the project
+directory drawer.** That exception was made 2026-08-03. The alternative was a
+second copy of the whole lesson list living on that page, and a duplicated `MENU`
+drifts the first time a lesson is added. Everything else in `main.js` finds no
+elements to bind to there and is inert — verified, not assumed.
+
+Three things that made it work, all of which will bite again if disturbed:
+
+- **The drawer's CSS lives in `styles/project-directory.css`**, split out of
+  `main.css` so this page can take the drawer without the rest. `main.css`
+  `@import`s it, so the other pages needed no edit. It declares no tokens: every
+  `var()` still resolves against the host page's `:root`, which is what keeps the
+  drawer tracking the light and dark themes on the main site. **Add a `var()` to
+  that file and you must also add it to the republished block at the bottom of
+  `meet-the-processor/style.css`**, which is where this page supplies the ones it
+  does not already define.
+- **`PREFIX` in `main.js` keys off either stylesheet.** It used to read the
+  `main.css` link alone, which this page does not have, so every menu link
+  resolved against `/meet-the-processor/` instead of the site root.
+- **`#sitebar` is a direct child of `<body>`, not of `#stage`.** `#stage` is
+  `position: fixed; z-index: 1` and therefore a stacking context, so a bar nested
+  inside it can never paint above anything outside it however high its own
+  `z-index` goes, and the drawer came down over the wordmark.
+
+Both controls on that page — the top bar's pill and the Start Building button at
+stop 7 — carry `js-open-proj-dir`, which is `main.js`'s own public hook. Neither
+holds any logic of its own.
 
 Consequence: **a change to the shared top bar must be made twice** — once in
 `styles/main.css` and once in `meet-the-processor/style.css`. There is no

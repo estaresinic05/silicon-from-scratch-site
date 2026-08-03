@@ -124,8 +124,15 @@
   // The stylesheet link encodes how far this page sits from the site root
   // ("styles/main.css", "../styles/main.css", ...). Reuse that prefix so menu
   // links resolve from any depth, locally or deployed.
-  var cssLink = document.querySelector('link[rel="stylesheet"][href*="main.css"]');
-  var PREFIX = cssLink ? cssLink.getAttribute("href").replace(/styles\/main\.css.*$/, "") : "";
+  // meet-the-processor/ loads project-directory.css WITHOUT main.css, so keying
+  // only on main.css left PREFIX empty there and every menu link resolved
+  // against /meet-the-processor/ instead of the site root. Either stylesheet
+  // answers the question, because both sit in styles/.
+  var cssLink = document.querySelector(
+    'link[rel="stylesheet"][href*="styles/main.css"],' +
+    'link[rel="stylesheet"][href*="styles/project-directory.css"]');
+  var PREFIX = cssLink
+    ? cssLink.getAttribute("href").replace(/styles\/[a-z-]+\.css.*$/, "") : "";
   var SOON = PREFIX + "coming-soon/";
 
   // Top-bar quick links (desktop inline nav, and the top of the mobile drawer).

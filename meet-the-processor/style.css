@@ -120,7 +120,12 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
    deliberately, which is the case a pointer-only rule would strand. */
 #sitebar {
   position: absolute; top: 0; left: 0; right: 0;
-  z-index: 40;
+  /* 70 to match .topbar in styles/main.css, and it has to be above the drawer
+     (60) rather than below it: the desktop drawer is designed to drop straight
+     down OUT FROM BEHIND the bar. At 40 it came down over the top of it and
+     covered the wordmark, which reads as a panel that has replaced the page
+     rather than one the page has opened. */
+  z-index: 70;
   height: 4rem;
   transition: transform .42s cubic-bezier(.2,.7,.3,1), visibility 0s;
   background: color-mix(in srgb, var(--void) 80%, transparent);
@@ -198,7 +203,16 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 /* The link to the page you are already on reads as current, not as a way out. */
 .sitenav a[aria-current="page"] { color: var(--text); cursor: default; }
 /* The filled pill trails the text links, as it does on the site. */
+/* Now a <button>, not an <a>, because it opens the drawer rather than going
+   anywhere. Buttons take none of the inherited type or the reset above, so the
+   font and the border have to be stated or the pill renders in the UA's
+   13px system face inside a grey chrome frame. */
 .sitenav__pill {
+  appearance: none; -webkit-appearance: none;
+  border: 0;
+  font-family: inherit;
+  font-size: .875rem;
+  cursor: pointer;
   background: var(--accent);
   color: #fff !important;
   border-radius: 999px;
@@ -1047,4 +1061,48 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   .credit-toggle {
     touch-action: manipulation;
   }
+}
+
+/* ------------------------------------------------------------------ *
+   PROJECT DIRECTORY DRAWER — the tokens it reads
+   This page loads styles/project-directory.css but NOT styles/main.css, so
+   the drawer arrives with its rules and none of the custom properties they
+   resolve against. The handful it needs are republished here at the site's
+   DARK theme values, since this page is always dark.
+
+   Scoped to the drawer's own roots rather than :root on purpose. These names
+   overlap the site's, not this page's, and dropping them on :root would put a
+   second --fill and a second --ink in scope for the scene's own chrome.
+   JS moves all three of these elements to <body>, so scoping here still
+   reaches everything inside them by inheritance.
+
+   Add a var() to project-directory.css and it has to be added here too.
+ * ------------------------------------------------------------------ */
+.toc__menu,
+.toc-backdrop,
+.navsheets {
+  --bg:          #08080b;
+  --ink:         #fdfdfb;
+  --soft-ink:    rgba(253, 253, 251, 0.72);
+  --hairline:    rgba(253, 253, 251, 0.14);
+  --fill:        #6b2fc9;
+  --fill-hover:  #7b3ce0;
+  --accent-deep: #d4bbff;
+  --radius-sm:   10px;
+  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.35),
+                 0 16px 40px rgba(0, 0, 0, 0.50);
+  --ease:        cubic-bezier(0.22, 0.61, 0.36, 1);
+  --font-display: "Geist", system-ui, -apple-system, sans-serif;
+  --font-mono:   "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --space-2:     1rem;
+  --space-3:     1.5rem;
+  --space-4:     2rem;
+  --space-5:     3rem;
+}
+/* main.css carries this one as `.theme-dark .toc__menu`. There is no
+   .theme-dark class on this page, so the flat near-black surface and the
+   quieter edge are restated rather than inherited. */
+.toc__menu {
+  background: var(--bg);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
 }

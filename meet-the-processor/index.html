@@ -35,6 +35,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet">
 
+<!-- The shared project-directory drawer. This is the ONE piece of the site's
+     CSS this page takes; it lives in its own file precisely so this page can
+     have it without main.css, whose layout rules would fight the canvas.
+     Loaded BEFORE style.css so the local token block can win. -->
+<link rel="stylesheet" href="../styles/project-directory.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -43,71 +48,84 @@
      Meet the Processor — a played, stage-by-stage descent into a Ryzen 5
      9600X, rendered in WebGL.
 
-     This page is SELF-CONTAINED: it does not load styles/main.css or
-     scripts/main.js. The scene owns the whole viewport and the page never
-     scrolls, so the site's shared layout, scroll-reveal and drawer machinery
-     have nothing to act on here and would only fight the canvas. The top bar
-     is therefore reproduced in style.css rather than inherited — see the note
-     on that block. Engineering notes live in README.md beside this file.
+     This page does not load styles/main.css: the scene owns the whole
+     viewport and the page never scrolls, so the site's shared layout and
+     scroll-reveal rules have nothing to act on here and would fight the
+     canvas. The top bar is reproduced in style.css rather than inherited.
+
+     It DOES load scripts/main.js, for one component: the project directory
+     drawer. That was the exception worth making — the alternative was a second
+     copy of the whole lesson list on this page, to drift out of date the first
+     time a lesson was added. Everything else in main.js finds no elements to
+     bind to here and is inert; the drawer's own CSS was split out into
+     styles/project-directory.css so it could come without the rest.
+     Engineering notes live in README.md beside this file.
      ===================================================================== -->
 
 <div id="loader"><div class="loader-inner"><span class="spark"></span>preparing the die…</div></div>
+
+<!-- The site bar is a direct child of <body>, NOT of #stage. #stage is
+     `position: fixed; z-index: 1`, which makes it a stacking context, so a bar
+     nested inside it could never paint above anything outside it however high
+     its own z-index went — the project directory drawer (z-index 60) came down
+     over the top of the wordmark. Out here its 70 ranks against the drawer the
+     way .topbar's does on every other page, and the drawer drops out from
+     behind it instead of over it. -->
+<!-- ============================ SITE BAR =============================
+     The site's own top bar, reproduced here so this page reads as part of
+     Silicon From Scratch rather than as a detached demo. Same metrics as
+     styles/main.css: a 1400px rail with a 40px inset, 4rem tall, Geist
+     wordmark at 0.95rem/600, 2rem nav gap, and the filled pill trailing the
+     text links.
+
+     The markup is duplicated rather than shared because this page loads no
+     site CSS or JS by design. That is a real cost: change the bar on the site
+     and it must be changed here too. It is accepted for a prototype; if this
+     becomes a real page it should take main.css and drop this block.
+
+     "Project Directory" opens the shared drawer in place, the same as on
+     every other page. It used to link home instead, because the menu is
+     built by scripts/main.js; the page now loads that script for the drawer
+     alone. -->
+<header id="sitebar">
+  <div class="sitebar__inner">
+    <a class="wordmark" href="../" aria-label="Silicon From Scratch — home">
+      <img src="../assets/home/logo-symbol.png" alt="" aria-hidden="true" />
+      Silicon From Scratch
+    </a>
+
+    <!-- Page context, not a second bar. The subject strip used to sit on its
+         own row directly beneath this one, and two stacked bars is a lot of
+         chrome to look past before you reach the scene. The part number is the
+         only piece that has to be visible at a glance; the numbers moved into
+         the "About this model" panel, which is exactly what that panel claims
+         to hold. -->
+    <span class="sitebar__page" aria-hidden="true"></span>
+    <span class="sitebar__subject">Ryzen&nbsp;5 9600X</span>
+
+    <nav class="sitenav" aria-label="Primary">
+      <!-- This IS that page, so it announces itself rather than linking away. -->
+      <a href="../meet-the-processor/" aria-current="page">Meet the Processor</a>
+      <a href="../about/">About</a>
+      <!-- Opens the drawer in place, the same as everywhere else on the
+           site. `js-open-proj-dir` is main.js's own public hook for this, so
+           no wiring is needed here and none is duplicated. A button, not a
+           link, because it now opens a panel rather than going anywhere. -->
+      <button type="button" class="sitenav__pill js-open-proj-dir">Project Directory</button>
+    </nav>
+
+    <a class="ghlink" href="https://github.com/estaresinic05/Silicon-From-Scratch"
+       target="_blank" rel="noopener" aria-label="Silicon From Scratch on GitHub">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    </a>
+  </div>
+</header>
 
 <!-- sticky 3D viewport -------------------------------------------------->
 <div id="stage">
   <canvas id="gl"></canvas>
 
 
-  <!-- ============================ SITE BAR =============================
-       The site's own top bar, reproduced here so this page reads as part of
-       Silicon From Scratch rather than as a detached demo. Same metrics as
-       styles/main.css: a 1400px rail with a 40px inset, 4rem tall, Geist
-       wordmark at 0.95rem/600, 2rem nav gap, and the filled pill trailing the
-       text links.
-
-       The markup is duplicated rather than shared because this page loads no
-       site CSS or JS by design. That is a real cost: change the bar on the site
-       and it must be changed here too. It is accepted for a prototype; if this
-       becomes a real page it should take main.css and drop this block.
-
-       "Project Directory" LINKS to the home page rather than opening the mega
-       menu, since the menu is built by scripts/main.js which this page does not
-       load. It still lands you where the directory lives. -->
-  <header id="sitebar">
-    <div class="sitebar__inner">
-      <a class="wordmark" href="../" aria-label="Silicon From Scratch — home">
-        <img src="../assets/home/logo-symbol.png" alt="" aria-hidden="true" />
-        Silicon From Scratch
-      </a>
-
-      <!-- Page context, not a second bar. The subject strip used to sit on its
-           own row directly beneath this one, and two stacked bars is a lot of
-           chrome to look past before you reach the scene. The part number is the
-           only piece that has to be visible at a glance; the numbers moved into
-           the "About this model" panel, which is exactly what that panel claims
-           to hold. -->
-      <span class="sitebar__page" aria-hidden="true"></span>
-      <span class="sitebar__subject">Ryzen&nbsp;5 9600X</span>
-
-      <nav class="sitenav" aria-label="Primary">
-        <!-- This IS that page, so it announces itself rather than linking away. -->
-        <a href="../meet-the-processor/" aria-current="page">Meet the Processor</a>
-        <a href="../about/">About</a>
-        <!-- Everywhere else on the site this pill is a button that opens the
-             directory drawer in place. Here it cannot be: the drawer lives in
-             scripts/main.js, which this page deliberately does not load. So it
-             carries `?directory` and the drawer opens on arrival instead, which
-             is the same panel one navigation later. Matches the Start Building
-             hand-off at stop 7, so both controls behave alike. -->
-        <a class="sitenav__pill" href="../?directory">Project Directory</a>
-      </nav>
-
-      <a class="ghlink" href="https://github.com/estaresinic05/Silicon-From-Scratch"
-         target="_blank" rel="noopener" aria-label="Silicon From Scratch on GitHub">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-      </a>
-    </div>
-  </header>
 
 
   <!-- current stage caption -->
@@ -218,26 +236,19 @@
     <button id="nav-next" class="nav-btn nav-fwd" aria-label="Next stage">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
     </button>
-    <!-- The hand-off. Rather than leave the forward pill disabled at stop 7, it
-         is swapped for a link to the project directory, landing with the
-         directory drawer already open — the same panel the Project Directory
-         pill opens everywhere else on the site.
+    <!-- The hand-off. Rather than leave the forward pill disabled at stop 7,
+         it is swapped for one that opens the project directory drawer, so the
+         descent ends by offering the path rather than by going grey.
 
-         `?directory` is what asks for that; scripts/main.js reads it on arrival
-         and runs the same openToc() a .js-open-proj-dir button would. It is done
-         by URL rather than in place because this page deliberately loads none of
-         main.js or main.css, and reproducing the drawer here would mean a second
-         copy of the whole lesson list to drift out of date.
-
-         A real <a>, not a button that sets location: this leaves the page, so it
-         should middle-click, preview its target on hover and open in a new tab
-         like every other link on the site. It takes the same .nav-fwd styling so
-         the swap reads as the same control gaining a label, not a new one
-         appearing. -->
-    <a id="nav-build" class="nav-btn nav-fwd nav-cta" href="../?directory" hidden>
+         Same `js-open-proj-dir` hook the top bar's pill uses, so both controls
+         on this page do the identical thing and neither carries its own logic.
+         A button rather than a link, because it opens a panel over this page
+         instead of navigating anywhere. -->
+    <button type="button" id="nav-build"
+            class="nav-btn nav-fwd nav-cta js-open-proj-dir" hidden>
       Start Building
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-    </a>
+    </button>
   </nav>
 </div>
 
@@ -264,6 +275,14 @@
 
 <!-- reduced-motion / no-WebGL fallback ---------------------------------->
 <noscript><div class="fallback">This prototype needs JavaScript and WebGL.</div></noscript>
+
+<!-- The drawer starts life here and main.js moves it to <body>. Empty on
+     purpose: its contents are built from the shared MENU data. -->
+<div class="toc" id="page-toc"><ul class="toc__menu"></ul></div>
+
+<!-- Loaded for the project directory drawer, and only that. See the note at
+     the top of this file. `defer` so it runs after the markup above exists. -->
+<script src="../scripts/main.js" defer></script>
 
 <script type="importmap">
 { "imports": { "three": "./vendor/three.module.js" } }
