@@ -3727,7 +3727,7 @@ const SUBJECTS = {
 /* Slugs whose video has actually been uploaded. Add to this as they land; until
    a slug is in here the media half shows "video coming soon" instead of a
    broken player. */
-const HAVE_VIDEO = new Set(['zen5-core', 'instruction-fetch']);
+const HAVE_VIDEO = new Set(['zen5-core', 'instruction-fetch', 'scheduling']);
 
 /* Written, but deliberately NOT in SUBJECT_OF below, so nothing on screen opens
    them yet: only the twelve blocks that were asked for are wired up. The copy is
