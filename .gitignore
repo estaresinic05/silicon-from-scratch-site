@@ -14,6 +14,13 @@ desktop.ini
 # Throwaway mobile-layout screenshots from the mobile-guardian agent
 .mobile-audit/
 
+# Screen-capture output from tools/backing-video (240fps 2560x1600 intermediates)
+.backing/
+
+# The RTL itself. This is the website repo; the hardware lives in
+# estaresinic05/Silicon-From-Scratch. Kept here as a local working copy only.
+Verilog/
+
 # Oversized source die-shot (84 MB) — the optimized -opt.jpg is used on the site
 assets/Meet-The-Processor/ccd-dieshot-detail.jpg
 # Scratch reference screenshot used while positioning the highlight
