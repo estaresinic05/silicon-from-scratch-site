@@ -7,7 +7,7 @@
 Needs the site served over HTTP, because the scene is ES modules plus an import
 map:
 
-  python prototypes/cpu-layers/serve.py
+  python tools/serve.py
 
 This is the sibling of prototypes/cpu-layers/render/render-video.py, which
 renders the whole 75-second descent. Read that one first — every hazard it
@@ -65,7 +65,11 @@ CLIPS = [
     # before it comes apart. A delid with nothing to delid is just a moving
     # object. The length grew in proportion to the widened span, so the lift
     # itself runs at the pace it always did.
-    ('lid',   0.020, 0.400,  6.3, 1280,  560, 27),  # lid lifts, dies revealed
+    # 7.875s, which is 6.3 at 0.8x: the delid was still going by faster than the
+    # panel deserved. The span is untouched, so this is the same shot read more
+    # slowly, and the frame count rises with the duration rather than the clip
+    # being retimed — every frame is still rendered at its own t.
+    ('lid',   0.020, 0.400, 7.875, 1280,  560, 27),  # lid lifts, dies revealed
     # 11.2s, twice the 5.6 it ran at. The span is unchanged, so this is purely a
     # slower read of the same 22-beat reveal: at 5.6 the blocks arrived faster
     # than a viewer glancing at a 287px panel could follow, and the panel read as
