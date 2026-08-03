@@ -212,6 +212,20 @@
     <button id="nav-next" class="nav-btn nav-fwd" aria-label="Next stage">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
     </button>
+    <!-- The hand-off. Rather than leave the forward pill disabled at stop 7, it
+         is swapped for a link out to the project directory, which is where the
+         whole learning path is laid out. Same destination as the Project
+         Directory pill in the top bar.
+
+         A real <a>, not a button that sets location: this leaves the page, so it
+         should middle-click, preview its target on hover and open in a new tab
+         like every other link on the site. It takes the same .nav-fwd styling so
+         the swap reads as the same control gaining a label, not a new one
+         appearing. -->
+    <a id="nav-build" class="nav-btn nav-fwd nav-cta" href="../" hidden>
+      Start Building
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+    </a>
   </nav>
 </div>
 

@@ -866,6 +866,28 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   border-color: var(--accent);
   box-shadow: 0 0 14px 1px rgba(169,123,255,.34);
 }
+/* [hidden] has to be spelled out HERE, on .nav-btn, not just on the CTA. The
+   rule above sets `display: inline-flex`, and any display declaration in an
+   author sheet beats the UA sheet's `[hidden] { display: none }` — so setting
+   `.hidden = true` in JS hides neither of these controls. The stop-7 swap looked
+   correct in a harness that asserted on the `hidden` PROPERTY and wrong on
+   screen, where both pills were drawn side by side. Assert on computed display. */
+.nav-btn[hidden] { display: none; }
+
+/* --- the hand-off pill at the last stop ---
+   Opts out of the fixed `--nav-btn-w` because it is sized by its label rather
+   than by matching the back button. */
+.nav-cta {
+  width: auto;
+  padding: 0 1.15rem 0 1.35rem;
+  gap: .5rem;
+  font-size: .95rem;
+  font-weight: 600;
+  letter-spacing: .005em;
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+}
 .nav-btn:active:not(:disabled) { transform: scale(.93); }
 .nav-btn:focus-visible { outline: 2px solid var(--accent-lit); outline-offset: 3px; }
 /* In flight, or at either end of the journey. Kept visible rather than hidden so

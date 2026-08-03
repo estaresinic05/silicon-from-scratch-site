@@ -221,7 +221,7 @@ Seven stages, in order:
 5. **The Metal Stack** — 15 copper tiers separate upward
 6. **The Cell Rows** — the stack folds back down into a ceiling, M1 turns to
    glass, and a field of standard cells shows through the floor
-7. **One Cell, One Gate** — one tile resolves into a CMOS inverter and switches
+7. **A Closer Look** — one tile resolves into a CMOS inverter and switches
 
 Clickable subjects with panels: heat spreader, I/O die, compute die, Zen 5 core,
 L3 cache, SMU / power management, Test / Debug, IFOP PHY.

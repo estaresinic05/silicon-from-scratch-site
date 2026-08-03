@@ -138,9 +138,14 @@ const STAGES = [
   { t: 0.888, num: '05', title: 'The Metal Stack',
     body: 'A transistor does nothing until something connects it, and that job belongs to the copper stacked overhead. The lowest tiers are thin and packed tightly together for short hops inside a block, while the highest are thick and widely spaced so they can carry power and the clock clear across the die. Each tier runs at right angles to the one beneath it, which is what lets wires cross without ever touching. The short pillars standing between the tiers are vias, and they are the only way a signal changes level. The balls settling on top at the end are solder bumps, where the finished die is joined face down to its package.' },
   { t: 0.966, num: '06', title: 'The Cell Rows',
-    body: 'The stack folds back down onto the lowest layer of metal, and underneath it the design stops being wiring and becomes logic. Every gate in the processor is one of a few hundred prebuilt tiles taken from a standard cell library, and each of those tiles is drawn to exactly the same height so that it can be dropped into a row and pushed up against its neighbours with nothing wasted in between. Power and ground run the length of every row boundary and are shared by the rows above and below, which is why one row is the mirror of the next. A router working in the copper overhead can then treat the whole surface as a grid and always know where a pin will be.' },
-  { t: 0.990, num: '07', title: 'One Cell, One Gate',
-    body: 'Drop into one of those tiles and it resolves into a CMOS inverter, the smallest thing that is still honestly a logic gate. The upper half sits inside an n-well and carries the PMOS transistors, the lower half carries the NMOS, and a single strip of poly crosses both of them as one shared gate. Drive the input high and the NMOS conducts while the PMOS shuts off, so the output is pulled down to ground. Drive it low and the pair swap jobs and the output is pulled up to the supply. Every gate on this die, and every 2x1 multiplexer built out of them, is that same complementary pair repeated.' },
+    body: 'The stack folds back down onto the lowest layer of metal, and underneath it the design stops being wiring and becomes logic. Every gate in the processor is one of a few hundred prebuilt tiles taken from a standard cell library, and each of those tiles is drawn to exactly the same height so that it can be dropped into a row and pushed up against its neighbours with nothing wasted in between. Power and ground run the length of every row boundary and are shared by the rows above and below, which is why one row is the mirror of the next.' },
+  { t: 0.990, num: '07', title: 'A Closer Look',
+    /* Upper and lower here describe the SCREEN, not the scene's z axis. The
+       camera at this stop puts VDD along the bottom of the frame, so the PMOS
+       half sits low and the NMOS half sits high, which is the reverse of the
+       way a standard cell is conventionally drawn on paper. The caption has to
+       match the picture the reader is looking at. */
+    body: 'This is a CMOS inverter, the smallest arrangement of transistors that still counts as a logic gate. The lower half sits inside an n-well and carries the PMOS transistors, tied to the supply rail running beneath them, while the upper half carries the NMOS, tied to the ground rail above. A single strip of poly crosses both halves as one shared gate. Drive the input high and the NMOS conducts while the PMOS shuts off, so the output is pulled down to ground. Drive it low and the pair swap jobs and the output is pulled up to the supply. Every gate on this die, and every 2x1 multiplexer built out of them, is that same complementary pair repeated.' },
 ];
 
 /* ------------------------------------------------------------------ *
@@ -3466,6 +3471,7 @@ function advance() {
 const navPrev = document.getElementById('nav-prev');
 const navNext = document.getElementById('nav-next');
 const navCount = document.getElementById('nav-count');
+const navBuild = document.getElementById('nav-build');
 const siteBar = document.getElementById('sitebar');
 const stageEl = document.getElementById('stage');
 function syncNav() {
@@ -3476,6 +3482,12 @@ function syncNav() {
   navPrev.disabled = flying || frozen || stopIdx === 0;
   navNext.disabled = flying || frozen || stopIdx === STOPS.length - 1;
   navCount.textContent = `${stopIdx + 1} / ${STOPS.length}`;
+  /* `stopIdx` is set when a leg STARTS, not when it lands, so `flying` is what
+     keeps the hand-off from appearing while the camera is still on its way into
+     the last stop. Same guard the keyboard hint uses. */
+  const arrived = stopIdx === STOPS.length - 1 && !flying && !frozen;
+  navNext.hidden = arrived;
+  navBuild.hidden = !arrived;
   stageEl.classList.toggle('flying', flying);
 }
 /* --- the top bar tucks away once the descent starts --------------------
@@ -4463,53 +4475,54 @@ function updateScene(t) {
   }
   coreTileGroup.visible = coreTilesLive;
 
-  /* --- the cell switches, now and then --------------------------------
-     The one thing a picture of a gate cannot say is what a gate DOES, so every so
-     often it does it: the input rises, one device opens while the other shuts,
-     the output falls, and then it goes back to rest.
+  /* --- the cell switches, continuously ---------------------------------
+     The one thing a picture of a gate cannot say is what a gate DOES, so it does
+     it: the input rises, one device opens while the other shuts, the output
+     falls, and then the whole thing runs back the other way. Forever.
 
-     OCCASIONAL RATHER THAN CONTINUOUS, and that is the whole design of the
-     timing. A gate blinking on a loop is wallpaper — after two cycles the eye
-     files it as decoration and stops reading it, which is the opposite of what a
-     one-off event does. Most of the period is spent at rest, so the switch is
-     something that HAPPENS while you are looking at the layout rather than a
-     texture the layout is wearing.
+     ONE DEVICE IS ALWAYS CONDUCTING. That is the requirement this is built to,
+     and it is what a complementary pair means: sigY = 1 - sigA, so the two
+     brightnesses sum to 1 in every frame and neither half is ever dark. There is
+     no rest state and no envelope.
 
-     4400 ms of that is the switch itself, and it is not shorter for the reason
-     the travelling bead was given 3200: this is one sentence with three clauses
-     in it, and a sentence read in under two seconds is a flicker rather than a
-     fact. The remaining seven seconds are the pause that makes the next one
-     register as a new event.
+     This replaced an occasional switch that spent seven of every sixteen seconds
+     fully unlit, on the argument that a gate blinking on a loop becomes wallpaper
+     while a rare event stays an event. That reasoning was sound and is recorded
+     here because it is the thing being traded away: a continuously switching cell
+     does read as more decorative. It is also the only version that is true at
+     every instant rather than only during the switch, and an inverter sitting
+     with BOTH halves dark is a state no real inverter is ever in.
+
+     The plateaus are 4400 ms each, which is where the previous revision's doubled
+     NMOS window landed, so the pace of a single switch is unchanged. Only the
+     dead time is gone.
+
+     The two devices DO cross over during an edge, for 484 ms, and that is not a
+     bug to design out: both halves conducting briefly is what actually happens in
+     silicon on a switching edge. Shortening SW_EDGE sharpens it; taking it to 0
+     would give an instantaneous swap and a visible pop.
 
      Everything below is a pure function of the phase. No edge detection, no
      comparison against the last frame, so seeking straight to a t gives exactly
      the same frame every time and the video renderer's clock override still
      makes this a function of the frame index. */
-  const SW_PERIOD = 11400;                // one full loop, most of it at rest
-  const SW_ACTIVE = 4400;                 // the part of it that actually switches
-  const SW_EDGE   = 0.11;                 // share of the active window one edge takes
-  /* Runs 0..1 across the active window and then HOLDS at 1 for the pause. At 1
-     both terms below are 1 and cancel, so the rest state is A low — the PMOS
-     conducting and the output high, which is where an idle inverter with a low
-     input actually sits. */
-  const swPh = Math.min((now() % SW_PERIOD) / SW_ACTIVE, 1);
-  /* A is high for the middle half of the active window: it rises at phase 0 and
-     falls at 0.5, so both edges get an equal share and neither reads as the
-     resting one. */
+  const SW_PERIOD = 8800;                 // one full loop; there is no rest in it
+  const SW_EDGE   = 0.055;                // share of the period one edge takes, = 484 ms
+  /* Runs 0..1 across the whole loop and wraps. It does NOT clamp or hold: the
+     hold at 1 was what created the rest window. */
+  const swPh = (now() % SW_PERIOD) / SW_PERIOD;
+  /* A rises at phase 0 and falls at 0.5, so each level holds for half the loop.
+     At the wrap both terms are 1 and cancel to 0, which is the same value the
+     rise starts from, so phase 1 and phase 0 agree and the seam is invisible. */
   const sigA = smoothstep(THREE.MathUtils.clamp(swPh / SW_EDGE, 0, 1))
              - smoothstep(THREE.MathUtils.clamp((swPh - 0.5) / SW_EDGE, 0, 1));
   const sigY = 1 - sigA;
-  /* And the whole thing fades OUT between switches, back to the plain base
-     colours the cell is drawn in. Without this the resting state still has the
-     PMOS conducting — which is electrically true, and meant the cell spent two
-     thirds of every loop with one device lit and the output strap a bright white. The
-     layout is the subject; the switch is a thing that happens to it. So at rest
-     nothing is lit at all and the cell looks exactly as it does with the loop
-     turned off, which is also the version that was signed off. */
-  const swEnv = ramp(swPh, 0.0, 0.06) * (1 - ramp(swPh, 0.86, 1.0));
 
   const invIn  = ramp(t, 0.960, 0.984);
-  const swA    = CELL_SWITCHING ? ramp(t, 0.980, 0.988) * invIn * swEnv : 0;
+  /* Still gated on t so the cell fades up with the stage rather than popping in
+     already lit. That is a scene-position fade, not a rest state: once the stage
+     is reached this is 1 and stays 1. */
+  const swA    = CELL_SWITCHING ? ramp(t, 0.980, 0.988) * invIn : 0;
 
   /* --- metal stack ---
      Timing, in order: the tiers fade in, the gaps cascade open from the bottom,

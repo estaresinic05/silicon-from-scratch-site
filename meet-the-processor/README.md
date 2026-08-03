@@ -40,7 +40,7 @@ This folder is completely self-contained and **cannot affect the live site**:
 | 04 | Inside One Core | Descends into the bottom-left core; its 29 blocks rise as glass slabs a beat at a time, in the order an instruction meets them, while the camera orbits low |
 | 05 | The Metal Stack | 15 graded copper tiers cascade apart from the bottom up, a pulse of light climbs them, and the camera flies in among them |
 | 06 | The Cell Rows | The stack folds back down, top first, leaving its lowest gap open as a room; M1 turns to glass and a field of standard cell rows shows through the floor |
-| 07 | One Cell, One Gate | A dive into one tile, which resolves into a CMOS inverter and then switches, on a loop, driving a pulse up its output via into the copper overhead |
+| 07 | A Closer Look | A dive into one tile, which resolves into a CMOS inverter and then switches, on a loop, driving a pulse up its output via into the copper overhead |
 
 The arrows drive everything — see below. Clicking a region opens a detail panel,
 but only while parked at a stop.
