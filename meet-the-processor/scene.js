@@ -3533,6 +3533,12 @@ let barBlocked = false;
    an empty screen with no way back to the rest of the site. It comes down with
    the drawer and goes away with it. */
 let barDrawer = false;
+/* Set when the drawer closes, and held until the pointer leaves the reveal band.
+   Closing the drawer takes the bar with it, and the gesture that closes it is a
+   press on the pill — which leaves the cursor sitting inside the band that
+   reveals the bar. Without the latch the next twitch of the mouse would pull the
+   bar straight back down and the press would read as having done nothing. */
+let barLatch = false;
 
 function syncBar() {
   siteBar.classList.toggle('tucked', barTucked);
@@ -3556,10 +3562,24 @@ function watchDrawer() {
     const open = menu.classList.contains('is-open');
     if (open === barDrawer) return;
     barDrawer = open;
-    /* Leaving the pointer state alone on close. If the drawer was dismissed by
-       pressing the pill, the cursor is ON the bar, and pulling it out from under
-       a cursor that is still there would be the one thing more jarring than
-       leaving it. It tucks on the next move away. */
+    /* Closing the drawer sends the bar away with it. The pill is a toggle, so the
+       second press has to undo the whole of what the first one did — drawer and
+       bar both — otherwise the bar is left hanging over the scene with nothing
+       under it and no press that will clear it.
+       An open drawer holds the bar down on its own, so the pointer state only
+       matters again once it closes: reset it there and latch the reveal until the
+       cursor has left the band. */
+    barHovering = false;
+    barLatch = !open;
+    /* A clicked pill keeps focus, and `#sitebar.tucked:focus-within` holds the
+       bar down as firmly as .peek does — so dropping .peek alone left it exactly
+       where it was. Drop the focus too, but only when it came from a pointer:
+       :focus-visible is the browser's own answer to "did somebody tab here", and
+       a keyboard user's place in the bar is not ours to throw away. */
+    if (!open) {
+      const held = document.activeElement;
+      if (held && siteBar.contains(held) && !held.matches(':focus-visible')) held.blur();
+    }
     syncBar();
   };
   new MutationObserver(read).observe(menu, {
@@ -3574,12 +3594,21 @@ function watchDrawer() {
 if (!watchDrawer()) addEventListener('load', watchDrawer, { once: true });
 addEventListener('pointermove', (e) => {
   if (!barTucked || barBlocked) return;
+  /* Armed again the moment the cursor is clear of the band, using the same lower
+     threshold the hysteresis already uses so there is only one boundary here. */
+  if (barLatch) {
+    if (e.clientY > BAR_HIDE_Y) barLatch = false;
+    return;
+  }
   const want = barHovering ? e.clientY <= BAR_HIDE_Y : e.clientY <= BAR_SHOW_Y;
   if (want !== barHovering) { barHovering = want; syncBar(); }
 });
 /* Leaving the window across the top edge never produces a move that clears the
    band, so the bar would be left hanging down over a page nobody is pointing at. */
 document.addEventListener('pointerleave', () => {
+  /* The cursor being off the page is as good as it being clear of the band, so
+     the latch lifts here too — coming back in over the top edge should reveal. */
+  barLatch = false;
   if (!barHovering) return;
   barHovering = false;
   syncBar();
