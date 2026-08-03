@@ -3528,11 +3528,50 @@ let barHovering = false;
    ~300 lines before the sheet element is looked up, and because the block has
    to survive the sheet being closed: see the reset in closeSheet. */
 let barBlocked = false;
+/* True while the project directory drawer is open. The drawer is site chrome and
+   it docks under the bar, so a tucked bar would leave it hanging off the top of
+   an empty screen with no way back to the rest of the site. It comes down with
+   the drawer and goes away with it. */
+let barDrawer = false;
 
 function syncBar() {
   siteBar.classList.toggle('tucked', barTucked);
-  siteBar.classList.toggle('peek', barTucked && barHovering && !barBlocked);
+  /* An open drawer holds the bar down on its own, independent of the pointer,
+     which is the point: Start Building is at the BOTTOM of the screen, so the
+     gesture that opens the drawer leaves the cursor nowhere near the reveal
+     band. */
+  siteBar.classList.toggle('peek',
+    barTucked && (barDrawer || (barHovering && !barBlocked)));
 }
+
+/* Watch the drawer's own class rather than binding to the controls. It opens
+   from two places and closes from four — the pill, Start Building, the backdrop,
+   Escape, and following a lesson link — and main.js owns all of them. Observing
+   the state it publishes catches every path without this file having to know any
+   of them, and cannot fall out of step the way a second list of listeners would. */
+function watchDrawer() {
+  const menu = document.querySelector('.toc__menu');
+  if (!menu) return false;
+  const read = () => {
+    const open = menu.classList.contains('is-open');
+    if (open === barDrawer) return;
+    barDrawer = open;
+    /* Leaving the pointer state alone on close. If the drawer was dismissed by
+       pressing the pill, the cursor is ON the bar, and pulling it out from under
+       a cursor that is still there would be the one thing more jarring than
+       leaving it. It tucks on the next move away. */
+    syncBar();
+  };
+  new MutationObserver(read).observe(menu, {
+    attributes: true, attributeFilter: ['class'],
+  });
+  read();
+  return true;
+}
+/* main.js is a deferred classic script and this is a module, so it has already
+   run and moved the panel to <body>. The load fallback is for the ordering ever
+   changing underneath us. */
+if (!watchDrawer()) addEventListener('load', watchDrawer, { once: true });
 addEventListener('pointermove', (e) => {
   if (!barTucked || barBlocked) return;
   const want = barHovering ? e.clientY <= BAR_HIDE_Y : e.clientY <= BAR_SHOW_Y;
