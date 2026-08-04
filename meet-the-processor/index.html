@@ -115,11 +115,26 @@
                 aria-expanded="false">Project Directory</button>
     </nav>
 
+    <!-- The site's own hamburger, not a second one. Same markup as index.html
+         and every lesson page: `#nav-toggle` with a `.nav-toggle__bars` span,
+         which scripts/main.js already binds — it opens the project directory
+         drawer, and that drawer carries the quick links (Meet the Processor,
+         About, GitHub) alongside the lesson tree. This page loads main.js for
+         exactly that drawer, so the button needs no wiring here at all.
+
+         Hidden above the phone scheme, where the bar keeps the site's inline
+         links and the filled pill. -->
+    <button class="nav-toggle" id="nav-toggle"
+            aria-label="Toggle navigation menu" aria-expanded="false">
+      <span class="nav-toggle__bars" aria-hidden="true"></span>
+    </button>
+
     <a class="ghlink" href="https://github.com/estaresinic05/Silicon-From-Scratch"
        target="_blank" rel="noopener" aria-label="Silicon From Scratch on GitHub">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
     </a>
   </div>
+
 </header>
 
 <!-- sticky 3D viewport -------------------------------------------------->
@@ -129,11 +144,34 @@
 
 
 
-  <!-- current stage caption -->
+  <!-- current stage caption.
+
+       On a phone this is a two-state block: the stage number and title sit on
+       the bottom-left on their own, and the toggle raises them to open the body
+       underneath. The button is `display: none` outside the phone scheme, so it
+       does not exist as a box at desktop widths, where the body is always shown
+       and there is nothing to toggle. -->
   <div id="caption">
-    <div class="cap-index"><span id="cap-num">01</span><span class="cap-of">/ 07</span></div>
+    <div class="cap-index">
+      <span id="cap-num">01</span><span class="cap-of">/ 07</span>
+      <button id="cap-toggle" class="cap-toggle" type="button"
+              aria-expanded="false" aria-controls="cap-body">
+        <span class="cap-toggle-label">Read more</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+      </button>
+    </div>
     <h2 id="cap-title">Silicon backside</h2>
-    <p id="cap-body">What you actually see when you lift the lid.</p>
+    <!-- The wrapper exists only so the phone can animate the body to its
+         NATURAL height: a grid whose single row goes 0fr to 1fr eases to
+         whatever the text actually measures, where a max-height has to be
+         given a ceiling it then races to and stops short of.
+
+         `display: contents` outside the phone scheme, so at desktop widths it
+         is not a box at all and the paragraph stays a direct child of the
+         caption as far as layout is concerned. -->
+    <div class="cap-reveal">
+      <p id="cap-body">What you actually see when you lift the lid.</p>
+    </div>
   </div>
 
   <!-- scroll progress rail -->
@@ -160,10 +198,17 @@
   </div>
 
 
-    <div class="pin pin-pwr" id="pin-gnd"><b>GND</b><span>ground rail</span></div>
-    <div class="pin" id="pin-a"><b>A</b><span>input</span></div>
-    <div class="pin" id="pin-y"><b>Y</b><span>output</span></div>
-  </div>
+  <!-- Transistor-stage labels. They were left holding an unmatched </div> after
+       whatever wrapper once grouped them was removed, and that stray tag closed
+       #stage here — which put #nav and #credit at body level while #caption and
+       #hint stayed inside the stage. Harmless on a desktop, where #stage's 100vh
+       and the body's height are the same number. On a phone they are not: 100vh
+       is the LARGE viewport height, so the two halves of the bottom stack were
+       measuring `bottom` from surfaces 39px apart and the nav sat on the
+       caption's last line. -->
+  <div class="pin pin-pwr" id="pin-gnd"><b>GND</b><span>ground rail</span></div>
+  <div class="pin" id="pin-a"><b>A</b><span>input</span></div>
+  <div class="pin" id="pin-y"><b>Y</b><span>output</span></div>
 
   <!-- Attribution and disclaimer. This page has no footer to put them in, so they
        sit in the bottom-right, the one corner the caption, the hint, the nav and

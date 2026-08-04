@@ -317,6 +317,49 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 #cap-num { color: var(--accent-lit); }
 .cap-of { margin-left: .3rem; }
 
+/* The phone's caption toggle does not exist here. `display: none` rather than a
+   visibility or opacity trick, so it contributes no box and cannot change a
+   single desktop measurement. The phone scheme turns it back on. */
+.cap-toggle { display: none; }
+
+/* Likewise the reveal wrapper: `display: contents` removes the box entirely and
+   leaves #cap-body a direct child of #caption for every layout purpose here. */
+.cap-reveal { display: contents; }
+
+/* ---- the site's hamburger, republished ------------------------------
+   Copied from styles/main.css rather than reinvented, because it is the same
+   control doing the same job on every other page: 2.6rem box, hairline edge,
+   three 18x2 bars that fold into an X while the drawer is out. This page
+   loads no site CSS, so the rule has to live here — the same duplication the
+   top bar itself already accepts, and it must be kept in step for the same
+   reason.
+
+   `display: none` here and turned on in the phone scheme, exactly as main.css
+   does it, so the desktop bar keeps its inline links and filled pill. */
+.nav-toggle {
+  display: none;
+  width: 2.6rem; height: 2.6rem;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.nav-toggle__bars,
+.nav-toggle__bars::before,
+.nav-toggle__bars::after {
+  content: "";
+  display: block;
+  width: 18px; height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: transform .2s cubic-bezier(0.22, 0.61, 0.36, 1),
+              opacity .2s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.nav-toggle__bars::before { transform: translateY(-6px); }
+.nav-toggle__bars::after  { transform: translateY(4px); }
+
 #caption h2 {
   margin: 0 0 .5rem;
   font-size: clamp(1.55rem, 3.6vw, 2.4rem);
@@ -1024,25 +1067,523 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   .sitebar__inner {
     padding-left: max(20px, env(safe-area-inset-left));
     padding-right: max(20px, env(safe-area-inset-right));
+    /* Flex, not the desktop grid. Two of the grid's five children are
+       display:none here, which leaves four items for five tracks — and the
+       third of them landed in the `1fr` spacer, parking the menu in the
+       middle of the bar. A track list only lines up with a fixed number of
+       visible children, and this bar no longer has one.
+
+       Flex needs no count: the subject takes the slack and everything after
+       it is pushed hard right. */
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+  }
+
+  /* ---- The phone bar ------------------------------------------------
+     Reads: brand, part number, then the two controls hard right with the
+     menu outermost. The 860px block hides the subject and keeps the pill;
+     this reverses both — the part number is what the page is ABOUT and
+     belongs on the bar, and the pill's destination has moved into the
+     menu with the other two links rather than sitting beside it. */
+  .sitebar__page { display: none; }
+  .sitebar__subject {
+    display: inline;
+    font-size: .7rem;
+    white-space: nowrap;
+  }
+  .sitenav { display: none; }
+
+  /* Right to left: menu outermost, GitHub inside it. The markup has the
+     button first so it is the panel's immediate sibling; `order` puts them
+     on screen the other way round rather than trading that off. */
+  /* The slack sits on the FIRST of the two controls, not on the subject.
+     Putting it on the subject worked until the subject was hidden below
+     340, where the auto margin went with it and the whole row packed left —
+     the menu ended up 66px short of the corner. An auto margin has to live
+     on something that is always there. */
+  .ghlink     { order: 1; flex: none; margin-left: auto; }
+  .nav-toggle { order: 2; flex: none; }
+
+  /* The bar's budget is tight and mostly fixed: two 44px targets cannot be
+     traded away, so 88px of it belongs to the controls before any type is
+     placed. At 360 the full-size brand and part number overran the padding
+     and the menu ended up flush against the screen edge. The type steps
+     down; the targets do not. */
+  @media (max-width: 400px) {
+    .sitebar__inner { gap: .35rem; }
+    .wordmark { font-size: .72rem; gap: .4rem; }
+    .wordmark img { width: 20px; height: 20px; }
+    .sitebar__subject { font-size: .62rem; }
+  }
+
+  /* Below this nothing shrinks far enough to hold both strings AND the two
+     controls at a size worth reading. The part number goes and the brand
+     stays: which site this is outranks which part it is showing, and the
+     part number is still named in the About panel. */
+  @media (max-width: 340px) {
+    .sitebar__subject { display: none; }
+  }
+
+  /* The hamburger appears and the inline links collapse into the drawer,
+     the same swap main.css makes at this width. 44px in px, not the 2.6rem
+     base: the root font-size floors at 13px on a phone, which would render
+     that box at 34. Straight from styles/mobile.css. */
+  .nav-toggle {
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    touch-action: manipulation;
+  }
+  /* Open, the bars fold into an X. main.js sets aria-expanded on this button
+     when the drawer comes out, so the state is already published — this only
+     draws it. */
+  .nav-toggle[aria-expanded="true"] .nav-toggle__bars { background: transparent; }
+  .nav-toggle[aria-expanded="true"] .nav-toggle__bars::before {
+    transform: translateY(0) rotate(45deg);
+  }
+  .nav-toggle[aria-expanded="true"] .nav-toggle__bars::after {
+    transform: translateY(-2px) rotate(-45deg);
   }
 
   /* ---- The bottom stack --------------------------------------------
-     The four offsets above are a derived chain, each clearing the row
-     beneath it, and that reasoning still holds — the home indicator just
-     adds a new floor under the whole stack. Adding the inset to every
-     member preserves the spacing between them exactly; without it the
-     credit line sits under the indicator, where it cannot be tapped and
-     the toggle beside it is unreachable. */
-  #credit  { bottom: calc(.5rem  + env(safe-area-inset-bottom)); }
-  #nav     { bottom: calc(2.4rem + env(safe-area-inset-bottom)); }
-  #hint    { bottom: calc(6.1rem + env(safe-area-inset-bottom)); }
-  #caption { bottom: calc(9.6rem + env(safe-area-inset-bottom)); }
+     Four rows became two. The chain of derived offsets each clearing the
+     row beneath it was correct and still cost too much: measured at
+     390x844 it took 28% of the screen at stop 1 and 51% at stop 7, so on
+     the stops with the most to say the die had less room than the words
+     about it.
 
-  /* The caption is the page's actual content and shares the bar's inset
-     so its left edge lines up with the wordmark above it. */
+     Now the nav and the credit SHARE the bottom row — they are a centred
+     control and a right-aligned one, so they never contended for the same
+     space, only for the same stack — and the hint moves to the top, under
+     the bar. It is an instruction rather than content, it retires for good
+     once a sheet has been opened, and it was holding a permanent row open
+     at the bottom for a line that is transient.
+
+     The home indicator is still a floor under everything on the bottom
+     row, so both members carry the inset. */
+  /* One baseline for all three. The nav's buttons are 46px against the
+     credit's 44, so equal `bottom` values are what puts their bottom edges
+     on the same line — matching the taller one's offset would sit it 2px
+     low against its neighbours. */
+  #credit  { bottom: calc(.75rem + env(safe-area-inset-bottom)); }
+  #nav     { bottom: calc(.75rem + env(safe-area-inset-bottom)); }
+
+  /* Everything sits on ONE row: stage block, back, forward, credit. The
+     caption shares the buttons' baseline rather than standing above them,
+     so its bottom offset is now theirs. It is taller than they are and
+     grows upward, which is what puts the stage number over the title with
+     the title's last line level with the arrows. */
+  #caption { bottom: calc(.75rem + env(safe-area-inset-bottom)); }
+
+  /* Above the die instead of below it. `bottom: auto` is required — the
+     base rule sets a bottom, and a top alone would not displace it. */
+  #hint {
+    top: calc(5.2rem + env(safe-area-inset-top));
+    bottom: auto;
+  }
+
+  /* The arrows leave the centre. The row reads stage block, back, forward,
+     credit from the left, so the nav is anchored off the credit's corner
+     rather than off the middle of the screen — that keeps the gap between
+     the arrows and the ⓘ constant while the space the stage block gets
+     absorbs the difference between one screen width and another.
+
+     The base rule centres with left: 50% and a translate, so BOTH have to
+     be unset; a right alone would lose to the left already there. */
+  #nav {
+    left: auto;
+    transform: none;
+    right: calc(var(--edge) + var(--info-w) + var(--row-gap));
+  }
+
+  /* ---- The nav has to clear the corner ------------------------------
+     The credit chip claims the bottom-right, and the nav is centred, so
+     the two collide once the nav gets wide enough. It does exactly once:
+     at stop 7 the forward pill is swapped for the "Start Building" CTA,
+     which is sized by its label. Measured overlap at that stop: -4px at
+     390 wide and -18px at 360. Every other stop clears easily, which is
+     why this was invisible until the last screen.
+
+     Both halves give something up. --nav-btn-w is the shared width that
+     keeps the two buttons from drifting apart; 7.5rem was set when the
+     forward button still read "Descend" and is a lot of pill for a back
+     arrow on a phone. The CTA keeps its weight and loses a little size.
+
+     Sized so the nav's half-width plus the chip and its insets fits the
+     narrowest phone in circulation, not just the one being tested on. */
+  :root { --nav-btn-w: 4.6rem; }
+  .nav-cta {
+    padding: 0 .85rem 0 1rem;
+    gap: .4rem;
+    font-size: .85rem;
+  }
+
+  /* 320 is still a shipping width — the small iPhone SE and a long tail of
+     budget Androids — and it is the one that does not clear: the nav is
+     centred, so the room either side of it shrinks at half the rate the
+     screen does, and the chip's corner does not move. One more step down
+     for the CTA and the back pill closes it. Nested rather than widened,
+     because at 360 and up the larger sizes fit and are the better read. */
+  @media (max-width: 360px) {
+    :root { --nav-btn-w: 3.9rem; }
+    .nav-cta {
+      padding: 0 .7rem 0 .8rem;
+      font-size: .78rem;
+    }
+  }
+
+  /* CLOSED the caption is the row's first cell, so it may only have the
+     room the buttons leave it. That room is not a constant: at stop 7 the
+     forward arrow is replaced by the "Start Building" CTA, which is sized
+     by its label, and the nav grows by ~70px. A percentage tuned to the
+     other six stops overlaps at that one.
+
+     So it is measured. scene.js keeps --cap-room on :root from the nav's
+     real left edge, via a ResizeObserver on the nav, and the fallback is
+     the conservative case rather than the common one — if the property
+     never arrives, a narrow caption is a worse-looking correct layout, and
+     a wide one is a broken one.
+
+     OPEN it stops being a cell and becomes a panel across the full width,
+     above the row. That is the only way the body gets a readable measure
+     on a phone, and it costs nothing: the buttons are below it, and the
+     block grows upward from a pinned bottom edge. */
   #caption {
     left: max(1.15rem, env(safe-area-inset-left));
+    /* `right` stays auto in BOTH states and the width is carried entirely by
+       max-width, because `right: auto -> 12px` and `max-width: none` are not
+       animatable — they snap. That snap was most of what read as rigid: the
+       block jumped to full width on the first frame while only its height
+       eased. Two lengths interpolate, so the box now widens as it rises. */
+    right: auto;
+    max-width: var(--cap-room, 38%);
+    transition: max-width .52s var(--cap-ease),
+                bottom    .52s var(--cap-ease);
   }
+  /* Opening lifts the whole block clear of the buttons. Sharing their
+     baseline is right for the closed row, where the block is a cell beside
+     them; it is wrong the moment it becomes a panel, because the panel
+     grows from that same pinned bottom edge.
+
+     6.1rem, not 4.6. The panel's hairline is drawn by ::before, which is
+     inset .9rem BELOW the caption's own box, so the line paints ~14px lower
+     than the element measures — a clearance that reads as 12px in the DOM
+     was 2px of overlap on screen. The offset has to clear the button row
+     plus the scrim's own overhang, not just the box.
+
+     Declared AFTER .cap-cramped, and it has to be: `#caption.cap-open` and
+     `.cap-cramped #caption` are both one id and one class, so nothing but
+     source order separates them, and open must win when both apply. */
+
+  /* The measured fallback: when the buttons leave the first cell less than a
+     readable measure, the stage block takes its own line above them instead
+     of being squeezed into the row. Same block, one row higher. In practice
+     this is stop 7, where the forward arrow becomes "Start Building". */
+  .cap-cramped #caption {
+    max-width: var(--cap-full);
+    bottom: calc(4.6rem + env(safe-area-inset-bottom));
+  }
+
+  #caption.cap-open {
+    max-width: var(--cap-full);
+    bottom: calc(6.1rem + env(safe-area-inset-bottom));
+  }
+
+  /* Two lines of title, so a long one cannot push the block up the screen
+     from inside the narrow column. Nothing is lost: the full title is one
+     of seven fixed strings and the longest is "The Floorplan Beneath". */
+  #caption h2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+  #caption.cap-open h2 { -webkit-line-clamp: 999; }
+
+  /* ---- The caption is two states ------------------------------------
+     Closed, the bottom-left carries the stage number and the stage title
+     and nothing else. Opening raises that pair and the body appears
+     underneath it.
+
+     The rise is free: the block is anchored by its BOTTOM, so a body that
+     grows from zero height displaces the title upward on its own. There is
+     no second animation to keep in step with the first, and nothing has to
+     know how tall the text is going to be.
+
+     `pointer-events` is re-enabled because the base rule turns it off for
+     the whole caption so clicks reach the die behind it — right at every
+     width where the caption is not itself a control. */
+  #caption    { pointer-events: auto; }
+  /* Sized for the narrow column it now lives in, not for the full width it
+     used to have. It goes back up when the caption opens and takes the
+     whole width, where a 1rem heading over a full-measure paragraph would
+     stop reading as a heading at all. */
+  /* The heading grows as the block opens rather than at the first frame.
+     font-size interpolates, so this costs one property; left alone it was a
+     step change landing on top of a 0.52s move, which reads as the text
+     having been replaced rather than having grown. */
+  #caption h2 {
+    font-size: 1.02rem; line-height: 1.18; margin-bottom: 0;
+    transition: font-size .52s var(--cap-ease);
+  }
+  #caption.cap-open h2 { font-size: 1.3rem; line-height: 1.16; }
+  .cap-index { margin-bottom: .25rem; font-size: .66rem; }
+
+  /* The two states. max-height rather than height, because the natural
+     height is unknown and differs per stage; the value is a ceiling the
+     text is allowed to grow into, not a size it is set to.
+
+     THE CEILING IS WHAT KEEPS IT OFF THE BUTTONS. The block cannot grow
+     downward — its bottom edge is pinned above the nav row — so the only
+     thing it can collide with is the top bar, and 42vh cannot reach it
+     from here. Anything longer scrolls inside the paragraph. */
+  /* A grid row from 0fr to 1fr, not a max-height from 0 to a ceiling.
+
+     max-height was the rigid part. The ceiling has to be a guess large
+     enough for the longest stage, so on every shorter one the transition
+     spends its first frames covering distance the text does not occupy and
+     arrives early — the copy appears to snap in and then the animation is
+     simply over. 1fr resolves to the content's OWN height, so the easing
+     curve is the height the reader actually sees, and every stage takes the
+     same time regardless of how much it has to say.
+
+     min-height: 0 on the paragraph is the part that is easy to miss: a grid
+     item's automatic minimum size is its content, which pins the row open
+     and defeats the whole thing. */
+  .cap-reveal {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows .52s var(--cap-ease),
+                margin-top        .52s var(--cap-ease),
+                opacity           .3s  ease;
+    margin-top: 0;
+  }
+  #cap-body {
+    min-height: 0;
+    overflow: hidden;
+    font-size: .84rem;
+    line-height: 1.5;
+    max-width: none;
+    /* No scrollbar, ever. It appeared for the length of the reveal: the
+       open state turns on overflow-y the instant the class lands, while the
+       grid row is still at 0, so the text overflows a box that is opening
+       under it and Chromium draws a bar for the whole 0.52s.
+
+       Suppressing the bar rather than delaying overflow, because the delay
+       needs a transitionend listener and this needs none, and because the
+       ceiling it belongs to is essentially never reached: the longest stage
+       measures 284px against a 42vh cap of 354. The bar was only ever a
+       transition artefact of a box that could not overflow once settled. */
+    scrollbar-width: none;
+  }
+  #cap-body::-webkit-scrollbar { width: 0; height: 0; }
+  #caption.cap-open .cap-reveal {
+    grid-template-rows: 1fr;
+    margin-top: .55rem;
+    opacity: 1;
+  }
+  /* The ceiling survives, moved onto the paragraph, where it now only ever
+     caps a stage long enough to need it rather than shaping the animation
+     for all of them. */
+  #caption.cap-open #cap-body {
+    max-height: 42vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Open, the caption stops being a line of type over the scene and becomes
+     a surface. The base scrim is a soft radial wash, which is enough behind
+     a title and nowhere near enough behind eight lines of body copy sitting
+     on a fully lit die — measured on the core stop, the paragraph ran over
+     pale blue metal at roughly the same value as the text.
+
+     Only in the open state: closed, the wash is right and a hard-edged
+     panel under two lines would read as a card that had appeared for no
+     reason. */
+  /* The surface fades up with the move.
+
+     The panel's hairline is an INSET BOX-SHADOW, not a border. A transparent
+     1px border was the obvious way to keep the edge from resizing
+     mid-transition, and it drew a faint dark seam across the die: the closed
+     scrim is a very large box carrying a soft radial gradient, and giving it
+     a border makes the browser paint that gradient out to a border-box edge
+     it was fading well short of. Bisected — removing the radius changed
+     nothing, removing the border removed the line.
+
+     A box-shadow is never part of the box. It cannot resize anything, it
+     costs no layout, and it animates from transparent the same way. */
+  #caption::before {
+    border-radius: 16px;
+    box-shadow: inset 0 0 0 1px transparent;
+    transition: inset .52s var(--cap-ease),
+                background .42s ease,
+                box-shadow .42s ease;
+  }
+  #caption.cap-open::before {
+    inset: -.85rem -.9rem -.9rem -.9rem;
+    border-radius: 16px;
+    background: linear-gradient(to top,
+                color-mix(in srgb, var(--void) 94%, transparent),
+                color-mix(in srgb, var(--void) 82%, transparent));
+    box-shadow: inset 0 0 0 1px var(--line);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  /* ---- The toggle ---------------------------------------------------
+     Sits on the index line, after "01 / 07", so the closed state reads as
+     one row: number, rule, control. Labelled rather than a bare chevron —
+     at this size an unlabelled caret beside a title is as likely to be
+     read as decoration as as a control, and the label is two words. */
+  .cap-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    margin-left: .2rem;
+    padding: 0 .4rem;
+    /* 44 on BOTH axes. Icon-only it measured 26 wide, which passes the eye
+       and fails a thumb; the label states re-widen past this on their own,
+       so it is a floor rather than a size. */
+    min-width: 44px;
+    justify-content: center;
+    /* px, not rem: this is a target for a thumb and the root font-size
+       clamps down on a phone.
+
+       The negative block margins are what let a 44px target sit on an 18px
+       line without becoming an 18px line that is 44px tall. The button
+       keeps its full height for the thumb and contributes the row's own
+       height to the layout, so the stage number stays directly above the
+       stage title with nothing wedged between them. */
+    height: 44px;
+    margin-block: -13px;
+    font-family: var(--font-mono);
+    font-size: .6rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent-lit);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  /* The label is on in both states, so the closed control reads "READ MORE ⌃"
+     the way the open one reads "CLOSE ⌄".
+
+     It was hidden in the row layout because the words wrapped inside a ~142px
+     cell, and the wrap landed between the stage number and the title — the
+     one pairing this row exists to keep together. `nowrap` is what makes
+     keeping it safe: the line can no longer break, so the only thing that can
+     go wrong is the row being too narrow, and that already has an answer in
+     .cap-cramped. The type is a step down from the open state's to buy the
+     room back. */
+  .cap-index { white-space: nowrap; }
+  .cap-toggle {
+    font-size: .55rem;
+    letter-spacing: .08em;
+    gap: .25rem;
+    padding: 0 .35rem;
+  }
+  #caption.cap-open .cap-toggle { font-size: .6rem; letter-spacing: .12em; }
+  .cap-toggle svg {
+    width: 13px; height: 13px;
+    fill: none; stroke: currentColor; stroke-width: 2.4;
+    stroke-linecap: round; stroke-linejoin: round;
+    transition: transform .4s cubic-bezier(.2,.7,.3,1);
+  }
+  /* The chevron points up while closed, because up is what pressing it
+     does. It turns over once the body is open and the press would put it
+     back. */
+  #caption.cap-open .cap-toggle svg { transform: rotate(180deg); }
+
+  /* ---- The credit becomes a chip ------------------------------------
+     Hard into the corner and given a surface of its own. As bare muted
+     type it was the quietest thing on screen and sat in the one corner
+     nothing else claims, which is a poor combination for the control that
+     holds the die's provenance and the "these are approximations"
+     disclaimer.
+
+     "About this model" is ~150px of label and the nav occupies 141px to
+     249px on a 390px screen, so the label could not stay on this row. The
+     badge does the naming instead, at 44px with a lit glyph on a panel.
+
+     font-size: 0 on the button rather than a rule on the label, because
+     the label is a bare text node with no element of its own to hide. The
+     accessible name is unchanged — the text is still in the DOM. */
+  /* ---- The corner is fixed, and everything measures off it -----------
+     One set of numbers for the whole row. The arrows' offset is derived
+     from the ⓘ's, so the gap between them is a constant that cannot drift
+     when either value is retuned. */
+  :root {
+    --edge:     max(.75rem, env(safe-area-inset-right));
+    --info-w:   44px;
+    /* Wider than the .7rem it started at: at that distance the arrows read
+       as part of the same cluster as the ⓘ, and they are separate controls
+       doing unrelated jobs. */
+    --row-gap:  1.35rem;
+    /* The caption's open width: the viewport less both insets, as a LENGTH
+       rather than `none`, because only two lengths interpolate. */
+    --cap-full: calc(100vw - max(1.15rem, env(safe-area-inset-left))
+                           - max(1.15rem, env(safe-area-inset-right)));
+    /* One curve for every property in the disclosure, so nothing arrives
+       ahead of anything else. The site's own --ease. */
+    --cap-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  /* The ⓘ was NOT fixed to the corner, and the reason is three properties
+     this block never unset. At <=860px the credit is deliberately a
+     centred banner — `right: auto; left: 50%; transform: translateX(-50%);
+     width: 96vw` — from when it was a line of text under the nav. Setting
+     `right` alone does nothing against that: with left, width and right all
+     specified the box is over-constrained and CSS DISCARDS `right`.
+
+     So the button rode the right edge of a centred box capped at 26rem,
+     which put it at (viewport - min(96vw, 416)) / 2 from the corner — 6px
+     at 320, 9px at 430, 62px at 540. It slid with the screen because it
+     was never anchored to the corner at all.
+
+     Unsetting left, transform and width lets the box shrink-wrap the
+     button, and then `right` is the only thing positioning it. */
+  #credit {
+    left: auto;
+    transform: none;
+    width: auto;
+    right: var(--edge);
+    bottom: calc(.75rem + env(safe-area-inset-bottom));
+  }
+
+  /* The panel has to be re-anchored for the same reason. It is centred on
+     the credit's box by `right: 50%` and a translate, which put it in the
+     middle of the viewport while that box WAS the viewport. Against a
+     44px box it would hang off the right edge instead. Aligned to the
+     ⓘ's own right edge now, opening leftward across the screen. */
+  #credit-panel {
+    right: 0;
+    transform: none;
+    width: min(92vw, 30rem);
+  }
+  /* The badge keeps the look it has everywhere else: a ringed italic i in
+     the muted ink, no surface of its own. Only the label goes, and only
+     because "About this model" is ~150px that this row has nowhere to put.
+
+     font-size: 0 on the button rather than a rule on the label, because
+     the label is a bare text node with no element of its own to hide. That
+     collapses the badge too, since it is sized in em, so .credit-i has to
+     re-establish a font-size — its width, height, ring and italic all
+     derive from that one value and come straight from the base rule. The
+     accessible name is unchanged; the text is still in the DOM. */
+  .credit-toggle {
+    font-size: 0;
+    gap: 0;
+    padding: 0;
+    width: 44px;
+    height: 44px;
+    justify-content: center;
+  }
+  .credit-i { font-size: .84rem; }
 
   /* Press feedback on the two controls that carry the whole page. The
      scene is driven entirely by these, so they should acknowledge a

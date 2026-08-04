@@ -3636,6 +3636,8 @@ const capEl = document.getElementById('caption');
 const capNum = document.getElementById('cap-num');
 const capTitle = document.getElementById('cap-title');
 const capBody = document.getElementById('cap-body');
+const capToggle = document.getElementById('cap-toggle');
+const capToggleLabel = capToggle.querySelector('.cap-toggle-label');
 document.querySelector('.cap-of').textContent =
   `/ ${String(STAGES.length).padStart(2, '0')}`;
 
@@ -3662,7 +3664,78 @@ function updateCaption(t) {
   void capEl.offsetWidth;             // reflow, so the animation restarts
   capEl.classList.add('swap');
   tickEls.forEach((el, i) => el.classList.toggle('on', i === s));
+  /* A new stage closes the body again. Otherwise one press on a long stop
+     would leave every stop after it open, and the point of the closed state
+     is that arriving at a stage shows the die rather than a wall of text. */
+  setCaptionOpen(false);
 }
+
+/* --- the caption's phone disclosure -----------------------------------
+   On a phone the caption is two states: number and title alone, or those
+   raised with the body underneath. The CSS does the motion — the body's
+   max-height carries it, and the block is bottom-anchored so the title rises
+   on its own — and this does nothing but hold the state.
+
+   `capBody.scrollTop = 0` on close. The body scrolls internally once it is
+   past the 42vh ceiling, and a stage left scrolled halfway down reopens
+   mid-sentence on the next stop that happens to be long.
+
+   Desktop never calls this with `true`: the button is display:none there, so
+   there is no control to press, and the class it would add has no rules
+   outside the phone block. */
+function setCaptionOpen(open) {
+  capEl.classList.toggle('cap-open', open);
+  capToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  capToggleLabel.textContent = open ? 'Close' : 'Read more';
+  if (!open) capBody.scrollTop = 0;
+}
+
+capToggle.addEventListener('click', (e) => {
+  e.stopPropagation();          // the caption sits over pickable die
+  setCaptionOpen(!capEl.classList.contains('cap-open'));
+});
+
+/* --- how much room the stage block gets -------------------------------
+   On a phone the bottom row is stage block, back, forward, credit, and the
+   first cell may only have what the rest leave it. That is not a constant:
+   at stop 7 the forward arrow is swapped for the "Start Building" CTA, which
+   is sized by its label, and the nav grows by about 70px. A percentage tuned
+   on the other six stops overlaps on that one.
+
+   So it is measured off the nav's real left edge and published as --cap-room,
+   which the phone block reads. A ResizeObserver rather than a call at each
+   stage change: the nav's width changes for reasons the stage index does not
+   describe — the CTA swap, a font landing late, an orientation change — and
+   the observer catches all of them without a list.
+
+   Written on :root and consumed only inside the phone media query, so at
+   desktop widths the property is set and nothing reads it. */
+const capNav = document.getElementById('nav');
+/* CAP_GAP, not GAP. `GAP` is already a module-level const up at the region
+   geometry — the die's own cores-to-L3 hairline in world units — and
+   redeclaring it is a SyntaxError that takes the entire scene down, not a
+   shadowed variable. The page rendered black with `window.__die` undefined. */
+const CAP_GAP = 10;
+
+function publishCapRoom() {
+  const navLeft = capNav.getBoundingClientRect().left;
+  const inset = parseFloat(getComputedStyle(capEl).left) || 0;
+  const room = Math.max(0, Math.round(navLeft - inset - CAP_GAP));
+  document.documentElement.style.setProperty('--cap-room', room + 'px');
+  /* Below a readable measure the row stops being worth holding. At stop 7 the
+     CTA leaves 72px at 390 and 26px at 320, and a two-line title in 26px is a
+     column of broken words — the layout would be intact and the content
+     illegible. The class moves the stage block onto its own line above the
+     buttons, which is the same block, unsqueezed, one row higher.
+
+     120px is where "The Floorplan Beneath" stops fitting in two lines at this
+     size, i.e. measured from the longest string it has to hold, not picked. */
+  document.documentElement.classList.toggle('cap-cramped', room < 120);
+}
+
+new ResizeObserver(publishCapRoom).observe(capNav);
+addEventListener('resize', publishCapRoom);
+publishCapRoom();
 
 /* --- the block sheet -------------------------------------------------
    Clicking a block STOPS the descent and opens a sheet: the block's name and
@@ -4906,6 +4979,36 @@ let drift = !reduceMotion;
 let vclock = null;
 const now = () => (vclock === null ? performance.now() : vclock);
 
+/* ---- Narrow-viewport fit -------------------------------------------------
+   `fov` in three.js is the VERTICAL field of view, so the horizontal spread a
+   camera key produces is a function of the viewport's aspect and nothing else
+   compensates for it. Measured: 52.1 degrees across at 1440x900, and 16.1 at
+   390x844. A phone therefore saw under a third of the width the keys were
+   composed against, which cropped the outer cores off the floorplan while
+   leaving a band of empty space above the die -- starved on the axis that
+   carries the subject, over-covered on the one that does not.
+
+   The fix pulls the camera back along its own view ray rather than widening
+   the lens. Matching the desktop width exactly would need a ~100 degree fov,
+   which bends the die visibly at the frame edges, or a 3.5x pull, which leaves
+   the subject stranded in the middle of a tall frame. A capped pull keeps the
+   34 degree lens and every composed key exactly as authored -- this is a
+   post-transform on the sampled position, not an edit to the stop model.
+
+   REF is 1.2 deliberately, BELOW every real desktop and laptop aspect (a
+   1280x800 or 1440x900 laptop is 1.6, a 1080p window 1.78). So k is exactly 1
+   at every width the desktop layout is checked at, and the adaptation cannot
+   move a pixel there. It is continuous downward from 1.2, so a window being
+   dragged narrow eases into it instead of popping. */
+const FIT_REF_ASPECT = 1.2;
+const FIT_MAX_PULL   = 2.2;
+
+function fitPull() {
+  const a = camera.aspect;
+  if (a >= FIT_REF_ASPECT) return 1;
+  return Math.min(FIT_MAX_PULL, FIT_REF_ASPECT / a);
+}
+
 function resize() {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
@@ -5008,6 +5111,11 @@ function frame() {
 
   const fov = sampleCamera(t);
   camera.position.copy(_p);
+  /* Back off along the view ray on a narrow viewport, before drift, so drift's
+     amplitude still scales with the distance actually being flown. k is 1 at
+     every desktop aspect — see fitPull. */
+  const pull = fitPull();
+  if (pull !== 1) camera.position.sub(_l).multiplyScalar(pull).add(_l);
   /* A slow drift on top of the keyframed path, so no shot is ever completely
      dead. The amplitude scales with how far the camera stands from its subject,
      which keeps the apparent movement the same whether we are 60 units off a
