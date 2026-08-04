@@ -1482,10 +1482,20 @@ note, which `.has-video` hides once there is something to play. Wired so far:
 
 | slug | block | length | size |
 |---|---|---|---|
-| `zen5-core` | Zen 5 Core | 1:55 | 23 MB |
-| `instruction-fetch` | Instruction Fetch and Decode | 2:03 | 25 MB |
+| `zen5-core` | Zen 5 Core | 1:53 | 22 MB |
+| `instruction-fetch` | Instruction Fetch and Decode | 2:00 | 25 MB |
 | `scheduling` | Scheduler | 1:47 | 14 MB |
 | `load-store` | Load / Store | 2:10 | 16 MB |
+
+All four are cut for fillers, half the hesitations out of each — except
+`scheduling`, which had none. `tools/cut-fillers.py` does it: it finds them,
+picks the longest half, decides hard cut against dissolve by measurement, and
+re-encodes. Run it with `--plan` first and read what it intends to remove.
+
+`load-store` also lost two "essentially"s, which are words and not hesitations,
+so no detector will find them. Its exact edit is kept as
+`tools/cut-ls-explainer.sh` — that file, not the tool, is what reproduces the
+clip that shipped.
 
 **Where the files live.** Masters in `video-masters/` at the repo root, never
 committed, ~200 MB each. Web encodes under `assets/video/`, tracked, because they
@@ -1505,15 +1515,19 @@ means tone-map, `bt709` means it is already SDR and the chain can be dropped.
 The `format=gbrpf32le` step is not optional — tone-mapping in integer space bands
 the gradients.
 
-**Cutting words out of a take.** `load-store` is the first of these that is not
-the whole master: six excisions, two "essentially"s and the four longest of its
-eight "um"s. Trim and splice in the same pass as the encode, `trim` → splice →
-tone-map, so the expensive HLG chain runs once over the joined timeline rather
-than once per piece. Two things fail if you skip them: every audio branch needs
-an explicit `aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo`
-or `acrossfade` dies with "Error reinitializing filters", and both `xfade` inputs
+**Cutting words out of a take.** None of these is the whole master any more.
+Trim and splice in the same pass as the encode, `trim` → splice → tone-map, so
+the expensive HLG chain runs once over the joined timeline rather than once per
+piece. Two things fail if you skip them: every audio branch needs an explicit
+`aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo` or
+`acrossfade` dies with "Error reinitializing filters", and both `xfade` inputs
 need `settb=1/30`, because `concat` hands on a 1/1000000 timebase and `fps=30`
 hands on 1/30.
+
+A hesitation glued onto the next word is **left alone**. `cut-fillers.py` only
+removes a run that transcribes as nothing but the filler, because a run reading
+"um and we" cannot be cut without taking the words with it. Expect a few
+survivors for that reason, and do not read them as the detector having missed.
 
 Aim the cut at the audio, not at a transcript. Whisper's word boundaries drift by
 up to half a second on these takes, **and it deletes "um" and "uh" from its

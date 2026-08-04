@@ -179,4 +179,5 @@ no clone had.
 | `tools/mobile-audit.py` | Walks the DOM at four device profiles and reports every element wider than the viewport, by name. Finds what screenshots cannot. |
 | `tools/desktop-unchanged.py` | **The gate for any phone work.** Measures every element with `mobile.css` enabled, disables it in the same page load, measures again. Any difference at 1280/1600 is a regression. |
 | `tools/tap-targets.py` | Lists every tappable control under 44px, skipping the ones that are inert by design. |
+| `tools/cut-fillers.py` | Finds the "um"s in a sheet-video master, cuts the longest half, re-encodes to the site's spec. `--plan` first, always. Whisper deletes fillers from its output, so they are found in the waveform and named run by run. |
 | `meet-the-processor/verify/` | Python checks for the 3D scene: affordance behaviour, stop composition, region coverage. Run these after editing `scene.js`. |
