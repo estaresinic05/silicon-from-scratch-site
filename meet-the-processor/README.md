@@ -1484,6 +1484,8 @@ note, which `.has-video` hides once there is something to play. Wired so far:
 |---|---|---|---|
 | `zen5-core` | Zen 5 Core | 1:55 | 23 MB |
 | `instruction-fetch` | Instruction Fetch and Decode | 2:03 | 25 MB |
+| `scheduling` | Scheduler | 1:47 | 14 MB |
+| `load-store` | Load / Store | 2:10 | 16 MB |
 
 **Where the files live.** Masters in `video-masters/` at the repo root, never
 committed, ~200 MB each. Web encodes under `assets/video/`, tracked, because they
@@ -1502,6 +1504,34 @@ Run `ffprobe` first and check `color_transfer`: `arib-std-b67` or `smpte2084`
 means tone-map, `bt709` means it is already SDR and the chain can be dropped.
 The `format=gbrpf32le` step is not optional — tone-mapping in integer space bands
 the gradients.
+
+**Cutting words out of a take.** `load-store` is the first of these that is not
+the whole master: six excisions, two "essentially"s and the four longest of its
+eight "um"s. Trim and splice in the same pass as the encode, `trim` → splice →
+tone-map, so the expensive HLG chain runs once over the joined timeline rather
+than once per piece. Two things fail if you skip them: every audio branch needs
+an explicit `aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo`
+or `acrossfade` dies with "Error reinitializing filters", and both `xfade` inputs
+need `settb=1/30`, because `concat` hands on a 1/1000000 timebase and `fps=30`
+hands on 1/30.
+
+Aim the cut at the audio, not at a transcript. Whisper's word boundaries drift by
+up to half a second on these takes, **and it deletes "um" and "uh" from its
+output entirely**, even when asked for a verbatim read with a disfluent
+`initial_prompt`. Hesitations therefore have to be found in the waveform: collapse
+it into speech and silence runs, and the ones no transcribed word overlaps are
+the candidates. Name each candidate by transcribing that run **on its own** —
+whisper's text is reliable where its timings are not — and put the splice inside
+a silence so no consonant is clipped. Re-transcribe the finished file afterwards
+and check both the count and the words either side.
+
+**Hard cut or dissolve is a measurement, not a judgement.** Extract the frame
+that would play last before the cut and the one that would play first after it,
+and take the mean absolute difference. On this take a still pose scored 0.9 to
+2.7 and cut cleanly; 6.7 was a shift in the chair and 11.4 was a hand coming up
+to his face, and both of those needed a 0.16–0.20s dissolve. A dissolve also has
+to *fit*: it eats that long from the silence on each side, so a splice with 0.10s
+of silence before it can only ever be a hard cut.
 
 **720p is not a compromise here, it is the measurement.** The player renders
 1268 × 714 device pixels on a 1440 laptop at DPR 2 and 1053 × 591 on a phone at
