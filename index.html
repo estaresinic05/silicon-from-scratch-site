@@ -47,16 +47,32 @@
   <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="assets/home/logo-symbol-light.png" />
   <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="assets/home/logo-symbol.png" />
 
-  <!-- Site name for search engines. Google/Bing derive the "site name" shown in
-       results from WebSite structured data on the homepage; without it they fall
-       back to the bare domain. This pins it to "Silicon From Scratch". -->
+  <!-- Site name and logo for search engines. Google/Bing derive the "site name"
+       shown in results from WebSite structured data on the homepage; without it
+       they fall back to the bare domain. This pins it to "Silicon From Scratch".
+
+       The publisher block names the logo. Open Graph above already covers the
+       card a link preview draws, but a crawler does not read og:image as a brand
+       mark — Organization.logo is the field it looks in, and it is only honoured
+       on the homepage, which is why it lives here and not in the shared head. -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Silicon From Scratch",
     "alternateName": "siliconfromscratch.com",
-    "url": "https://siliconfromscratch.com/"
+    "url": "https://siliconfromscratch.com/",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Silicon From Scratch",
+      "url": "https://siliconfromscratch.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://siliconfromscratch.com/assets/home/logo.jpg",
+        "width": 1408,
+        "height": 768
+      }
+    }
   }
   </script>
 
