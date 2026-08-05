@@ -342,56 +342,6 @@
         <li class="bp-step bp-step--left">
           <span class="bp-frame" aria-hidden="true">
             <svg class="bp-svg" viewBox="0 0 100 64">
-              <!-- a cluster of three gates, each with input/output wires -->
-              <!-- NOT (top-left) -->
-              <path d="M16 10 L16 28 L32 19 Z"/>
-              <circle cx="35" cy="19" r="2.3"/>
-              <path d="M9 19 H16 M37.3 19 H44"/>
-              <!-- OR (top-right, nudged right): concave back, edges meeting at a point -->
-              <path d="M56 9 Q66 19 56 29 Q74 27 84 19 Q74 11 56 9 Z"/>
-              <path d="M50 14 H57 M50 24 H57 M84 19 H92"/>
-              <!-- NAND (bottom-center) -->
-              <path d="M34 38 L42 38 A11 11 0 0 1 42 60 L34 60 Z"/>
-              <circle cx="55.5" cy="49" r="2.3"/>
-              <path d="M27 43 H34 M27 55 H34 M57.8 49 H66"/>
-            </svg>
-          </span>
-          <div class="bp-copy">
-            <h3 class="bp-title">Logic Gates</h3>
-            <p class="bp-desc">The building blocks behind even the most complex
-              computing systems. Learn the basics.</p>
-          </div>
-        </li>
-
-        <li class="bp-arrow" aria-hidden="true">
-          <span class="bp-arrow__glyph">&darr;</span>
-        </li>
-
-        <li class="bp-step bp-step--right">
-          <span class="bp-frame" aria-hidden="true">
-            <svg class="bp-svg" viewBox="0 0 100 64">
-              <rect x="30" y="14" width="40" height="36" rx="3"/>
-              <text class="bp-txt" x="50" y="36">FA</text>
-              <path d="M18 24 H30 M18 40 H30"/>   <!-- a, b -->
-              <path d="M50 4 V14"/>               <!-- carry in -->
-              <path d="M70 32 H84"/>              <!-- sum -->
-              <path d="M50 50 V60"/>              <!-- carry out -->
-            </svg>
-          </span>
-          <div class="bp-copy">
-            <h3 class="bp-title">Full Adder</h3>
-            <p class="bp-desc">Chain a few gates together and you can add two bits and
-              carry the result — the first real arithmetic in hardware.</p>
-          </div>
-        </li>
-
-        <li class="bp-arrow" aria-hidden="true">
-          <span class="bp-arrow__glyph">&darr;</span>
-        </li>
-
-        <li class="bp-step bp-step--left">
-          <span class="bp-frame" aria-hidden="true">
-            <svg class="bp-svg" viewBox="0 0 100 64">
               <!-- classic notched ALU trapezoid (narrower, no top control line) -->
               <path d="M34 10 L66 22 L66 42 L34 54 L34 38 L44 32 L34 26 Z"/>
               <text class="bp-txt bp-txt--xs" x="54" y="37">ALU</text>
@@ -439,19 +389,15 @@
         <li class="bp-step bp-step--left">
           <span class="bp-frame" aria-hidden="true">
             <svg class="bp-svg" viewBox="0 0 100 64">
-              <!-- IEEE-754 fields: sign | exponent | mantissa -->
-              <rect x="6"  y="22" width="12" height="16"/>
-              <rect x="18" y="22" width="24" height="16"/>
-              <rect x="42" y="22" width="52" height="16"/>
-              <text class="bp-txt bp-txt--sm" x="12" y="34">&#177;</text>
-              <text class="bp-lbl" x="30" y="50">exp</text>
-              <text class="bp-lbl" x="68" y="50">mantissa</text>
+              <!-- memory hierarchy: a pyramid split into three tiers -->
+              <path d="M50 6 L84 58 L16 58 Z"/>
+              <path d="M38.7 23.3 H61.3 M27.3 40.7 H72.7"/>
             </svg>
           </span>
           <div class="bp-copy">
-            <h3 class="bp-title">Floating Point Adder</h3>
-            <p class="bp-desc">Learn the basics of floating point numbers, how they're
-              stored, and how they're added together.</p>
+            <h3 class="bp-title">Memory Hierarchy</h3>
+            <p class="bp-desc">Learn the role memory plays in computing systems, from
+              caches to hard drives, and how the CPU interacts with them.</p>
           </div>
         </li>
 
@@ -489,25 +435,6 @@
         <li class="bp-step bp-step--left">
           <span class="bp-frame" aria-hidden="true">
             <svg class="bp-svg" viewBox="0 0 100 64">
-              <!-- memory hierarchy: a pyramid split into three tiers -->
-              <path d="M50 6 L84 58 L16 58 Z"/>
-              <path d="M38.7 23.3 H61.3 M27.3 40.7 H72.7"/>
-            </svg>
-          </span>
-          <div class="bp-copy">
-            <h3 class="bp-title">Memory Hierarchy</h3>
-            <p class="bp-desc">Learn the role memory plays in computing systems, from
-              caches to hard drives, and how the CPU interacts with them.</p>
-          </div>
-        </li>
-
-        <li class="bp-arrow" aria-hidden="true">
-          <span class="bp-arrow__glyph">&darr;</span>
-        </li>
-
-        <li class="bp-step bp-step--right">
-          <span class="bp-frame" aria-hidden="true">
-            <svg class="bp-svg" viewBox="0 0 100 64">
               <!-- die floorplan: outline + packed blocks + edge pins -->
               <rect x="22" y="8" width="56" height="48" rx="2"/>
               <rect x="28" y="14" width="20" height="13"/>
@@ -528,7 +455,7 @@
           <span class="bp-arrow__glyph">&darr;</span>
         </li>
 
-        <li class="bp-step bp-step--left">
+        <li class="bp-step bp-step--right">
           <span class="bp-frame" aria-hidden="true">
             <svg class="bp-svg" viewBox="0 0 100 64">
               <!-- timing: a clock face with two hands -->

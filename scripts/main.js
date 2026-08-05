@@ -156,8 +156,7 @@
         ["32-bit ALU Slice", "alu/alu-slice/"],
         ["Complete 32-bit ALU", "alu/complete-alu/"],
         ["Testing Your ALU", "alu/testing/"]
-      ]],
-      ["Multiplier & Divider", ["Coming Soon"]]
+      ]]
     ]],
     ["Intermediate", [
       ["Single Cycle CPU", [
@@ -167,7 +166,6 @@
         ["The Control Unit", "single-cycle-cpu/control-unit/"],
         ["Testing Your Single Cycle CPU", "single-cycle-cpu/testing/"]
       ]],
-      ["Floating Point Adder", ["Coming Soon"]],
       ["Memory Hierarchy", ["Coming Soon"]]
     ]],
     ["Advanced", [
