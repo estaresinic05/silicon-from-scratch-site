@@ -190,8 +190,17 @@ experience must remain fully usable.
 
 | Breakpoint | Changes |
 |---|---|
-| ≥ 861px | Full layout as above |
-| ≤ 860px | Spec strip hidden; caption full width above the hint, smaller type; rail shortened to 24vh; panel becomes a bottom sheet; labels 0.62rem |
+| ≥ 901px | Full layout as above |
+| ≤ 900px | Spec strip hidden; caption full width above the hint, smaller type; rail shortened to 24vh; panel becomes a bottom sheet; labels 0.62rem; the phone bar and bottom row at the foot of `style.css` |
+
+**900 is the site's mode line**, shared with `styles/mobile.css` even though this
+page shares none of its CSS. The page ran its own 768 and 860 until 2026-08-05,
+which made 769-860 a third rendering and moved the seam between this page and
+the rest of the site depending on which you were looking at.
+
+The nested `400` / `360` / `356` blocks are not breakpoints in that sense and did
+not move with it. They are measured content thresholds — the width at which a
+string stops fitting beside two 44px targets — set by `verify/bar-fit.py`.
 
 The 3D viewport always fills the screen. Never letterbox it.
 

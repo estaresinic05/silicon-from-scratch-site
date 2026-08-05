@@ -1486,8 +1486,39 @@ note, which `.has-video` hides once there is something to play. Wired so far:
 | `instruction-fetch` | Instruction Fetch and Decode | 2:00 | 25 MB |
 | `scheduling` | Scheduler | 1:47 | 14 MB |
 | `load-store` | Load / Store | 2:10 | 16 MB |
+| `integer-execution` | Integer Execution | 2:17 | 19 MB |
 
-All four are cut for fillers, half the hesitations out of each — except
+`integer-execution` is the only one assembled from more than one take:
+`ieu-explainer1/2/3.mov`, joined with a 0.5 s crossfade at each seam. The three
+are one continuous explanation recorded in three sittings, so the speech runs
+straight across both joins and take 2 restarts the sentence take 1 ended on,
+which leaves an `and` / `And` on either side of the first seam. The dissolve
+blends them into one word rather than hiding a repeat, which is the reason a
+crossfade is right here and a hard cut is not.
+
+It also carries two lifts inside take 1. The first, at 50.90 to 51.60, takes the
+"um" and the dead air after the laugh at "generation ... generation". **The laugh
+itself stays** — it was asked for, and a 0.37 s beat is left after it so he lands
+the joke rather than snapping to the next word. That splice is a 0.16 s dissolve
+rather than a hard cut because `cut-fillers.py`'s own frame-difference rule
+scores it 6.66 against a `JUMP_OK` of 4.0.
+
+The second, at 53.58 to 56.10, takes the repeated clause out of "the previous
+generation of AMD processors, the Zen 4, which had three address generation
+units". The sentence has already given the number, so it now lands on "the Zen 4"
+and comes back on "And, you know, we kind of saw a similar change". The in-point
+is forced: there is no silence between "four" and "which", so the splice sits on
+the decaying tail of "four" and takes a 0.08 s crossfade to keep that tail from
+stopping dead. Here the dissolve is not hiding a jump — the frame either side
+scores 1.94, well under `JUMP_OK` — it exists because `acrossfade` shortens the
+audio by its own length and the video has to lose the same length to stay in
+sync.
+
+**It has not otherwise been filler-cut** — `tools/cut-fillers.py` has not been run
+over it. `tools/cut-ieu-explainer.sh` is what reproduces the clip that shipped,
+the same arrangement as `cut-ls-explainer.sh`.
+
+The other four are cut for fillers, half the hesitations out of each — except
 `scheduling`, which had none. `tools/cut-fillers.py` does it: it finds them,
 picks the longest half, decides hard cut against dissolve by measurement, and
 re-encodes. Run it with `--plan` first and read what it intends to remove.

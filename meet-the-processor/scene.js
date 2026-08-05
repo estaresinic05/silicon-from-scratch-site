@@ -2881,6 +2881,7 @@ function cellLabel(text, w, h, x, z, lift, turn, scale) {
   m.position.set(x, 0, z);
   m.renderOrder = 224;
   m.userData.lift = lift;
+  m.userData.word = text;               // for __die.cellFrame
   fets.add(m);
   cellLabels.push(m);
   return m;
@@ -3890,7 +3891,7 @@ const SUBJECTS = {
    a slug is in here the media half shows "video coming soon" instead of a
    broken player. */
 const HAVE_VIDEO = new Set(['zen5-core', 'instruction-fetch', 'scheduling',
-                            'load-store']);
+                            'load-store', 'integer-execution']);
 
 /* Written, but deliberately NOT in SUBJECT_OF below, so nothing on screen opens
    them yet: only the twelve blocks that were asked for are wired up. The copy is
@@ -5003,10 +5004,48 @@ const now = () => (vclock === null ? performance.now() : vclock);
 const FIT_REF_ASPECT = 1.2;
 const FIT_MAX_PULL   = 2.2;
 
-function fitPull() {
+/* ...and how much of that pull each stop actually wants, because one factor
+   across the whole descent was wrong. The pull was tuned on stops 03 and 04,
+   where the subject is a wide flat die seen from outside and the narrow frame
+   was genuinely cutting it off. Stops 05 and 06 are not that shot at all: the
+   camera is INSIDE the metal stack and then down among the cell rows, with the
+   geometry wrapping past the frame edge on every side. Nothing there is being
+   cropped, so there is nothing for a pull to rescue, and backing out 2.2x does
+   the one thing an interior shot cannot survive — it leaves the room. Measured
+   at 390x844 it put the die's own edge and the empty background across the
+   lower half of stop 05, where the desktop shot is wall-to-wall copper.
+
+   Stop 07 sits between the two. The inverter is a real subject with an extent,
+   so it does need a pull, but only about half of one: at k=1 it spans roughly
+   120% of a 390px frame and is cropped, and at the full 2.2 it shrinks to half
+   the width and reads as a detail seen from across the room rather than the
+   thing the stop is about.
+
+   The weight is interpolated along the descent with the same smoothstep the
+   legs use, so a leg eases between two weights instead of the camera stepping
+   backwards the instant a stop is passed. Every entry here is a multiplier on
+   an adaptation that is already exactly 1 at desktop aspects, so none of this
+   can move a desktop pixel however it is tuned. */
+const FIT_W = [1, 1, 1, 1, 0, 0.5, 0.8];
+
+/* The weight in force at t, eased across each leg. */
+function fitWeight(t) {
+  if (t <= STOPS[0]) return FIT_W[0];
+  for (let i = 0; i < STOPS.length - 1; i++) {
+    if (t < STOPS[i + 1]) {
+      const u = (t - STOPS[i]) / (STOPS[i + 1] - STOPS[i]);
+      return THREE.MathUtils.lerp(FIT_W[i], FIT_W[i + 1], smoothstep(u));
+    }
+  }
+  return FIT_W[FIT_W.length - 1];
+}
+
+function fitPull(t) {
   const a = camera.aspect;
   if (a >= FIT_REF_ASPECT) return 1;
-  return Math.min(FIT_MAX_PULL, FIT_REF_ASPECT / a);
+  const w = fitWeight(t);
+  if (w <= 0) return 1;
+  return 1 + w * (Math.min(FIT_MAX_PULL, FIT_REF_ASPECT / a) - 1);
 }
 
 function resize() {
@@ -5114,7 +5153,7 @@ function frame() {
   /* Back off along the view ray on a narrow viewport, before drift, so drift's
      amplitude still scales with the distance actually being flown. k is 1 at
      every desktop aspect — see fitPull. */
-  const pull = fitPull();
+  const pull = fitPull(t);
   if (pull !== 1) camera.position.sub(_l).multiplyScalar(pull).add(_l);
   /* A slow drift on top of the keyframed path, so no shot is ever completely
      dead. The amplitude scales with how far the camera stands from its subject,
@@ -5245,6 +5284,29 @@ Promise.all([
                tile: jumpTile ? (jumpTile.label ||
                                  jumpTile.body.userData.pick || '?') : null,
                lift: +(jumpTile ? jumpLevel(jumpTile) : 0).toFixed(2) };
+    },
+    /* Stop 07's four pin names, in normalised device coordinates: 0 is the
+       middle of the frame and 1 is its edge, so anything over 1 has been cut
+       off. The narrow-viewport pull is what decides this, and a screenshot
+       cannot tell "OUT just clears the edge" from "it just does not" — one is
+       a composition and the other is a missing word. Read after seeking to
+       0.99; the labels only rise into place at that stop. */
+    get cellFrame() {
+      const box = new THREE.Box3(), v = new THREE.Vector3();
+      const out = {};
+      for (const m of cellLabels) {
+        box.setFromObject(m);
+        let x = 0, y = 0;
+        for (let i = 0; i < 8; i++) {
+          v.set(i & 1 ? box.max.x : box.min.x,
+                i & 2 ? box.max.y : box.min.y,
+                i & 4 ? box.max.z : box.min.z).project(camera);
+          x = Math.max(x, Math.abs(v.x));
+          y = Math.max(y, Math.abs(v.y));
+        }
+        out[m.userData.word] = [+x.toFixed(3), +y.toFixed(3)];
+      }
+      return out;
     },
     /* The camera path at an arbitrary t, without moving the live camera or
        waiting for a frame. seek() only sets t — the camera itself is not written

@@ -264,7 +264,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 /* Narrow screens: the nav links collapse and the pill carries the way back,
    the same trade the site makes at this width. The specs wrap under the chip
    name rather than being dropped — they are the point of the page. */
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   .sitebar__inner { padding-inline: 20px; gap: .75rem; }
   .sitenav a:not(.sitenav__pill) { display: none; }
   .sitebar__page, .sitebar__subject { display: none; }
@@ -599,7 +599,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .sheet-x:focus-visible { outline: 2px solid var(--accent-lit); outline-offset: 3px; }
 
 /* Stacked on narrow screens: name, text, then the player under them. */
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   #sheet {
     grid-template-columns: 1fr;
     align-content: start;
@@ -622,7 +622,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 /* ------------------------------------------------------------------ *
    Responsive
  * ------------------------------------------------------------------ */
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   .specs { display: none; }
   /* The cell pins come off on a phone. In portrait the caption is a full-width
      block across the middle of the screen and the cell sits behind it, so all
@@ -1006,7 +1006,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
    below it rather than chosen — nav clears the credit, hint clears the nav's
    3.1rem button, caption clears the hint.
  * ------------------------------------------------------------------ */
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   #credit  { bottom: .5rem; }
   #nav     { bottom: 2.4rem; gap: .5rem; }
   #hint    { bottom: 6.1rem; }
@@ -1019,20 +1019,37 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
    The site's phone scheme lives in styles/mobile.css, which this page
    deliberately does not load — see CLAUDE.md, "Two design systems". This
    block is its counterpart, and it follows the same one rule: everything
-   here is inside `@media (max-width: 768px)`, so the desktop and laptop
+   here is inside `@media (max-width: 900px)`, so the desktop and laptop
    view of this page cannot be affected by any of it.
+
+   900 is the SITE's mode line, and that is the point. Two design systems is
+   deliberate here; two different cutoffs was not. This page ran its own 768
+   and 860 until 2026-08-05, so 769-860 was a third rendering — the narrow
+   chrome without the phone bar — and the seam between this page and the rest
+   of the site moved depending on which one you were looking at.
+
+   The nested 356 / 360 / 400 blocks below are NOT breakpoints in that sense
+   and did not move. They are measured content thresholds: the width where a
+   string stops fitting beside two 44px targets. A mode line says which
+   composition applies; those say when a specific row runs out of room, and
+   verify/bar-fit.py is what set them.
 
    It is at the FOOT of the file for the reason the block above documents:
    equal-specificity overrides only win if they come after the base rule.
+
+   KNOWN GAP: unlike styles/mobile.css this block has no landscape clause, so
+   a phone on its side (844 or 932px wide) takes the desktop composition of a
+   page that fills the viewport. Not folded in here because it is a behaviour
+   change rather than a breakpoint move.
  * ------------------------------------------------------------------ */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
 
   /* ---- The bar ------------------------------------------------------
      Measured at 390px, the "Project Directory" pill rendered 125x54: it
      wrapped onto two lines and made itself taller than the 64px bar
      containing it.
 
-     The cause is a specificity miss in the 860px block above, not a
+     The cause is a specificity miss in the narrow block above, not a
      missing rule. It sets `.sitenav__pill { font-size: .8rem }`, but
      `.sitenav a` — a class AND an element, so one step more specific —
      also sets font-size, and wins. The pill has been rendering at 14px
@@ -1082,11 +1099,22 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
   /* ---- The phone bar ------------------------------------------------
      Reads: brand, part number, then the two controls hard right with the
-     menu outermost. The 860px block hides the subject and keeps the pill;
+     menu outermost. The narrow block hides the subject and keeps the pill;
      this reverses both — the part number is what the page is ABOUT and
      belongs on the bar, and the pill's destination has moved into the
      menu with the other two links rather than sitting beside it. */
-  .sitebar__page { display: none; }
+  /* The hairline comes back with the subject it separates. The narrow block
+     hides both, and when the subject was restored here the divider was left
+     behind, so the bar read `Silicon From Scratch Ryzen 5 9600X` as one
+     phrase. `flex: none` because this bar is flex rather than the desktop
+     grid: a 1px child with nothing to stop it is the first thing a tight row
+     shrinks to nothing, and a divider that is there in the box model and
+     invisible on the glass is the worst of both. */
+  .sitebar__page {
+    display: block;
+    flex: none;
+    height: .95rem;
+  }
   .sitebar__subject {
     display: inline;
     font-size: .7rem;
@@ -1120,9 +1148,21 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   /* Below this nothing shrinks far enough to hold both strings AND the two
      controls at a size worth reading. The part number goes and the brand
      stays: which site this is outranks which part it is showing, and the
-     part number is still named in the About panel. */
-  @media (max-width: 340px) {
-    .sitebar__subject { display: none; }
+     part number is still named in the About panel.
+
+     356, not the 340 this used to be, because 340 was never where the row
+     actually ran out. Measured with verify/bar-fit.py, the wordmark bottoms
+     out at 135px and will not shrink past its own text, so the row's slack
+     goes negative at 356 and everything between there and 341 was overflowing
+     with the subject still on — that band was already broken before the
+     divider was added and the divider only moved it about five pixels. The
+     cut is now the measured limit rather than a round number. Slack at 360,
+     the narrowest width that keeps the subject: +3.9px. */
+  @media (max-width: 356px) {
+    /* The divider goes with it. It separates the brand from the subject, so
+       with the subject gone it is a rule dangling off the end of the wordmark
+       and it is still spending the two gaps around itself. */
+    .sitebar__subject, .sitebar__page { display: none; }
   }
 
   /* The hamburger appears and the inline links collapse into the drawer,
@@ -1534,7 +1574,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   }
 
   /* The ⓘ was NOT fixed to the corner, and the reason is three properties
-     this block never unset. At <=860px the credit is deliberately a
+     this block never unset. At <=900px the credit is deliberately a
      centred banner — `right: auto; left: 50%; transform: translateX(-50%);
      width: 96vw` — from when it was a line of text under the nav. Setting
      `right` alone does nothing against that: with left, width and right all
