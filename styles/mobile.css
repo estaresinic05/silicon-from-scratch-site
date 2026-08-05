@@ -880,7 +880,7 @@
   }
 
 }
-/* ---- end of the single max-width: 768px wrapper ---------------------- *
+/* ---- end of the single max-width: 900px wrapper ---------------------- *
    Brace depth returns to zero HERE and nowhere earlier. Anything below
    this line would apply at every width, including desktop. Leave it empty.
  * --------------------------------------------------------------------- */
