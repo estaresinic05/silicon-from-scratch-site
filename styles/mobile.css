@@ -19,7 +19,7 @@
    ---------------------------------------------------------------------
    WHY THE CONDITION HAS TWO CLAUSES
    ---------------------------------------------------------------------
-   `max-width: 768px` alone misses the phone people actually hold sideways.
+   `max-width: 900px` alone misses the phone people actually hold sideways.
    An iPhone 14/15 in landscape is 844px wide and a Pro Max 932px, both above
    the breakpoint — so the entire scheme switched off at exactly the moment
    the device was still a phone. Measured at 844x390: the hamburger went back
@@ -41,27 +41,52 @@
    ---------------------------------------------------------------------
    WHY A SEPARATE SCHEME AT ALL
    ---------------------------------------------------------------------
-   The site is sized in rem and the root is fluid:
-
-       html { font-size: clamp(13px, 1px + 1.17vw, 16px); }
-
-   At 390px the viewport term is 5.6px, so the root clamps to its 13px floor.
+   The site is sized in rem, and on a phone the root steps down to 13px.
    Everything measured in rem is therefore rendered at 81% of its desktop
-   size on a phone — including every control. That is correct for type and
-   spacing and exactly wrong for touch targets, which need to get BIGGER as
-   the pointer becomes a thumb, not smaller. A 2.6rem hamburger is a
-   comfortable 42px on desktop and a missable 34px on a phone.
+   size — including every control. That is correct for type and spacing and
+   exactly wrong for touch targets, which need to get BIGGER as the pointer
+   becomes a thumb, not smaller. A 2.6rem hamburger is a comfortable 42px on
+   desktop and a missable 34px on a phone.
 
    So the scheme splits the two concerns:
-     · Type and rhythm stay in rem and keep scaling with the root.
+     · Type and rhythm stay in rem and take the mode's root.
      · Anything a finger touches is sized in px, which the root cannot
        deflate, and is held at the 44px minimum.
 
    That single distinction is most of this file.
    ========================================================================= */
 
-@media (max-width: 768px),
+/* 900, not the 768 this used to be. The line moved when the site was made two
+   modes with nothing in between: 769-900 used to be a third rendering that was
+   neither scheme, and it was where several of the layout bugs lived (the
+   pipelining page's list overflowed its column by 65px only between 800 and
+   860). 900 is where the two-column desktop hero already switched on, so it is
+   the narrowest width at which the desktop composition was ever intended to
+   work. Everything below it is now one phone layout.
+
+   The landscape clause is still needed and still says 950: a Pro Max on its
+   side is 932px wide, which is past the 900 line but very much a phone. */
+@media (max-width: 900px),
        (orientation: landscape) and (max-height: 500px) and (max-width: 950px) {
+
+  /* ==================================================================== *
+     0. THE MODE — the two values that make this a mode and not a patch
+   * ==================================================================== */
+
+  /* The root was `clamp(13px, 1px + 1.17vw, 16px)` in main.css and ramped
+     continuously from 13px at 1025 to 16px at 1282. Now it is a step, and
+     this is the bottom of it. 13px is the same floor the clamp had, so a
+     phone renders exactly as it did; what changed is that a 1000px window
+     gets one of the two answers instead of a value part-way between them.
+
+     --vwu is one `vw` frozen at the 390px phone reference. Every former
+     `Nvw` in the shared stylesheets now reads `calc(N * var(--vwu))`, so it
+     is a constant across the whole phone range rather than a slope. */
+  :root {
+    font-size: 13px;
+    --vwu: 3.9px;
+  }
+  html { font-size: 13px; }
 
   /* ==================================================================== *
      1. RHYTHM — the tokens, retuned for a screen you hold
@@ -82,6 +107,74 @@
     --space-5: 2.25rem;   /* was 3rem */
     --space-6: 3.25rem;   /* was 5rem */
     --space-7: 4.25rem;   /* was 8rem */
+  }
+
+  /* ---- A measure, for the wide end of the range ----------------------
+     The phone scheme now runs to 900px, and it lays every page out as one
+     full-width column. That is right at 390 and wrong at 899, where it
+     produced an 860px line of body text — roughly 91 characters, where
+     anything past about 75 is hard to track back to the start of the next
+     line. Before the line moved, 769-900 got the desktop layout, which capped
+     its prose at `--maxw-prose` and let the headings run the full column. So
+     this is a regression the widened mode introduced, and the fix is the
+     composition that was already there, at the phone root instead of the
+     desktop one.
+
+     THE READING COLUMN ONLY. The first draft of this rule also named
+     `.container:not(.container--wide)`, on the theory that capping the
+     container caps everything inside it. Measured, it capped the top bar, the
+     footer and the hero section to 572px and left 163px of dead ground either
+     side of the site's own chrome at 899 — those are structure, not prose, and
+     they are meant to hold the screen. It also did nothing whatsoever to the
+     two things it was written for: `.prose` is re-widened to 100% by the
+     containment rule in section 6, which comes later in the file and wins, and
+     `.doc-hero__text` is `display: contents` on a balanced hero, so it has no
+     box to cap. Cap the paragraphs themselves.
+
+     `min(..., 100%)` rather than a bare cap, because that containment rule is
+     the belt that keeps a long unbreakable child from widening the column past
+     the screen, and this rule now carries it. `--maxw-prose` is 44rem, which
+     is 572px at the 13px phone root, so a 390px screen is untouched and this
+     is still one rendering across the whole range. */
+  .prose,
+  .doc-hero__lead,
+  .handson-intro,
+  .getstarted__lead {
+    max-width: min(var(--maxw-prose), 100%);
+  }
+
+  /* ---- and the same measure, for the columns that switch it off -------
+     Thirteen rules in `alu.css` say `.something .prose { max-width: none }`,
+     and every one of them is right on a desktop: that prose is a track in a
+     two-column grid, so the grid already sets its width and a second cap would
+     fight it. The phone stacks those grids into one column, and `none` then
+     means the full screen — which is how a `.split` paragraph still measured
+     860px at 899 after the rule above was in place.
+
+     They are re-stated here rather than moved behind a `min-width: 901px`
+     query in `alu.css` for two reasons. Every one of them lives with its own
+     component, and hoisting thirteen declarations into a shared block would
+     scatter those components across the file. More importantly it is house
+     rule 12: phone behaviour lives in this file and nowhere else, which is the
+     only thing that makes "desktop is provably untouched" checkable.
+
+     The four ID-scoped ones have to be matched with their IDs. No number of
+     classes outranks an ID, and the alternative was `!important`, which this
+     file does not use anywhere and should not start using for a measure. */
+  .split--media-left .prose,
+  .split--media-right .prose,
+  .split--stack .prose,
+  .split--textleft .prose,
+  .pc-rca-split .prose,
+  .prose--flow,
+  .prose--full,
+  .prose--center,
+  .playtime-intro,
+  #gates .prose,
+  #main-control .mc-side .prose,
+  #choosing-tests .ct-split .prose,
+  #branch-logic .bl-text {
+    max-width: min(var(--maxw-prose), 100%);
   }
 
   /* ==================================================================== *
@@ -226,31 +319,29 @@
   }
 
   /* ==================================================================== *
-     4b. THE HOME HERO — the mark leads
+     4b. THE HOME HERO — the copy leads
    * ==================================================================== */
 
-  /* On desktop the hero is two columns, copy left and emblem right, and the
-     two read as one composition side by side. Collapsed to a single column
-     the source order takes over and the mark lands at the BOTTOM, under the
-     buttons, where it reads as a stray footer rather than as the brand.
+  /* This block used to carry an `order` swap that lifted the card above the
+     headline, on the argument that the mark should introduce the site before
+     the copy does. It was marked provisional and the phone pass decided
+     against it: the card is not a brand mark, it is a link into one lesson,
+     and putting a single lesson above the headline and the two calls to
+     action buries what the first screen is for.
 
-     Put it first. On a phone the first screen is the whole introduction, and
-     leading with the mark says who this is before it says what it does. The
-     markup is untouched — the hero is a flex column at this width, so `order`
-     alone does it, and the source order that desktop depends on is preserved. */
+     So the single column now takes the SOURCE order — headline, intro,
+     Start Building and View on GitHub, then the card — which is also what
+     desktop reads left to right and what landscape below already restored.
+     No `order` is needed to get it, so none is declared. The card keeps the
+     space that used to sit under it, now above it, so it stays a distinct
+     block rather than crowding the buttons. */
   .hero__art {
-    order: 1;
-    margin-bottom: var(--space-3);
-  }
-  .hero__text {
-    order: 2;
+    margin-top: var(--space-3);
   }
 
   /* The card is content edge to edge, unlike the emblem it replaced, so it does
      not need the generous percentage that asset's transparent margins did. It
-     takes the column and stops there. Provisional: the phone pass still has to
-     decide whether a call to action deserves to sit above the headline at all,
-     which is what the `order` above currently gives it. */
+     takes the column and stops there. */
   .mtp-card {
     width: 100%;
     margin-inline: auto;
@@ -378,10 +469,14 @@
   }
 
   /* The reading column may never exceed the screen, whatever a child asks
-     for. Belt to the `min-width: 0` braces above. */
-  .prose {
-    max-width: 100%;
-  }
+     for. Belt to the `min-width: 0` braces above.
+
+     This used to be `.prose { max-width: 100% }` here, and being later in the
+     file it silently beat the measure cap in section 1 — the cap read as
+     applied and had no effect. Both jobs now live in that one declaration,
+     `min(var(--maxw-prose), 100%)`: the 100% arm is this belt, the token arm
+     is the measure. Do not re-add a bare `max-width` for `.prose` below this
+     point; it would take the measure off again exactly as before. */
 
   /* ---- The grid blowout ----------------------------------------------
      The stacking rules across the site all say `grid-template-columns: 1fr`,
@@ -397,14 +492,19 @@
      Every other single-column stack on the site carries the same latent
      fault; this fixes them together rather than waiting for each to surface.
 
-     SCOPED TO 768px ON PURPOSE, unlike the rest of this file. These are
-     companions to the site's own stacking rules, and every one of those is
-     written `@media (max-width: 768px)`. Applied any wider they stop being a
-     fix and start being a layout decision: at 844px landscape main.css still
-     wants the About page's photo BESIDE its text, and forcing one column
-     there blew the portrait up to full width and doubled the page height.
-     An override must not outrange the rule it is correcting. */
-  @media (max-width: 768px) {
+     THIS USED TO BE SCOPED TO 768px, to keep it from outranging the site's
+     own stacking rules, which were written at 768 and left a landscape phone
+     at 844 still composing two columns. Both numbers are now 900, and this
+     query says 950 so it spans the wrapper's landscape clause as well.
+
+     That is a deliberate behaviour change, not a tidy-up. A landscape phone
+     now stacks like a portrait one. It costs what it always cost — the About
+     page's photo goes full width above its text and the page gets taller,
+     which is worse in an orientation that only has 390px of height — and it
+     buys the thing that was actually asked for: one phone layout, the same at
+     every width and both orientations, with no band where a phone renders
+     like a desktop. */
+  @media (max-width: 950px) {
     .split,
     .split--media-left,
     .split--media-right,
@@ -416,7 +516,10 @@
     .aboutme__grid,
     .mc-split,
     .ct-split,
-    .bl-split {
+    .bl-split,
+    /* Two code cards side by side needed 399px and had 320. Stacked, each gets
+       the full measure and the pair reads as a list, which is what it is. */
+    .slice-links {
       grid-template-columns: minmax(0, 1fr);
     }
   }
@@ -443,11 +546,12 @@
      `max-width: 100%`. At the phone root that is 494px on a 390px screen.
      The ID in the selector means this override has to carry one too.
 
-     SCOPED TO 768px, for the same reason as the grid fix below: 494px is
-     only too wide when the screen is narrower than 494px. In landscape the
-     card fits beside its text exactly as intended, and forcing it to 100%
-     there stretched it to 805px and made fetch-decode-execute 72% taller. */
-  @media (max-width: 768px) {
+     Now spans the whole mobile mode, for the same reason as the grid fix
+     below. It used to stop at 768 so a landscape phone kept the card beside
+     its text; that exception is what made landscape a sub-mode, so it is
+     gone. The cost is the one measured before: the card goes full width and
+     fetch-decode-execute gets taller in landscape. */
+  @media (max-width: 950px) {
     #register-files .mem-card {
       width: 100%;
       max-width: 100%;
@@ -682,12 +786,14 @@
   }
 
   /* ==================================================================== *
-     10. SMALL PHONES — 430px and under
+     10. PHONE TYPE AND ACTIONS — the whole mobile range
    * ==================================================================== */
 
-  /* Nested deliberately, so there is exactly one place in the codebase to
-     look for phone refinements and it is inside the phone scheme. */
-  @media (max-width: 430px) {
+  /* These were gated at `max-width: 430px` and were the last sub-mode inside
+     the phone scheme: a 420px screen and a 440px screen laid the hero out
+     differently and set a different h1. Both now apply across the whole
+     mobile range, so there is one phone rendering rather than two. */
+  @media (max-width: 950px) {
 
     /* The hero's two actions stop sitting side by side and stack, each
        full width. Two 170px pills on one row are both harder to hit and
@@ -746,10 +852,10 @@
       text-align: left;
       justify-items: stretch;
     }
-    /* Undo the portrait reorder — in two columns the source order is already
-       copy-then-mark, which is what we want. */
-    .hero__text { order: 1; }
-    .hero__art  { order: 2; margin-bottom: 0; }
+    /* Portrait stacks copy then card and spaces the two apart. Side by side
+       they are already level, so the gap between the rows is the wrong axis
+       and the space above the card just pushes it down out of alignment. */
+    .hero__art { margin-top: 0; }
     /* The card owns its column here rather than sitting as a small crest in
        the middle of it. The vh cap the desktop rule carries matters more in
        landscape than the rem cap does, so it stays in charge. */

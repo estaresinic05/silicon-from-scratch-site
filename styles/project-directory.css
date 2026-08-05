@@ -385,7 +385,7 @@
 /* The drawer ends level with the bottom of the band instead of running to the
    foot of the screen. --navsheet-h is the band's measured height, published by
    main.js; it falls back to full height if that measurement never ran. */
-@media (min-width: 769px) {
+@media (min-width: 901px) {
   .toc__menu {
     height: var(--navsheet-h, 100dvh);
     border-bottom: 1px solid var(--hairline);
@@ -409,7 +409,7 @@
 }
 
 /* Sheets and the tab are a desktop arrangement only. */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .navsheets { display: none; }
   .projtab { display: none; }
 }
@@ -456,10 +456,10 @@
 }
 
 /* Reveal the matching arrangement per width. */
-@media (min-width: 769px) {
+@media (min-width: 901px) {
   .toc__menu .is-mobile-only { display: none; }
 }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .toc__menu .is-desktop-only { display: none; }
 }
 

@@ -21,61 +21,73 @@ rules.
 
 ---
 
-## Responsive strategy — ONE layout, just resized (read this first)
+## Responsive strategy — TWO modes, one line at 900px (read this first)
 
-**The site is a single layout that scales fluidly with the viewport — the same
-structure at *every* screen size, just larger or smaller.** It does **not** reflow
-into a different mobile layout, and it does **not** hide anything on small screens.
-Small screens show a shrunken version of the desktop design. This is deliberate —
-inconsistent per-breakpoint reflowing was causing rendering bugs, so we removed it.
+**The site is a desktop layout and a phone layout, with nothing in between.**
+`(max-width: 900px)` is the phone. `(min-width: 901px)` is the desktop. A reader
+dragging the window sees one composition, one jump, and then the other
+composition — not a continuous slide from one to the other.
 
-**Large-screen enlarging is deferred.** The root font is currently capped at the
-normal 16px baseline, so big monitors render at their standard size (no growing) —
-we only scale *down* for now. Turning enlarging back on later is a one-line change
-(raise the `clamp()` ceiling below).
+This replaced "one layout that scales fluidly", which is what this section used
+to say. That scheme was honest about its intent and wrong about its effect: the
+root font-size was `clamp(13px, 1px + 1.17vw, 16px)`, so **every rem on the site
+slid continuously between 1032px and 1288px**, `h1` slid across 528-1352 and `h2`
+across 624-1288. Nothing was ever quite the size it was designed at. Worse, the
+55 media queries that had accumulated at 18 different widths meant the range
+769-900 was a *third* rendering that neither mode was composed for, and several
+of the site's layout bugs lived only there.
 
-**The ramp reaches full size at 1280px, not 1440.** It used to top out at 1440,
-which quietly undersized the two commonest laptop widths: 14.9px root at 1280 and
-15.5px at 1366, so a `1.125rem` paragraph rendered at 16.8px instead of 18px.
-Against any fixed-16px reference the whole site read 7-20% small, and it was the
-root doing it rather than any one rule. The slope is steeper now and the floor is
-a point higher, so the shrink still happens where it earns its keep — genuinely
-narrow windows — instead of across the range most people browse at.
+### How the two modes work
 
-### How the scaling works
+- **The root font-size is a step, not a ramp.** 16px in `main.css`, 13px in
+  `mobile.css`. Same 13px floor the clamp had, so a phone renders as it did; what
+  changed is that a 1000px window now gets one of the two answers instead of a
+  value part-way between them.
+- **No `vw` term may cross the line.** Every `Nvw` in the shared stylesheets is
+  written `calc(N * var(--vwu))`, where `--vwu` is one `vw` frozen at that mode's
+  reference width — **12.8px on desktop** (1280) and **3.9px on a phone** (390).
+  A `vw` is a slope by definition, so a live one anywhere in type or spacing
+  re-creates the gradient. 106 terms were converted.
+- **Fluid is still correct for what tracks the window by design**: container
+  widths, gutter maths, `vh`, `cqw`, and guards of the `min(360px, 86vw)` shape.
+  That last one is load-bearing rather than stylistic — freeze it and the drawer
+  pins at 335px and overflows a 320px screen.
+- **Because the design is sized in `rem`** (the `--space-*` scale, `--maxw` /
+  `--maxw-prose`, and type), each mode is internally consistent from one value.
+- **Nothing is `display:none` by breakpoint.** Everything on desktop is on
+  mobile. That part of the old scheme survives intact.
 
-- **One knob: a fluid root font-size.** `html { font-size: clamp(13px, 1px +
-  1.17vw, 16px); }` — 16px at ~1280px and above, shrinking toward a 13px floor on
-  phones. (The `16px` ceiling is the temporary "don't enlarge yet" cap; it was
-  `20px` when large-screen enlarging is enabled.) **Because the whole design is
-  sized in `rem`** (the `--space-*` scale, `--maxw`/`--maxw-prose`, and type),
-  scaling this one value **scales the entire layout together.** That's what "same
-  layout, just resized" means here.
-- So: **size everything in `rem`** (or `em`), and widths in `%` / `fr` / `rem`.
-  This is what lets a component grow on a 4K monitor and shrink on a phone without
-  any new media query. Fixed `px` is only for things that should NOT scale —
-  hairlines (`1px` borders), and the small `--radius` values.
-- **Multi-column layouts stay multi-column at every width.** e.g. Hands On is a
-  two-column masonry (`.handson-grid { grid-template-columns: 1fr 1fr }`) with **no**
-  single-column collapse — it just gets narrower. Don't add a `1fr` / stacked
-  breakpoint to content grids.
-- **Nothing is `display:none` by breakpoint.** Everything on desktop is on mobile.
+**Large-screen enlarging is still deferred.** 16px is the desktop root at every
+width above the line, so big monitors render at the standard size.
 
 ### Rules for new work
 
-1. **Size in `rem`/`clamp()`/`%`, not `px`.** Reach for `px` only for hairlines and
-   radii. A value in `rem` scales with the root font; a value in `px` won't.
-2. **No content-reflow media queries.** Don't collapse a multi-column grid to one
-   column, and don't hide content, on narrow screens. If a grid feels tight, it
-   should just be *smaller*, not restructured.
-3. **Contain internal overflow, never the page.** A component wider than its column
-   (a wide timing diagram, a code editor) scrolls **inside its own panel**
+1. **Never introduce a third breakpoint.** `styles/` contains only
+   `(max-width: 900px)` and `(min-width: 901px)`, plus one nested
+   `(max-width: 950px)` inside `mobile.css` that exists to span its landscape
+   clause. If a composition needs a width between those, it is the composition
+   that is wrong. Prove it with `tools/width-sweep.py`.
+2. **Size type and rhythm in `rem`, and never in `vw`.** Use
+   `calc(N * var(--vwu))` if you genuinely need viewport-proportional units.
+   Reach for `px` only for hairlines, radii, and touch targets inside
+   `mobile.css`.
+3. **Give a text column a floor, not just a ceiling.** `minmax(0, 1fr)` removes a
+   track's content floor, which is right for the *figure* column and wrong for
+   the *text* one — the text then yields until it has 52px. Text columns get
+   `minmax(18rem, 1fr)`.
+4. **Cap a measure with `min(Nrem, 100%)`.** A rem cap is a preference; the
+   column is a limit. A bare `max-width: Nrem` on a figure ignores the screen.
+5. **`white-space: nowrap` cannot be conditional.** It overflows at whatever
+   width is too narrow for the string, at *every* such width, and no breakpoint
+   rescues it. Let it wrap and control the break with `text-wrap: balance`.
+6. **Contain internal overflow, never the page.** A component wider than its
+   column (a wide timing diagram, a code editor) scrolls **inside its own panel**
    (`overflow-x: auto` + a `rem` `min-width`) — the page itself must never scroll
-   sideways (see rule 5 for how to check that honestly).
-4. **Verify at the extremes.** Check ~360–500px (phone), ~768px (tablet), ~1280px
-   (laptop), and ~1920px (large). It should be the *same layout* at all four, and
-   the page must not overflow horizontally at any of them.
-5. **Test horizontal overflow by scrolling, not by measuring.** `scrollWidth >
+   sideways (see rule 8 for how to check that honestly).
+7. **Verify on both sides of the line.** 390px and 899px, then 901px and 1440px.
+   The two phone widths must be the same composition at two sizes, and so must
+   the two desktop ones.
+8. **Test horizontal overflow by scrolling, not by measuring.** `scrollWidth >
    clientWidth` gives false positives: the closed nav drawer is parked off-screen
    at `translateX(100%)` and inflates it on every page. The honest check is
    `window.scrollTo(9999, 0)` and then reading `window.scrollX` — if it is still
@@ -87,30 +99,38 @@ narrow windows — instead of across the range most people browse at.
   horizontal nav can't fit) — this is chrome, not content.
 - **Editable code textareas** go read-only on touch (poor phone UX) — the widget
   stays fully *viewable*, nothing is removed.
-- **The "Your Path" serpentine's left explainer paragraphs** are hidden below the
-  two-column breakpoint (`max-width: 1079px`). The serpentine trace + its nodes
-  themselves show at **every** width (full-width on phones); only the side prose
-  column drops, because two columns of prose + path can't both fit narrow. The
-  JS trace (`buildBpTrace` in `scroll.js`) now draws at all widths and simply
-  omits the branch lines when the paragraphs are hidden.
+- **The "Your Path" serpentine's left explainer paragraphs** are hidden on the
+  phone side of the line. The serpentine trace and its nodes show at **every**
+  width, full-width on a phone; only the side prose column drops, because two
+  columns of prose plus path cannot both fit narrow. The JS trace
+  (`buildBpTrace` in `scroll.js`) draws at all widths and simply omits the
+  branch lines when the paragraphs are hidden.
+
+  This exception used to sit at its own `1079px` breakpoint. Moving it onto the
+  mode line is what forced the two-column grid's floor from the text column onto
+  the path column: prose reflows and a drawn path does not, so at 901 the
+  serpentine was squeezed and its nodes overflowed their lanes by 66px. They
+  still spill **6px** between 920 and 1160. That is the lane geometry rather
+  than a column width, and chasing it further means redesigning the path.
 
 Add a new exception here **only** with a clear reason — the default is always
-"same layout, just resized."
+one composition per mode.
 
-### The phone scheme lives in `styles/mobile.css`
+### The phone mode lives in `styles/mobile.css`
 
-"Same layout, just resized" is still the rule, and the phone scheme does not
-break it — it adjusts the things that resizing alone gets wrong.
+**All of it is in one file, inside a single `@media (max-width: 900px)` block,
+loaded last on every shared page.** Nothing outside the wrapper. That is what
+makes the desktop layout provably unaffected: a rule that cannot match at 901px
+cannot move a desktop pixel, and it is checkable by reading the file rather than
+by comparing screenshots.
 
-**All of it is in one file, inside a single `@media (max-width: 768px)`
-block, loaded last on every shared page.** Nothing outside the wrapper. That is
-what makes the desktop layout provably unaffected: a rule that cannot match at
-769px cannot move a desktop pixel, and it is checkable by reading the file
-rather than by comparing screenshots.
+The wrapper carries a second clause for landscape phones, and three blocks
+nested at `950px` that span it. A Pro Max on its side is 932px wide, which is
+past the line and still very much a phone.
 
-The two things resizing gets wrong, and what the scheme does about them:
+What the phone mode changes, beyond the root font-size:
 
-1. **Touch targets shrink exactly when they should grow.** The root clamps to
+1. **Touch targets shrink exactly when they should grow.** The root steps to
    13px on a phone, so every rem-sized control renders at 81%: a `2.6rem`
    hamburger is 42px on a laptop and 34px on a phone. Inside `mobile.css`,
    **type and spacing stay in rem, and anything a finger lands on is sized in
@@ -122,6 +142,14 @@ The two things resizing gets wrong, and what the scheme does about them:
    `--space-6` and `--space-7` are retuned at the top of the file, so every
    section, figure margin and card gap tightens from one place.
    `--space-1`–`--space-4` are component-internal padding and are untouched.
+
+3. **The reading column keeps a measure.** The phone mode lays out one
+   full-width column, which is right at 390 and wrong at 899, where body text
+   ran about 100 characters a line. Prose is capped at
+   `min(var(--maxw-prose), 100%)` — inert below 572px, so a phone is untouched,
+   and it restores at the wide end the measure the desktop composition used to
+   provide there. The `min()` matters: the same declaration is also the belt
+   that stops a long unbreakable child widening the column past the screen.
 
 Wide content — Verilog listings, truth tables — **scrolls inside its own
 container**; it never wraps (which destroys the alignment that makes it

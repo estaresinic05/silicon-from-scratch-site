@@ -12,8 +12,8 @@
 .doc-hero {
   /* Extra top padding nudges the whole hero (diagram + text together) down a
      little so it clears the top bar with more breathing room. */
-  padding-block: clamp(var(--space-6), 10vw, var(--space-7))
-                 clamp(var(--space-5), 7vw, var(--space-6));
+  padding-block: clamp(var(--space-6), calc(10 * var(--vwu)), var(--space-7))
+                 clamp(var(--space-5), calc(7 * var(--vwu)), var(--space-6));
   /* A touch wider than the standard 72rem container so the diagram has room to
      grow once the text column is pinned to the title's width. */
   max-width: 80rem;
@@ -22,7 +22,7 @@
      wider than the title; the diagram takes all the remaining width on the
      right, so it renders larger. */
   grid-template-columns: minmax(0, 36rem) minmax(0, 1fr);
-  gap: clamp(var(--space-3), 4vw, var(--space-5));
+  gap: clamp(var(--space-3), calc(4 * var(--vwu)), var(--space-5));
   align-items: center;
 }
 .doc-hero__text { max-width: 36rem; }
@@ -31,9 +31,13 @@
    left of the centered container so it doesn't crowd the right edge. Gated above
    the 80rem hero width + the shift, so it only applies when there's gutter to
    spare and nothing ever clips off the left. */
-@media (min-width: 1344px) {
-  .doc-hero { transform: translateX(-2rem); }
-}
+/* The 2rem nudge that used to sit here at `min-width: 1344px` is gone. It was a
+   composition tweak that only switched on above 1344, which made the lesson hero
+   a third rendering on top of the two the site is supposed to have — the exact
+   thing the 900px line exists to end. It cannot simply be applied at every
+   desktop width instead: it shifts LEFT, and at 901px there is no gutter to
+   absorb it, so the hero would clip. A 2rem optical nudge on very wide screens
+   is not worth a third mode. */
 
 /* Landing height. On shorter viewports the lesson hero fills the screen, so the
    first content section — its heading included — stays below the fold on landing
@@ -51,7 +55,7 @@
    a group, and drops the wide-screen leftward nudge. Used on the Logic Gates
    lesson. */
 .doc-hero--balanced { margin-inline: auto; max-width: 88rem; }
-@media (min-width: 769px) {
+@media (min-width: 901px) {
   .doc-hero--balanced {
     grid-template-columns: minmax(0, 46rem) minmax(0, 44rem);
     justify-content: center;
@@ -59,9 +63,8 @@
   /* Let the title paragraph fill the (now wider) text column. */
   .doc-hero--balanced .doc-hero__text { max-width: none; }
 }
-@media (min-width: 1344px) {
-  .doc-hero--balanced { transform: none; }
-}
+/* `.doc-hero--balanced { transform: none }` stood here to cancel the 1344px
+   nudge above. With that nudge removed there is nothing left to cancel. */
 
 /* The ALU block symbol sits beside the intro, on a paper card so the white
    drawing reads as a deliberate panel (matching the diagram figures below). */
@@ -70,7 +73,7 @@
   background: var(--paper);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
-  padding: clamp(var(--space-3), 4vw, var(--space-4));
+  padding: clamp(var(--space-3), calc(4 * var(--vwu)), var(--space-4));
   box-shadow: var(--shadow-soft);
 }
 .doc-hero__art img {
@@ -174,7 +177,7 @@
   gap: 0.6rem;
   font-family: var(--font-mono);
   font-weight: 500;
-  font-size: clamp(1.15rem, 1.6vw, 1.35rem);
+  font-size: clamp(1.15rem, calc(1.6 * var(--vwu)), 1.35rem);
   text-transform: uppercase;
   letter-spacing: 0.22em;
   color: var(--soft-ink);
@@ -191,15 +194,36 @@
    It's split into two "keep-together" groups; each never breaks internally, so
    the title either sits on one line or breaks cleanly between the groups
    ("Logic Gates &" / "the 1-bit ALU") — never mid-phrase. */
-.title-eyebrow__group { white-space: nowrap; }
-.title-eyebrow__text { min-width: 0; text-align: center; }
-/* A long lesson title (e.g. "The Full Adder and Ripple Carry Adder") tuned to
-   sit on one line on desktop: keep the whole text together and tighten the
-   tracking a touch so it fits the hero column. Mobile keeps the default 0.22em
-   tracking and the clean two-line break between the groups. */
-@media (min-width: 769px) {
+/* The groups no longer force `white-space: nowrap`.
+   The idea was that a title breaks only between its two keep-together phrases,
+   never mid-phrase. It works right up until one phrase is itself wider than the
+   column: "Implementing Arbitrary Logic" needs 470px and the balanced hero's
+   text column is 398px at 960, so the title overflowed by 72px across the whole
+   901-1080 band. `nowrap` cannot be conditional, so a guaranteed clean break and
+   a guaranteed fit cannot both be had.
+
+   Fit wins. An overflow is wrong at every width; a break landing one word early
+   is a little worse than the ideal and still correct. `text-wrap: balance` keeps
+   the lines even so the usual case still breaks between the groups. */
+.title-eyebrow__group { white-space: normal; }
+.title-eyebrow__text { min-width: 0; text-align: center; text-wrap: balance; }
+/* A long lesson title keeps the tighter tracking on desktop. It no longer keeps
+   `white-space: nowrap`, and that removal is the fix for the worst conflict on
+   the site.
+
+   The nowrap was tuned when the desktop composition began at 1280-plus and the
+   root was still ramping, and at that width "The Full Adder and Ripple Carry
+   Adder" does sit on one line. It was gated at 769px but never checked there.
+   Measured: it overflowed its hero by 116px at EVERY desktop width on the full
+   adder page, and by 92px between 901 and 1040 on implementing-arbitrary-logic.
+   A single unbreakable string cannot be made to fit a range; it either fits the
+   narrowest width in the mode or it overflows somewhere.
+
+   Without it the title wraps between the two `.title-eyebrow__group` spans,
+   which is exactly the clean break those spans were created to provide. The
+   cost is a second line on wide screens where one would have done. */
+@media (min-width: 901px) {
   .title-eyebrow--long { letter-spacing: 0.16em; }
-  .title-eyebrow--long .title-eyebrow__text { white-space: nowrap; }
 }
 .doc-hero__lead {
   font-size: 1.25rem;
@@ -227,7 +251,7 @@
    whole text column a little toward the outside (left) so the one-line title has
    breathing room from the picture instead of crowding it. Desktop only — mobile
    still stacks and centers per the base balanced rules. */
-@media (min-width: 769px) {
+@media (min-width: 901px) {
   .doc-hero--textshift .doc-hero__text { transform: translateX(-3.75rem); }
 }
 
@@ -272,7 +296,7 @@
   /* Center the text within the left half (between the screen edge and the
      picture) rather than hugging the image. */
   justify-content: center;
-  padding: clamp(var(--space-4), 5vw, var(--space-7));
+  padding: clamp(var(--space-4), calc(5 * var(--vwu)), var(--space-7));
 }
 .overview-band__panel-inner {
   max-width: 40rem;
@@ -302,7 +326,7 @@
 .overview-band__art {
   margin: 0;
   height: 100%;
-  padding-right: clamp(var(--space-3), 4vw, var(--space-6));
+  padding-right: clamp(var(--space-3), calc(4 * var(--vwu)), var(--space-6));
   /* Image hugs the left so the shared background shows along its right. */
   display: flex;
   align-items: center;
@@ -377,7 +401,7 @@
   text-shadow: 0 0 1.5px rgba(20, 20, 26, 0.7);
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .overview-band {
     grid-template-columns: 1fr;
     min-height: 0;
@@ -401,7 +425,7 @@
   background: var(--paper);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
-  padding: clamp(var(--space-2), 3vw, var(--space-4));
+  padding: clamp(var(--space-2), calc(3 * var(--vwu)), var(--space-4));
   box-shadow: var(--shadow-soft);
 }
 .figure img {
@@ -416,11 +440,15 @@
    below the frame — one under each slice. */
 .slice-figure { max-width: 66rem; margin-inline: auto; }
 .slice-links {
-  --slice-gap: clamp(var(--space-2), 3vw, var(--space-3));
+  --slice-gap: clamp(var(--space-2), calc(3 * var(--vwu)), var(--space-3));
   max-width: 66rem;
   margin: var(--slice-gap) auto 0;        /* same gap below the image as between the cards */
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* `1fr` is `minmax(auto, 1fr)`, and that auto floor is sized from the widest
+     thing in the column -- so two code cards refused to shrink and pushed the
+     grid 79px past a 320px screen. The mobile scheme stacks this to one column
+     as well; both are needed, because the floor is wrong on desktop too. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--slice-gap);
 }
 .slice-links .code-card { margin-top: 0; }
@@ -461,8 +489,18 @@
 .split {
   margin-top: var(--space-4);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: clamp(var(--space-3), 4vw, var(--space-5));
+  /* The figure column is `minmax(0, auto)`, not bare `auto`.
+     `auto` is a floor sized from the widest thing in the column, so the figure
+     could not shrink and the text column — being `minmax(0, 1fr)` and therefore
+     free to collapse — gave up its width first, then the pair overflowed the
+     container anyway. It never showed while the desktop composition started at
+     1080px and the figures were drawn to fit there. It showed immediately at
+     901: measured spills of 35 to 47px on constructing-a-datapath, control-unit
+     and pipelined-datapath, all of them this one line.
+     Same defect as `1fr` vs `minmax(0, 1fr)` in the mobile scheme, on the other
+     column. */
+  grid-template-columns: minmax(18rem, 1fr) minmax(0, auto);
+  gap: clamp(var(--space-3), calc(4 * var(--vwu)), var(--space-5));
   align-items: center;
 }
 .split .prose { margin: 0; }
@@ -474,8 +512,8 @@
 .prose ol,
 .prose ul {
   margin: var(--space-4) 0;
-  padding: clamp(var(--space-3), 3vw, var(--space-4));
-  padding-left: calc(clamp(var(--space-3), 3vw, var(--space-4)) + 1.6rem);
+  padding: clamp(var(--space-3), calc(3 * var(--vwu)), var(--space-4));
+  padding-left: calc(clamp(var(--space-3), calc(3 * var(--vwu)), var(--space-4)) + 1.6rem);
   background: var(--paper);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
@@ -497,7 +535,7 @@
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
-  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  padding: clamp(var(--space-3), calc(3 * var(--vwu)), var(--space-4));
   margin: var(--space-4) 0;
 }
 /* p.term-card__title so the accent color outranks the base `.prose p` soft-ink. */
@@ -533,7 +571,7 @@
 /* Two-column layout: the copy stretches to the widget's height, but the three
    paragraphs sit as a tight group centered against it (normal paragraph rhythm)
    rather than being spread the full height. */
-@media (min-width: 769px) {
+@media (min-width: 901px) {
   #addition-incoming .prose {
     display: flex;
     flex-direction: column;
@@ -546,11 +584,24 @@
    diagram first (see it, then read about it). */
 .split--stack .prose { max-width: none; }
 /* Media-left variant: figure on the left, text on the right. */
-.split--media-left { grid-template-columns: auto minmax(0, 1fr); }
+/* --- Why every split gives the TEXT column a floor -------------------------
+   `auto` on the figure track is a floor sized from the widest thing in it, and
+   `minmax(0, 1fr)` on the text track has no floor at all. So when the pair did
+   not fit, the text gave up its width first and kept giving until there was
+   none left: measured at 980px, the pipelining page's prose column was 52px
+   wide holding a numbered list, and control-unit's was 160px holding a recall
+   card whose subtitle then overflowed it by 40px. The text did not overflow
+   because it was too long; it overflowed because the figure took everything.
+
+   `minmax(18rem, 1fr)` on the text and `minmax(0, auto)` on the figure reverses
+   who yields. 18rem is 288px, about the narrowest column these paragraphs still
+   read in. Figures carry `max-width: 100%` and scale; the one that clips rather
+   than scales is `.pc-reveal`, and that composition is stacked instead. */
+.split--media-left { grid-template-columns: minmax(0, auto) minmax(18rem, 1fr); }
 /* Media-right variant: text on the left, figure on the right. The figure stays
    first in the source (so it leads on mobile), so `order` swaps the columns on
    desktop — text into the wide left track, figure into the auto right track. */
-.split--media-right { grid-template-columns: minmax(0, 1fr) auto; }
+.split--media-right { grid-template-columns: minmax(18rem, 1fr) minmax(0, auto); }
 .split--media-right .figure { order: 2; }
 .split--media-right .prose { order: 1; max-width: none; }
 /* Main Control (control-unit lesson): the sc_cpu_control module sits on the left,
@@ -568,7 +619,7 @@
 #main-control .mc-side { min-width: 0; }
 #main-control .mc-side .prose { max-width: none; margin: 0; }
 #main-control .mc-table { max-width: none; margin: var(--space-4) 0 0; }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   /* Stack: code + note first, then the paragraphs, then the table. */
   #main-control .mc-split { grid-template-columns: 1fr; }
 }
@@ -582,7 +633,7 @@
 #choosing-tests .ct-split .prose { max-width: none; margin: 0; }
 #choosing-tests .prog-card { margin: 0; width: 100%; }
 #choosing-tests .prog-card .code-editor__hl { font-size: 1.08rem; }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   /* Stack: the explanation first, then the program listing below it. */
   #choosing-tests .ct-split { grid-template-columns: 1fr; }
   #choosing-tests .prog-card { margin-top: var(--space-4); }
@@ -597,7 +648,7 @@
 }
 #branch-logic .bl-text { min-width: 0; max-width: none; margin: 0; }
 #branch-logic .bl-code { min-width: 0; }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   /* Stack: the text first, then the code block below it. */
   #branch-logic .bl-split { grid-template-columns: 1fr; }
 }
@@ -633,7 +684,7 @@
    screen. */
 #coverage .section__head { max-width: none; }
 .cov-heading__break { display: none; }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   #cov-title { font-size: 1.5rem; }
   .cov-heading__break { display: inline; }
 }
@@ -647,7 +698,7 @@
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
-  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  padding: clamp(var(--space-3), calc(3 * var(--vwu)), var(--space-4));
   margin: 0.4rem 0 var(--space-4) var(--space-5);
   color: #fdfdfb;
 }
@@ -668,7 +719,7 @@
    (same VS Code chrome as the lesson's other snippets) sitting under the case it
    illustrates. */
 .edge-card .code-editor { margin: var(--space-2) 0 0; }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .prose--flow .edge-card { float: none; width: 100%; margin: var(--space-4) 0; }
 }
 
@@ -734,7 +785,7 @@
    diagram card a little left of its column (desktop only — the split stacks and
    re-centers on mobile). */
 #multi-bit .prose p { margin-bottom: var(--space-4); }
-@media (min-width: 769px) {
+@media (min-width: 901px) {
   #multi-bit .figure { transform: translateX(-2rem); }
 }
 
@@ -745,7 +796,7 @@
   align-items: center;
   gap: var(--space-3);
   margin-top: var(--space-4);
-  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  padding: clamp(var(--space-3), calc(3 * var(--vwu)), var(--space-4));
   background: var(--paper);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
@@ -795,7 +846,7 @@
    the thumbnail, divided from the GitHub row below by a hairline. */
 .code-card--doc .code-card__thumbwrap {
   display: block;
-  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  padding: clamp(var(--space-3), calc(3 * var(--vwu)), var(--space-4));
   border-bottom: 1px solid var(--hairline);
 }
 .code-card--doc .code-card__thumb {
@@ -809,7 +860,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  padding: clamp(var(--space-3), calc(3 * var(--vwu)), var(--space-4));
 }
 
 /* "Go back / revisit" card — a deliberately DIFFERENT shape from the GitHub
@@ -821,7 +872,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  padding: clamp(var(--space-3), calc(3 * var(--vwu)), var(--space-4));
   background: color-mix(in srgb, var(--accent) 10%, transparent);
   border: 1px solid var(--hairline);
   border-left: 3px solid var(--accent);
@@ -867,7 +918,7 @@
 .figure--media-row {
   display: flex;
   align-items: center;
-  gap: clamp(var(--space-3), 3vw, var(--space-4));
+  gap: clamp(var(--space-3), calc(3 * var(--vwu)), var(--space-4));
   width: 100%;
   max-width: 42rem;
   /* Trim top/bottom padding so the card's height sits just above the image. */
@@ -880,12 +931,12 @@
 }
 .figure--media-row figcaption {
   margin-top: 0;
-  padding: 0 0 0 clamp(var(--space-3), 3vw, var(--space-4));
+  padding: 0 0 0 clamp(var(--space-3), calc(3 * var(--vwu)), var(--space-4));
   border-top: 0;
   border-left: 1px solid var(--hairline);
 }
 /* On narrow screens fall back to the stacked figure look (image over caption). */
-@media (max-width: 40rem) {
+@media (max-width: 900px) {
   .figure--media-row {
     aspect-ratio: auto;
     flex-direction: column;
@@ -945,7 +996,7 @@
   overflow: hidden;
 }
 .figure--photo img { border-radius: 0; display: block; }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   /* Stack to one column; the figure comes first in the DOM, so the mux image
      sits above its explanation. */
   .split,
@@ -977,7 +1028,7 @@
   justify-content: center;
   gap: var(--space-4);
 }
-@media (min-width: 769px) {
+@media (min-width: 901px) {
   /* Back to three across on desktop, filling the section so all six sit larger
      and fit on one screen. */
   .gate-grid {
@@ -1014,7 +1065,7 @@
 .split--textleft { grid-template-columns: minmax(0, 1fr) auto; }
 .split--textleft .prose { order: 1; max-width: none; }
 .split--textleft .mem-card { order: 2; }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   /* Stack card-first on phones (see the diagram, then read about it). */
   .split--textleft { grid-template-columns: 1fr; }
   .split--textleft .mem-card { order: 1; }
@@ -1033,7 +1084,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
    width-capped here. */
 #all-together .together-fig { max-width: 58rem; margin-inline: auto; }
 #all-together .together-fig figcaption { text-align: center; }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .mem-card { width: 100%; }
 }
 
@@ -1085,7 +1136,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .gate-card--solo { max-width: 30rem; margin-inline: auto; }
 /* Nudge a right-column flip card left on the two-column desktop layout so it
    centers over the text column below it. Removed once the split stacks. */
-@media (min-width: 769px) {
+@media (min-width: 901px) {
   .gate-card--nudge-left { transform: translateX(-7rem); }
 }
 .gate-card__inner {
@@ -1127,7 +1178,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
-  padding: clamp(var(--space-2), 2.5vw, var(--space-3));
+  padding: clamp(var(--space-2), calc(2.5 * var(--vwu)), var(--space-3));
   transition: transform 0.2s var(--ease);
 }
 /* Hovering the return arrow bulges the whole card a touch — the mirror of the
@@ -1356,7 +1407,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .prose--flow .code-editor--float-right { width: 33rem; max-width: 100%; }
 .prose--flow .code-editor--float-right { float: right; margin: 0.4rem 0 var(--space-4) var(--space-5); }
 .prose--flow .code-editor--float-left  { float: left;  margin: 0.4rem var(--space-5) var(--space-4) 0; }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .prose--flow .code-editor--float-left,
   .prose--flow .code-editor--float-right {
     float: none; width: 100%; margin: var(--space-4) 0;
@@ -1376,7 +1427,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   background: var(--paper);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
-  padding: clamp(var(--space-2), 3vw, var(--space-3));
+  padding: clamp(var(--space-2), calc(3 * var(--vwu)), var(--space-3));
   box-shadow: var(--shadow-soft);
 }
 .prose--flow .flow-figure img { width: 100%; height: auto; border-radius: var(--radius-sm); }
@@ -1411,19 +1462,32 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
    the caption simply wraps. */
 .pc-reveal-fig figcaption { width: 0; min-width: 100%; box-sizing: border-box; }
 .pc-reveal {
-  --pc-h: 29.6rem;          /* fixed render height, shared by both states      */
-  --pc-w-large: 43.17rem;   /* expanded width  (= --pc-h x 1.4585)             */
-  --pc-w-small: 21.48rem;   /* collapsed width (= --pc-h x 0.7256)             */
+  /* The trio is NOT declared here. It is declared on `.pc-rca-split` /
+     `.pc-branch-split`, which need the same numbers to size their grid track,
+     and a custom property cannot travel upward. The fallbacks below are for any
+     `.pc-reveal` used outside those two splits.
+
+     Why the drawing got smaller: the old 29.6rem height made the track 754px,
+     which was fine while the desktop layout started at 1080 and left 169px for
+     the column beside it at 901 — enough to collapse the code card's text to
+     3px. The height is the only lever, because `.pc-reveal__img` is
+     `height:100%; width:auto` inside `overflow:hidden` and the reveal works by
+     the box's width UNCOVERING the drawing. Narrow the box and the diagram is
+     clipped, not scaled; the drawing only gets smaller if the box gets
+     shorter. */
   position: relative;
-  width: var(--pc-w-large);
+  /* Read, never declared — a declaration here would shadow the split's and put
+     the two numbers back out of step. The fallbacks cover a `.pc-reveal` used
+     outside either split. */
+  width: var(--pc-w-large, 32.09rem);
   max-width: 100%;
-  height: var(--pc-h);
+  height: var(--pc-h, 22rem);
   overflow: hidden;
   background: #fff;         /* the "whitespace" beside the small diagram       */
   border-radius: var(--radius-sm);
   transition: width 0.7s var(--ease);
 }
-.pc-reveal.is-collapsed { width: var(--pc-w-small); }
+.pc-reveal.is-collapsed { width: var(--pc-w-small, 15.96rem); }
 /* Both layers are pinned to the left edge and sized by height, so their shared
    left half lines up; the small one leaves whitespace to its right. Higher
    specificity than `.figure img` so width stays intrinsic (not stretched). */
@@ -1472,7 +1536,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   width: 100%;
   margin-top: var(--space-3);
 }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   /* Scale the whole trio down so the expanded width fits a phone. */
   .pc-reveal { --pc-h: 60vw; --pc-w-large: 89.7vw; --pc-w-small: 43.5vw; }
 }
@@ -1489,19 +1553,52 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
    the widget. In the branch row the widget is left-pinned (margin-inline:0) so it
    slides rightward into the reserved space rather than reflowing the text. Desktop
    only; below 768px both splits stack. */
+/* The widget trio is declared HERE, on the split, rather than on `.pc-reveal`
+   itself. The split's own track has to be the drawing's width plus its padding,
+   and a custom property only travels downward — declared on the descendant, the
+   parent could not read it, so the track carried a second hand-typed copy of
+   the number. It duly went stale the first time the drawing was resized: the
+   widget shrank, the 754px track did not, and the column beside it stayed
+   collapsed. One declaration, read by everything that needs it. */
+/* The widget trio is declared HERE, on the split, not on `.pc-reveal`. A custom
+   property only travels downward, so declared on the descendant the parent could
+   not read it and the numbers were duplicated by hand. The full-size 29.6rem is
+   back: with the split stacked (below) the drawing has the whole column, so
+   there is nothing to trade it against. */
 .pc-rca-split,
-.pc-branch-split { --pc-track: calc(43.17rem + 2 * clamp(var(--space-2), 3vw, var(--space-4))); }
+.pc-branch-split {
+  --pc-h: 29.6rem;
+  --pc-w-large: calc(var(--pc-h) * 1.4585);
+  --pc-w-small: calc(var(--pc-h) * 0.7256);
+}
 .pc-rca-split .prose { max-width: none; }
 /* Drop the paragraph's trailing margin so its box hugs the visible text — then
    align-items:center lands the card centered on the paragraph, not on a box that
    runs taller than the text. */
 .pc-rca-split .prose p { margin: 0; }
 .pc-rca-split .code-card { margin-top: 0; }
-@media (min-width: 769px) {
-  .pc-rca-split,
-  .pc-branch-split { grid-template-columns: var(--pc-track) minmax(0, 1fr); }
-  .pc-branch-split .pc-reveal-fig { margin-inline: 0; }
-}
+/* ONE COLUMN, at every width, on both sides of the line.
+
+   This used to be `grid-template-columns: var(--pc-track) minmax(0, 1fr)` above
+   769px: a fixed 754px track holding the drawing, with the prose and the code
+   card in what was left. The reserved track existed so that expanding the widget
+   slid it rightward into space already set aside instead of reflowing the
+   paragraph beside it, which was the right call for the width it was tuned at.
+
+   It cannot survive a desktop mode that starts at 901px. 901 leaves 815px of
+   content box; the track wants 754 of it, and the column beside it collapsed the
+   code card's text to 3px. Shrinking the drawing does not rescue it either —
+   giving the card a readable 350px needs the height down at 17rem, and a datapath
+   schematic 400px wide cannot be read at all.
+
+   So the composition stacks instead, and it loses nothing: only the widget's
+   WIDTH animates, its height is fixed, so anything below it never moves. The
+   reflow the reserved track was invented to prevent cannot happen in this
+   arrangement. The drawing gets the full column back at its original size, and
+   there is one rendering of this page at every desktop width. */
+.pc-rca-split,
+.pc-branch-split { grid-template-columns: minmax(0, 1fr); }
+.pc-branch-split .pc-reveal-fig { margin-inline: 0; }
 
 /* --- Step 2 "operate" reveal (next-phase -> next-phase-2) --------------------
    A FULL-WIDTH widget: left-pinned, it grows from a collapsed size to span the
@@ -1528,7 +1625,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   width: fit-content;
   max-width: 100%;
   margin: 0;
-  padding: clamp(var(--space-2), 3vw, var(--space-4));
+  padding: clamp(var(--space-2), calc(3 * var(--vwu)), var(--space-4));
   background: var(--paper);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
@@ -1538,7 +1635,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   /* Expanded width = the full column minus the card's padding (and border) on
      both sides, so the white surface sits INSIDE the card and the card itself
      reaches the margins. */
-  --op-pad: clamp(var(--space-2), 3vw, var(--space-4));
+  --op-pad: clamp(var(--space-2), calc(3 * var(--vwu)), var(--space-4));
   --op-full: calc(100cqw - 2 * var(--op-pad) - 4px);
   position: relative;
   width: var(--op-full);               /* expanded                              */
@@ -1614,12 +1711,17 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 /* Vertically span the diagram box so align-items:center lands the arrow on its
    middle (the box height differs per widget). */
 .pc-reveal-fig .reveal-hint {
-  top: clamp(var(--space-2), 3vw, var(--space-4));
-  height: 29.6rem;                       /* = --pc-h */
+  top: clamp(var(--space-2), calc(3 * var(--vwu)), var(--space-4));
+  /* Was a hand-typed 29.6rem copy of --pc-h and went stale the moment the
+     drawing was resized. Reads the property now. */
+  height: var(--pc-h, 22rem);
 }
 .op-reveal-fig .reveal-hint {
-  top: clamp(var(--space-2), 3vw, var(--space-4));
-  height: calc((100cqw - 2 * clamp(var(--space-2), 3vw, var(--space-4)) - 4px) / 2.229);
+  top: clamp(var(--space-2), calc(3 * var(--vwu)), var(--space-4));
+  /* The subtracted term must stay identical to .op-reveal-fig's own padding or
+     the hint stops matching the box it is measuring, so it takes the frozen
+     unit too. `100cqw` is container-relative and is left alone. */
+  height: calc((100cqw - 2 * clamp(var(--space-2), calc(3 * var(--vwu)), var(--space-4)) - 4px) / 2.229);
 }
 .pc-reveal-fig:has(.pc-reveal.is-collapsed) .reveal-hint,
 .op-reveal-fig:has(.op-reveal.is-collapsed) .reveal-hint { opacity: 1; }
@@ -1627,7 +1729,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   .reveal-hint__svg { animation: none; }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   /* On phones the card fills the width, leaving no room beside it — hide the hint. */
   .reveal-hint { display: none; }
   .prose--flow .flow-figure--float-left,
@@ -1645,7 +1747,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   max-width: 100%;
   margin: 0.4rem 0 var(--space-4) var(--space-5);
 }
-@media (max-width: 1100px) {
+@media (max-width: 900px) {
   .prose--flow .code-card--aside {
     float: none; width: 100%; max-width: 36rem; margin: var(--space-4) auto;
   }
@@ -1667,7 +1769,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 #arith-logic .arith-lead {
   display: flex;
   align-items: center;
-  gap: clamp(var(--space-3), 4vw, var(--space-5));
+  gap: clamp(var(--space-3), calc(4 * var(--vwu)), var(--space-5));
 }
 #arith-logic .arith-lead__text { flex: 1 1 0; min-width: 0; }
 /* Avoid a lone short word on the last line (e.g. "register") — pull it up. */
@@ -1678,7 +1780,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 /* Clear paragraph break between the lead block (paragraphs 1–2) and the third
    paragraph that follows below it. */
 #arith-logic .arith-lead + p { margin-top: var(--space-3); }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   /* Stack: text first, then the diagram, then the third paragraph below. */
   #arith-logic .arith-lead { flex-direction: column; }
   #arith-logic .arith-lead__fig {
@@ -1686,20 +1788,20 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   }
 }
 
-@media (min-width: 1025px) {
-  #arith-logic .arith-lead__fig { flex-basis: 38rem; max-width: 38rem; }
-  #data-transfer .flow-figure--float-right { width: 40rem; }
+@media (min-width: 901px) {
+  #arith-logic .arith-lead__fig { flex-basis: 38rem; max-width: min(38rem, 100%); }
+  #data-transfer .flow-figure--float-right { width: min(40rem, 100%); }
   /* The i-type / s-type banners sit image-left, text-right; give them room to
      read on large screens (they keep the default figure width on mid widths). */
-  #data-transfer .split--media-left .figure--diagram { max-width: 38rem; }
+  #data-transfer .split--media-left .figure--diagram { max-width: min(38rem, 100%); }
   /* The sb-type / uj-type branch diagrams and the addi diagram sit image-right,
      text-left; match the Data Transfer banners' large-screen width. */
   #control-flow .split--media-right .figure--diagram,
-  #register-immediate .split--media-right .figure--diagram { max-width: 38rem; }
+  #register-immediate .split--media-right .figure--diagram { max-width: min(38rem, 100%); }
 }
 /* Whole Kit: the full single-cycle datapath sits image-right; give the detailed
    diagram room to read (capped so the wrap-up copy keeps a comfortable measure). */
-#whole-kit .split--media-right .figure--diagram { max-width: 42rem; }
+#whole-kit .split--media-right .figure--diagram { max-width: min(42rem, 100%); }
 
 /* Field-name <code> tinted to the colors of the R-type diagram
    (assets/single-cycle-cpu/r-type.jpg) so a field named in the prose reads as
@@ -1901,7 +2003,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .dmem-layout {
   display: flex;
   align-items: flex-start;               /* card + waveform ride up to the top */
-  gap: clamp(var(--space-3), 3vw, var(--space-4));
+  gap: clamp(var(--space-3), calc(3 * var(--vwu)), var(--space-4));
   margin-top: var(--space-2);
 }
 /* Drop the card's top by the same space-4 the intro paragraph uses, so its top
@@ -2058,7 +2160,12 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 /* The register-file card is bigger than the memory cards (a wider card that its
    square-ish diagram also makes taller), which gives its module room to read at
    a comfortable size without a scrollbar. */
-#register-files .mem-card { width: 38rem; max-width: 38rem; }
+/* `min(..., 100%)`, because a rem cap is a PREFERENCE for how wide the card
+   should read and the column is a HARD limit. Bare 38rem is 608px and the grid
+   track is 536px at 920, so the card hung 72px out of its own split. Every
+   figure cap below takes the same treatment for the same reason: they were all
+   written when the desktop layout began at 1025px or more. */
+#register-files .mem-card { width: min(38rem, 100%); max-width: min(38rem, 100%); }
 #register-files .code-editor__hl,
 #register-files .code-editor__ta { font-size: 0.74rem; }
 
@@ -2073,7 +2180,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   background: var(--paper);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
-  padding: clamp(var(--space-4), 5vw, var(--space-5));
+  padding: clamp(var(--space-4), calc(5 * var(--vwu)), var(--space-5));
   box-shadow: var(--shadow-soft);
 }
 
@@ -2091,7 +2198,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 }
 .quiz__q {
   font-family: var(--font-body);
-  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+  font-size: clamp(1.2rem, calc(2.2 * var(--vwu)), 1.5rem);
   font-weight: 400;
   font-style: italic;
   text-align: center;
@@ -2126,11 +2233,11 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   opacity: 0;
   transition: width 0.55s var(--ease), opacity 0.45s var(--ease) 0.45s;
 }
-.quiz.is-solved .quiz__reveal { gap: clamp(0.75rem, 2.5vw, 1.75rem); }
+.quiz.is-solved .quiz__reveal { gap: clamp(0.75rem, calc(2.5 * var(--vwu)), 1.75rem); }
 .quiz.is-solved .quiz__figure--tt { width: min(26rem, 58%); }
 .quiz.is-solved .quiz__figure--cout { width: min(18rem, 40%); opacity: 1; }
 /* Narrow screens: stack the two panels instead of squeezing them side by side. */
-@media (max-width: 600px) {
+@media (max-width: 900px) {
   .quiz.is-solved .quiz__figure--tt { width: min(30rem, 100%); }
   .quiz.is-solved .quiz__figure--cout { width: min(24rem, 100%); }
 }
@@ -2154,7 +2261,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   max-width: none;
   background: #fff;
   border-radius: var(--radius-sm);
-  padding: clamp(var(--space-3), 4vw, var(--space-5));
+  padding: clamp(var(--space-3), calc(4 * var(--vwu)), var(--space-5));
 }
 .quiz__figure--equality img { max-width: 40rem; margin-inline: auto; }
 /* Testing Check Yourself: the finished-ALU sketch on the same full-width white
@@ -2165,7 +2272,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   max-width: none;
   background: #fff;
   border-radius: var(--radius-sm);
-  padding: clamp(var(--space-3), 4vw, var(--space-5));
+  padding: clamp(var(--space-3), calc(4 * var(--vwu)), var(--space-5));
 }
 .quiz__figure--alu img { max-width: 22rem; margin-inline: auto; }
 .quiz__figure--slice {
@@ -2183,7 +2290,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .quiz.is-solved .quiz__figure--slice { width: min(22rem, 40%); }
 .quiz.is-solved .quiz__figure--demorgan { width: min(34rem, 56%); opacity: 1; }
 /* Narrow screens: stack the two panels instead of squeezing them side by side. */
-@media (max-width: 600px) {
+@media (max-width: 900px) {
   .quiz.is-solved .quiz__figure--slice { width: min(24rem, 100%); }
   .quiz.is-solved .quiz__figure--demorgan { width: min(30rem, 100%); }
 }
@@ -2213,7 +2320,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .quiz.is-solved .quiz__figure--instr  { width: min(28rem, 46%); }
 .quiz.is-solved .quiz__figure--decode { width: min(34rem, 50%); opacity: 1; }
 /* Narrow screens: stack the two panels instead of squeezing them side by side. */
-@media (max-width: 600px) {
+@media (max-width: 900px) {
   .quiz.is-solved .quiz__figure--instr  { width: min(30rem, 100%); }
   .quiz.is-solved .quiz__figure--decode { width: min(34rem, 100%); }
 }
@@ -2428,14 +2535,14 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   text-align: center;
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  font-size: clamp(1.15rem, calc(2.2 * var(--vwu)), 1.4rem);
   color: #fdfdfb;
 }
 /* Two next-project stubs sit side by side beneath the completion message,
    wrapping onto separate lines when the card is too narrow. */
 .quiz__done-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
 
-@media (max-width: 560px) {
+@media (max-width: 900px) {
   .quiz__options { grid-template-columns: 1fr; }
 }
 
@@ -2568,7 +2675,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 /* ------------------------------------------------------------------ *
    RESPONSIVE
  * ------------------------------------------------------------------ */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   /* Stack the hero: text first, then the ALU block diagram below it.
      The clamp minimum for padding-block-start depends on --space-6, which the
      mobile variable override shrinks to 3.5 rem — leaving only ~14 px of
@@ -2624,7 +2731,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .handson-grid.playtime-grid .alu-widget {
   display: grid;
   grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
-  gap: clamp(var(--space-3), 3vw, var(--space-5));
+  gap: clamp(var(--space-3), calc(3 * var(--vwu)), var(--space-5));
   align-items: stretch;
   margin-top: 0;
   padding: 0;
@@ -2642,7 +2749,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
-  padding: clamp(var(--space-4), 5vw, var(--space-5));
+  padding: clamp(var(--space-4), calc(5 * var(--vwu)), var(--space-5));
 }
 .playtime-right { display: flex; flex-direction: column; gap: var(--space-4); }
 .playtime-intro { max-width: none; margin: 0; }
@@ -2650,14 +2757,14 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
    bottom-right of the datapath, with the copy above it. */
 .handson-grid.playtime-grid .alu-panel {
   margin-top: auto;
-  padding: clamp(var(--space-3), 3vw, var(--space-4));
+  padding: clamp(var(--space-3), calc(3 * var(--vwu)), var(--space-4));
   background: var(--paper);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .handson-grid.playtime-grid .alu-widget { grid-template-columns: 1fr; }
   .handson-grid.playtime-grid .alu-panel { margin-top: 0; }
 }
@@ -2705,7 +2812,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   margin-top: var(--space-3);
 }
 .mode-switch__tab { justify-content: center; padding-inline: 0.75rem; }
-@media (max-width: 520px) {
+@media (max-width: 900px) {
   /* Too narrow for three across without the labels crowding: stack them. */
   .mode-switch__tabs { grid-auto-flow: row; }
 }

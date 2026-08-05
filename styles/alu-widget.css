@@ -365,7 +365,7 @@
 /* ------------------------------------------------------------------ *
    RESPONSIVE
  * ------------------------------------------------------------------ */
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   /* stack: panel on top, datapath below; panel stops being sticky */
   .alu-widget { grid-template-columns: 1fr; gap: var(--space-3); align-items: start; }
   .alu-panel { position: static; top: auto; }

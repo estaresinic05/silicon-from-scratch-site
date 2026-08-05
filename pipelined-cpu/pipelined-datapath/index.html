@@ -196,7 +196,7 @@
         <!-- No top margin: the preceding paragraph's own bottom margin already
              supplies the standard between-paragraphs gap, so this block sits the
              same distance below it as any two paragraphs in a shared column. -->
-        <div class="prose" style="margin: 0; max-width: none;">
+        <div class="prose prose--full" style="margin: 0;">
           <p>
             The PC is a special case. It sits at the front of the datapath and
             feeds instruction memory every cycle, yet we do not count it as a
@@ -227,7 +227,7 @@
           <h2 id="pdg-title">Pipeline Diagrams</h2>
         </div>
 
-        <div class="prose" style="margin: 0; max-width: none;">
+        <div class="prose prose--full" style="margin: 0;">
           <p>
             It helps to put a worked example in front of us. The five
             instructions we will follow through the pipeline are
@@ -257,7 +257,7 @@
                decoding="async" />
         </figure>
 
-        <div class="prose" style="margin: var(--space-5) 0 0; max-width: none;">
+        <div class="prose prose--full" style="margin: var(--space-5) 0 0;">
           <p>
             The multiple cycle diagram turns that same execution on its side.
             Every row is one instruction and every column is one clock cycle, so

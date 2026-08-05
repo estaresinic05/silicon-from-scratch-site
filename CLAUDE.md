@@ -59,16 +59,32 @@ These are not preferences to weigh. They are how the site is written.
    Every instance of a component must look and behave identically across pages.
 6. **Every page's top bar uses the logo *symbol* image**, never a plain purple
    dot. Copy the bar from an existing page.
-7. **Size in `rem`/`clamp()`/`%`, never `px`,** except hairlines and radii. One
-   layout that scales; nothing hidden by width. The full reasoning is the first
+7. **Two modes, one line at 900px.** The site is a desktop layout and a phone
+   layout with nothing in between. `(max-width: 900px)` is the phone; `(min-width:
+   901px)` is the desktop. There is no third rendering, and no new breakpoint may
+   be introduced on either side of the line. The full reasoning is the first
    section of `STYLE_GUIDE.md`.
+
+   **Type and rhythm are fixed inside each mode.** The root font-size is a step,
+   16px above the line and 13px below it, not the `clamp()` ramp it used to be.
+   **No `vw` term may cross the line**: `Nvw` is written `calc(N * var(--vwu))`,
+   where `--vwu` is one `vw` frozen at that mode's reference width, 12.8px on
+   desktop and 3.9px on a phone. A live `vw` in type or spacing is what produced
+   the visible gradient this replaced, where every rem on the site slid
+   continuously between 1032 and 1288px.
+
+   **Fluid is still right for the things that track the window by design** —
+   container widths, gutter maths, `vh`, `cqw`, and guards of the
+   `min(360px, 86vw)` shape, which is load-bearing: freeze it and the drawer
+   pins at 335px and overflows a 320px screen. Size those in
+   `rem`/`clamp()`/`%`; reach for `px` only for hairlines and radii.
 
    Two deliberate exceptions, both in `styles/mobile.css` and both explained in
    the `mobile-scheme` skill: **the phone scheme is a media query**, because
    "must not affect desktop" is only guaranteed by a rule that cannot match at
    desktop widths; and **touch targets inside it are sized in `px`**, because
-   the fluid root clamps to 13px on a phone and would otherwise shrink every
-   control by 19% exactly where a thumb needs more room, not less.
+   the root steps to 13px on a phone and would otherwise shrink every control by
+   19% exactly where a thumb needs more room, not less.
 8. **`--fill` is a background behind white text; `--accent` is text on the page.**
    They are two different purples and are not interchangeable. Derive tints with
    `color-mix(...)` — never hand-type an `rgba()` purple, which freezes an old
@@ -177,7 +193,10 @@ no clone had.
 | `cleanup-guardian` (`.claude/agents/`) | Finds genuinely unused files, quarantines them, proves the site still works. Never deletes without approval. |
 | `tools/mobile-shots.py` | Batch phone/tablet screenshots, portrait and landscape, with real device emulation. |
 | `tools/mobile-audit.py` | Walks the DOM at four device profiles and reports every element wider than the viewport, by name. Finds what screenshots cannot. |
-| `tools/desktop-unchanged.py` | **The gate for any phone work.** Measures every element with `mobile.css` enabled, disables it in the same page load, measures again. Any difference at 1280/1600 is a regression. |
+| `tools/desktop-unchanged.py` | **The gate for a phone fix.** Measures every element with `mobile.css` enabled, disables it in the same page load, measures again. Any difference at 1280/1600 is a regression. Meaningless when desktop is *meant* to change — for that, see the two below. |
+| `tools/width-sweep.py` | **The gate for the mode line.** Fingerprints the page at every width in a sweep and reports each change as a STEP (a breakpoint working) or a CREEP (a fluid value sliding, which is a gradient a reader can see). Everything should step at 900 and nowhere else. |
+| `tools/text-conflicts.py` | **The other gate.** Finds text drawn over other text, and text spilling its container, across a width sweep. Neither shows up as overflow, so `mobile-audit.py` cannot see them. |
+| `tools/freeze-vw.py` | Did the mechanical `Nvw` → `calc(N * var(--vwu))` conversion, 106 terms. Kept because it documents what it deliberately skipped. |
 | `tools/tap-targets.py` | Lists every tappable control under 44px, skipping the ones that are inert by design. |
 | `tools/cut-fillers.py` | Finds the "um"s in a sheet-video master, cuts the longest half, re-encodes to the site's spec. `--plan` first, always. Whisper deletes fillers from its output, so they are found in the waveform and named run by run. |
 | `meet-the-processor/verify/` | Python checks for the 3D scene: affordance behaviour, stop composition, region coverage. Run these after editing `scene.js`. |
