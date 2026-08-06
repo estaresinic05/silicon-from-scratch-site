@@ -3954,7 +3954,7 @@ const SUBJECTS = {
    a slug is in here the media half shows "video coming soon" instead of a
    broken player. */
 const HAVE_VIDEO = new Set(['zen5-core', 'instruction-fetch', 'scheduling',
-                            'load-store', 'integer-execution']);
+                            'load-store', 'integer-execution', 'ifop-phy']);
 
 /* Written, but deliberately NOT in SUBJECT_OF below, so nothing on screen opens
    them yet: only the twelve blocks that were asked for are wired up. The copy is

@@ -1528,8 +1528,35 @@ note, which `.has-video` hides once there is something to play. Wired so far:
 | `scheduling` | Scheduler | 1:47 | 14 MB |
 | `load-store` | Load / Store | 2:10 | 16 MB |
 | `integer-execution` | Integer Execution | 2:17 | 19 MB |
+| `ifop-phy` | IFOP PHY | 2:51 | 21 MB |
 
-`integer-execution` is the only one assembled from more than one take:
+`ifop-phy` is the longest, and the most joined: five takes, `ifop-explainer1`
+through `5`, in order. They are one script — what the PHY is, ending on "but
+when would we need to use this piece of hardware?", then the example that
+answers it, then how it does it, then why it has to, then the closing line.
+
+**Every join dissolves, and the lengths are uneven because the takes are:**
+0.20s, 0.16s, 0.15s, 0.40s. The binding constraint is not how badly a seam
+scores, it is AIR — these five were shot tight, one stopping 0.08s after the last
+word and another starting 0.04s in, so the silence on both sides of three of the
+four joins is worth two to five frames. What buys the rest is that at every join
+one side is dead air, and a crossfade against silence is a trail-off or a soft
+attack rather than two voices at once. Only 4 → 5 has real room on both sides,
+which is why it is the only one that gets a proper 0.40s.
+
+**If longer dissolves are wanted throughout, they have to be bought in the
+shooting** — a held beat of silence at the top and tail of each take — because no
+edit can manufacture it afterwards. The per-join measurements and the reasoning
+for each length are written out in `tools/cut-ifop-explainer.sh`, which is what
+reproduces the clip that shipped.
+
+> The take now numbered 1 is a re-shoot. The original ran 1:50 and contained the
+> whole explanation, which takes 3 and 4 then re-did word for word — splicing
+> that version would have played the piece twice. **When takes arrive numbered,
+> transcribe them all and read them side by side before assuming the numbers are
+> an order.**
+
+`integer-execution` is the other one assembled from more than one take:
 `ieu-explainer1/2/3.mov`, joined with a 0.5 s crossfade at each seam. The three
 are one continuous explanation recorded in three sittings, so the speech runs
 straight across both joins and take 2 restarts the sentence take 1 ended on,
