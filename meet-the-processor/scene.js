@@ -132,7 +132,11 @@ const STAGES = [
   { t: 0.398, num: '02', title: 'Bare Silicon',
     body: 'The lid lifts away, and underneath sit two separate pieces of silicon: a compute die carrying the cores, and an I/O die handling memory and PCIe. Up close both are just polished silicon, scratched and dusty, because you are looking at the back of the die. Everything that matters is buried beneath this surface.' },
   { t: 0.512, num: '03', title: 'The Floorplan Beneath',
-    body: 'The underside of the compute die is where the magic happens. Eight Zen 5 cores flank a shared 32 MB L3 cache, and a strip of support logic runs the width of the die beneath them. On a 9600X, six of those eight cores are enabled.' },
+    /* "along the edge facing the I/O die", not "beneath them": the photograph
+       is laid down a half turn round so the IFOP PHY faces the die it talks to,
+       and the strip is now at the far edge of the frame rather than the near
+       one. See the half turn above CORE_U. */
+    body: 'The underside of the compute die is where the magic happens. Eight Zen 5 cores flank a shared 32 MB L3 cache, and a strip of support logic runs the width of the die along the edge facing the I/O die. On a 9600X, six of those eight cores are enabled.' },
   { t: 0.800, num: '04', title: 'Inside One Core',
     body: 'A single core is a complete computer in miniature. It keeps its own private L1 and L2 caches close at hand, its own logic for fetching instructions and predicting branches, its own registers, and separate execution units for integer work, for vector and floating point calculations, and for the loads and stores that reach out to memory. All of it is repeated eight times across the die.' },
   { t: 0.888, num: '05', title: 'The Metal Stack',
@@ -629,8 +633,50 @@ const sFloor = surface(0.004, 2, {
 const ccdFace = faceLabel(DIE_W, DIE_H, 'Core Complex Die', 0.072, 0.008);
 chip.add(ccdFace);
 
-// The bottom-left core — the one the annotated reference documents.
-const CORE_U = [0.015, 0.350], CORE_V = [0.6193, 0.8176];
+/* --- the die photograph is laid down a half turn round ----------------
+   The die shot is published with the IFOP PHY and the test/debug band along
+   its BOTTOM edge, and the scene used to lay it on the die that way up. Image
+   v runs to the die's +z, so that put the PHY on the NEAR edge — pointing away
+   from the I/O die it exists to talk to, which sits at IOD_Z -3.35 against this
+   die's +8.80 and is therefore a long way to -z. The photograph is turned half
+   a turn on the way into the scene, which faces the PHY and the test/debug band
+   at the I/O die where they belong and starts the cores at the near edge.
+
+   This turns the CONTENT, not the slab. The die keeps its measured place on the
+   substrate, the package is untouched, and every camera key is left exactly as
+   it was written. It does move what is ON the die, which is the point: the
+   region tiles land the other way up, and the one core stage 04 descends into
+   travels from the die's near-left corner to its far-right one. The camera
+   follows it there for free, because every key in that stage is written against
+   coreCX / coreCZ rather than in absolute coordinates.
+
+   Everything traced on the photograph turns with it, by the point reflection
+   (u,v) -> (1-u,1-v). The measurements below are left EXACTLY as measured, in
+   the published frame, and turned once here — every comment in this file cites
+   a texture-energy step, a traced edge or a luminance peak in that frame, and
+   re-typing three hundred coordinates would strand all of it. The two
+   photographs themselves are turned by a uv transform for the same reason: the
+   files on disk stay the frame the measurements were taken in.
+
+   A point reflection is a ROTATION, not a mirror, so winding is preserved and
+   insetRing and ExtrudeGeometry see every outline exactly as they saw it. */
+const turnSpan = ([a, b]) => [1 - b, 1 - a];
+const turnPt = (p) => [1 - p[0], 1 - p[1]];
+const turnRegion = (r) => ({
+  ...r,
+  ...(r.u ? { u: turnSpan(r.u), v: turnSpan(r.v) } : null),
+  ...(r.polys ? { polys: r.polys.map((ring) => ring.map(turnPt)) } : null),
+  ...(r.at ? { at: turnPt(r.at) } : null),
+});
+/* Applied where the two die photographs are loaded. center must be set with it:
+   a texture rotates about its uv origin otherwise, which for a half turn puts
+   the whole image outside [0,1] and leaves the clamp smearing one corner texel
+   across the surface. */
+const turnTex = (t) => { t.center.set(0.5, 0.5); t.rotation = Math.PI; return t; };
+
+/* The photograph's bottom-left core, the one the annotated reference documents.
+   The half turn carries it to the die's far-right corner. */
+const CORE_U = turnSpan([0.015, 0.350]), CORE_V = turnSpan([0.6193, 0.8176]);
 const coreW = (CORE_U[1] - CORE_U[0]) * DIE_W;
 const coreH = (CORE_V[1] - CORE_V[0]) * DIE_H;
 const coreCX = -DIE_W / 2 + (CORE_U[0] + CORE_U[1]) / 2 * DIE_W;
@@ -704,7 +750,7 @@ const REGIONS = [
   { id: 'test',  u: [DIE_L, TEST_R],      v: [STRIP_MID, STRIP_BOT], group: 'strip', color: '#9b6cf0', label: 'Test / Debug' },
   { id: 'ifop1', u: [TEST_R, IFOP_SPLIT], v: [STRIP_MID, STRIP_BOT], group: 'strip', color: '#1d9a7d', label: 'IFOP PHY' },
   { id: 'ifop2', u: [IFOP_SPLIT, DIE_R],  v: [STRIP_MID, STRIP_BOT], group: 'strip', color: '#1d9a7d', label: 'IFOP PHY' },
-];
+].map(turnRegion);   // measured in the published frame, drawn in the turned one
 
 const GROUPS = ['cores', 'l3', 'strip'];
 
@@ -1074,16 +1120,25 @@ const RIPPLE = {
   strip: 0.34,      // 4 slabs
 };
 
-/* Ripple order within each group. The cores zig-zag down the die, left column
-   then right, so the wave reads as crossing it rather than as two columns
-   filling independently. */
+/* Ripple order within each group. The cores zig-zag ACROSS THE FRAME, starting
+   at the die's far edge and coming toward the camera, left column then right
+   within each row, so the wave reads as crossing the die rather than as two
+   columns filling independently.
+
+   Both orders below are written on the DRAWN position, not on the id or on the
+   photograph. The ids number the photograph's rows and columns, and the half
+   turn above CORE_U reverses both on screen: core-l1 is drawn at the near
+   right, core-r4 at the far left, and the strip's test/debug end swaps sides
+   with its second IFOP PHY. Ranking on where a tile actually is keeps the wave
+   running the way it always has. Ranks must stay CONSECUTIVE INTEGERS: k is
+   raw/max, so a gappy rank would space the beats unevenly. */
 const RIPPLE_ORDER = {
   cores: (r) => {
     const row = +r.id.slice(-1) - 1;
-    return row * 2 + (r.id.startsWith('core-r') ? 1 : 0);
+    return (3 - row) * 2 + (r.id.startsWith('core-l') ? 1 : 0);
   },
   l3: () => 0,
-  strip: (r) => ['smu', 'test', 'ifop1', 'ifop2'].indexOf(r.id),
+  strip: (r) => ['smu', 'ifop2', 'ifop1', 'test'].indexOf(r.id),
 };
 
 const overlays = {};
@@ -1573,7 +1628,7 @@ const CORE_BLOCKS = [
        [0.6004,0.7094], [0.5541,0.7094], [0.5541,0.6707], [0.5566,0.6707],
        [0.5566,0.5739], [0.5725,0.5739], [0.5725,0.5346], [0.5903,0.5346]],
     ] },
-];
+].map(turnRegion);   // traced on core-detail.jpg, drawn on it turned
 
 /* Slab thickness for every piece of core geometry — the stage-07 tiles and the
    stage-08 lift blocks alike. The core is 0.335 of the die's width and the
@@ -3031,11 +3086,19 @@ const KEYS = [
   { t: 0.468, p: [ 2.41, 6.56, 13.66], l: [0, -0.78, 0], f: 35 },
   { t: 0.494, p: [-0.96, 7.77, 13.78], l: [0, -0.78, 0], f: 34 },
   { t: 0.520, p: [-3.88, 8.26, 11.93], l: [0, -0.78, 0], f: 35 },
-  /* The look-at starts drifting onto the core well before the camera does. This
-     key also moved in and down (it was [-5.0, 7.4, 8.4]) to even out the run
+  /* This key moved in and down (it was [-5.0, 7.4, 8.4]) to even out the run
      into the core: at 5.4 and 4.8 units against the 5.6 before it, the approach
-     is three segments of roughly equal speed instead of a slow one and a fast. */
-  { t: 0.565, p: [-4.54, 4.27,  7.42], l: [coreCX * 0.45, 0, coreCZ * 0.45], f: 36 },
+     is three segments of roughly equal speed instead of a slow one and a fast.
+
+     The look-at used to drift onto the core here, at [coreCX * 0.45, 0,
+     coreCZ * 0.45], leading the camera into the move. The half turn above
+     CORE_U put the core in the OPPOSITE corner from this key, so that lead
+     became a swing across the die: it flattened the shot from 30 to 23 degrees
+     and dropped the die's near edge out of frame, ending the floorplan on a low
+     pass rather than on the whole die held. Holding the sweep's own look point
+     one key longer restores it exactly — 30.1 degrees against the 30.0 it had —
+     and the drift onto the core simply happens over the next leg instead. */
+  { t: 0.565, p: [-4.54, 4.27,  7.42], l: [0, -0.78, 0], f: 36 },
   /* --- one core ---
      This used to arrive at 7.6 units of height over 2.6 of standoff and hold
      there: 71 degrees of elevation, all but straight down. Every slab lifting
@@ -5204,11 +5267,26 @@ const setMap = (mat, tex) => { mat.map = tex; mat.needsUpdate = true; };
 const DEFERRED = [
   ['./assets/die-backside.jpg',  (t) => setMap(sBack.material, t)],
   ['./assets/iod-backside.jpg',  (t) => setMap(iodTopMat, t)],
-  ['./assets/iod-floorplan.jpg', (t) => setMap(iodFloorMat, t)],
+  /* Turned with the CCD's shot. Nothing is traced on the I/O die — it carries
+     no regions, no highlights and no camera of its own — so unlike the CCD this
+     is the texture transform alone and nothing downstream has to follow.
+
+     Also unlike the CCD, this one is not settled by the model. The CCD's
+     orientation is provable from inside the scene: its IFOP PHY has to face
+     this die, and IOD_Z fixes which edge that is. The I/O die's own tell would
+     be its two IFOP PHYs sitting side by side along the edge facing the two CCD
+     sites, and they are not identifiable in this photograph — the long edges
+     carry a row of eleven identical macros on one and repeating groups on the
+     other, neither of which reads as a pair. Turned on Elliot's call, 2026-08-05.
+     If it ever needs settling, settle it on the photograph, not in here. */
+  ['./assets/iod-floorplan.jpg', (t) => setMap(iodFloorMat, turnTex(t))],
+  /* Both die photographs go on turned, with the coordinates traced on them —
+     see the half turn above CORE_U. */
   ['./assets/die-floorplan.jpg', (t) => {
-    setMap(sFloor.material, t);
+    setMap(sFloor.material, turnTex(t));
   }],
   ['./assets/core-detail.jpg',   (t) => {
+    turnTex(t);
     setMap(sCore.material, t);
     coreTiles.forEach((tl) => setMap(tl.face, t));
   }],

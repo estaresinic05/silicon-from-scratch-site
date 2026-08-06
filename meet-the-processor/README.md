@@ -37,7 +37,7 @@ This folder is completely self-contained and **cannot affect the live site**:
 | 01 | The Packaged Chip | The AM5 package under its nickel lid, slowly settling square |
 | 02 | Bare Silicon | The IHS rises and drifts away, both dies are revealed, and the camera comes to eye level beside them |
 | 03 | The Floorplan Beneath | Delayers, then regions bloom in as flat colour; parks with every region up and fully filled |
-| 04 | Inside One Core | Descends into the bottom-left core; its 29 blocks rise as glass slabs a beat at a time, in the order an instruction meets them, while the camera orbits low |
+| 04 | Inside One Core | Descends into the photograph's bottom-left core, which the half turn below draws at the die's far-right corner; its 29 blocks rise as glass slabs a beat at a time, in the order an instruction meets them, while the camera orbits low |
 | 05 | The Metal Stack | 15 graded copper tiers cascade apart from the bottom up, a pulse of light climbs them, and the camera flies in among them |
 | 06 | The Cell Rows | The stack folds back down, top first, leaving its lowest gap open as a room; M1 turns to glass and a field of standard cell rows shows through the floor |
 | 07 | A Closer Look | A dive into one tile, which resolves into a CMOS inverter and then switches, on a loop, driving a pulse up its output via into the copper overhead |
@@ -84,6 +84,44 @@ two IFOP PHY blocks (u 0.335–0.640 and 0.655–0.985).
 > **vertical flip**, not a rotation — one of them was flipped in editing. All
 > coordinates above are measured in the die-shot texture actually used here,
 > which is what governs; don't transplant coordinates between the two images.
+
+### The half turn
+
+Every coordinate in this README and in `scene.js` is stated in the **published
+frame** of `die-floorplan.jpg`: IFOP PHY and Test/Debug along the bottom edge,
+cores above them. The scene draws the photograph **a half turn round** from
+that, and turns everything traced on it with it, by the point reflection
+`(u,v) → (1-u,1-v)`.
+
+The reason is the I/O die. Image *v* runs to the CCD's `+z`, so laying the
+photograph down as published put the IFOP PHY on the die's near edge, pointing
+away from the die it exists to talk to — the I/O die sits at `IOD_Z −3.35`
+against this die's `+8.80`, a long way to `−z`. Turned, the PHY and the
+Test/Debug band face it, and the cores start at the near edge.
+
+It is one lever, `turnRegion` above `CORE_U`, applied to `REGIONS`,
+`CORE_BLOCKS` and `CORE_U`/`CORE_V`, plus a uv transform on the two die
+photographs as they load. The measurements are deliberately **left as
+measured** — every note in here about a texture-energy step, a traced edge or a
+luminance peak cites the published frame, and re-typing three hundred
+coordinates would strand all of it. A point reflection is a rotation, not a
+mirror, so winding is preserved and `insetRing` and `ExtrudeGeometry` see every
+outline exactly as they saw it.
+
+What it moves, and what it does not:
+
+- **The camera path is untouched.** Every key in stage 04 is written against
+  `coreCX`/`coreCZ`, so the core shot follows the core to the die's far-right
+  corner unchanged. The two legs that *connect* to it cover more ground as a
+  result: 0.565→0.640 goes 73 → 158 on `camera-speed.py`, and 0.816→0.842 goes
+  206 → 443, both still well under the 520 that counts as a lurch.
+- **The reveal waves are ranked on the drawn position**, not on the region ids,
+  which number the photograph's rows and columns. See `RIPPLE_ORDER`.
+- **Stage 03's caption** says the support strip runs along the edge facing the
+  I/O die, because on screen it is no longer beneath the cores.
+- **`iod-floorplan.jpg` is turned too**, texture only — nothing is traced on the
+  I/O die. That one is not provable from inside the scene the way the CCD's is;
+  see the note beside it in `DEFERRED`.
 
 ### The blocks inside one core
 
@@ -881,6 +919,9 @@ Textures in `assets/` are downscaled crops of the reference photography in
 | `iod-backside.jpg` | delid, cropped to the I/O die | stages 03–06 |
 | `die-floorplan.jpg` | straightened delayered CCD | stages 06, 08 |
 | `core-detail.jpg` | crop of the bottom-left core | stage 07 |
+
+Both die shots are stored in their published orientation and turned half a turn
+by a uv transform as they load — see **The half turn** above.
 
 Total ≈ 5.2 MB.
 

@@ -10,14 +10,17 @@ a stage it is almost always a mistake. Deliberate rises exist (the run into the
 core, and the lift off it at the end) and are annotated as such below.
 """
 import math, re, io
-SRC = r'C:\Users\ellio\OneDrive\Documents\CPU\Silicon-From-Scratch-Website\prototypes\cpu-layers\scene.js'
+SRC = r'C:\Users\ellio\OneDrive\Documents\CPU\Silicon-From-Scratch-Website\meet-the-processor\scene.js'
 s_src = io.open(SRC, encoding='utf-8').read()
 s = s_src
 DIE_W, DIE_H = 9.07, 7.78
 PKG = 40.0
 DIE_OFF_X, DIE_OFF_Z = 4.82, 8.80
 PCX, PCZ = -DIE_OFF_X, -DIE_OFF_Z
-CORE_U, CORE_V = (0.015, 0.350), (0.6193, 0.8176)
+# Turned, as scene.js turns it: the die shot goes down a half turn round, which
+# carries the core to the die's far-right corner. See "The half turn" in
+# ../README.md.
+CORE_U, CORE_V = (1-0.350, 1-0.015), (1-0.8176, 1-0.6193)
 coreCX = -DIE_W/2 + (CORE_U[0]+CORE_U[1])/2*DIE_W
 coreCZ = -DIE_H/2 + (CORE_V[0]+CORE_V[1])/2*DIE_H
 env = {'PCX': PCX, 'PCZ': PCZ, 'coreCX': coreCX, 'coreCZ': coreCZ}

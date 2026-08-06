@@ -5,7 +5,7 @@ import sys, re, io
 from playwright.sync_api import sync_playwright
 T = float(sys.argv[1]) if len(sys.argv) > 1 else 0.800
 WANT = sys.argv[2] if len(sys.argv) > 2 else 'Vector Execution'
-SRC = r'C:\Users\ellio\OneDrive\Documents\CPU\Silicon-From-Scratch-Website\prototypes\cpu-layers\scene.js'
+SRC = r'C:\Users\ellio\OneDrive\Documents\CPU\Silicon-From-Scratch-Website\meet-the-processor\scene.js'
 S = io.open(SRC, encoding='utf-8').read()
 blk = S[S.index('const CORE_BLOCKS = ['):S.index('const coreTiles')]
 labels = [(m.start(), m.group(1)) for m in re.finditer(r"label: '([^']+)'", blk)]
@@ -19,9 +19,14 @@ for i, (pos, lab) in enumerate(labels):
         pts = [[float(a), float(b)] for a, b in re.findall(r'\[([-\d.]+),([-\d.]+)\]', r)]
         if len(pts) >= 3: targets.append((col, pts))
 DIE_W, DIE_H = 9.07, 7.78
-coreW = (0.350-0.015)*DIE_W; coreH = (0.8176-0.6193)*DIE_H
-coreCX = -DIE_W/2 + (0.015+0.350)/2*DIE_W
-coreCZ = -DIE_H/2 + (0.6193+0.8176)/2*DIE_H
+# The scene draws the die shot a half turn round — see "The half turn" in
+# ../README.md. CORE_BLOCKS is parsed above in the photograph's published frame,
+# so the core rect and every point taken from it are turned the same way here.
+turn_span = lambda a, b: (1-b, 1-a)
+CORE_U = turn_span(0.015, 0.350); CORE_V = turn_span(0.6193, 0.8176)
+coreW = (CORE_U[1]-CORE_U[0])*DIE_W; coreH = (CORE_V[1]-CORE_V[0])*DIE_H
+coreCX = -DIE_W/2 + (CORE_U[0]+CORE_U[1])/2*DIE_W
+coreCZ = -DIE_H/2 + (CORE_V[0]+CORE_V[1])/2*DIE_H
 with sync_playwright() as p:
     b = p.chromium.launch(args=["--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"])
     pg = b.new_page(viewport={"width":1440,"height":900})
@@ -46,6 +51,7 @@ for col, pts in targets:
     ys = 0.008 + 0.344*0.20      # settled slab top: y0 + CORE_SCALE*TILE_REST
     xs=[];zs=[]
     for u,v in pts:
+        u, v = 1-u, 1-v          # same half turn, applied to the traced point
         xs.append(coreCX+(u-0.5)*coreW); zs.append(coreCZ-(0.5-v)*coreH)
     cxw=sum(xs)/len(xs); czw=sum(zs)/len(zs)
     q = proj(cxw, ys+0.055, czw)

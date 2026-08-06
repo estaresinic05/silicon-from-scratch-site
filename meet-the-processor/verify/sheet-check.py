@@ -13,6 +13,12 @@ CORE_U, CORE_V = (0.015, 0.350), (0.6193, 0.8176)
 def core_uv(cu, cv):          # a core block's own uv -> die uv
     return (CORE_U[0] + cu*(CORE_U[1]-CORE_U[0]),
             CORE_V[0] + cv*(CORE_V[1]-CORE_V[0]))
+def turn(uv):
+    """The scene draws the die shot a half turn round, so the IFOP PHY faces the
+    I/O die — see "The half turn" in ../README.md. Every uv below is written in
+    the photograph's published frame, exactly as scene.js writes them, and is
+    turned here on the way to the click."""
+    return (1 - uv[0], 1 - uv[1])
 # (t, die uv, world y to aim at, expected sheet title)
 # y matters: a risen floorplan slab sits at y 0.22-0.38 and a core slab at
 # 0.08-0.13, and at these low camera angles aiming at the wrong height puts the
@@ -53,7 +59,7 @@ with sync_playwright() as p:
     ok = True
     for t, uv, wy, expect in CASES:
         goto(t)
-        pt = screen_of(uv[0], uv[1], wy)
+        pt = screen_of(*turn(uv), wy)
         if not pt: print(f"  t={t} projects off screen"); ok=False; continue
         before = pg.evaluate("window.__die.t")
         pg.mouse.click(pt['x'], pt['y'])

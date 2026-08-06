@@ -1,11 +1,12 @@
 ﻿import numpy as np, re
-p=r"C:\Users\ellio\OneDrive\Documents\CPU\Silicon-From-Scratch-Website\prototypes\cpu-layers\scene.js"
+p=r"C:\Users\ellio\OneDrive\Documents\CPU\Silicon-From-Scratch-Website\meet-the-processor\scene.js"
 s=open(p,encoding="utf-8").read()
 blk=s[s.index("const KEYS = ["):s.index("const _p = new THREE.Vector3()")]
-# resolve the two symbols the keys use
+# resolve the two symbols the keys use. The core rect is TURNED, as scene.js
+# turns it — see "The half turn" in ../README.md.
 DIE_W,DIE_H=9.07,7.78
-coreCX=-DIE_W/2+(0.015+0.350)/2*DIE_W
-coreCZ=-DIE_H/2+(0.6193+0.8176)/2*DIE_H
+coreCX=-DIE_W/2+((1-0.350)+(1-0.015))/2*DIE_W
+coreCZ=-DIE_H/2+((1-0.8176)+(1-0.6193))/2*DIE_H
 PCX,PCZ=-4.82,-8.80
 env={"coreCX":coreCX,"coreCZ":coreCZ,"PCX":PCX,"PCZ":PCZ}
 rows=re.findall(r"\{\s*t:\s*([\d.]+),\s*p:\s*\[([^\]]+)\],\s*l:\s*\[([^\]]+)\]",blk)
