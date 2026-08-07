@@ -879,6 +879,33 @@
     }
   }
 
+  /* ==================================================================== *
+     STAGE BOOKLET — the page-turning figure on pipelined-datapath
+
+     One line. The fold is the component's only control and --peel is its
+     size, so holding the corner at the touch floor IS the phone treatment.
+     Everything else about it is identical in both modes and lives in
+     alu.css.
+
+     The fold is the hit area itself, so it is held at the floor directly
+     rather than given a ::after region: growing an invisible region around
+     a corner that stayed small would put the tap target somewhere the
+     reader cannot see. px, because the root steps to 13px here and a rem
+     would shrink the corner by 19% exactly where a thumb needs more.
+   * ==================================================================== */
+
+  .booklet__stack { --peel-rest: 46px; }
+  .booklet__stack:has(.booklet__peel:hover),
+  .booklet__stack:has(.booklet__peel:focus-visible) { --peel-rest: 64px; }
+
+  /* Restating alu.css's `.booklet { margin-block: var(--space-5) }`, and this
+     one has to be here: `.figure` above retunes its top margin to --space-4 on
+     a phone, that rule loads after alu.css and outranks nothing but ties on
+     specificity, so source order would give the booklet --space-4 on top and
+     --space-5 below. Same token both sides keeps it centred between the
+     paragraphs in either mode. */
+  .booklet { margin-block: var(--space-4); }
+
 }
 /* ---- end of the single max-width: 900px wrapper ---------------------- *
    Brace depth returns to zero HERE and nowhere earlier. Anything below

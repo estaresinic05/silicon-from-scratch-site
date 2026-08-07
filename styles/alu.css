@@ -1436,6 +1436,21 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .prose--flow .flow-figure--float-right { float: right; margin: 0.4rem 0 var(--space-4) var(--space-5); }
 .prose--flow .flow-figure--float-left  { float: left;  margin: 0.4rem var(--space-5) var(--space-4) 0; }
 
+/* Half again the standard float width, for a plate whose detail is unreadable
+   at 33rem — the corrected datapath on pipelined-datapath. It was 66rem, twice
+   the standard, and came down 25% to 49.5rem: at 66 it took so much of the
+   column that the paragraphs beside it ran as a narrow ribbon, and the plate
+   itself was larger than it needed to be to read.
+
+   A CLASS and not an inline width, which is how this first shipped and was
+   wrong: the unfloat rule further down this file has to be able to win below
+   900px, and an inline style outranks a stylesheet rule no matter where it
+   sits. On a 320px screen the figure stayed 66rem wide against a 28rem cap it
+   could no longer see, and spilled 83px off the page. Same specificity as the
+   float rules and declared before the media query, so source order decides and
+   the phone still wins. */
+.prose--flow .flow-figure--wide { width: 49.5rem; }
+
 /* --- PC-increment reveal (Constructing a Datapath) ---------------------------
    Two hand-drawn diagrams share the same left half (PC + instruction memory +
    first adder) and the same height; the branch-capable "upgrade" is simply
@@ -1599,6 +1614,48 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .pc-rca-split,
 .pc-branch-split { grid-template-columns: minmax(0, 1fr); }
 .pc-branch-split .pc-reveal-fig { margin-inline: 0; }
+
+/* --- The branch row puts its text BESIDE the widget, not under it -----------
+   Stacked, this row left the drawing hugging one edge with most of an 88rem
+   container empty beside it and the paragraph pushed below the fold. The text
+   belongs next to the picture it describes.
+
+   What made that hard is the widget: `.pc-reveal` is a fixed-height window that
+   CLIPS its drawing, so it cannot be scaled by a `max-width` the way an ordinary
+   figure can — narrow the box and the diagram is cut off, not shrunk. The old
+   fix was a fixed left track sized to the expanded width, which is what collapsed
+   the column beside it at 901px and forced the stack.
+
+   The way out is the one `.op-stage` already uses on this page: make the track a
+   query container and size the drawing from the TRACK instead of the other way
+   round. `100cqw` is the figure column at whatever width the window gives it, so
+   the expanded widget always lands exactly inside its own track — nothing to
+   overflow, and no fixed number to go stale when the drawing is resized. Height
+   follows the width through the same 1.4585 ratio the trio has always used, so
+   the two drawings still register and only the WIDTH animates.
+
+   58/42 puts the expanded drawing at ~690px at a 1440 window, which is the size
+   it has always been; the text takes the rest. Toward 901 both give up width
+   together rather than the text collapsing on its own, and `minmax(18rem, ...)`
+   keeps the paragraph at a readable measure while the contained figure track
+   yields. Desktop only: below the line the base rule above still stacks it, with
+   the widget leading. */
+@media (min-width: 901px) {
+  .pc-branch-split { grid-template-columns: minmax(0, 58fr) minmax(18rem, 42fr); }
+  /* The query container. `min-width: 0` so it can shrink inside the grid track
+     rather than pushing the row wider than the container. */
+  .pc-branch-split .pc-stage { container-type: inline-size; min-width: 0; }
+  /* Declared on `.pc-reveal` itself, not on the split: `cqw` resolves against
+     the query container of the element that USES it, and only the widget is
+     inside `.pc-stage`. The split no longer needs the numbers — its track is a
+     fraction now, not a copy of the drawing's width. */
+  .pc-branch-split .pc-reveal {
+    --pc-pad: clamp(var(--space-2), calc(3 * var(--vwu)), var(--space-4));
+    --pc-w-large: calc(100cqw - 2 * var(--pc-pad) - 2px);   /* card padding + border */
+    --pc-h: calc(var(--pc-w-large) / 1.4585);
+    --pc-w-small: calc(var(--pc-h) * 0.7256);
+  }
+}
 
 /* --- Step 2 "operate" reveal (next-phase -> next-phase-2) --------------------
    A FULL-WIDTH widget: left-pinned, it grows from a collapsed size to span the
@@ -1792,16 +1849,31 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   #arith-logic .arith-lead__fig { flex-basis: 38rem; max-width: min(38rem, 100%); }
   #data-transfer .flow-figure--float-right { width: min(40rem, 100%); }
   /* The i-type / s-type banners sit image-left, text-right; give them room to
-     read on large screens (they keep the default figure width on mid widths). */
-  #data-transfer .split--media-left .figure--diagram { max-width: min(38rem, 100%); }
+     read on large screens (they keep the default figure width on mid widths).
+
+     `38rem`, NOT `min(38rem, 100%)`. The percentage was the bug. A `.split`
+     sizes its figure track `minmax(0, auto)`, and `auto` resolves to the
+     figure's max-content contribution — but a percentage max-width is
+     indefinite while the track it resolves against is still being sized, so the
+     browser dropped the cap and measured the raw image instead, ~1990px. The
+     track then took every pixel the text was not already guaranteed, and the
+     paragraph sat on its 18rem floor: measured `1024px 288px` at a 1440 window,
+     a 288px ribbon of copy with a 464px empty band beside it.
+
+     The `100%` never did anything anyway. `.figure--diagram` is `width: 100%`,
+     so the figure already cannot exceed its track; the cap only ever needed to
+     say how much narrower than the track it should be. With a plain length the
+     contribution is definite, the track becomes `608px 704px`, and the drawing
+     renders at the same ~588px it always did. */
+  #data-transfer .split--media-left .figure--diagram { max-width: 38rem; }
   /* The sb-type / uj-type branch diagrams and the addi diagram sit image-right,
      text-left; match the Data Transfer banners' large-screen width. */
   #control-flow .split--media-right .figure--diagram,
-  #register-immediate .split--media-right .figure--diagram { max-width: min(38rem, 100%); }
+  #register-immediate .split--media-right .figure--diagram { max-width: 38rem; }
 }
-/* Whole Kit: the full single-cycle datapath sits image-right; give the detailed
-   diagram room to read (capped so the wrap-up copy keeps a comfortable measure). */
-#whole-kit .split--media-right .figure--diagram { max-width: min(42rem, 100%); }
+/* Whole Kit's diagram no longer sits in a `.split`. It leads the section at
+   `figure--diagram-xl` with the wrap-up copy at full measure underneath, so the
+   old image-right cap here matched nothing and has been removed. */
 
 /* Field-name <code> tinted to the colors of the R-type diagram
    (assets/single-cycle-cpu/r-type.jpg) so a field named in the prose reads as
@@ -2160,12 +2232,23 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 /* The register-file card is bigger than the memory cards (a wider card that its
    square-ish diagram also makes taller), which gives its module room to read at
    a comfortable size without a scrollbar. */
-/* `min(..., 100%)`, because a rem cap is a PREFERENCE for how wide the card
-   should read and the column is a HARD limit. Bare 38rem is 608px and the grid
-   track is 536px at 920, so the card hung 72px out of its own split. Every
-   figure cap below takes the same treatment for the same reason: they were all
-   written when the desktop layout began at 1025px or more. */
-#register-files .mem-card { width: min(38rem, 100%); max-width: min(38rem, 100%); }
+/* A rem cap is a PREFERENCE for how wide the card should read; the column is a
+   HARD limit. Bare `width: 38rem` is 608px against a 536px track at 920, and the
+   card hung 72px out of its own split — which is what `min(38rem, 100%)` was
+   introduced to stop.
+
+   It stopped the spill and started a worse one. A percentage is indefinite while
+   the track it resolves against is still being sized, so `minmax(0, auto)` on the
+   card's track fell back to the card's raw max-content width and swallowed the
+   row: `288px 1024px` at a 1440 window, i.e. the module card at its full 608px
+   with the paragraph beside it on its 18rem floor, 288px wide and 1722px tall.
+
+   `width: 100%` + a plain `max-width` says the same thing without the
+   percentage: fill the track, but never read wider than 38rem. The contribution
+   is definite, so the track sizes to 608px and the prose gets 704px at 1440,
+   while 920 and 901 measure exactly as they did before — same tracks, no spill.
+   This is the shape `.figure--diagram` already uses. */
+#register-files .mem-card { width: 100%; max-width: 38rem; }
 #register-files .code-editor__hl,
 #register-files .code-editor__ta { font-size: 0.74rem; }
 
@@ -2962,4 +3045,322 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   text-align: center;
   border-top: 0;
   padding-top: 0;
+}
+
+/* ------------------------------------------------------------------
+   BOOKLET — diagram pages the reader turns by the corner
+
+   Built for the pipeline worked example, where one diagram per stage
+   says far more in sequence than five stacked down the page. Wired by
+   scripts/booklet.js, which only moves classes; the whole turn, and
+   the fold, are here.
+
+   THE FOLD IS THE ONLY CONTROL. There is no button row: a dog-eared
+   corner is a thing everyone has already used, and it says "there is
+   more behind this" in a way a row of arrows under a diagram does not.
+   Arrow keys and swipe do the same job for anyone not using a mouse.
+
+   What makes it read as PAPER rather than as a triangle drawn on the
+   page is that all three parts of a real dog-ear are present:
+
+     1. the page's corner is genuinely GONE — clip-path cuts it out,
+        so the next sheet is what shows through the gap;
+     2. the cut-out piece is folded back over the page across the
+        diagonal, which is ::after, shaded as the BACK of the sheet;
+     3. the gap is in shadow, because the lifted corner is over it.
+
+   Drop any one and it stops being a fold. The first version had only
+   (2) and read as a sticker.
+ * ------------------------------------------------------------------ */
+
+/* Registered so it INTERPOLATES. An unregistered custom property is an
+   opaque token to the animation system and jumps between values, which
+   would step the fold open on hover instead of lifting it. One property
+   drives the cut, the flap and the shadow together, so they cannot
+   drift out of register with each other. */
+@property --peel {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 54px;
+}
+
+/* px, not rem: the corner is a touch target, and the root steps to 13px
+   on a phone, which would shrink it exactly where a thumb needs more. */
+.booklet {
+  position: relative;
+  /* The base .figure is `margin: var(--space-5) 0 0` — space above, NOTHING
+     below — which is right for a figure that ends a section and wrong for one
+     sitting between two paragraphs, where it sat hard against the text under
+     it. `margin-block` sets both from one value so the two can never drift
+     apart. mobile.css restates this, because it retunes .figure's top margin
+     to --space-4 and would otherwise leave the pair mismatched by 3px. */
+  margin-block: var(--space-5);
+  /* Paper has weight: slow to lift off the stack, quickest across the middle,
+     cushioned as it lands. The site's default --ease is an ease-OUT, which is
+     exactly backwards for this and is what the first version used. */
+  --ease-page: cubic-bezier(0.62, 0.03, 0.28, 1);
+  --turn-time: 0.78s;
+}
+
+/* The idle lift. Registered so the keyframes below can interpolate it, and
+   kept SEPARATE from --peel-rest so the nudge and the hover lift are added
+   rather than fighting: an animation beats a plain declaration, so a keyframe
+   written straight onto --peel would have frozen hover out while it ran. */
+@property --nudge {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+.booklet__stack {
+  --peel-rest: 54px;
+  --nudge: 0px;
+  --peel: calc(var(--peel-rest) + var(--nudge));
+  position: relative;
+  aspect-ratio: 2016 / 1236;      /* the tallest page; the rest letterbox */
+  /* A size container, so a leaf can say `100cqw + 100cqh` — the exact length
+     at which the fold has crossed the whole page and nothing of it is left.
+     Without it the sweep would have to end on a hard-coded number that is
+     wrong at every width but one. */
+  container-type: size;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  /* A blank sheet behind the stack. It is what shows through the corner on
+     the LAST page, where there is no next leaf, and it is what the turning
+     page passes over. Without it both are the dark card, which reads as a
+     hole punched in the paper rather than as the end of the booklet. */
+  background: #fff;
+  transition: --peel 0.26s var(--ease);
+  /* Vertical scroll and pinch zoom stay with the browser; the horizontal
+     axis is the page turn. Pinch matters here, these are dense diagrams. */
+  touch-action: pan-y pinch-zoom;
+}
+.booklet__stack:has(.booklet__peel:hover),
+.booklet__stack:has(.booklet__peel:focus-visible) { --peel-rest: 76px; }
+
+/* The corner lifts, twice, and keeps doing it until the reader turns a page.
+   Paper that MOVES on its own is the whole invitation here — it says "this
+   lifts" better than a label can, and it is the one cue that works identically
+   to a thumb and to a mouse. It is also the ONLY cue: there is no hint text.
+
+   Two things keep an endless animation honest, because this one drives a mask
+   over a full-page image and would otherwise repaint that image on every frame
+   for as long as the page is open:
+
+     · The cycle is mostly FLAT. The two lifts take 41% of it and the rest
+       holds --nudge at 0, and a keyframe stretch where the computed value
+       does not change costs no repaint. So it idles for two thirds of every
+       cycle instead of animating continuously.
+     · booklet.js only puts `is-hinting` on while the booklet is actually in
+       the viewport, and takes it off for good on the first turn.
+
+   The second lift is smaller than the first: one bounce reads as a nudge, two
+   equal ones read as a loop. */
+.booklet.is-hinting .booklet__stack {
+  animation: booklet-nudge 3.2s ease-in-out infinite;
+}
+@keyframes booklet-nudge {
+  0%   { --nudge: 0px; }
+  10%  { --nudge: 24px; }
+  21%  { --nudge: 0px; }
+  30%  { --nudge: 13px; }
+  41%  { --nudge: 0px; }
+  100% { --nudge: 0px; }
+}
+
+/* ---- the leaves, and the peel ----------------------------------------- */
+/* THE TURN IS THE FOLD, GROWN. The corner does not sit in the bottom right
+   waiting for a separate animation to happen elsewhere: taking hold of it
+   sweeps the same fold diagonally across the page until it has swallowed it,
+   and the next sheet is underneath the whole time.
+
+   This replaces a rigid rotateY about the left edge, which was the obvious
+   thing to write and never read as paper. Two reasons it could not:
+
+     · A page rotating about its left edge is PAST THE SPINE after 90
+       degrees, lying where the left-hand page of a spread would be. There is
+       no such page here — the stack is one sheet wide and clips — so the
+       turn could only ever be "swings to edge-on, disappears".
+     · Paper does not pivot. It peels, from the corner you took hold of, and
+       the moving thing is the FOLD rather than the sheet.
+
+   So there is no 3D here at all now: no perspective, no preserve-3d, no
+   backface. One length does everything.
+
+     --peel   the resting corner, and what hover lifts. Fast, 0.26s.
+     --turn   0 to 1, the sweep. Slow, and eased like something with weight.
+     --cut    what the geometry actually reads: the side of the square being
+              folded, interpolated from the corner to the full diagonal.
+
+   At --turn 1, --cut is 100cqw + 100cqh, which is exactly the length at
+   which the fold line passes the top-left corner and nothing of the page is
+   left. That is why the stack is a size container.
+ * ------------------------------------------------------------------ */
+@property --turn {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+.booklet__leaf {
+  --turn: 0;
+  --lift: 0px;
+  /* 0.7071 is cos(45deg): the gradient runs at 315deg, so a stop this far
+     along its line puts the fold edge exactly where a corner square of side
+     --cut would put it. */
+  --cut: calc(var(--lift) * (1 - var(--turn)) +
+              var(--turn) * (100cqw + 100cqh));
+  --fold: calc(var(--cut) * 0.7071);
+
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  transition: --turn var(--turn-time) var(--ease-page),
+              --lift 0.26s var(--ease);
+}
+
+/* Only the page on top is dog-eared. Leave it on the turned ones too: they
+   are mid-sweep and share the same --cut, and taking it away at the moment
+   the class changes would snap the corner shut before the sweep starts. */
+.booklet__leaf.is-current,
+.booklet__leaf.is-turned { --lift: var(--peel); }
+.booklet__leaf.is-turned { --turn: 1; }
+
+/* Source order is page order, so the first leaf is the top of the stack. */
+.booklet__leaf:nth-child(1) { z-index: 6; }
+.booklet__leaf:nth-child(2) { z-index: 5; }
+.booklet__leaf:nth-child(3) { z-index: 4; }
+.booklet__leaf:nth-child(4) { z-index: 3; }
+.booklet__leaf:nth-child(5) { z-index: 2; }
+.booklet__leaf:nth-child(6) { z-index: 1; }
+
+/* (1) The page itself, with the folded part MASKED AWAY so what shows there
+   is the sheet underneath. A mask rather than the clip-path this started as:
+   the clip polygon is only a valid description of the cut while the corner
+   is smaller than the page, and this one has to stay correct all the way to
+   swallowing it. A hard stop on a 315deg gradient is the same straight edge
+   at every size.
+
+   White behind it because the pages differ slightly in aspect, so the
+   shorter ones letterbox and a transparent face would let the page
+   underneath show through those bands. Their own background is pure #ffffff
+   (sampled, all six), so face and drawing are one surface. This is the one
+   place white beats var(--paper): a leaf is a sheet, not a card. */
+.booklet__leaf img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+  -webkit-mask-image: linear-gradient(315deg,
+                      transparent 0, transparent var(--fold),
+                      #000 var(--fold));
+          mask-image: linear-gradient(315deg,
+                      transparent 0, transparent var(--fold),
+                      #000 var(--fold));
+}
+
+/* (2) The gap is in shadow, cast by the lifted paper over it. Painted on top
+   of the revealed page, under the flap. Darkest along the crease. */
+.booklet__leaf::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  width: var(--cut);
+  height: var(--cut);
+  pointer-events: none;
+  /* The crease sits at --fold along this gradient's axis, which for a square
+     box is its halfway point; the pair of stops there cuts to nothing, so the
+     shape comes from the gradient and no clip is needed.
+
+     A fold's shadow is a BAND hugging the crease, so the stops are measured
+     BACK FROM --fold in px and stay the same width at every point of the
+     sweep. Written as percentages they scaled with the fold, and by mid-sweep
+     the "shadow" was a 500px wash over most of the page it fell on. */
+  background: linear-gradient(315deg,
+              rgba(35, 35, 42, 0.00) 0,
+              rgba(35, 35, 42, 0.00) calc(var(--fold) - 52px),
+              rgba(35, 35, 42, 0.05) calc(var(--fold) - 20px),
+              rgba(35, 35, 42, 0.19) var(--fold),
+              rgba(35, 35, 42, 0.00) var(--fold));
+}
+
+/* (3) The folded piece: the cut region mirrored across the crease, which for
+   a square anchored in the corner is simply its OTHER half — so the same box
+   clipped to the top-left triangle is already the exact reflection, at every
+   size, with no transform needed.
+
+   Shaded as the back of the sheet: white where it meets the crease and is
+   still in contact with the page, darkening toward the lifted tip. As --cut
+   passes the page's diagonal this triangle leaves the card entirely, which
+   is the peel finishing, and it needs no special case to do it. */
+.booklet__leaf::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  width: var(--cut);
+  height: var(--cut);
+  pointer-events: none;
+  /* The triangle is cut by the GRADIENT, not by clip-path, and that is what
+     lets the shadow below exist at all. `filter` is applied before both
+     `clip-path` and `mask`, so on a clipped element a drop-shadow is thrown
+     away by the very triangle casting it — which is exactly what happened the
+     first two times this was written. A hard stop from transparent to paper
+     at the crease gives the same shape and leaves the alpha for the filter to
+     read. (The other fix, a filter on the leaf, made the browser shadow a
+     full-page rectangle every frame of the sweep to light one corner.)
+
+     The crease is at 50% for a square box: transparent up to it, paper past
+     it, white where it meets the page and darkening toward the lifted tip. */
+  background: linear-gradient(315deg,
+              transparent 0, transparent 50%,
+              #ffffff 50%,
+              #f3f3f7 64%,
+              #e4e4ee 80%,
+              #cdcddc 100%);
+  filter: drop-shadow(-1px -1px 1.5px rgba(35, 35, 42, 0.22))
+          drop-shadow(-5px -5px 9px rgba(35, 35, 42, 0.16));
+}
+
+/* The leaves are pictures, not controls: no click-to-enlarge, no cursor, no
+   tab stop. The corner is the only thing on this component you can press. */
+
+/* ---- the corner, as a control ----------------------------------------- */
+/* Nothing but a hit area and a focus ring: everything you can see is the
+   current leaf's own fold, above. Sized from --peel so the target and the
+   drawn corner are the same thing, and it grows on hover because that is
+   what lifts --peel for the leaf to follow. */
+.booklet__peel {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: var(--peel);
+  height: var(--peel);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 30;
+}
+.booklet__peel:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* ---- caption: the live page label ------------------------------------- */
+/* Inherits the standard `.figure figcaption` rule above (hairline, soft ink).
+   With no control row, this is the only thing telling the reader where in the
+   sequence they are, so it names the cycle and the stage rather than a count. */
+.booklet__cap { text-align: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .booklet.is-hinting .booklet__stack { animation: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .booklet__leaf,
+  .booklet__stack,
+  .booklet__peel { transition: none; }
 }
