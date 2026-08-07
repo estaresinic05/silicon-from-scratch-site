@@ -3482,8 +3482,19 @@ function sampleCamera(t) {
    rather than simply being arrived at. A gate that resolves faster than it can
    be parsed is a flicker rather than a reveal. The tail still shortens, 11000
    into 6500, which is the rule the legs before it are held to as well. */
+/* The FOURTH is 7000, up from 5200, because it was the fastest thing left in the
+   piece and it read as frames being skipped rather than as a move. Measured with
+   verify/camera-pace.py, at 5200 it ran a median of 0.595 rad/s and a peak of
+   1.587 — nearly double the median of every other leg and the highest peak in
+   the sequence, on the one leg short enough that there is nothing to look at
+   while it happens. It is not a frame-rate fault: through this leg the renderer
+   holds a 16.5 ms median with 3 frames of 394 over 33 ms, so the camera was
+   simply outrunning the eye at a steady 60. 7000 brings it to 0.442 median and
+   1.179 peak, which sits it just above the metal-stack leg after it rather than
+   in a class of its own. Still the briskest leg in the piece, which is right:
+   it is one camera move with no reveal inside it. */
 const STOPS = [0.000, 0.398, 0.512, 0.800, 0.888, 0.966, 0.990];
-const LEG_MS = [10000, 14000, 19000, 5200, 11000, 6500];
+const LEG_MS = [10000, 14000, 19000, 7000, 11000, 6500];
 
 let frozen = false;                   // the sheet is open: arrows are inert
 /* The click rings key off both of these. parkedAt is when the current stop was
@@ -3954,7 +3965,8 @@ const SUBJECTS = {
    a slug is in here the media half shows "video coming soon" instead of a
    broken player. */
 const HAVE_VIDEO = new Set(['zen5-core', 'instruction-fetch', 'scheduling',
-                            'load-store', 'integer-execution', 'ifop-phy']);
+                            'load-store', 'integer-execution', 'ifop-phy',
+                            'test-debug']);
 
 /* Written, but deliberately NOT in SUBJECT_OF below, so nothing on screen opens
    them yet: only the twelve blocks that were asked for are wired up. The copy is
