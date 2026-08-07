@@ -167,8 +167,12 @@
         </div>
 
         <!-- The toggle widget sits on the left; the branch text sits to its right
-             (the widget leads on mobile, where the split stacks). -->
+             (the widget leads on mobile, where the split stacks). The .pc-stage
+             wrapper is the widget's query container: it takes the grid track's
+             width, and the drawing sizes itself from that, so expanding the
+             widget fills the track instead of reflowing the paragraph. -->
         <div class="split split--media-left pc-branch-split">
+          <div class="pc-stage">
           <figure class="figure figure--diagram pc-reveal-fig">
             <div class="pc-reveal is-collapsed" id="pc-reveal">
               <img class="pc-reveal__img pc-reveal__small"
@@ -193,6 +197,7 @@
               See the branch-capable path
             </button>
           </figure>
+          </div>
 
           <div class="prose">
             <p>
@@ -310,15 +315,17 @@
           <h2 id="kit-title">The Whole Kit and Kaboodle</h2>
         </div>
 
-        <!-- The full datapath diagram on the right; the wrap-up copy on its left. -->
-        <div class="split split--media-right">
-          <figure class="figure figure--diagram">
-            <img src="../../assets/single-cycle-cpu/sc-cpu-architecture.jpg"
-                 alt="A hand-drawn diagram of the complete single-cycle RISC-V datapath: the program counter feeds the instruction memory and a +4 adder; the instruction's fields drive the register file, an immediate generator, and the ALU; a control unit produces signals such as RegWrite, ALUSrc, MemRead, MemWrite, MemToReg, and Branch; the ALU result addresses the data memory; and adders, muxes, and branch logic steer the result back to the register file or into the next program counter."
-                 decoding="async" />
-          </figure>
+        <!-- The full datapath diagram leads, centered and full-measure, with the
+             wrap-up copy running underneath it. This is the lesson's payoff
+             drawing, so it gets the whole column rather than a narrow track
+             beside the text. -->
+        <figure class="figure figure--diagram figure--diagram-xl">
+          <img src="../../assets/single-cycle-cpu/sc-cpu-architecture.jpg"
+               alt="A hand-drawn diagram of the complete single-cycle RISC-V datapath: the program counter feeds the instruction memory and a +4 adder; the instruction's fields drive the register file, an immediate generator, and the ALU; a control unit produces signals such as RegWrite, ALUSrc, MemRead, MemWrite, MemToReg, and Branch; the ALU result addresses the data memory; and adders, muxes, and branch logic steer the result back to the register file or into the next program counter."
+               decoding="async" />
+        </figure>
 
-          <div class="prose">
+        <div class="prose prose--flow">
             <p>
               And just like that, you have your complete single cycle CPU datapath.
               This is about as simple as a CPU can get, and yet it still looks like a
@@ -338,7 +345,6 @@
               Without it, our datapath would be nothing more than a tangle of idle
               wires, full of potential but with no idea what to do.
             </p>
-          </div>
         </div>
       </div>
     </section>
