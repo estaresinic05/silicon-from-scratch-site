@@ -20,6 +20,13 @@ __pycache__/
 # Screen-capture output from tools/backing-video (240fps 2560x1600 intermediates)
 .backing/
 
+# Fingerprints and edge screenshots from tools/width-sweep.py and
+# tools/text-conflicts.py. Written into the repo root, one set per run, and only
+# ever read by the run that made them.
+.sweep.json
+.edge_*.png
+.shot_*.png
+
 # The RTL itself. This is the website repo; the hardware lives in
 # estaresinic05/Silicon-From-Scratch. Kept here as a local working copy only.
 Verilog/
