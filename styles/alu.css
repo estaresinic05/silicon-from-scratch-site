@@ -660,11 +660,13 @@
 #alu-control .split { margin-block: var(--space-4); }
 #alu-control .prose--flow > p:last-child { margin-bottom: 0; }
 #alu-control .split .prose ul { margin: 0; }
-/* Control Flow diagrams: top-align the text and image (rather than centring the
-   shorter one), so each paragraph starts level with its diagram. Keep every gap
-   between blocks at the page's standard one-paragraph rhythm (--space-3). */
-#control-flow .split { align-items: start; margin-top: var(--space-3); }
-#control-flow .split + .prose--full { margin-top: var(--space-3); }
+/* Control Flow diagrams: the sb-type and uj-type sketches float right and the
+   copy wraps beside them, so each paragraph starts level with its diagram and
+   its tail runs on underneath rather than leaving a dead band there. Keep every
+   gap between blocks at the page's standard one-paragraph rhythm (--space-3). */
+#control-flow .prose--flow,
+#register-immediate .prose--flow { margin-top: var(--space-3); }
+#control-flow .prose--flow + .prose--full { margin-top: var(--space-3); }
 /* Golden Model: the testbench flowchart is a tall portrait sketch, so top-align
    it with the copy — the text should start level with the top of the chart and
    run down the right column (with the golden-model code block below it), rather
@@ -1417,6 +1419,28 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
    below any float above them, rather than wrapping into the narrow side gap. */
 .prose--flow .checklist,
 .prose--flow .code-card { clear: both; }
+/* `.recall-card` is deliberately NOT in that list. It reads as a full-width
+   block, so adding it looks like an oversight, but `single-cycle-cpu/testing`
+   sets one BESIDE its floated report card on purpose and a clear drops it 136px
+   with a hole above it. Any recall card that needs to clear has enough copy
+   above it to clear on its own. Measured on both pages, 950 to 1440. */
+
+/* The go-back card as a right-hand aside: half the column, with the copy that
+   FOLLOWS it running down its left. Source order matters — a float only pushes
+   content that comes after it, so the paragraph meant to sit beside this card
+   has to be written below it in the markup.
+
+   `50%` and not a rem width, because "half the column" is the whole point and a
+   fixed width stops being half the moment the window changes. It is safe here
+   in a way the same shape was NOT safe in a grid track: a float resolves its
+   percentage against a containing block that is already definite, whereas the
+   `min(38rem, 100%)` bug lived inside a `minmax(0, auto)` track that was still
+   being sized. Same shape, different context. */
+.prose--flow .recall-card--aside {
+  float: right;
+  width: 50%;
+  margin: 0.4rem 0 var(--space-4) var(--space-5);
+}
 
 /* A hand-drawn diagram shown in place of (or beside) a code block: a paper card
    that floats like the code blocks so the copy wraps beside it. Kept a plain
@@ -1866,10 +1890,19 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
      contribution is definite, the track becomes `608px 704px`, and the drawing
      renders at the same ~588px it always did. */
   #data-transfer .split--media-left .figure--diagram { max-width: 38rem; }
-  /* The sb-type / uj-type branch diagrams and the addi diagram sit image-right,
-     text-left; match the Data Transfer banners' large-screen width. */
-  #control-flow .split--media-right .figure--diagram,
-  #register-immediate .split--media-right .figure--diagram { max-width: 38rem; }
+  /* The sb-type / uj-type branch diagrams and the addi diagram float right with
+     the copy wrapping beside them; match the Data Transfer banners' large-screen
+     width.
+
+     `min(38rem, 50%)`, not a bare `38rem`. A float resolves its percentage
+     against a containing block that is already definite here, so this is not the
+     `.split` track trap two rules up — and the cap has to bind, because the copy
+     beside a float has no minimum of its own the way a grid track does. At 38rem
+     flat the text ran as a 224px ribbon at a 960 window. Half the column is the
+     narrowest these paragraphs still read in, and above ~1220 the 38rem wins and
+     the drawing renders at exactly the size it always did. */
+  #control-flow .flow-figure--float-right,
+  #register-immediate .flow-figure--float-right { width: min(38rem, 50%); }
 }
 /* Whole Kit's diagram no longer sits in a `.split`. It leads the section at
    `figure--diagram-xl` with the wrap-up copy at full measure underneath, so the
@@ -3100,6 +3133,25 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
      exactly backwards for this and is what the first version used. */
   --ease-page: cubic-bezier(0.62, 0.03, 0.28, 1);
   --turn-time: 0.78s;
+}
+
+/* The booklet as a right-hand aside, which is how The Missing Piece runs it:
+   the pages sit beside the paragraphs describing the rd fix and the copy wraps
+   down their left. Geometry copied from `.flow-figure--float-right` at
+   `--wide` so the two slots are interchangeable and a reader sees the same
+   column shape either way. Only the float, the width and the margins live
+   here — the card itself is still `.figure`, and `.prose--flow` is already
+   `display: flow-root`, so the block after it clears without a `clear` rule.
+
+   The width is a CLASS and not an inline style for the reason spelled out at
+   `.flow-figure--wide` above: an inline width outranks any stylesheet rule,
+   including the phone unfloat in mobile.css, and would pin the card at its
+   desktop size on a 320px screen. */
+.prose--flow .booklet--float-right {
+  float: right;
+  width: 49.5rem;
+  max-width: 100%;
+  margin: 0.4rem 0 var(--space-4) var(--space-5);
 }
 
 /* The idle lift. Registered so the keyframes below can interpolate it, and

@@ -46,6 +46,7 @@ PAGES = [
     "single-cycle-cpu/testing/index.html",
     "pipelined-cpu/pipelining/index.html",
     "pipelined-cpu/pipelined-datapath/index.html",
+    "pipelined-cpu/pipelined-control/index.html",
     "meet-the-processor/index.html",
 ]
 

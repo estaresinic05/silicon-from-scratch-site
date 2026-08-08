@@ -43,6 +43,7 @@ PAGES = [
     "single-cycle-cpu/testing/index.html",
     "pipelined-cpu/pipelining/index.html",
     "pipelined-cpu/pipelined-datapath/index.html",
+    "pipelined-cpu/pipelined-control/index.html",
 ]
 
 # Geometry + the properties the mobile scheme actually touches, for every

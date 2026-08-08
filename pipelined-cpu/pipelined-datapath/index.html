@@ -59,10 +59,13 @@
   <link rel="stylesheet" href="../../styles/mobile.css" />
 
   <!-- Page-scoped: give the hero picture a little more width than the standard
-       46/44 balanced split (it stays a single stacked column on mobile via the
-       shared max-width:768px rule). -->
+       46/44 balanced split. Bounded at 901px, the mode line, so it is a DESKTOP
+       override and nothing else. It said 769 until 2026-08-08, a breakpoint the
+       site stopped using when the two-mode scheme landed, and the effect was
+       that this hero rendered as two columns at 850 and 899 where the phone
+       expects one stacked column. -->
   <style>
-    @media (min-width: 769px) {
+    @media (min-width: 901px) {
       .doc-hero--balanced { grid-template-columns: minmax(0, 40rem) minmax(0, 52rem); }
     }
   </style>
@@ -254,14 +257,60 @@
           </p>
         </div>
 
-        <!-- The corrected datapath rides beside the fix it illustrates. Plain
-             .flow-figure, not .figure, so the generic figure scroll reveal does
-             not also catch it (see the note in styles/alu.css). -->
+        <!-- Stage booklet, riding beside the fix it illustrates. Turning the
+             corner follows lw x1, 20(x8) through its five stages, one cycle
+             per page, so the reader turns the pages while reading what the fix
+             does and then meets the corrected plate whole underneath. Wired by
+             scripts/booklet.js; the turn and the dog-eared corner are both CSS
+             (.booklet in styles/alu.css), and .booklet--float-right is the
+             float, which borrows .flow-figure--float-right --wide's geometry.
+             The corner is the only control here; arrow keys and swipe do the
+             same job. data-no-enlarge keeps enlarge.js off the card: the pages
+             deliberately do NOT open enlarged on click, and without it that
+             script would make the whole thing one role="button" wrapping the
+             corner, which is a control inside a control. No inline max-width —
+             an inline width outranks the phone unfloat rule and would strand
+             the card at its desktop size on a narrow screen. -->
         <div class="prose prose--flow">
-          <figure class="flow-figure flow-figure--float-right flow-figure--wide">
-            <img src="../../assets/pipelined-cpu/pipeline-datapath-update.jpg"
-                 alt="The pipelined datapath corrected, with the destination register number highlighted in blue. The rd field is taken from bits 11 to 7 of the instruction held in IF/ID and carried through the ID/EX, EX/MEM, and MEM/WB pipeline registers before looping back to the Write Register input of the register file, so the Writeback stage names the correct destination for a loaded word."
-                 decoding="async" />
+          <figure class="figure booklet booklet--float-right" id="stage-booklet" data-no-enlarge
+                  role="group" aria-roledescription="booklet"
+                  aria-label="The five pipeline stages, one per page">
+
+            <div class="booklet__stack">
+              <div class="booklet__leaf" data-label="Cycle 1: lw x1, 20(x8) in Instruction Fetch">
+                <img src="../../assets/pipelined-cpu/example-if.jpg"
+                     alt="The pipelined datapath with only the Instruction Fetch hardware highlighted for lw x1, 20(x8). The PC, instruction memory and the IF/ID pipeline register are shaded, showing the instruction being read from memory and latched at the end of the cycle."
+                     decoding="async" loading="lazy" />
+              </div>
+
+              <div class="booklet__leaf" data-label="Cycle 2: lw x1, 20(x8) in Instruction Decode">
+                <img src="../../assets/pipelined-cpu/example-id.jpg"
+                     alt="The pipelined datapath with only the Instruction Decode hardware highlighted for lw x1, 20(x8). The IF/ID register, the register file read ports and the immediate generator are shaded, with their results latched into the ID/EX register."
+                     decoding="async" loading="lazy" />
+              </div>
+
+              <div class="booklet__leaf" data-label="Cycle 3: lw x1, 20(x8) in Execution">
+                <img src="../../assets/pipelined-cpu/example-ex.jpg"
+                     alt="The pipelined datapath with only the Execution hardware highlighted for lw x1, 20(x8). The ID/EX register, the operand multiplexer and the ALU are shaded, computing the load address from the base register and the immediate, which lands in the EX/MEM register."
+                     decoding="async" loading="lazy" />
+              </div>
+
+              <div class="booklet__leaf" data-label="Cycle 4: lw x1, 20(x8) in Memory">
+                <img src="../../assets/pipelined-cpu/example-mem.jpg"
+                     alt="The pipelined datapath with only the Memory hardware highlighted for lw x1, 20(x8). The EX/MEM register and the data memory are shaded, with the address driving a read whose result is captured in the MEM/WB register."
+                     decoding="async" loading="lazy" />
+              </div>
+
+              <div class="booklet__leaf" data-label="Cycle 5: lw x1, 20(x8) in Write-back">
+                <img src="../../assets/pipelined-cpu/example-wb.jpg"
+                     alt="The pipelined datapath with only the Write-back hardware highlighted for lw x1, 20(x8). The MEM/WB register, the write-back multiplexer and the register file write port are shaded, returning the loaded word to register x1."
+                     decoding="async" loading="lazy" />
+              </div>
+
+              <button class="booklet__peel" type="button" aria-label="Turn the page"></button>
+            </div>
+
+            <figcaption class="booklet__cap" aria-live="polite"></figcaption>
           </figure>
 
           <p>
@@ -288,58 +337,14 @@
           </p>
         </div>
 
-        <!-- Stage booklet. Turning the corner follows lw x1, 20(x8) through
-             its five stages, one cycle per page. It sits between the paragraph
-             that finishes the rd fix and the one that draws the general rule
-             out of it, so the pages are what the reader turns before being told
-             what they add up to. Wired by scripts/booklet.js; the turn and the
-             dog-eared
-             corner are both CSS (.booklet in styles/alu.css). The corner is the
-             only control here; arrow keys and swipe do the same job.
-             data-no-enlarge keeps enlarge.js off the card: the pages
-             deliberately do NOT open enlarged on click, and without it that
-             script would make the whole thing one role="button" wrapping the
-             corner, which is a control inside a control. -->
-        <figure class="figure booklet" id="stage-booklet" data-no-enlarge
-                style="max-width: 68rem; margin-inline: auto;"
-                role="group" aria-roledescription="booklet"
-                aria-label="The five pipeline stages, one per page">
-
-          <div class="booklet__stack">
-            <div class="booklet__leaf" data-label="Cycle 1: lw x1, 20(x8) in Instruction Fetch">
-              <img src="../../assets/pipelined-cpu/example-if.jpg"
-                   alt="The pipelined datapath with only the Instruction Fetch hardware highlighted for lw x1, 20(x8). The PC, instruction memory and the IF/ID pipeline register are shaded, showing the instruction being read from memory and latched at the end of the cycle."
-                   decoding="async" loading="lazy" />
-            </div>
-
-            <div class="booklet__leaf" data-label="Cycle 2: lw x1, 20(x8) in Instruction Decode">
-              <img src="../../assets/pipelined-cpu/example-id.jpg"
-                   alt="The pipelined datapath with only the Instruction Decode hardware highlighted for lw x1, 20(x8). The IF/ID register, the register file read ports and the immediate generator are shaded, with their results latched into the ID/EX register."
-                   decoding="async" loading="lazy" />
-            </div>
-
-            <div class="booklet__leaf" data-label="Cycle 3: lw x1, 20(x8) in Execution">
-              <img src="../../assets/pipelined-cpu/example-ex.jpg"
-                   alt="The pipelined datapath with only the Execution hardware highlighted for lw x1, 20(x8). The ID/EX register, the operand multiplexer and the ALU are shaded, computing the load address from the base register and the immediate, which lands in the EX/MEM register."
-                   decoding="async" loading="lazy" />
-            </div>
-
-            <div class="booklet__leaf" data-label="Cycle 4: lw x1, 20(x8) in Memory">
-              <img src="../../assets/pipelined-cpu/example-mem.jpg"
-                   alt="The pipelined datapath with only the Memory hardware highlighted for lw x1, 20(x8). The EX/MEM register and the data memory are shaded, with the address driving a read whose result is captured in the MEM/WB register."
-                   decoding="async" loading="lazy" />
-            </div>
-
-            <div class="booklet__leaf" data-label="Cycle 5: lw x1, 20(x8) in Write-back">
-              <img src="../../assets/pipelined-cpu/example-wb.jpg"
-                   alt="The pipelined datapath with only the Write-back hardware highlighted for lw x1, 20(x8). The MEM/WB register, the write-back multiplexer and the register file write port are shaded, returning the loaded word to register x1."
-                   decoding="async" loading="lazy" />
-            </div>
-
-            <button class="booklet__peel" type="button" aria-label="Turn the page"></button>
-          </div>
-
-          <figcaption class="booklet__cap" aria-live="polite"></figcaption>
+        <!-- The corrected datapath, now taking the whole column below the copy
+             that explains it. Same plate treatment as the other full-width
+             diagrams in this lesson: .figure for the card and the scroll
+             reveal, .enlarge-wide so a click opens it big enough to read. -->
+        <figure class="figure enlarge-wide" style="max-width: 68rem; margin-inline: auto;">
+          <img src="../../assets/pipelined-cpu/pipeline-datapath-update.jpg"
+               alt="The pipelined datapath corrected, with the destination register number highlighted in blue. The rd field is taken from bits 11 to 7 of the instruction held in IF/ID and carried through the ID/EX, EX/MEM, and MEM/WB pipeline registers before looping back to the Write Register input of the register file, so the Writeback stage names the correct destination for a loaded word."
+               decoding="async" />
         </figure>
 
         <div class="prose prose--full">
@@ -416,6 +421,36 @@
                decoding="async"
                style="background: #fff; padding: 1.5rem;" />
         </figure>
+
+        <div class="prose prose--full" style="margin: var(--space-5) 0 0;">
+          <p>
+            For now, this is our datapath. It fetches an instruction every cycle,
+            carries each instruction's values forward through the pipeline
+            registers, and finishes one instruction per cycle once the pipeline
+            is full. What we have quietly assumed all the way through is that the
+            five instructions have nothing to do with one another. None of them
+            reads a register that an instruction still in flight is about to
+            write, and none of them is a branch, so the fetch stage has always
+            known which instruction comes next. Real programs are rarely so
+            considerate.
+          </p>
+          <p>
+            The moment an instruction needs a result that an earlier instruction
+            has not written back yet, we have a <strong>data hazard</strong>, and
+            the moment a branch is fetched, the instructions behind it enter the
+            pipeline before anyone knows whether they should have been fetched at
+            all, which is a <strong>control hazard</strong>. The datapath drawn
+            above has no way to notice either situation. It will read a stale
+            register and finish the instruction anyway, and it will let the
+            instructions behind a taken branch run to completion. Next we will
+            work out the extra logic the datapath needs to handle these cases
+            correctly, forwarding a result back to the stage waiting on it,
+            stalling the pipeline when even forwarding cannot deliver a value in
+            time, and flushing the instructions that were fetched down the wrong
+            path. The five stages will stay exactly where they are. What we add
+            is the hardware that keeps them honest.
+          </p>
+        </div>
       </div>
     </section>
 
@@ -451,7 +486,7 @@
 
           <!-- Revealed by the quiz script once the correct answer is chosen. -->
           <div class="quiz__next">
-            <a class="btn btn--primary" href="../../coming-soon/?topic=Pipelined%20Control">
+            <a class="btn btn--primary" href="../pipelined-control/">
               Continue to The Pipelined Control <span aria-hidden="true">&rarr;</span>
             </a>
           </div>

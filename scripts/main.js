@@ -172,7 +172,7 @@
       ["Pipelined CPU", [
         ["Pipelining", "pipelined-cpu/pipelining/"],
         ["The Pipelined Datapath", "pipelined-cpu/pipelined-datapath/"],
-        "Control Unit",
+        ["The Pipelined Control", "pipelined-cpu/pipelined-control/"],
         "Data Hazards",
         "Control Hazards"
       ]],

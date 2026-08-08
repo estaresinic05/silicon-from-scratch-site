@@ -305,77 +305,75 @@
           </p>
         </div>
 
-        <div class="split split--media-right">
-          <figure class="figure figure--diagram">
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-right">
             <img src="../../assets/single-cycle-cpu/sb-type.jpg"
                  alt="The SB-type instruction format as a six-field bar — imm[12|10:5] at bits [31:25], rs2 at [24:20], rs1 at [19:15], funct3 at [14:12], imm[4:1|11] at [11:7], and opcode at [6:0] — above a worked example of beq x5, x6, 16: imm[12|10:5] is 0000000, rs2 is 00110 (x6), rs1 is 00101 (x5), funct3 is 000, imm[4:1|11] is 10000, and the opcode is 1100011."
                  decoding="async" />
           </figure>
-          <div class="prose">
-            <p>
-              RISC-V's <strong>conditional branches</strong> compare two registers
-              and jump only if the test passes — <em>beq</em> (branch if equal),
-              <em>bne</em> (branch if not equal), and <em>blt</em> (branch if less
-              than), among others. Each reads two source registers and needs a
-              target to jump to, but never writes a result back to a register. You
-              might notice that shape looks awfully familiar — two sources, no
-              destination, plus an immediate — it's the very same shape as the
-              store's S&#8209;type, so branches take the closely related
-              <strong>SB&#8209;type</strong> (or B&#8209;type) format. Its fields, from
-              the high bits down, are
-              <code class="fld-imm">imm[12|10:5]</code>,
-              <code class="fld-rs2">rs2</code>,
-              <code class="fld-rs1">rs1</code>,
-              <code class="fld-funct3">funct3</code>,
-              <code class="fld-imm">imm[4:1|11]</code>, and the
-              <code class="fld-opcode">opcode</code>. Just as with the S&#8209;type, the
-              <code class="fld-imm">immediate</code> is chopped into scattered chunks
-              so that <code class="fld-rs2">rs2</code>,
-              <code class="fld-rs1">rs1</code>,
-              <code class="fld-funct3">funct3</code>, and the
-              <code class="fld-opcode">opcode</code> stay in the exact same bit
-              positions they occupy in every other format. This time the immediate
-              is a <em>branch offset</em> — a signed distance, measured from the
-              branch itself, to the instruction we want to jump to. In
-              <em>beq x5, x6, 16</em>, if the values in <em>x5</em> and
-              <em>x6</em> are equal, the processor adds 16 to the current address
-              and continues from there; otherwise it moves on to the very next
-              instruction.
-            </p>
-          </div>
+
+          <p>
+            RISC-V's <strong>conditional branches</strong> compare two registers
+            and jump only if the test passes — <em>beq</em> (branch if equal),
+            <em>bne</em> (branch if not equal), and <em>blt</em> (branch if less
+            than), among others. Each reads two source registers and needs a
+            target to jump to, but never writes a result back to a register. You
+            might notice that shape looks awfully familiar — two sources, no
+            destination, plus an immediate — it's the very same shape as the
+            store's S&#8209;type, so branches take the closely related
+            <strong>SB&#8209;type</strong> (or B&#8209;type) format. Its fields, from
+            the high bits down, are
+            <code class="fld-imm">imm[12|10:5]</code>,
+            <code class="fld-rs2">rs2</code>,
+            <code class="fld-rs1">rs1</code>,
+            <code class="fld-funct3">funct3</code>,
+            <code class="fld-imm">imm[4:1|11]</code>, and the
+            <code class="fld-opcode">opcode</code>. Just as with the S&#8209;type, the
+            <code class="fld-imm">immediate</code> is chopped into scattered chunks
+            so that <code class="fld-rs2">rs2</code>,
+            <code class="fld-rs1">rs1</code>,
+            <code class="fld-funct3">funct3</code>, and the
+            <code class="fld-opcode">opcode</code> stay in the exact same bit
+            positions they occupy in every other format. This time the immediate
+            is a <em>branch offset</em> — a signed distance, measured from the
+            branch itself, to the instruction we want to jump to. In
+            <em>beq x5, x6, 16</em>, if the values in <em>x5</em> and
+            <em>x6</em> are equal, the processor adds 16 to the current address
+            and continues from there; otherwise it moves on to the very next
+            instruction.
+          </p>
         </div>
 
-        <div class="split split--media-right">
-          <figure class="figure figure--diagram">
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-right">
             <img src="../../assets/single-cycle-cpu/uj-type.jpg"
                  alt="The UJ-type instruction format as a three-field bar — the scrambled immediate imm[20|10:1|11|19:12] at bits [31:12], rd at [11:7], and opcode at [6:0] — above a worked example of jal x1, 6708: the immediate field is 00100011010100000001, rd is 00001 (x1), and the opcode is 1101111."
                  decoding="async" />
           </figure>
-          <div class="prose">
-            <p>
-              Branches are perfect for the small, nearby hops of an <em>if</em> or a
-              loop, but their offset is only wide enough to reach a limited range of
-              addresses. Calling a function may mean leaping much farther across the
-              program, so RISC-V provides <em>jal</em> (jump and link). Where a
-              branch is conditional and only redirects the processor when its test
-              comes out true, a <em>jal</em> is an <strong>unconditional branch</strong>: it always
-              takes the jump, no comparison required. A
-              <em>jal</em> does two things at once: it jumps to a far-off target, and
-              it &ldquo;links&rdquo; by saving the address of the following
-              instruction into a destination register, leaving a breadcrumb the
-              function can use to return. Because it writes a destination and carries
-              one very large immediate, it uses the <strong>UJ&#8209;type</strong>
-              (or J&#8209;type) format. Its fields are the scrambled
-              <code class="fld-imm">imm[20|10:1|11|19:12]</code>, the destination
-              <code class="fld-rd">rd</code>, and the
-              <code class="fld-opcode">opcode</code>. Nearly the whole instruction is
-              given over to that single <code class="fld-imm">immediate</code>,
-              which is what lets <em>jal</em> reach so much farther than a branch. In
-              <em>jal x1, 6708</em>, the processor jumps 6708 bytes ahead and
-              records the return address in <em>x1</em>, ready to resume once the
-              function is done.
-            </p>
-          </div>
+
+          <p>
+            Branches are perfect for the small, nearby hops of an <em>if</em> or a
+            loop, but their offset is only wide enough to reach a limited range of
+            addresses. Calling a function may mean leaping much farther across the
+            program, so RISC-V provides <em>jal</em> (jump and link). Where a
+            branch is conditional and only redirects the processor when its test
+            comes out true, a <em>jal</em> is an <strong>unconditional branch</strong>: it always
+            takes the jump, no comparison required. A
+            <em>jal</em> does two things at once: it jumps to a far-off target, and
+            it &ldquo;links&rdquo; by saving the address of the following
+            instruction into a destination register, leaving a breadcrumb the
+            function can use to return. Because it writes a destination and carries
+            one very large immediate, it uses the <strong>UJ&#8209;type</strong>
+            (or J&#8209;type) format. Its fields are the scrambled
+            <code class="fld-imm">imm[20|10:1|11|19:12]</code>, the destination
+            <code class="fld-rd">rd</code>, and the
+            <code class="fld-opcode">opcode</code>. Nearly the whole instruction is
+            given over to that single <code class="fld-imm">immediate</code>,
+            which is what lets <em>jal</em> reach so much farther than a branch. In
+            <em>jal x1, 6708</em>, the processor jumps 6708 bytes ahead and
+            records the return address in <em>x1</em>, ready to resume once the
+            function is done.
+          </p>
         </div>
 
         <div class="prose prose--full">
@@ -414,43 +412,42 @@
           <h2 id="regimm-title">Register Immediate Instructions</h2>
         </div>
 
-        <div class="split split--media-right">
-          <figure class="figure figure--diagram">
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-right">
             <img src="../../assets/single-cycle-cpu/addi.jpg"
                  alt="The I-type instruction format as a five-field bar — immediate at bits [31:20], rs1 at [19:15], funct3 at [14:12], rd at [11:7], and opcode at [6:0] — above a worked example of addi x5, x6, 10: the immediate is 000000001010 (10), rs1 is 00110 (x6), funct3 is 000, rd is 00101 (x5), and the opcode is 0010011."
                  decoding="async" />
           </figure>
-          <div class="prose">
-            <p>
-              An R-type instruction combines the values held in <em>two</em>
-              registers, but very often one of the operands we want is just a
-              constant known ahead of time: add one to a counter, mask a value
-              against a fixed pattern, or compare a number to a threshold. Rather
-              than burn a whole register loading that constant first, RISC-V lets us
-              bake it straight into the instruction as a 12-bit
-              <code class="fld-imm">immediate</code> that stands in for the second
-              source register. These are the <strong>register-immediate</strong>
-              instructions, and they run the same arithmetic and logic as their
-              R-type cousins. Best of all, they don't take much extra effort to learn:
-              they use the very same <strong>I&#8209;type</strong> format we already
-              met with <em>lw</em>, so the <code class="fld-imm">immediate</code>,
-              <code class="fld-rs1">rs1</code>, <code class="fld-funct3">funct3</code>,
-              <code class="fld-rd">rd</code>, and <code class="fld-opcode">opcode</code>
-              fields all sit exactly where we've seen them before.
-            </p>
-            <p>
-              The family mirrors the R-type operations with an
-              <em>i</em> (for &ldquo;immediate&rdquo;) tacked on: <em>addi</em> adds a
-              constant to a register, <em>ori</em> ORs a register against a constant
-              to force chosen bits high, and <em>slti</em> sets its destination to 1
-              when the register is less than the constant and 0 otherwise. Each reads
-              one source register <code class="fld-rs1">rs1</code>, folds in the
-              <code class="fld-imm">immediate</code>, and writes the result to
-              <code class="fld-rd">rd</code>. For example, <em>addi x5, x6, 10</em>
-              takes the value in <em>x6</em>, adds the constant 10, and stores the
-              sum in <em>x5</em> &mdash; no second register required.
-            </p>
-          </div>
+
+          <p>
+            An R-type instruction combines the values held in <em>two</em>
+            registers, but very often one of the operands we want is just a
+            constant known ahead of time: add one to a counter, mask a value
+            against a fixed pattern, or compare a number to a threshold. Rather
+            than burn a whole register loading that constant first, RISC-V lets us
+            bake it straight into the instruction as a 12-bit
+            <code class="fld-imm">immediate</code> that stands in for the second
+            source register. These are the <strong>register-immediate</strong>
+            instructions, and they run the same arithmetic and logic as their
+            R-type cousins. Best of all, they don't take much extra effort to learn:
+            they use the very same <strong>I&#8209;type</strong> format we already
+            met with <em>lw</em>, so the <code class="fld-imm">immediate</code>,
+            <code class="fld-rs1">rs1</code>, <code class="fld-funct3">funct3</code>,
+            <code class="fld-rd">rd</code>, and <code class="fld-opcode">opcode</code>
+            fields all sit exactly where we've seen them before.
+          </p>
+          <p>
+            The family mirrors the R-type operations with an
+            <em>i</em> (for &ldquo;immediate&rdquo;) tacked on: <em>addi</em> adds a
+            constant to a register, <em>ori</em> ORs a register against a constant
+            to force chosen bits high, and <em>slti</em> sets its destination to 1
+            when the register is less than the constant and 0 otherwise. Each reads
+            one source register <code class="fld-rs1">rs1</code>, folds in the
+            <code class="fld-imm">immediate</code>, and writes the result to
+            <code class="fld-rd">rd</code>. For example, <em>addi x5, x6, 10</em>
+            takes the value in <em>x6</em>, adds the constant 10, and stores the
+            sum in <em>x5</em> &mdash; no second register required.
+          </p>
         </div>
       </div>
     </section>

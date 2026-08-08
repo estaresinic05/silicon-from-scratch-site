@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. Without JS this
+       never runs and the full page stays visible. -->
+  <script>
+    document.documentElement.classList.add("js");
+    // Back/forward loads reload as fresh landings (main.js §0 owns the
+    // policy). Doing the reload HERE, before first paint, keeps the restored
+    // page from flashing for a frame first. bfcache restores are handled in
+    // main.js (scripts don't re-run on those).
+    (function () {
+      var nav = performance.getEntriesByType &&
+                performance.getEntriesByType("navigation")[0];
+      if (nav && nav.type === "back_forward") {
+        document.documentElement.style.visibility = "hidden";
+        location.reload();
+      }
+    })();
+  </script>
+
+  <title>The Pipelined Control</title>
+  <meta name="description"
+        content="The control for a pipelined CPU is almost the control unit we already built for the single cycle machine. The ALU control unit goes away, and the signals that remain are grouped by the stage that uses them and carried forward through the pipeline registers." />
+
+  <!-- Social link previews: shared logo + "Silicon From Scratch" card (see index.html). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Silicon From Scratch" />
+  <meta property="og:title" content="Silicon From Scratch" />
+  <meta property="og:url" content="https://siliconfromscratch.com/pipelined-cpu/pipelined-control/" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+  <meta property="og:image:width" content="1408" />
+  <meta property="og:image:height" content="768" />
+  <meta property="og:image:alt" content="Silicon From Scratch logo" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Silicon From Scratch" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+
+  <!-- Favicon follows the browser color scheme: the gray/purple mark on
+       light tab bars, the dark-theme symbol on dark ones. -->
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="../../assets/home/logo-symbol-light.png" />
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="../../assets/home/logo-symbol.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles, then the ALU project components (this page lives at
+       /pipelined-cpu/pipelined-control/, two levels down). -->
+  <link rel="stylesheet" href="../../styles/main.css" />
+  <link rel="stylesheet" href="../../styles/alu.css" />
+  <!-- The phone scheme. Loads LAST so it can override; every rule inside it
+       is scoped to max-width 900px, so desktop is untouched. -->
+  <link rel="stylesheet" href="../../styles/mobile.css" />
+
+  <!-- No page-scoped hero override here on purpose. The standard 46/44 balanced
+       split in alu.css is the golden set, and it keeps the title picture at the
+       same size it is on every other lesson. -->
+</head>
+<body class="theme-dark page-logic">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../../" aria-label="Silicon From Scratch — home">
+        <img class="wordmark__mark" src="../../assets/home/logo-symbol.png" alt="" aria-hidden="true" />
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="../../meet-the-processor/">Meet the Processor</a>
+        <a href="../../about/">About</a>
+      </nav>
+
+      <div class="topbar__right">
+        <div class="toc" id="page-toc">
+          <ul class="toc__menu" aria-label="Project directory"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================== DOC HERO ============================ -->
+    <section class="doc-hero doc-hero--balanced container" aria-labelledby="pc-title">
+      <div class="doc-hero__text">
+        <h1 id="pc-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">The Pipelined</span> <span class="title-eyebrow__group">Control</span></span></h1>
+        <p class="doc-hero__lead">
+          The <strong>pipelined control</strong> is very nearly the control unit
+          we already built for the single cycle CPU. The same signals come out of
+          the same decoder and they still mean exactly what they meant before.
+          What changes is <em>when</em> each one is needed, because an instruction
+          now spends five cycles crossing the datapath instead of one, and every
+          control value has to arrive at the stage that uses it.
+        </p>
+        <div class="doc-hero__actions">
+          <span class="doc-hero__prompt">Think you got this already?</span>
+          <a class="btn btn--primary" href="#check">Skip to Check Yourself</a>
+        </div>
+      </div>
+
+      <figure class="doc-hero__art enlarge-wide--sm">
+        <img src="../../assets/pipelined-cpu/pipelined-control-drawn.jpg"
+             alt="The complete pipelined RISC-V datapath with its control drawn in. A Control block reads the instruction held in IF/ID and produces the signals PCSrc, regWrite, ALUSrc, operation, memRead, memWrite, and memToReg, which are grouped into WB, MEM, and EX fields and carried forward through the ID/EX, EX/MEM, and MEM/WB pipeline registers to the stage that uses each one."
+             decoding="async" />
+      </figure>
+    </section>
+
+    <!-- ========================= THE SAME CONTROL ======================== -->
+    <section class="section" id="same-control" aria-labelledby="sc-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="sc-title">The Same Control, Almost</h2>
+        </div>
+
+        <div class="prose prose--full" style="margin: 0;">
+          <p>
+            There is good news at the start of this lesson. The control for our
+            pipelined CPU is more or less the control unit we built for the
+            single cycle machine, and almost nothing about it has to be
+            reconsidered. The same decoder reads the same instruction fields and
+            produces the same signals, and each signal still steers the same
+            piece of hardware it steered before. A
+            <code class="ctrl-sig">regWrite</code> of one still means this
+            instruction writes a register, and an
+            <code class="ctrl-sig">ALUSrc</code> of one still means the ALU takes
+            its second operand from the immediate rather than from a register.
+            Pipelining did not change what an instruction wants the datapath to
+            do. It only changed how many cycles the datapath takes to do it.
+          </p>
+        </div>
+
+        <!-- The signal-named datapath rides beside the change it illustrates.
+             Plain .flow-figure, not .figure, so the generic figure scroll reveal
+             does not also catch it: this page is .page-logic, whose .prose
+             blocks reveal their own children (see the note in styles/alu.css).
+             .enlarge-wide still opens it full size on a click, and that rule
+             cancels the float in the overlay. -->
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-right flow-figure--wide enlarge-wide">
+            <img src="../../assets/pipelined-cpu/pipeline-control.jpg"
+                 alt="The pipelined datapath with every control signal named in blue. PCSrc selects the next PC, regWrite enables the register file write port, ALUSrc selects the ALU's second operand, operation tells the ALU which function to compute, Branch and the branch logic decide whether a branch is taken, memRead and memWrite drive the data memory, and memToReg selects what is written back."
+                 decoding="async" />
+          </figure>
+
+          <p>
+            We have made exactly one change to the control itself, and it is a
+            subtraction rather than an addition. The
+            <strong>ALU control unit</strong> is gone. In the single cycle CPU
+            the main control produced a two bit
+            <code class="ctrl-sig">ALUOp</code> that named a broad category of
+            work, and a second small module then combined that category with the
+            instruction's funct3 and funct7 fields to produce the four bit code
+            the ALU actually reads. Here the main control skips the middle step
+            and emits that four bit
+            <code class="ctrl-sig">operation</code> signal directly, so the ALU
+            is told precisely what to do by the same decoder that decides
+            everything else.
+          </p>
+          <p>
+            Taking that module away buys us something worth naming. The ALU
+            control unit was a second decoder sitting directly in front of the
+            ALU, which meant that in any cycle where the ALU had work to do, the
+            instruction had to pass through two levels of decoding logic in
+            series before a single bit of arithmetic could begin. In a pipeline
+            that is precisely the wrong place for it. Decoding is what the
+            <em>Decode</em> stage is for, and a value decoded there rides forward
+            to <em>Execution</em> in a pipeline register and arrives ready to
+            use. Folding the ALU decode into the main control moves that work
+            into a stage that has time for it and leaves the execution stage with
+            nothing to do but compute, which shortens the longest path through
+            that stage and therefore lets the whole pipeline run at a higher
+            clock rate. It also leaves us one module to write and test instead of
+            two, and one fewer place for two decoders to disagree about what an
+            instruction meant.
+          </p>
+
+          <!-- Floated right at half the column; the "One more thing carries
+               over" paragraph below it is what wraps down its left, so the two
+               must stay in this order. -->
+          <a class="recall-card recall-card--aside" href="../../single-cycle-cpu/control-unit/">
+            <svg class="recall-card__icon" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 14 4 9l5-5" />
+              <path d="M4 9h11a5 5 0 0 1 0 10h-1" />
+            </svg>
+            <span class="recall-card__text">
+              <span class="recall-card__eyebrow">Go back</span>
+              <span class="recall-card__title">Forgot how the control unit works?</span>
+              <span class="recall-card__sub">See how the main control decodes an instruction into the signals that steer the datapath.</span>
+            </span>
+          </a>
+
+          <p>
+            One more thing carries over unchanged. As with the single cycle CPU,
+            we assume the PC is written with the address of the next instruction
+            on every clock cycle, so there is no write signal to decide and
+            nothing for the control to say about it. The same argument covers the
+            four pipeline registers. Every one of them is written at the end of
+            every cycle, because there is always an instruction moving from each
+            stage into the next, so none of them needs a write enable either. For
+            now the pipeline simply advances, and the control never has to stop
+            it.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================= FIVE GROUPS ============================= -->
+    <section class="section" id="control-groups" aria-labelledby="cg-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="cg-title">Five Groups of Control</h2>
+        </div>
+
+        <div class="prose prose--full" style="margin: 0;">
+          <p>
+            An instruction now takes five cycles to cross the datapath, but no
+            single piece of hardware is busy for all five of them. The register
+            file's write port matters only in <em>Write-back</em>. The data
+            memory matters only in <em>Memory</em>. The ALU matters only in
+            <em>Execution</em>. Since every control line drives exactly one
+            component, and that component does its work in exactly one stage, a
+            control value only has to be correct during the stage that consumes
+            it. What it holds in the other four cycles simply does not matter,
+            because nothing is listening.
+          </p>
+        </div>
+
+        <!-- Floated LEFT, where the section above floats right, so the two
+             plates alternate down the page rather than both pinning to the same
+             edge. Same .flow-figure treatment and the same reasoning as above. -->
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-left flow-figure--wide enlarge-wide">
+            <img src="../../assets/pipelined-cpu/pipelined-control-overall.jpg"
+                 alt="The pipelined control drawn as fields riding the pipeline registers. The instruction held in IF/ID enters a Control block, which emits memToReg and regWrite as a WB field, Branch, memRead and memWrite as an M field, and ALUSrc and operation as an EX field. All three fields are written into ID/EX. The EX field is consumed in the Execution stage, so only WB and M continue into EX/MEM, and only WB continues into MEM/WB."
+                 decoding="async" />
+          </figure>
+
+          <p>
+            That observation is what makes pipelined control manageable, and it
+            lets us divide the control lines into <strong>five groups</strong>,
+            one for each stage. Two of those groups turn out to be empty.
+            <em>Instruction Fetch</em> reads the instruction memory and writes
+            the PC on every single cycle no matter what is being fetched, so
+            there is nothing to decide. <em>Instruction Decode</em> reads both
+            register file ports and runs the immediate generator for every
+            instruction as well, and any values it produces that turn out to be
+            irrelevant are simply ignored later. So although there are five
+            groups, only three of them carry anything: the signals used in
+            <em>Execution</em>, the signals used in <em>Memory</em>, and the
+            signals used in <em>Write-back</em>.
+          </p>
+          <p>
+            The diagram here shows what that grouping looks like as hardware.
+            The instruction sitting in the IF/ID register is handed to the
+            control unit at the start of <em>Decode</em>, and every control
+            signal for the whole of that instruction's life is worked out right
+            there, once. They leave the control block sorted into three bundles.
+            The <strong>EX</strong> field holds
+            <code class="ctrl-sig">ALUSrc</code> and
+            <code class="ctrl-sig">operation</code>. The <strong>M</strong> field
+            holds <code class="ctrl-sig">Branch</code>,
+            <code class="ctrl-sig">memRead</code> and
+            <code class="ctrl-sig">memWrite</code>. The <strong>WB</strong> field
+            holds <code class="ctrl-sig">memToReg</code> and
+            <code class="ctrl-sig">regWrite</code>. All three are written into
+            ID/EX at the end of the cycle, alongside the register values and the
+            immediate the stage has just produced.
+          </p>
+          <p>
+            Follow the fields across the diagram and you will see them get
+            smaller. The
+            <em>Execution</em> stage reads the EX field, uses it to drive the
+            operand multiplexer and the ALU, and then has no further use for it,
+            so EX/MEM carries only M and WB forward. The <em>Memory</em> stage
+            reads the M field, drives the data memory and the branch decision
+            with it, and drops it in turn, so MEM/WB carries only WB. The
+            <em>Write-back</em> stage reads the last two bits and nothing at all
+            is left over. Each pipeline register holds exactly the control an
+            instruction still has ahead of it and not one bit more.
+          </p>
+          <p>
+            This is the same rule we met when the destination register number was
+            missing, and it costs us the same thing. Anything an instruction will
+            need in a later stage has to travel with it, so the pipeline
+            registers have to grow wider to make room for these control bits on
+            top of the data they were already carrying. ID/EX gains all three
+            fields, EX/MEM gains two, and MEM/WB gains one. Nothing new computes
+            anything and no stage does more work than it did before. We are
+            paying for pipelined control in register width, which is a cheap
+            thing to spend, and the reward is that every stage is told what to do
+            by an instruction that decided it four cycles ago and has been
+            carrying the answer ever since.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== CHECK YOURSELF ===================== -->
+    <section class="section section--tight" id="check" aria-labelledby="check-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="check-title">Check Yourself</h2>
+        </div>
+
+        <div class="quiz" id="quiz" style="max-width: 74rem;">
+          <p class="quiz__q">The control unit reads the instruction held in
+            IF/ID and nothing feeds it again after that. How does an instruction
+            reaching the Memory stage get the control values it needs, three
+            cycles after the control unit last saw it?</p>
+
+          <figure class="figure figure--photo quiz__figure enlarge-wide" style="max-width: 45rem;">
+            <img src="../../assets/pipelined-cpu/pipelined-control-drawn.jpg"
+                 alt="The complete pipelined RISC-V datapath with its control drawn in, showing the Control block producing the WB, MEM, and EX field groups and each field riding the pipeline registers until the stage that consumes it."
+                 decoding="async" />
+          </figure>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button">The control unit decodes the instruction again at the start of every stage it enters.</button>
+            <button class="quiz__opt" type="button" data-correct="true">They were decoded once during Decode and written into the pipeline registers alongside the data, so each stage reads the control belonging to the instruction currently in it.</button>
+            <button class="quiz__opt" type="button">Each stage reads the control lines straight from the instruction sitting in IF/ID.</button>
+            <button class="quiz__opt" type="button">The control unit holds its outputs steady until the instruction has finished all five stages.</button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <!-- Revealed by the quiz script once the correct answer is chosen. -->
+          <div class="quiz__next">
+            <a class="btn btn--primary" href="../../coming-soon/?topic=Data%20Hazards">
+              Continue to Data Hazards <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+    <p class="container footer__credit">
+      Adapted from: David A. Patterson and John L. Hennessy,
+      <em>Computer Organization and Design RISC-V Edition: The Hardware/Software
+      Interface</em>, Second Edition, Chapter 4, &ldquo;The Processor,&rdquo;
+      &sect;4.7 &ldquo;Pipelined Datapath and Control&rdquo; (Morgan Kaufmann, 2021).
+    </p>
+  </footer>
+
+  <script src="../../scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger from CDN for the same scroll-reveal feel as the rest
+       of the site. If they fail to load, scroll.js removes the `js` class and
+       the page is simply fully visible. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
+  <script src="../../scripts/scroll.js" defer></script>
+  <!-- Enlarge: static figure images pop on hover and open enlarged on a
+       blurred backdrop when clicked (see scripts/enlarge.js). -->
+  <script src="../../scripts/enlarge.js" defer></script>
+
+  <!-- "Check yourself" quiz: color the chosen answer, show feedback, and reveal
+       the continue button once the correct answer is picked. -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          if (next) next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+        } else {
+          btn.classList.add("is-wrong");
+          feedback.textContent = "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

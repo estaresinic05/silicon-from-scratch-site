@@ -27,6 +27,7 @@ PAGES = ["/", "/about/", "/alu/logic-gates/", "/alu/full-adder/",
          "/single-cycle-cpu/constructing-a-datapath/",
          "/single-cycle-cpu/control-unit/", "/single-cycle-cpu/testing/",
          "/pipelined-cpu/pipelining/", "/pipelined-cpu/pipelined-datapath/",
+         "/pipelined-cpu/pipelined-control/",
          "/introduction-to-physical-design/transistor-basics/",
          "/introduction-to-physical-design/implementing-arbitrary-logic/"]
 

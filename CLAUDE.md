@@ -9,7 +9,7 @@ touching.
 ## The project in one paragraph
 
 A static educational site teaching how modern processors are designed and built,
-from a single transistor up to a pipelined CPU. **18 pages, no build step, no
+from a single transistor up to a pipelined CPU. **19 pages, no build step, no
 framework, no package manager** — hand-written HTML, three shared stylesheets,
 and vanilla JavaScript. GSAP loads from a CDN with an SRI hash; Three.js loads
 from a CDN via an import map on the two WebGL pages. Deployed on GitHub Pages at
@@ -200,3 +200,11 @@ no clone had.
 | `tools/tap-targets.py` | Lists every tappable control under 44px, skipping the ones that are inert by design. |
 | `tools/cut-fillers.py` | Finds the "um"s in a sheet-video master, cuts the longest half, re-encodes to the site's spec. `--plan` first, always. Whisper deletes fillers from its output, so they are found in the waveform and named run by run. |
 | `meet-the-processor/verify/` | Python checks for the 3D scene: affordance behaviour, stop composition, region coverage. Run these after editing `scene.js`. |
+
+**A new page must be added to four hardcoded lists** — `desktop-unchanged.py`,
+`mobile-audit.py`, `tap-targets.py` and `text-conflicts.py` each carry their own
+page list, and a page that is not in them is not checked by them. Do it as part
+of building the page. **An empty report is not a passing report**: `--pages
+<new-lesson>` matching nothing writes a clean-looking report that covered
+nothing at all. `desktop-unchanged.py` prints the page count it ran, which is
+the cheapest way to confirm the list actually grew.

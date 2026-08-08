@@ -906,6 +906,40 @@
      paragraphs in either mode. */
   .booklet { margin-block: var(--space-4); }
 
+  /* The aside variant unfloats: there is no second column to sit beside here,
+     so the pages take the width back. They take it IN FULL, unlike the plain
+     `.flow-figure` floats, which alu.css caps at 28rem once unfloated: these
+     are five dense datapath diagrams and the fold is a 46px control in their
+     bottom right, so a card held to 364px would leave the drawing unreadable
+     with the corner covering a fifth of its height.
+
+     Restated at two classes rather than one because that is what the alu.css
+     rule carries, and this file uses no `!important`: `.booklet` alone would
+     lose to `.prose--flow .booklet--float-right` and the float would survive
+     onto the phone. margin-inline + margin-block together replace the whole of
+     that rule's shorthand, so no side of it can leak through. */
+  .prose--flow .booklet--float-right {
+    float: none;
+    width: 100%;
+    margin-inline: 0;
+    margin-block: var(--space-4);
+  }
+
+  /* The go-back aside unfloats too. Half a phone column is 175px, which is
+     narrower than the card's own icon plus its shortest line, so "half" stops
+     meaning anything here and the card takes the width back.
+
+     Two classes for the same reason as the booklet above: the alu.css rule is
+     `(0,2,0)` and `.recall-card` alone would lose to it, leaving the float
+     live on a phone. margin-inline + margin-block together replace the whole
+     of that rule's shorthand so no side of it leaks through. */
+  .prose--flow .recall-card--aside {
+    float: none;
+    width: 100%;
+    margin-inline: 0;
+    margin-block: var(--space-4);
+  }
+
 }
 /* ---- end of the single max-width: 900px wrapper ---------------------- *
    Brace depth returns to zero HERE and nowhere earlier. Anything below
