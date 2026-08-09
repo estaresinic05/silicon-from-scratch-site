@@ -9,7 +9,7 @@ touching.
 ## The project in one paragraph
 
 A static educational site teaching how modern processors are designed and built,
-from a single transistor up to a pipelined CPU. **19 pages, no build step, no
+from a single transistor up to a pipelined CPU. **20 pages, no build step, no
 framework, no package manager** — hand-written HTML, three shared stylesheets,
 and vanilla JavaScript. GSAP loads from a CDN with an SRI hash; Three.js loads
 from a CDN via an import map on the two WebGL pages. Deployed on GitHub Pages at

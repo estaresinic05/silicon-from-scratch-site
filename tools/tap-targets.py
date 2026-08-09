@@ -41,6 +41,7 @@ PAGES = [
     "pipelined-cpu/pipelining/index.html",
     "pipelined-cpu/pipelined-datapath/index.html",
     "pipelined-cpu/pipelined-control/index.html",
+    "pipelined-cpu/data-hazards/index.html",
     "meet-the-processor/index.html",
 ]
 

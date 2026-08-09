@@ -173,7 +173,7 @@
         ["Pipelining", "pipelined-cpu/pipelining/"],
         ["The Pipelined Datapath", "pipelined-cpu/pipelined-datapath/"],
         ["The Pipelined Control", "pipelined-cpu/pipelined-control/"],
-        "Data Hazards",
+        ["Data Hazards", "pipelined-cpu/data-hazards/"],
         "Control Hazards"
       ]],
       ["Introduction to Physical Design", [

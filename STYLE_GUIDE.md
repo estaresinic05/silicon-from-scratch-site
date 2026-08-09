@@ -186,7 +186,7 @@ uppercase labels (`.kicker`, `.section-title`, the lesson `title-eyebrow`). Do
 not use it for navigation, buttons, or prose; it is both wider and harder to scan
 at small sizes, and it makes UI read as a system readout.
 
-Fonts load from one `<link>` that is **identical on all 19 pages**, plus a
+Fonts load from one `<link>` that is **identical on all 20 pages**, plus a
 `<link rel="preload">` for the Geist Latin subset. If you add a page, copy both
 from an existing one.
 

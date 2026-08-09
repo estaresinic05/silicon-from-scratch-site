@@ -2286,6 +2286,100 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 #register-files .code-editor__ta { font-size: 0.74rem; }
 
 /* ------------------------------------------------------------------ *
+   DATA HAZARDS (pipelined-cpu/data-hazards)
+ * ------------------------------------------------------------------ */
+
+/* "Taking Off Our Rose-Colored Glasses" is 767px on one line at the desktop h2
+   size, against the 44rem (704px) that `.section__head` caps every heading to,
+   so it broke after "Rose-Colored". Released the same way `#coverage` does it.
+   `none` and not a bigger rem cap because the container is already the real
+   limit: 853px of content at 901, the narrowest desktop, which clears 767 with
+   room to spare. Below the line the root steps to 13px and the container is a
+   phone wide, so the heading wraps again there, which is correct. */
+#rose-glasses .section__head { max-width: none; }
+
+/* Both dependence charts float LEFT with the copy running down their right.
+   They are the same drawing before and after forwarding, so they share one
+   class and read at matching size.
+
+   `min(40.4rem, 47%)` and not a bare rem. 40.4rem is 85% of the 47.5rem they
+   were, which was itself 85% of the 56rem the first chart took as a centred
+   plate; the percentage came down in step so the guard keeps the same
+   relationship to the rem cap. That guard is one the repo has already paid for
+   twice. A float has no negotiation the
+   way a grid track does — it takes its width and the copy gets whatever is
+   left — so at a flat 40.4rem the paragraph beside it runs as a ribbon at the
+   narrow end of the desktop range. Above ~1375px the rem wins and the chart is
+   its full size; below that the two share the column.
+
+   DESKTOP-SCOPED, and it has to be. The phone unfloat lives at
+   `.prose--flow .flow-figure--float-*`, which is (0,2,0) — exactly the same
+   specificity as this rule — and sits EARLIER in this file, so an unguarded
+   `.chart-float` width wins inside the phone media query and beats the very
+   rule meant to undo it. Measured: 193px of chart on a 390px screen, because
+   the 55% was resolving against a phone column. Guarded, the unfloat's
+   `width: 100%` stands and the chart is full-width on a phone as it was. */
+@media (min-width: 901px) {
+  .prose--flow .chart-float { width: min(40.4rem, 47%); }
+}
+
+/* The four hazard conditions as one card, floated right so it alternates with
+   the two charts. `min(26rem, 48%)` keeps it roughly square at the top of the
+   range and stops it eating the column at the bottom. */
+.prose--flow .hazard-box {
+  float: right;
+  width: min(26rem, 48%);
+  margin: 0.4rem 0 var(--space-4) var(--space-5);
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: var(--shadow-soft);
+}
+.hazard-box__group + .hazard-box__group {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--hairline);
+}
+/* The two labels are the page's only headings inside a card, and they read as
+   titles rather than as the mono eyebrow the site uses for kickers: display
+   face, sentence case as authored, and plain white so they sit above the
+   coloured signal names underneath rather than competing with them. */
+.hazard-box__title {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+}
+.hazard-box__cond {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--soft-ink);
+}
+/* The chip comes off, the colour stays. Keeping the `<code>` element is what
+   lets `.theme-dark code.fld-*` remain the one place the field colours are
+   written down; re-typing the hexes here would freeze a copy of them.
+
+   `.theme-dark` has to be on the selector. The chip background is set by
+   `.theme-dark code.fld-rd` at (0,2,1) up at line 1922, and a bare
+   `.hazard-box code` is (0,1,1) — it loses on specificity however far down the
+   file it sits, and the tint stays visible. Matching (0,2,1) and living later
+   in the file is what actually strips it. The unprefixed selector is kept
+   beside it so the light theme, which has no `.theme-dark` ancestor, is covered
+   by the same declaration. */
+.theme-dark .hazard-box code,
+.hazard-box code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ------------------------------------------------------------------ *
    CHECK-YOURSELF QUIZ — a multiple-choice widget: a diagram, four answer
    buttons that turn green (correct) or red (wrong) on click, a status line,
    and a "continue" button revealed once the right answer is picked.

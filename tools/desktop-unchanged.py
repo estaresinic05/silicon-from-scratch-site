@@ -44,6 +44,7 @@ PAGES = [
     "pipelined-cpu/pipelining/index.html",
     "pipelined-cpu/pipelined-datapath/index.html",
     "pipelined-cpu/pipelined-control/index.html",
+    "pipelined-cpu/data-hazards/index.html",
 ]
 
 # Geometry + the properties the mobile scheme actually touches, for every

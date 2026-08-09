@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. Without JS this
+       never runs and the full page stays visible. -->
+  <script>
+    document.documentElement.classList.add("js");
+    // Back/forward loads reload as fresh landings (main.js §0 owns the
+    // policy). Doing the reload HERE, before first paint, keeps the restored
+    // page from flashing for a frame first. bfcache restores are handled in
+    // main.js (scripts don't re-run on those).
+    (function () {
+      var nav = performance.getEntriesByType &&
+                performance.getEntriesByType("navigation")[0];
+      if (nav && nav.type === "back_forward") {
+        document.documentElement.style.visibility = "hidden";
+        location.reload();
+      }
+    })();
+  </script>
+
+  <title>Data Hazards</title>
+  <meta name="description"
+        content="Real programs are full of instructions that need a result an earlier instruction has not written back yet. Forwarding takes the answer from the pipeline register holding it and delivers it straight to the ALU, and a small forwarding unit decides when to do it." />
+
+  <!-- Social link previews: shared logo + "Silicon From Scratch" card (see index.html). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Silicon From Scratch" />
+  <meta property="og:title" content="Silicon From Scratch" />
+  <meta property="og:url" content="https://siliconfromscratch.com/pipelined-cpu/data-hazards/" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+  <meta property="og:image:width" content="1408" />
+  <meta property="og:image:height" content="768" />
+  <meta property="og:image:alt" content="Silicon From Scratch logo" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Silicon From Scratch" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+
+  <!-- Favicon follows the browser color scheme: the gray/purple mark on
+       light tab bars, the dark-theme symbol on dark ones. -->
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="../../assets/home/logo-symbol-light.png" />
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="../../assets/home/logo-symbol.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles, then the ALU project components (this page lives at
+       /pipelined-cpu/data-hazards/, two levels down). -->
+  <link rel="stylesheet" href="../../styles/main.css" />
+  <link rel="stylesheet" href="../../styles/alu.css" />
+  <!-- The phone scheme. Loads LAST so it can override; every rule inside it
+       is scoped to max-width 900px, so desktop is untouched. -->
+  <link rel="stylesheet" href="../../styles/mobile.css" />
+
+  <!-- The title image takes the balanced hero's full 44rem art track rather than
+       the `--slim` 30rem cap, because it is the densest drawing on any hero here
+       and the extra width is what makes the stage labels legible before a reader
+       clicks. `enlarge-wide--sm` opens it larger still.
+
+       DO NOT "fix" its EXIF orientation. hazard-forwarding.jpg stores portrait
+       pixels, 1723x2509, and carries orientation 8, so a browser draws it as the
+       2509x1723 landscape it is meant to be: PC at the left, the datapath running
+       left to right, every label horizontal. That tag is Elliot's rotation and it
+       is load-bearing. PIL reports the stored size and ignores the tag, so a
+       Python check will call this image portrait and be wrong; read
+       naturalWidth/naturalHeight off the live page instead. -->
+</head>
+<body class="theme-dark page-logic">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../../" aria-label="Silicon From Scratch — home">
+        <img class="wordmark__mark" src="../../assets/home/logo-symbol.png" alt="" aria-hidden="true" />
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="../../meet-the-processor/">Meet the Processor</a>
+        <a href="../../about/">About</a>
+      </nav>
+
+      <div class="topbar__right">
+        <div class="toc" id="page-toc">
+          <ul class="toc__menu" aria-label="Project directory"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================== DOC HERO ============================ -->
+    <section class="doc-hero doc-hero--balanced container" aria-labelledby="dh-title">
+      <div class="doc-hero__text">
+        <h1 id="dh-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">Data</span> <span class="title-eyebrow__group">Hazards</span></span></h1>
+        <p class="doc-hero__lead">
+          A <strong>data hazard</strong> is what happens when an instruction needs
+          a result that an earlier instruction has computed but has not written
+          back yet. The pipeline we have drawn so far will read the stale value
+          and finish the instruction anyway. The fix is not to slow the pipeline
+          down but to notice that the answer already exists somewhere in it, and
+          to run a wire from where it is to where it is needed.
+        </p>
+        <div class="doc-hero__actions">
+          <span class="doc-hero__prompt">Think you got this already?</span>
+          <a class="btn btn--primary" href="#check">Skip to Check Yourself</a>
+        </div>
+      </div>
+
+      <figure class="doc-hero__art enlarge-wide--sm">
+        <img src="../../assets/pipelined-cpu/hazard-forwarding.jpg"
+             alt="The full pipelined RISC-V datapath with its hazard hardware drawn in. A Forwarding Unit below the ID/EX register reads the rs1, rs2 and rd fields carried by the pipeline registers along with the EX/MEM and MEM/WB write enables, and drives ForwardA and ForwardB into two multiplexers on the ALU inputs. A Hazard Detection Unit at the right reads rs1 and rs2 from IF/ID against the destination in ID/EX and can hold the PC, hold IF/ID, and force the control signals to zero."
+             decoding="async" />
+      </figure>
+    </section>
+
+    <!-- ====================== ROSE-COLORED GLASSES ======================= -->
+    <section class="section" id="rose-glasses" aria-labelledby="rg-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="rg-title">Taking Off Our Rose-Colored Glasses</h2>
+        </div>
+
+        <div class="prose prose--full" style="margin: 0;">
+          <p>
+            Every pipeline we have drawn so far has been running a program chosen
+            to be kind to it. The instructions crossing the datapath in the last
+            two lessons had nothing whatsoever to say to one another. Not one of
+            them read a register that an instruction still in flight was about to
+            write, so every stage could take whatever the register file handed it
+            and be confident the value was current. That assumption is quietly
+            doing an enormous amount of work, and it is the reason the pipeline
+            has looked free so far.
+          </p>
+          <p>
+            Real programs are not built that way. A program is a sequence of steps,
+            and a step usually exists precisely because it needs the result of a
+            step before it. Instructions that depend on one another are the normal
+            case rather than the exception, and any machine that overlaps
+            instructions in time has to have an answer for them.
+          </p>
+        </div>
+
+        <!-- The program listing rides beside the paragraphs that walk through it.
+             Plain .flow-figure, not .figure, so the generic figure scroll reveal
+             does not also catch it: this page is .page-logic, whose .prose blocks
+             reveal their own children (see the note in styles/alu.css). -->
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-right enlarge-wide">
+            <img src="../../assets/pipelined-cpu/program-flow.jpg"
+                 alt="A hand-drawn program listing headed Program Flow with five RISC-V instructions: add x3, x7, x6 with x3 highlighted as the destination, then or x13, x3, x5, sub x14, x8, x3, sw x15, 40(x3), and and x16, x3, x3, with every later use of x3 highlighted."
+                 decoding="async" />
+          </figure>
+
+          <p>
+            Consider the short sequence beside this paragraph. The first
+            instruction, <em>add x3, x7, x6</em>, writes its sum into
+            <em>x3</em>. Every single one of the four instructions that follow it
+            then reads <em>x3</em>, and the last of them reads it twice. This is
+            not a contrived program. It is what ordinary code looks like when a
+            value is computed once and then used, which is most of the time.
+          </p>
+          <p>
+            Now put that sequence on the pipeline and watch the clock. The
+            <em>add</em> computes its sum in <em>Execution</em> during cycle 3,
+            but it does not write that sum into the register file until
+            <em>Writeback</em>, in cycle 5. The <em>or</em> behind it reads the
+            register file during its own <em>Decode</em> stage, in cycle 3, and
+            the <em>sub</em> behind that reads in cycle 4. Both of them go to the
+            register file for <em>x3</em> before the <em>add</em> has put anything
+            there, so both of them walk away with whatever <em>x3</em> held before
+            this program started. The pipeline does not stumble or complain. It
+            computes two confidently wrong answers and carries them forward.
+          </p>
+          <p>
+            That is a <strong>data hazard</strong>: an instruction needs a value
+            that an instruction ahead of it has not finished writing. It is worth
+            being precise about what has gone wrong, because it is a timing
+            failure and not a logic failure. Nothing in the datapath computes the
+            wrong function. The right value is produced by the right hardware at
+            the right stage. It simply arrives at the register file later than the
+            instruction behind it thinks to look.
+          </p>
+        </div>
+
+        <!-- The dependence chart floats LEFT with the copy running down its
+             right. Source order matters: a float only pushes what comes after
+             it, so the paragraph reading the chart has to sit below it in the
+             markup. Plain .flow-figure and not .figure, so the generic figure
+             reveal does not also catch it on this .page-logic page. Sizing lives
+             on `.chart-float` in alu.css, never in an inline style: an inline
+             `max-width` outranks every stylesheet rule including a media query,
+             and the phone unfloat is a media query. -->
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-left chart-float enlarge-wide">
+            <img src="../../assets/pipelined-cpu/dependences.jpg"
+                 alt="A multiple-clock-cycle pipeline diagram of the five instructions against a time axis from CC1 to CC9. Arrows leave the register write of add x3, x7, x6 in CC5 and point to the register read of each following instruction: back in time to the or in CC3 and the sub in CC4, which is impossible, level with the sw in CC5, and forward to the and in CC6."
+                 decoding="async" />
+          </figure>
+
+          <p>
+            The chart beside this paragraph draws the same five instructions against a single time
+            axis, with an arrow from the point where <em>x3</em> is written to
+            each point where it is read. Two of those arrows point backwards.
+            The <em>or</em> wants a value in cycle 3 that does not exist until
+            cycle 5, and the <em>sub</em> wants it in cycle 4. An arrow that runs
+            backwards in time is the visual signature of a hazard, and it is the
+            fastest way to spot one on a chart like this. The last two arrows are
+            fine. The <em>sw</em> reads in the very cycle the write happens and the
+            <em>and</em> reads a cycle later, and we will see in a moment why the
+            first of those two is safe.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================= THE FORWARDING UNIT ===================== -->
+    <section class="section" id="forwarding" aria-labelledby="fw-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="fw-title">The Forwarding Unit</h2>
+        </div>
+
+        <div class="prose prose--full" style="margin: 0;">
+          <p>
+            We already met the answer, back when we first laid the pipeline out.
+            The trick is to notice that the sum the <em>or</em> needs is not
+            missing. It is finished and sitting at the output of the ALU at the
+            end of cycle 3, a full two cycles before it reaches the register file.
+            The register file is simply not where it lives yet.
+            <strong>Forwarding</strong>, also called <strong>bypassing</strong>,
+            is the practice of adding a path that collects a result the moment it
+            exists and hands it directly to the instruction waiting on it, instead
+            of making that instruction wait for the long way around through the
+            register file.
+          </p>
+        </div>
+
+        <div class="prose prose--full">
+          <p>
+            Look again at the two arrows that were legal. The <em>and</em> in cycle
+            6 reads after the write and needs no help at all. The <em>sw</em> is
+            the interesting one, because it reads <em>x3</em> in cycle 5, the very
+            cycle the <em>add</em> is writing it. That works, and it works by
+            design rather than by luck: our register file writes on the first half
+            of the clock cycle and reads on the second half, so a read that lands
+            in the same cycle as a write sees the value that was just written. One
+            of the four dependences resolves itself for free, and only the two
+            backwards arrows are left to fix.
+          </p>
+        </div>
+
+        <!-- Same left-float slot as the dependence chart above, and the same
+             `.chart-float` width, so the two versions of the one diagram read at
+             matching size and the reader can compare them. -->
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-left chart-float enlarge-wide">
+            <img src="../../assets/pipelined-cpu/forwarding-dependences.jpg"
+                 alt="The same five instructions on a time axis, redrawn with forwarding paths. The result of add x3, x7, x6 leaves the end of its Execution stage in CC3 and runs forward into the Execution stage of the or in CC4 and of the sub in CC5, so both arrows now point forward in time. The sw reads the register file in CC5, the same cycle the add writes it, and needs no forwarding path."
+                 decoding="async" />
+          </figure>
+
+          <p>
+            Redrawn with forwarding, the chart has no backwards arrows left in it.
+            The sum leaves the <em>add</em> at the end of its <em>Execution</em>
+            stage and travels forward into the <em>Execution</em> stage of the
+            <em>or</em> and then of the <em>sub</em>. Every arrow now points the
+            way time does, which is the whole test of whether a value can be
+            delivered at all. Forwarding cannot rescue a value that has not been
+            computed yet, and that limit will matter a great deal later, but for
+            arithmetic feeding arithmetic it is enough.
+          </p>
+          <p>
+            Knowing that a wire is needed is a different problem from knowing
+            <em>when</em> to use it, and the second problem is the one the hardware
+            has to solve every cycle. To state the condition precisely we need a
+            way to name the signals precisely, so we will name each one after the
+            pipeline register it is stored in. A signal written
+            <code class="fld-rd">EX/MEM_rd</code> is the <code class="fld-rd">rd</code> field
+            held in the EX/MEM pipeline register, which is to say the destination
+            register of the instruction that has just finished <em>Execution</em>
+            and is now entering <em>Memory</em>. A signal written
+            <code class="fld-rs1">ID/EX_rs1</code> is the <code class="fld-rs1">rs1</code> field
+            held in the ID/EX register, the first source of the instruction about
+            to enter <em>Execution</em>. The prefix says where the value physically
+            sits, and because a pipeline register holds exactly one instruction's
+            worth of state, it also says which instruction the value belongs to.
+          </p>
+          <p>
+            With that notation the two failures in our program become two very
+            short statements. In cycle 4 the <em>add</em> is in <em>Memory</em> and
+            the <em>or</em> is in <em>Execution</em>, so the destination of the one
+            and the first source of the other are sitting one register apart, and
+            <code class="fld-rd">EX/MEM_rd</code> equals <code class="fld-rs1">ID/EX_rs1</code>. In cycle 5 the
+            <em>add</em> has moved on to <em>Writeback</em> and the <em>sub</em>
+            has reached <em>Execution</em>, and since <em>x3</em> is the second
+            source of a <em>sub</em>, this time <code class="fld-rd">MEM/WB_rd</code> equals
+            <code class="fld-rs2">ID/EX_rs2</code>. Both are comparisons between two register
+            numbers that the pipeline is already carrying, which is what makes
+            them cheap to test in hardware.
+          </p>
+          <!-- The four conditions in one floated card, prose wrapping down its
+               left. The `<code>` elements stay so the field colours keep their
+               single source of truth in `.theme-dark code.fld-*`; `.hazard-box`
+               strips the chip background and padding off them, so they read as
+               plain coloured signal names rather than inline chips. -->
+          <aside class="hazard-box" aria-label="The four forwarding hazard conditions">
+            <div class="hazard-box__group">
+              <h3 class="hazard-box__title">EX Hazards</h3>
+              <p class="hazard-box__cond"><code class="fld-rd">EX/MEM_rd</code> = <code class="fld-rs1">ID/EX_rs1</code></p>
+              <p class="hazard-box__cond"><code class="fld-rd">EX/MEM_rd</code> = <code class="fld-rs2">ID/EX_rs2</code></p>
+            </div>
+            <div class="hazard-box__group">
+              <h3 class="hazard-box__title">MEM Hazards</h3>
+              <p class="hazard-box__cond"><code class="fld-rd">MEM/WB_rd</code> = <code class="fld-rs1">ID/EX_rs1</code></p>
+              <p class="hazard-box__cond"><code class="fld-rd">MEM/WB_rd</code> = <code class="fld-rs2">ID/EX_rs2</code></p>
+            </div>
+          </aside>
+
+          <p>
+            Generalizing from those two gives four conditions, and they fall into
+            two natural pairs. The pair that compares against the EX/MEM register
+            we will call the <strong>EX hazards</strong>, since the value being
+            forwarded comes from the instruction leaving <em>Execution</em>. The
+            pair that compares against the MEM/WB register we will call the
+            <strong>MEM hazards</strong>, since the value comes from the
+            instruction leaving <em>Memory</em>. Both sets are beside this
+            paragraph.
+          </p>
+          <p>
+            Those four are necessary but they are not yet sufficient, and a
+            forwarding unit built on them alone would corrupt perfectly good
+            programs. The first gap is that not every instruction writes a
+            register. A store and a branch both carry bits in the position where
+            <code class="fld-rd">rd</code> lives, because the field is at bits 11
+            down to 7 in every format that has one and the hardware pulls it out
+            without asking what the instruction is. Those bits are meaningless for
+            an instruction that never writes back, and matching against them would
+            forward a value that was never produced. The cure is to consult the
+            control the instruction is already carrying and require that
+            <code class="ctrl-sig">regWrite</code> is asserted in the stage we are
+            forwarding from.
+          </p>
+          <p>
+            The second gap is <em>x0</em>. In RISC-V register zero is hardwired to
+            the value zero and reading it always yields zero, no matter what any
+            instruction claims to have written there. That makes <em>x0</em> a
+            perfectly legal destination for an instruction whose result is being
+            thrown away, and <em>add x0, x3, x12</em> is a normal thing to find in
+            a program. The ALU still computes a sum for it, and that sum still
+            appears in the EX/MEM register alongside a
+            <code class="fld-rd">rd</code> of zero. If a later instruction reads
+            <em>x0</em>, the four conditions above would match and we would forward
+            a non-zero number to an instruction that is entitled to receive zero.
+            So both comparisons also require
+            <code class="fld-rd">EX/MEM_rd</code> &ne; 0 and <code class="fld-rd">MEM/WB_rd</code> &ne; 0.
+          </p>
+          <p>
+            The delivery mechanism is smaller than the decision. Each ALU input
+            gains a <strong>3x1 multiplexer</strong> in front of it, choosing
+            between the operand the register file read during <em>Decode</em>, the
+            value held in the EX/MEM register, and the value held in the MEM/WB
+            register. Two select signals drive them, one per operand, and a small
+            combinational block generates both. That block is the
+            <strong>forwarding unit</strong>. It sits under the ID/EX register
+            with the register numbers and the write enables running into it and
+            the two selects running back out to the multiplexers.
+          </p>
+        </div>
+
+        <!-- A read-only Verilog block, the pattern single-cycle-cpu/control-unit
+             uses. .code-editor--static sizes to its content instead of being
+             pinned to the box, so a long module can never be clipped the way it
+             would be inside a flip card. The tok-* spans are hand-authored
+             rather than produced by verilog-mini.js, so this page loads neither
+             verilog-mini.js nor gate-card.js. main.js adds the Copy button to
+             every .code-editor, so this one still gets one. Parentheses are left
+             unclassed, matching the hand-authored blocks on that page. -->
+        <!-- Module left, the copy that reads it right. `.split--media-left` is
+             the shared golden-set variant single-cycle-cpu/control-unit uses for
+             exactly this pairing, so it needs no page CSS and mobile.css already
+             stacks it at the line. The width is inline on the figure, matching
+             that page: the column is `minmax(0, auto)`, so the code's own width
+             is what sizes the track. -->
+        <div class="split split--media-left">
+        <figure class="code-editor code-editor--static" style="width: 40rem; max-width: 100%;">
+          <figcaption class="code-editor__bar">
+            <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+            <span class="code-editor__lang">Verilog HDL</span>
+          </figcaption>
+          <div class="code-editor__body">
+            <pre class="code-editor__hl"><code><span class="tok-kw">module</span> <span class="tok-type">forwarding_unit</span> (
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IDEX_rs1,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IDEX_rs2,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] EXMEM_rd,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] MEMWB_rd,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span>       EXMEM_regWrite,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span>       MEMWB_regWrite,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>  [<span class="tok-num">1</span>:<span class="tok-num">0</span>] IDEX_forwardA,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>  [<span class="tok-num">1</span>:<span class="tok-num">0</span>] IDEX_forwardB
+);
+
+  <span class="tok-kw">always</span> @(*) <span class="tok-kw">begin</span>
+    <span class="tok-cm">// defaults: no forwarding, read from register file</span>
+    IDEX_forwardA <span class="tok-op">=</span> <span class="tok-num">2&#39;b00</span>;
+    IDEX_forwardB <span class="tok-op">=</span> <span class="tok-num">2&#39;b00</span>;
+
+    <span class="tok-cm">// ---- IDEX_forwardA ----</span>
+    <span class="tok-kw">if</span> (EXMEM_regWrite <span class="tok-op">&amp;&amp;</span> (EXMEM_rd <span class="tok-op">!=</span> <span class="tok-num">5&#39;d0</span>)
+                       <span class="tok-op">&amp;&amp;</span> (EXMEM_rd <span class="tok-op">==</span> IDEX_rs1))
+      IDEX_forwardA <span class="tok-op">=</span> <span class="tok-num">2&#39;b10</span>;  <span class="tok-cm">// from EX/MEM</span>
+    <span class="tok-kw">else</span> <span class="tok-kw">if</span> (MEMWB_regWrite <span class="tok-op">&amp;&amp;</span> (MEMWB_rd <span class="tok-op">!=</span> <span class="tok-num">5&#39;d0</span>)
+                            <span class="tok-op">&amp;&amp;</span> (MEMWB_rd <span class="tok-op">==</span> IDEX_rs1))
+      IDEX_forwardA <span class="tok-op">=</span> <span class="tok-num">2&#39;b01</span>;  <span class="tok-cm">// from MEM/WB</span>
+
+    <span class="tok-cm">// ---- IDEX_forwardB ----</span>
+    <span class="tok-kw">if</span> (EXMEM_regWrite <span class="tok-op">&amp;&amp;</span> (EXMEM_rd <span class="tok-op">!=</span> <span class="tok-num">5&#39;d0</span>)
+                       <span class="tok-op">&amp;&amp;</span> (EXMEM_rd <span class="tok-op">==</span> IDEX_rs2))
+      IDEX_forwardB <span class="tok-op">=</span> <span class="tok-num">2&#39;b10</span>;
+    <span class="tok-kw">else</span> <span class="tok-kw">if</span> (MEMWB_regWrite <span class="tok-op">&amp;&amp;</span> (MEMWB_rd <span class="tok-op">!=</span> <span class="tok-num">5&#39;d0</span>)
+                            <span class="tok-op">&amp;&amp;</span> (MEMWB_rd <span class="tok-op">==</span> IDEX_rs2))
+      IDEX_forwardB <span class="tok-op">=</span> <span class="tok-num">2&#39;b01</span>;
+  <span class="tok-kw">end</span>
+
+<span class="tok-kw">endmodule</span></code></pre>
+          </div>
+        </figure>
+
+        <div class="prose">
+          <p>
+            Written out, the unit is two comparisons per operand and nothing
+            else. Each output defaults to 00 and reads from the register file,
+            and each of the four conditions we arrived at above is one branch,
+            carrying its own <code class="ctrl-sig">regWrite</code> check and
+            its own guard against register zero.
+          </p>
+          <p>
+            The module costs us one more thing, and it is the same currency we
+            paid in for the destination register and again for the control
+            fields. Before forwarding, the ID/EX register had no reason to carry
+            <code class="fld-rs1">rs1</code> and <code class="fld-rs2">rs2</code>
+            at all. The register file had already been read by the time an
+            instruction left <em>Decode</em>, so the two values it produced were
+            what <em>Execution</em> wanted and the register numbers themselves
+            had done their job. The forwarding unit compares numbers rather than
+            values, so those two fields now have to survive into the stage where
+            the comparison happens, and ID/EX grows ten bits wider to carry them.
+          </p>
+        </div>
+        </div>
+
+        <!-- The drawing underneath the pair, back on the standard full-column
+             plate at the 68rem the other plates in this lesson take. -->
+        <figure class="figure enlarge-wide" style="max-width: 68rem; margin-inline: auto;">
+          <img src="../../assets/pipelined-cpu/forwarding-unit.jpg"
+               alt="The Execution stage redrawn with forwarding hardware. Each ALU input is fed by a 3x1 multiplexer whose sources are the operand read from the register file, the value held in the MEM/WB register, and the ALU result held in the EX/MEM register. A Forwarding Unit below reads rs1, rs2 and rd from ID/EX along with EX/MEM.RegisterRd and MEM/WB.RegisterRd, and drives ForwardA and ForwardB. A table at the right reads: Forward equals 00, ALU operand from the register file; Forward equals 01, ALU operand from the MEM/WB pipeline register; Forward equals 10, ALU operand from the EX/MEM pipeline register."
+               decoding="async" />
+        </figure>
+
+        <div class="prose prose--full">
+          <p>
+            One detail in the module is doing more work than it looks like it is,
+            and it is the order of the two tests. Each operand checks the EX/MEM
+            register first and only falls through to MEM/WB if that test fails,
+            which is deliberate rather than arbitrary. Consider three instructions
+            that all write the same register:
+          </p>
+          <ul>
+            <li><em>addi x2, x2, -1</em></li>
+            <li><em>addi x2, x2, -2</em></li>
+            <li><em>sub x2, x2, x3</em></li>
+          </ul>
+          <p>
+            When the <em>sub</em> reaches <em>Execution</em>, the second
+            <em>addi</em> is in <em>Memory</em> and the first is in
+            <em>Writeback</em>, so <em>x2</em> matches on both sides at once.
+            <code class="fld-rd">EX/MEM_rd</code> and <code class="fld-rd">MEM/WB_rd</code> both equal
+            <code class="fld-rs1">ID/EX_rs1</code>, and the two registers hold two different
+            numbers. Only one of them is right. The instruction in <em>Memory</em>
+            is one step ahead of the instruction in <em>Writeback</em>, so the
+            EX/MEM register holds the newer of the two results, and forwarding
+            from MEM/WB would hand the <em>sub</em> a value that has already been
+            superseded. Checking EX/MEM first, and treating a hit there as final,
+            is what makes the unit pick the most recent write rather than merely
+            a recent one.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== CHECK YOURSELF ===================== -->
+    <section class="section section--tight" id="check" aria-labelledby="check-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="check-title">Check Yourself</h2>
+        </div>
+
+        <div class="quiz" id="quiz" style="max-width: 74rem;">
+          <p class="quiz__q">An instruction in the Execution stage reads a
+            register that matches the destination held in the EX/MEM register
+            <em>and</em> the destination held in the MEM/WB register. Both
+            candidates are valid writes to a register other than x0. Which one
+            should the forwarding unit choose, and why?</p>
+
+          <figure class="figure figure--photo quiz__figure enlarge-wide" style="max-width: 45rem;">
+            <img src="../../assets/pipelined-cpu/forwarding-unit.jpg"
+                 alt="The forwarding unit driving the two ALU input multiplexers, with its select encoding: 00 takes the operand from the register file, 01 from the MEM/WB pipeline register, and 10 from the EX/MEM pipeline register."
+                 decoding="async" />
+          </figure>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button">MEM/WB, because that instruction is closer to finishing and its result is therefore more settled.</button>
+            <button class="quiz__opt" type="button" data-correct="true">EX/MEM, because the instruction in the Memory stage is one step behind the one in Writeback in program order, so its result is the more recent write to that register.</button>
+            <button class="quiz__opt" type="button">Neither, because two simultaneous matches mean the pipeline has to stall until one of them retires.</button>
+            <button class="quiz__opt" type="button">Either one, since both registers hold a copy of the same value by the time the comparison is made.</button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <!-- Revealed by the quiz script once the correct answer is chosen. -->
+          <div class="quiz__next">
+            <a class="btn btn--primary" href="../../coming-soon/?topic=Control%20Hazards">
+              Continue to Control Hazards <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+    <p class="container footer__credit">
+      Adapted from: David A. Patterson and John L. Hennessy,
+      <em>Computer Organization and Design RISC-V Edition: The Hardware/Software
+      Interface</em>, Second Edition, Chapter 4, &ldquo;The Processor,&rdquo;
+      &sect;4.8 &ldquo;Data Hazards: Forwarding versus Stalling&rdquo; (Morgan Kaufmann, 2021).
+    </p>
+  </footer>
+
+  <script src="../../scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger from CDN for the same scroll-reveal feel as the rest
+       of the site. If they fail to load, scroll.js removes the `js` class and
+       the page is simply fully visible. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
+  <script src="../../scripts/scroll.js" defer></script>
+
+  <!-- No verilog-mini.js or gate-card.js here: the Verilog block is a
+       hand-highlighted .code-editor--static, not a flip card, so there is
+       nothing on this page for either script to bind to. -->
+
+  <!-- Enlarge: static figure images pop on hover and open enlarged on a
+       blurred backdrop when clicked (see scripts/enlarge.js). -->
+  <script src="../../scripts/enlarge.js" defer></script>
+
+  <!-- "Check yourself" quiz: color the chosen answer, show feedback, and reveal
+       the continue button once the correct answer is picked. -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          if (next) next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+        } else {
+          btn.classList.add("is-wrong");
+          feedback.textContent = "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -940,6 +940,22 @@
     margin-block: var(--space-4);
   }
 
+  /* The hazard-condition card unfloats. 45% of a phone column is 158px and the
+     longest condition is a 21-character monospace string, so "beside the text"
+     stops being a thing that fits and the card takes the width back.
+
+     Two classes again, for the reason the two above carry: the alu.css rule is
+     `.prose--flow .hazard-box` at (0,2,0) and a bare `.hazard-box` would lose
+     to it, leaving the float live on a 320px screen. margin-inline plus
+     margin-block together replace the whole of that rule's shorthand so no side
+     of it leaks through. */
+  .prose--flow .hazard-box {
+    float: none;
+    width: 100%;
+    margin-inline: 0;
+    margin-block: var(--space-4);
+  }
+
 }
 /* ---- end of the single max-width: 900px wrapper ---------------------- *
    Brace depth returns to zero HERE and nowhere earlier. Anything below
