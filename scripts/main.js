@@ -175,15 +175,13 @@
         ["The Pipelined Control", "pipelined-cpu/pipelined-control/"],
         ["Data Hazards", "pipelined-cpu/data-hazards/"],
         "Control Hazards"
-      ]],
-      ["Introduction to Physical Design", [
-        ["Transistor Basics", "introduction-to-physical-design/transistor-basics/"],
-        ["Implementing Arbitrary Logic and Stick Diagrams", "coming-soon/"]
       ]]
     ]],
     ["Very Advanced", [
-      ["Pipelined CPU Physical Design", ["Coming Soon"]],
-      ["Timing Analysis", ["Coming Soon"]]
+      ["Pipelined CPU Physical Design", [
+        ["Transistor Basics", "introduction-to-physical-design/transistor-basics/"],
+        ["Implementing Arbitrary Logic and Stick Diagrams", "coming-soon/"]
+      ]]
     ]]
   ];
 
