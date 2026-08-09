@@ -139,20 +139,16 @@
         <div class="prose prose--full" style="margin: 0;">
           <p>
             Every pipeline we have drawn so far has been running a program chosen
-            to be kind to it. The instructions crossing the datapath in the last
-            two lessons had nothing whatsoever to say to one another. Not one of
-            them read a register that an instruction still in flight was about to
-            write, so every stage could take whatever the register file handed it
-            and be confident the value was current. That assumption is quietly
-            doing an enormous amount of work, and it is the reason the pipeline
-            has looked free so far.
-          </p>
-          <p>
-            Real programs are not built that way. A program is a sequence of steps,
-            and a step usually exists precisely because it needs the result of a
-            step before it. Instructions that depend on one another are the normal
-            case rather than the exception, and any machine that overlaps
-            instructions in time has to have an answer for them.
+            to be kind to it. Not one of the instructions crossing the datapath in
+            the last two lessons read a register that an instruction still in
+            flight was about to write, so every stage could take whatever the
+            register file handed it and be confident the value was current. That
+            assumption is quietly doing an enormous amount of work, and it is the
+            reason the pipeline has looked free so far. Real programs are not built
+            that way. A step in a program usually exists precisely because it needs
+            the result of a step before it, so instructions that depend on one
+            another are the normal case rather than the exception, and any machine
+            that overlaps instructions in time has to have an answer for them.
           </p>
         </div>
 
@@ -170,10 +166,10 @@
           <p>
             Consider the short sequence beside this paragraph. The first
             instruction, <em>add x3, x7, x6</em>, writes its sum into
-            <em>x3</em>. Every single one of the four instructions that follow it
-            then reads <em>x3</em>, and the last of them reads it twice. This is
-            not a contrived program. It is what ordinary code looks like when a
-            value is computed once and then used, which is most of the time.
+            <em>x3</em>. Every one of the four instructions that follow it then
+            reads <em>x3</em>, and the last of them reads it twice. This is not a
+            contrived program. It is what ordinary code looks like when a value is
+            computed once and then used, which is most of the time.
           </p>
           <p>
             Now put that sequence on the pipeline and watch the clock. The
@@ -181,20 +177,11 @@
             but it does not write that sum into the register file until
             <em>Writeback</em>, in cycle 5. The <em>or</em> behind it reads the
             register file during its own <em>Decode</em> stage, in cycle 3, and
-            the <em>sub</em> behind that reads in cycle 4. Both of them go to the
-            register file for <em>x3</em> before the <em>add</em> has put anything
-            there, so both of them walk away with whatever <em>x3</em> held before
-            this program started. The pipeline does not stumble or complain. It
-            computes two confidently wrong answers and carries them forward.
-          </p>
-          <p>
-            That is a <strong>data hazard</strong>: an instruction needs a value
-            that an instruction ahead of it has not finished writing. It is worth
-            being precise about what has gone wrong, because it is a timing
-            failure and not a logic failure. Nothing in the datapath computes the
-            wrong function. The right value is produced by the right hardware at
-            the right stage. It simply arrives at the register file later than the
-            instruction behind it thinks to look.
+            the <em>sub</em> behind that reads in cycle 4. Both go looking for
+            <em>x3</em> before the <em>add</em> has put anything there, so both
+            walk away with whatever <em>x3</em> held before this program started.
+            The pipeline does not stumble or complain. It computes two confidently
+            wrong answers and carries them forward.
           </p>
         </div>
 
@@ -214,16 +201,25 @@
           </figure>
 
           <p>
-            The chart beside this paragraph draws the same five instructions against a single time
-            axis, with an arrow from the point where <em>x3</em> is written to
-            each point where it is read. Two of those arrows point backwards.
-            The <em>or</em> wants a value in cycle 3 that does not exist until
-            cycle 5, and the <em>sub</em> wants it in cycle 4. An arrow that runs
-            backwards in time is the visual signature of a hazard, and it is the
-            fastest way to spot one on a chart like this. The last two arrows are
+            The chart beside this paragraph draws the same five instructions
+            against a single time axis, with an arrow from the point where
+            <em>x3</em> is written to each point where it is read. Two of those
+            arrows point backwards. The <em>or</em> wants a value in cycle 3 that
+            does not exist until cycle 5, and the <em>sub</em> wants it in cycle 4.
+            An arrow that runs backwards in time is the visual signature of a
+            hazard, and it is the fastest way to spot one. The last two arrows are
             fine. The <em>sw</em> reads in the very cycle the write happens and the
             <em>and</em> reads a cycle later, and we will see in a moment why the
             first of those two is safe.
+          </p>
+          <p>
+            That is a <strong>data hazard</strong>: an instruction needs a value
+            that an instruction ahead of it has not finished writing. It is worth
+            being precise about what has gone wrong, because it is a timing
+            failure rather than a logic failure. Nothing in the datapath computes
+            the wrong function. The right value is produced by the right hardware
+            at the right stage. It simply arrives at the register file later than
+            the instruction behind it thinks to look.
           </p>
         </div>
       </div>
@@ -383,6 +379,16 @@
           </p>
         </div>
 
+        <!-- The drawing of that block, directly under the paragraph that names
+             it, on the standard full-column plate at the 68rem the other plates
+             in this lesson take. The Verilog and the copy that reads it follow
+             underneath. -->
+        <figure class="figure enlarge-wide" style="max-width: 68rem; margin-inline: auto;">
+          <img src="../../assets/pipelined-cpu/forwarding-unit.jpg"
+               alt="The Execution stage redrawn with forwarding hardware. Each ALU input is fed by a 3x1 multiplexer whose sources are the operand read from the register file, the value held in the MEM/WB register, and the ALU result held in the EX/MEM register. A Forwarding Unit below reads rs1, rs2 and rd from ID/EX along with EX/MEM.RegisterRd and MEM/WB.RegisterRd, and drives ForwardA and ForwardB. A table at the right reads: Forward equals 00, ALU operand from the register file; Forward equals 01, ALU operand from the MEM/WB pipeline register; Forward equals 10, ALU operand from the EX/MEM pipeline register."
+               decoding="async" />
+        </figure>
+
         <!-- A read-only Verilog block, the pattern single-cycle-cpu/control-unit
              uses. .code-editor--static sizes to its content instead of being
              pinned to the box, so a long module can never be clipped the way it
@@ -461,18 +467,6 @@
             values, so those two fields now have to survive into the stage where
             the comparison happens, and ID/EX grows ten bits wider to carry them.
           </p>
-        </div>
-        </div>
-
-        <!-- The drawing underneath the pair, back on the standard full-column
-             plate at the 68rem the other plates in this lesson take. -->
-        <figure class="figure enlarge-wide" style="max-width: 68rem; margin-inline: auto;">
-          <img src="../../assets/pipelined-cpu/forwarding-unit.jpg"
-               alt="The Execution stage redrawn with forwarding hardware. Each ALU input is fed by a 3x1 multiplexer whose sources are the operand read from the register file, the value held in the MEM/WB register, and the ALU result held in the EX/MEM register. A Forwarding Unit below reads rs1, rs2 and rd from ID/EX along with EX/MEM.RegisterRd and MEM/WB.RegisterRd, and drives ForwardA and ForwardB. A table at the right reads: Forward equals 00, ALU operand from the register file; Forward equals 01, ALU operand from the MEM/WB pipeline register; Forward equals 10, ALU operand from the EX/MEM pipeline register."
-               decoding="async" />
-        </figure>
-
-        <div class="prose prose--full">
           <p>
             One detail in the module is doing more work than it looks like it is,
             and it is the order of the two tests. Each operand checks the EX/MEM
@@ -485,6 +479,12 @@
             <li><em>addi x2, x2, -2</em></li>
             <li><em>sub x2, x2, x3</em></li>
           </ul>
+        </div>
+        </div>
+
+        <!-- The copy that did not fit beside the module runs on below the pair,
+             full column. -->
+        <div class="prose prose--full">
           <p>
             When the <em>sub</em> reaches <em>Execution</em>, the second
             <em>addi</em> is in <em>Memory</em> and the first is in
@@ -498,6 +498,97 @@
             superseded. Checking EX/MEM first, and treating a hit there as final,
             is what makes the unit pick the most recent write rather than merely
             a recent one.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================== STALLS AND NOPS ======================== -->
+    <section class="section" id="stalls" aria-labelledby="st-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="st-title">Stalls and NOPs</h2>
+        </div>
+
+        <div class="prose prose--full" style="margin: 0;">
+          <p>
+            Forwarding carries one limit that we noted in passing and now have to
+            face, which is that it cannot deliver a value that has not been
+            computed yet. A load is where that bites, because
+            <em>lw x3, 40(x7)</em> has no value until data memory answers at the
+            end of <em>Memory</em> while the instruction directly behind it wants
+            that value at the beginning of its own <em>Execution</em>, in the very
+            same cycle, and that is a <strong>load-use hazard</strong>.
+          </p>
+        </div>
+
+        <!-- Both charts float LEFT on the shared `.chart-float`, the same slot
+             and the same width as the two dependence charts above, so all four
+             time-axis diagrams on this page read at matching size. Source order
+             matters: a float only pushes what comes after it, so the paragraph
+             reading each chart has to sit below it in the markup. Sizing stays
+             on the class and never in an inline style, because an inline width
+             outranks the phone unfloat's media query. -->
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-left chart-float enlarge-wide">
+            <img src="../../assets/pipelined-cpu/stalling.jpg"
+                 alt="A multiple-clock-cycle diagram of lw x3, 40(x7) followed by or x4, x3, x5, sub x14, x3, x8, add x9, x4, x3 and and x16, x1, x10. The load reads data memory in CC4, so its result only exists at the end of that cycle. An arrow from there back to the Execution stage of the or in CC4 is labelled NOT POSSIBLE, because it would run backwards in time. The arrow forward to the Execution stage of the sub in CC5 is legal, as is the later one into the add."
+                 decoding="async" />
+          </figure>
+
+          <p>
+            The chart beside this paragraph marks that arrow <em>not possible</em>
+            for exactly this reason, and no amount of extra wiring will fix it.
+            What fixes it is time. The pipeline <strong>stalls</strong> for one
+            cycle, after which the dependent instruction reaches
+            <em>Execution</em> in the cycle after the load leaves <em>Memory</em>,
+            the forwarding unit handles it like any other dependence, and the
+            program carries on. Holding an instruction back is not the same as
+            pausing, though, because the front of the pipeline is still fetching.
+            During the stall we must prevent both the program counter and the
+            IF/ID pipeline register from changing, so that the instruction we are
+            holding is still there to decode when the stall lifts and the fetch
+            behind it has not been thrown away. We want to pick up exactly where
+            we left off. Along the laundry analogy, it is as if we restart the
+            washer with the same load of clothes still inside while the dryer
+            keeps tumbling on an empty drum. The dryer is the back half of the
+            pipeline, and it cannot simply freeze, because <em>Execution</em>,
+            <em>Memory</em> and <em>Writeback</em> each have to do something this
+            cycle. What they do is nothing, in the precise sense of a
+            <strong>NOP</strong>, an instruction with no effect. We insert one by
+            setting every control line in the ID/EX pipeline register to zero,
+            which sends an instruction down the back half that writes no register
+            and touches no memory. That hole is called a <strong>bubble</strong>,
+            and the chart below draws it travelling through the stages like an air
+            bubble in a water pipe.
+          </p>
+        </div>
+
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-left chart-float enlarge-wide">
+            <img src="../../assets/pipelined-cpu/nop.jpg"
+                 alt="The same program redrawn with a NOP inserted directly after the load. The or has been pushed one cycle later, so its Execution stage now falls in CC5 and the arrow from the load's result points forward into it. The NOP occupies the Execution, Memory and Writeback stages behind the load, shaded green and annotated as being like an air bubble in a water pipe."
+                 decoding="async" />
+          </figure>
+
+          <p>
+            None of that happens on its own, so the last piece is the hardware
+            that notices. The forwarding unit works from the ID/EX register, which
+            is one stage too late for this job, since by the time the dependent
+            instruction has reached <em>Execution</em> the chance to stall it has
+            already gone. So a second block sits a stage earlier and watches
+            <em>Decode</em>. It is called the <strong>hazard detection unit</strong>,
+            and its test is a single line. The instruction in ID/EX must be a load,
+            which the control signal <code class="ctrl-sig">memRead</code> already
+            tells us, and its destination must match a source of the instruction
+            still sitting in IF/ID, so <code class="fld-rd">ID/EX_rd</code> equals
+            either <code class="fld-rs1">IF/ID_rs1</code> or
+            <code class="fld-rs2">IF/ID_rs2</code>. When both hold, the unit does
+            all three of the things above at once. It holds the PC, it holds
+            IF/ID, and it forces the control lines entering ID/EX to zero. One
+            cycle is the entire cost, and it is the reason a compiler will try to
+            schedule an unrelated instruction into the slot behind a load rather
+            than leave the machine to buy that cycle back at run time.
           </p>
         </div>
       </div>

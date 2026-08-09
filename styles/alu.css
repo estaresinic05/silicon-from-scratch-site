@@ -2298,6 +2298,19 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
    phone wide, so the heading wraps again there, which is correct. */
 #rose-glasses .section__head { max-width: none; }
 
+/* The Program Flow listing at three quarters of the shared float width: 24.75rem
+   against the 33rem `.flow-figure--float-right` gives every page. It is a nearly
+   square drawing of five short instructions, so at full width it stood taller
+   than the copy beside it had lines to cover.
+
+   DESKTOP-SCOPED for the same reason `.chart-float` below is. This selector is
+   (0,2,1) and beats the (0,2,0) phone unfloat wherever both match, so left
+   unguarded it would hold the listing at 24.75rem on a phone instead of letting
+   it go full width. A width on a floated variant always takes the query. */
+@media (min-width: 901px) {
+  #rose-glasses .prose--flow .flow-figure--float-right { width: 24.75rem; }
+}
+
 /* Both dependence charts float LEFT with the copy running down their right.
    They are the same drawing before and after forwarding, so they share one
    class and read at matching size.
