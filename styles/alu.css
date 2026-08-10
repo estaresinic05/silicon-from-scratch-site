@@ -2311,6 +2311,45 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   #rose-glasses .prose--flow .flow-figure--float-right { width: 24.75rem; }
 }
 
+/* The three-instruction example beside the forwarding module is three short
+   monospace lines, so at the copy column's full width it was a wide band of
+   mostly empty card. Shrunk to its content and floated, with the paragraph that
+   reads it running down the right.
+
+   `width: max-content` and not a rem: the card should be exactly as wide as its
+   longest instruction plus the marker gutter, and that is a value the type
+   metrics own, not one to hand-write. It measures 223px.
+
+   IT FLOATS IN THE FULL COLUMN, NOT IN THE SPLIT, and that is the whole design
+   decision. Inside the copy column beside the module there is no width at which
+   this works across the desktop range: that column is the grid remainder after a
+   448px module, so it is 864px at 1440 but 357px at 901, and a 223px card in
+   357px leaves a 94px ribbon, which is not a paragraph.
+
+   Two wrong answers were built before this one, both worth naming:
+
+   1. `max-width: 50%` as a guard. It clamped the card to 178px at 901 and wrapped
+      `addi x2, x2, -1` onto two lines, which is the failure it was meant to
+      prevent rather than a milder version of it.
+   2. A container query on the copy column, floating only above 34rem. It
+      measured correctly and it is still wrong: the list then floats above about a
+      1050px window and not below, which is a third rendering. `width-sweep.py`
+      does not catch it, because it fingerprints type and spacing rather than
+      floats. STYLE_GUIDE.md answers this exactly: if a composition needs a width
+      between the two modes, the composition is what is wrong.
+
+   So the list moved out of the split into the full column, where it has 1100px
+   of ribbon at 1440 and still 590px at 901, and the same rule holds at every
+   desktop width. Below the line nothing matches and it keeps the full-width card
+   `.prose ul` gives it everywhere else, so mobile.css needs no counterpart. */
+@media (min-width: 901px) {
+  #forwarding .prose--flow ul {
+    float: left;
+    width: max-content;
+    margin: 0.4rem var(--space-5) var(--space-4) 0;
+  }
+}
+
 /* Both dependence charts float LEFT with the copy running down their right.
    They are the same drawing before and after forwarding, so they share one
    class and read at matching size.

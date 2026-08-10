@@ -283,19 +283,18 @@
           </p>
           <p>
             Knowing that a wire is needed is a different problem from knowing
-            <em>when</em> to use it, and the second problem is the one the hardware
-            has to solve every cycle. To state the condition precisely we need a
-            way to name the signals precisely, so we will name each one after the
-            pipeline register it is stored in. A signal written
-            <code class="fld-rd">EX/MEM_rd</code> is the <code class="fld-rd">rd</code> field
-            held in the EX/MEM pipeline register, which is to say the destination
-            register of the instruction that has just finished <em>Execution</em>
-            and is now entering <em>Memory</em>. A signal written
+            <em>when</em> to use it, and the second is the one the hardware
+            solves every cycle. To state that condition precisely we will name
+            each signal after the pipeline register it is stored in. A signal
+            written <code class="fld-rd">EX/MEM_rd</code> is the
+            <code class="fld-rd">rd</code> field held in the EX/MEM pipeline
+            register, the destination of the instruction leaving
+            <em>Execution</em> for <em>Memory</em>, and
             <code class="fld-rs1">ID/EX_rs1</code> is the <code class="fld-rs1">rs1</code> field
-            held in the ID/EX register, the first source of the instruction about
-            to enter <em>Execution</em>. The prefix says where the value physically
-            sits, and because a pipeline register holds exactly one instruction's
-            worth of state, it also says which instruction the value belongs to.
+            held in the ID/EX register, the first source of the instruction
+            entering <em>Execution</em>. The prefix says where the value sits, and
+            because a pipeline register holds one instruction's worth of state, it
+            also names the instruction it belongs to.
           </p>
           <p>
             With that notation the two failures in our program become two very
@@ -402,9 +401,31 @@
              exactly this pairing, so it needs no page CSS and mobile.css already
              stacks it at the line. The width is inline on the figure, matching
              that page: the column is `minmax(0, auto)`, so the code's own width
-             is what sizes the track. -->
+             is what sizes the track.
+
+             ALL of the copy that reads this module now sits in the right column,
+             including the worked three-instruction example that used to run full
+             width below the pair. 28rem is why it fits: the module's own
+             `max-content` is 445px, so 28rem is its natural width and every pixel
+             above that was gutter.
+
+             28rem is now load-bearing for a second reason, and it is the one that
+             decides ties. The instruction list floats once its column clears
+             34rem, and the column is the grid remainder after this module, so
+             every rem added here is a rem off the column. Measured: at 28rem the
+             float survives down to a 1100px window; at 30rem it dies at 1100 and
+             at 36rem it dies at 1200. A wider module does balance the row better
+             at 1440, -43px against -142px, but that trade buys vertical tidiness
+             at one width by dropping the float at three. `align-items: center`
+             splits the 142px evenly, so the shorter column reads as centred
+             rather than short.
+
+             Both Verilog blocks on this page are 28rem, and that they agree is a
+             happy accident of two modules being about as wide as each other, not
+             a rule. Measure `max-content` on the next one rather than copying the
+             number. -->
         <div class="split split--media-left">
-        <figure class="code-editor code-editor--static" style="width: 40rem; max-width: 100%;">
+        <figure class="code-editor code-editor--static" style="width: 28rem; max-width: 100%;">
           <figcaption class="code-editor__bar">
             <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
             <span class="code-editor__lang">Verilog HDL</span>
@@ -449,42 +470,33 @@
 
         <div class="prose">
           <p>
-            Written out, the unit is two comparisons per operand and nothing
-            else. Each output defaults to 00 and reads from the register file,
-            and each of the four conditions we arrived at above is one branch,
-            carrying its own <code class="ctrl-sig">regWrite</code> check and
-            its own guard against register zero.
+            The module costs us one more thing. Before forwarding, the ID/EX
+            register had no reason to carry <code class="fld-rs1">rs1</code> and
+            <code class="fld-rs2">rs2</code> at all, since the register file was
+            read back in <em>Decode</em> and the values it produced were what
+            <em>Execution</em> wanted. The forwarding unit compares numbers rather
+            than values, so ID/EX grows ten bits wider to carry them.
           </p>
           <p>
-            The module costs us one more thing, and it is the same currency we
-            paid in for the destination register and again for the control
-            fields. Before forwarding, the ID/EX register had no reason to carry
-            <code class="fld-rs1">rs1</code> and <code class="fld-rs2">rs2</code>
-            at all. The register file had already been read by the time an
-            instruction left <em>Decode</em>, so the two values it produced were
-            what <em>Execution</em> wanted and the register numbers themselves
-            had done their job. The forwarding unit compares numbers rather than
-            values, so those two fields now have to survive into the stage where
-            the comparison happens, and ID/EX grows ten bits wider to carry them.
+            One detail is doing more work than it looks. Each operand tests
+            EX/MEM first and only falls through to MEM/WB if that test fails,
+            which is deliberate. Consider three instructions that all write the
+            same register:
           </p>
-          <p>
-            One detail in the module is doing more work than it looks like it is,
-            and it is the order of the two tests. Each operand checks the EX/MEM
-            register first and only falls through to MEM/WB if that test fails,
-            which is deliberate rather than arbitrary. Consider three instructions
-            that all write the same register:
-          </p>
+        </div>
+        </div>
+
+        <!-- The worked example runs below the pair, in the full column, because
+             that is the only place the list can float. See the note on the rule
+             in alu.css: beside the module the copy column is 357px at the
+             narrowest desktop, and a 223px card there leaves no paragraph.
+             `.prose--flow` is `display: flow-root`, so the float is contained. -->
+        <div class="prose prose--flow">
           <ul>
             <li><em>addi x2, x2, -1</em></li>
             <li><em>addi x2, x2, -2</em></li>
             <li><em>sub x2, x2, x3</em></li>
           </ul>
-        </div>
-        </div>
-
-        <!-- The copy that did not fit beside the module runs on below the pair,
-             full column. -->
-        <div class="prose prose--full">
           <p>
             When the <em>sub</em> reaches <em>Execution</em>, the second
             <em>addi</em> is in <em>Memory</em> and the first is in
@@ -537,30 +549,26 @@
           </figure>
 
           <p>
-            The chart beside this paragraph marks that arrow <em>not possible</em>
-            for exactly this reason, and no amount of extra wiring will fix it.
-            What fixes it is time. The pipeline <strong>stalls</strong> for one
-            cycle, after which the dependent instruction reaches
-            <em>Execution</em> in the cycle after the load leaves <em>Memory</em>,
-            the forwarding unit handles it like any other dependence, and the
-            program carries on. Holding an instruction back is not the same as
-            pausing, though, because the front of the pipeline is still fetching.
-            During the stall we must prevent both the program counter and the
-            IF/ID pipeline register from changing, so that the instruction we are
-            holding is still there to decode when the stall lifts and the fetch
-            behind it has not been thrown away. We want to pick up exactly where
-            we left off. Along the laundry analogy, it is as if we restart the
-            washer with the same load of clothes still inside while the dryer
-            keeps tumbling on an empty drum. The dryer is the back half of the
-            pipeline, and it cannot simply freeze, because <em>Execution</em>,
-            <em>Memory</em> and <em>Writeback</em> each have to do something this
-            cycle. What they do is nothing, in the precise sense of a
-            <strong>NOP</strong>, an instruction with no effect. We insert one by
-            setting every control line in the ID/EX pipeline register to zero,
-            which sends an instruction down the back half that writes no register
-            and touches no memory. That hole is called a <strong>bubble</strong>,
-            and the chart below draws it travelling through the stages like an air
-            bubble in a water pipe.
+            The chart beside this marks that arrow <em>not possible</em> for that
+            reason, and no wiring will fix it. What fixes it is time. The pipeline
+            <strong>stalls</strong> for one cycle, and one is enough: the
+            dependent instruction then reaches <em>Execution</em> after the load
+            has left <em>Memory</em>, where the forwarding unit can deliver the
+            value as it would any other. Holding an instruction back is not the
+            same as pausing, because the front of the pipeline is still fetching.
+            We must hold both the program counter and the IF/ID pipeline register,
+            so that we pick up exactly where we left off when the stall lifts.
+            Along the laundry analogy, it is as if we restart the washer with the
+            same clothes still inside while the dryer tumbles on an empty drum.
+            The dryer is the back half of the pipeline, which cannot freeze,
+            because <em>Execution</em>, <em>Memory</em> and <em>Writeback</em>
+            each have to do something this cycle. What they do is nothing, in the
+            precise sense of a <strong>NOP</strong>, an instruction with no
+            effect. We insert one by setting every control line in the ID/EX
+            pipeline register to zero, so the instruction travelling down the back
+            half writes no register and touches no memory. That hole is called a
+            <strong>bubble</strong>, and the chart below draws it moving through
+            the stages like an air bubble in a water pipe.
           </p>
         </div>
 
@@ -590,6 +598,92 @@
             schedule an unrelated instruction into the slot behind a load rather
             than leave the machine to buy that cycle back at run time.
           </p>
+        </div>
+
+        <!-- The unit the paragraph above describes, in the same read-only
+             `.code-editor--static` the forwarding unit uses, so a long module can
+             never be clipped the way it would be inside a flip card. The tok-*
+             spans are hand-authored, matching that block, and parentheses are
+             left unclassed for the same reason.
+
+             This is the LOAD-USE HALF of `hzrd_detection_unit.v` only. The real
+             module carries two further conditions, both for branches resolving in
+             Decode, which qualify on regWrite rather than memRead and which this
+             lesson has not earned yet. They belong with Control Hazards; showing
+             them here would put a reader in front of logic the page has not
+             explained. The module is named for what the prose calls it, the same
+             substitution the forwarding unit block makes.
+
+             No `clear` needed above: `.prose--flow` is `display: flow-root`, so
+             the float is contained and this block starts below it.
+
+             The module sits beside the datapath drawing as one `.split--media-left`
+             pair, the shared variant single-cycle-cpu/control-unit uses, so it
+             needs no page CSS and mobile.css already stacks it at the line. The
+             code takes the `minmax(0, auto)` track and therefore sizes it, so its
+             width is inline and the drawing gets whatever is left.
+
+             28rem is 448px against the 438px the longest line actually needs, and
+             that snugness is the point: every pixel taken off the code is a pixel
+             the drawing gains. It was 40rem standalone, which was 200px of empty
+             gutter. Measured with no horizontal scroll in either the body or the
+             bar at 1440, 1100 and 901.
+
+             The honest limit is 901, the narrowest desktop, where the container is
+             853px and the drawing lands at 289px however this is arranged. There
+             is no fix inside the two-mode rule: a third rendering is not allowed,
+             and a fluid grid only trades the drawing's width for a scrollbar on
+             the code. It is `enlarge-wide`, and the same drawing runs full size in
+             the hero, so both routes to a readable copy are already there.
+
+             The drawing is the hero image used a second time, deliberately: it is
+             the only picture on the site with the Hazard Detection Unit in it, and
+             this is the paragraph that explains that block. DO NOT touch its EXIF
+             orientation; the note in the page head explains why. -->
+        <div class="split split--media-left">
+        <figure class="code-editor code-editor--static"
+                style="width: 28rem; max-width: 100%;">
+          <figcaption class="code-editor__bar">
+            <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+            <span class="code-editor__lang">Verilog HDL</span>
+          </figcaption>
+          <div class="code-editor__body">
+            <pre class="code-editor__hl"><code><span class="tok-kw">module</span> <span class="tok-type">hazard_detection_unit</span> (
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IFID_rs1,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IFID_rs2,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IDEX_rd,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span>       IDEX_memRead,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>        IFID_pcWrite,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>        IFID_write,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>        IFID_stall
+);
+
+  <span class="tok-kw">always</span> @(*) <span class="tok-kw">begin</span>
+    <span class="tok-cm">// defaults: pipeline advances normally</span>
+    IFID_pcWrite <span class="tok-op">=</span> <span class="tok-num">1&#39;b1</span>;
+    IFID_write   <span class="tok-op">=</span> <span class="tok-num">1&#39;b1</span>;
+    IFID_stall   <span class="tok-op">=</span> <span class="tok-num">1&#39;b0</span>;
+
+    <span class="tok-cm">// load-use hazard: load in EX, its result</span>
+    <span class="tok-cm">// needed by the instruction in ID</span>
+    <span class="tok-kw">if</span> (IDEX_memRead <span class="tok-op">&amp;&amp;</span> (IDEX_rd <span class="tok-op">!=</span> <span class="tok-num">5&#39;d0</span>)
+                     <span class="tok-op">&amp;&amp;</span> ((IDEX_rd <span class="tok-op">==</span> IFID_rs1) <span class="tok-op">||</span>
+                         (IDEX_rd <span class="tok-op">==</span> IFID_rs2))) <span class="tok-kw">begin</span>
+      IFID_pcWrite <span class="tok-op">=</span> <span class="tok-num">1&#39;b0</span>;  <span class="tok-cm">// hold PC</span>
+      IFID_write   <span class="tok-op">=</span> <span class="tok-num">1&#39;b0</span>;  <span class="tok-cm">// hold IF/ID</span>
+      IFID_stall   <span class="tok-op">=</span> <span class="tok-num">1&#39;b1</span>;  <span class="tok-cm">// zero ID/EX control</span>
+    <span class="tok-kw">end</span>
+  <span class="tok-kw">end</span>
+
+<span class="tok-kw">endmodule</span></code></pre>
+          </div>
+        </figure>
+
+        <figure class="figure enlarge-wide">
+          <img src="../../assets/pipelined-cpu/hazard-forwarding.jpg"
+               alt="The pipelined datapath with both pieces of hazard hardware drawn in. At the right, a Hazard Detection Unit reads rs1 and rs2 from the IF/ID register against the destination held in ID/EX along with its memRead control, and drives three signals: one holding the PC, one holding IF/ID, and one forcing the control fields entering ID/EX to zero. Below the ID/EX register, the Forwarding Unit drives the two multiplexers on the ALU inputs."
+               decoding="async" />
+        </figure>
         </div>
       </div>
     </section>
