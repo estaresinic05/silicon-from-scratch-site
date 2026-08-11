@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Mark JS available before first paint, so the "hidden-before-reveal"
+       styles only apply when scroll.js can reveal them again. Without JS this
+       never runs and the full page stays visible. -->
+  <script>
+    document.documentElement.classList.add("js");
+    // Back/forward loads reload as fresh landings (main.js §0 owns the
+    // policy). Doing the reload HERE, before first paint, keeps the restored
+    // page from flashing for a frame first. bfcache restores are handled in
+    // main.js (scripts don't re-run on those).
+    (function () {
+      var nav = performance.getEntriesByType &&
+                performance.getEntriesByType("navigation")[0];
+      if (nav && nav.type === "back_forward") {
+        document.documentElement.style.visibility = "hidden";
+        location.reload();
+      }
+    })();
+  </script>
+
+  <title>Control Hazards</title>
+  <meta name="description"
+        content="A branch decides which instruction runs next, but the pipeline has already fetched the instructions behind it. Assuming the branch is not taken, resolving it earlier in the pipeline, flushing what was fetched on the wrong path, and finally predicting from a branch's own history is how a pipelined processor pays for that decision." />
+
+  <!-- Social link previews: shared logo + "Silicon From Scratch" card (see index.html). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Silicon From Scratch" />
+  <meta property="og:title" content="Silicon From Scratch" />
+  <meta property="og:url" content="https://siliconfromscratch.com/pipelined-cpu/control-hazards/" />
+  <meta property="og:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+  <meta property="og:image:width" content="1408" />
+  <meta property="og:image:height" content="768" />
+  <meta property="og:image:alt" content="Silicon From Scratch logo" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Silicon From Scratch" />
+  <meta name="twitter:image" content="https://siliconfromscratch.com/assets/home/logo.jpg" />
+
+  <!-- Favicon follows the browser color scheme: the gray/purple mark on
+       light tab bars, the dark-theme symbol on dark ones. -->
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="../../assets/home/logo-symbol-light.png" />
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="../../assets/home/logo-symbol.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+
+  <!-- Shared site styles, then the ALU project components (this page lives at
+       /pipelined-cpu/control-hazards/, two levels down). -->
+  <link rel="stylesheet" href="../../styles/main.css" />
+  <link rel="stylesheet" href="../../styles/alu.css" />
+  <!-- The phone scheme. Loads LAST so it can override; every rule inside it
+       is scoped to max-width 900px, so desktop is untouched. -->
+  <link rel="stylesheet" href="../../styles/mobile.css" />
+
+  <!-- The title image takes the balanced hero's full 44rem art track, the same
+       `enlarge-wide--sm` treatment the other three pipeline lessons use. It is a
+       nine-cycle time chart, so the extra width is what makes the stage boxes
+       and the CC labels legible before a reader clicks it open. -->
+</head>
+<body class="theme-dark page-logic">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============================== TOP BAR ============================== -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="wordmark" href="../../" aria-label="Silicon From Scratch — home">
+        <img class="wordmark__mark" src="../../assets/home/logo-symbol.png" alt="" aria-hidden="true" />
+        Silicon From Scratch
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Primary">
+        <a href="../../meet-the-processor/">Meet the Processor</a>
+        <a href="../../about/">About</a>
+      </nav>
+
+      <div class="topbar__right">
+        <div class="toc" id="page-toc">
+          <ul class="toc__menu" aria-label="Project directory"></ul>
+        </div>
+
+        <button class="nav-toggle" id="nav-toggle"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false" aria-controls="primary-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============================== DOC HERO ============================ -->
+    <section class="doc-hero doc-hero--balanced container" aria-labelledby="dh-title">
+      <div class="doc-hero__text">
+        <h1 id="dh-title" class="title-eyebrow"><span class="title-eyebrow__text"><span class="title-eyebrow__group">Control</span> <span class="title-eyebrow__group">Hazards</span></span></h1>
+        <p class="doc-hero__lead">
+          A <strong>control hazard</strong> is what happens when the pipeline has
+          to fetch an instruction before it knows which instruction that should
+          be. A conditional branch is the whole problem, because the address of
+          the next instruction depends on a comparison the machine has not made
+          yet. The answer is not to wait for the answer but to guess, to make the
+          guess cheap to be wrong about, to make the window in which we can be
+          wrong as short as the hardware allows, and finally to let the guess
+          learn from what the program has already done.
+        </p>
+        <div class="doc-hero__actions">
+          <span class="doc-hero__prompt">Think you got this already?</span>
+          <a class="btn btn--primary" href="#check">Skip to Check Yourself</a>
+        </div>
+      </div>
+
+      <figure class="doc-hero__art enlarge-wide--sm">
+        <img src="../../assets/pipelined-cpu/control-hazards.jpg"
+             alt="A nine-cycle time chart of a taken branch. beq x1, x0, 16 at address 40 runs through all five stages, and the three instructions behind it at addresses 44, 48 and 52 are shaded green to mark them as discarded. An orange line runs from the end of the branch's Memory stage in cycle 4 down to the Fetch stage of lw x6, 200(x20) at the branch target address 72, which is fetched in cycle 5."
+             decoding="async" />
+      </figure>
+    </section>
+
+    <!-- ==================== THE PROBLEM WITH BRANCHES ==================== -->
+    <section class="section" id="branches" aria-labelledby="br-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="br-title">The Problem with Branches</h2>
+        </div>
+
+        <div class="prose prose--full" style="margin: 0;">
+          <p>
+            Every instruction the pipeline has run so far has had an obvious
+            successor. The instruction at the next address is the one that gets
+            fetched, and <em>Fetch</em> can go on doing that a cycle at a time
+            without ever asking a question. A conditional branch breaks that,
+            because the instruction that follows it depends on a comparison the
+            machine has not performed yet, and the pipeline needs an address a
+            full three cycles before that comparison finishes.
+          </p>
+        </div>
+
+        <!-- The time chart floats LEFT with the copy running down its right, on
+             the shared `.chart-float` the two dependence charts on Data Hazards
+             use, so every time-axis diagram across the two lessons reads at
+             matching size. Plain .flow-figure and not .figure, so the generic
+             figure reveal does not also catch it on this .page-logic page.
+             Source order matters: a float only pushes what comes after it, so
+             the paragraphs reading the chart sit below it in the markup.
+
+             This is the hero image WITHOUT the discard shading, which is the
+             point of putting it here: the chart shows the pipeline carrying on
+             past the branch, and the hero shows the same cycles once the three
+             wrong instructions have been thrown away. -->
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-left chart-float enlarge-wide">
+            <img src="../../assets/pipelined-cpu/branch-flow.jpg"
+                 alt="The same nine-cycle time chart without the discard shading. beq x1, x0, 16 at address 40 occupies cycles 1 through 5, and the three instructions at addresses 44, 48 and 52 follow it one cycle apart, each already well into the pipeline by the time an orange line leaves the end of the branch's Memory stage and reaches the Fetch stage of lw x6, 200(x20) at address 72 in cycle 5."
+                 decoding="async" />
+          </figure>
+
+          <p>
+            By the time a branch has been decided, the pipeline has already
+            fetched the instructions sitting behind it and begun decoding them.
+            One answer is to stall until the outcome is known, which charges a
+            fixed penalty against every branch in the program whether or not the
+            branch does anything. A cheaper answer is to guess, and the simplest
+            guess worth making is to <strong>assume the branch is not taken</strong>
+            and keep fetching straight ahead as though nothing had happened.
+          </p>
+          <p>
+            If the conditional branch <em>is</em> taken, the instructions that are
+            being fetched and decoded must be discarded, and execution will
+            continue at the branch target instead. That is the case drawn in the
+            chart at the top of this page, where the three instructions behind the
+            <em>beq</em> are thrown away and the <em>lw</em> at the target address
+            is fetched in their place. Nothing they did is allowed to reach the
+            register file or memory, so discarding them is a matter of stopping
+            their results rather than undoing them.
+          </p>
+          <p>
+            The trade is a good one rather than a free one. If conditional
+            branches are untaken half the time, and if it costs little to discard
+            the instructions we fetched down the wrong path, then this
+            optimization halves the cost we would otherwise have paid by stalling
+            on every single branch instruction. Half the branches now cost
+            nothing at all, and only the taken half pays.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== FURTHER OPTIMIZING BRANCHES ================== -->
+    <section class="section" id="optimizing" aria-labelledby="op-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="op-title">Further Optimizing Branches</h2>
+        </div>
+
+        <div class="prose prose--full" style="margin: 0;">
+          <p>
+            When a branch condition turns out to be true, the number of
+            instructions we have to discard is decided by one thing only, which is
+            how wide the window is between the stage where the branch was fetched
+            and the stage where its condition was evaluated. Every cycle inside
+            that window is a cycle in which the pipeline fetched an instruction it
+            had no business fetching. If we move the branch execution earlier in
+            the pipeline, then fewer instructions have to be tossed and therefore
+            fewer clock cycles are wasted, so we will move the branch execution
+            unit out of <em>Execution</em> and into the <em>Decode</em> stage of
+            the pipeline. The window closes from three instructions to one.
+          </p>
+          <p>
+            Making that change introduces further complications that we now have
+            to resolve, because comparing two register values for a branch is
+            still a comparison of results, and those results may belong to an
+            instruction that is already in flight. The forwarding unit we built in
+            the last lesson cannot help here, since it delivers operands to the
+            ALU inputs in <em>Execution</em> and the comparison no longer happens
+            there. Since we have moved the branch execution into <em>Decode</em>,
+            we will need a <em>new</em> <strong>branch forwarding unit</strong>
+            that delivers operands to the comparator instead. Just as before, a
+            forwarded operand can come from either the EX/MEM or the MEM/WB
+            pipeline register, and the same 2x1 style of selection decides which.
+          </p>
+        </div>
+
+        <!-- The two-instruction sketch floats LEFT with the copy reading it on
+             the right, in the same slot and at the same width the chart in the
+             section above takes. It is a landscape drawing at 1530x837, so it
+             sits comfortably narrower than the time charts and `.chart-float`
+             is still the right size for it. -->
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-left chart-float enlarge-wide">
+            <img src="../../assets/pipelined-cpu/branch-forwarding.jpg"
+                 alt="Two instructions drawn one above the other on the pipeline. A red dot marks the point where the first instruction's ALU result arrives, at the end of its Execution stage, and a red line runs from there back and down to the IF/ID register of the instruction behind it, where the branch reads its operands during Decode. The line is labelled NOT POSSIBLE, because it points backwards in time."
+                 decoding="async" />
+          </figure>
+
+          <p>
+            Since the branch comparison is now needed during <em>Decode</em> but
+            the value it compares may not be produced until a later stage, a data
+            hazard can occur that no amount of forwarding will fix, and the
+            pipeline has to stall. Consider an ALU instruction sitting immediately
+            before a branch, producing the very operand the conditional test wants
+            to read. A stall is required, because the <em>Execution</em> stage of
+            that ALU instruction happens after the <em>Decode</em> cycle of the
+            branch, and the sketch beside this paragraph is what that looks like:
+            the arrow the branch would need points backwards in time, which is the
+            one thing a forwarding path can never do.
+          </p>
+          <p>
+            If a load sits immediately before a branch and the branch reads what
+            it loaded, two stalls are needed instead of one, since the loaded
+            value does not appear until the end of the <em>Memory</em> cycle and
+            the branch wants it during <em>Decode</em>.
+          </p>
+        </div>
+
+        <div class="prose prose--full">
+          <p>
+            One piece of this is easy to leave out, and it is the piece that
+            actually throws the wrong instructions away. Resolving the branch in
+            <em>Decode</em> means exactly one instruction has been fetched behind
+            it by the time we know the outcome, and that instruction is sitting in
+            the IF/ID pipeline register. When the branch is taken we
+            <strong>flush</strong> that register, which means forcing its contents
+            to zero so that the instruction it held decodes as a
+            <em>nop</em> and travels the rest of the pipeline writing nothing. It
+            is the same trick the stall used in the last lesson, applied to a
+            different register and for a different reason. A stall zeroes the
+            control fields to hold an instruction still, while a flush zeroes a
+            whole fetched instruction to make it disappear.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== THE HARDWARE ======================= -->
+    <section class="section" id="hardware" aria-labelledby="hw-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="hw-title">The Hardware for Both</h2>
+        </div>
+
+        <!-- Read-only Verilog, the `.code-editor--static` pattern
+             single-cycle-cpu/control-unit established and both blocks on Data
+             Hazards follow. The tok-* spans are hand-authored rather than
+             produced by verilog-mini.js, so this page loads neither
+             verilog-mini.js nor gate-card.js. main.js adds the Copy button to
+             every .code-editor, so both of these still get one. Parentheses are
+             left unclassed, matching those pages.
+
+             Module left, the copy that reads it right, on the shared
+             `.split--media-left` variant, so it needs no page CSS and mobile.css
+             already stacks it at the line. The width is inline on each figure:
+             the column is `minmax(0, auto)`, so the code's own width is what
+             sizes the track, and every rem added here is a rem off the copy
+             column beside it. Both numbers were measured against the block's own
+             `max-content` rather than copied from the other. -->
+        <div class="split split--media-left">
+        <figure class="code-editor code-editor--static" style="width: 28rem; max-width: 100%;">
+          <figcaption class="code-editor__bar">
+            <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+            <span class="code-editor__lang">Verilog HDL</span>
+          </figcaption>
+          <div class="code-editor__body">
+            <pre class="code-editor__hl"><code><span class="tok-kw">module</span> <span class="tok-type">branch_forwarding_unit</span> (
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IFID_rs1,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IFID_rs2,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] EXMEM_rd,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] MEMWB_rd,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span>       EXMEM_regWrite,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span>       MEMWB_regWrite,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>  [<span class="tok-num">1</span>:<span class="tok-num">0</span>] IFID_forwardA,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>  [<span class="tok-num">1</span>:<span class="tok-num">0</span>] IFID_forwardB
+);
+
+  <span class="tok-kw">always</span> @(*) <span class="tok-kw">begin</span>
+    <span class="tok-cm">// defaults: no forwarding, read from register file</span>
+    IFID_forwardA <span class="tok-op">=</span> <span class="tok-num">2&#39;b00</span>;
+    IFID_forwardB <span class="tok-op">=</span> <span class="tok-num">2&#39;b00</span>;
+
+    <span class="tok-cm">// ---- IFID_forwardA ----</span>
+    <span class="tok-kw">if</span> (EXMEM_regWrite <span class="tok-op">&amp;&amp;</span> (EXMEM_rd <span class="tok-op">!=</span> <span class="tok-num">5&#39;d0</span>)
+                       <span class="tok-op">&amp;&amp;</span> (EXMEM_rd <span class="tok-op">==</span> IFID_rs1))
+      IFID_forwardA <span class="tok-op">=</span> <span class="tok-num">2&#39;b10</span>;  <span class="tok-cm">// from EX/MEM</span>
+    <span class="tok-kw">else</span> <span class="tok-kw">if</span> (MEMWB_regWrite <span class="tok-op">&amp;&amp;</span> (MEMWB_rd <span class="tok-op">!=</span> <span class="tok-num">5&#39;d0</span>)
+                            <span class="tok-op">&amp;&amp;</span> (MEMWB_rd <span class="tok-op">==</span> IFID_rs1))
+      IFID_forwardA <span class="tok-op">=</span> <span class="tok-num">2&#39;b01</span>;  <span class="tok-cm">// from MEM/WB</span>
+
+    <span class="tok-cm">// ---- IFID_forwardB ----</span>
+    <span class="tok-kw">if</span> (EXMEM_regWrite <span class="tok-op">&amp;&amp;</span> (EXMEM_rd <span class="tok-op">!=</span> <span class="tok-num">5&#39;d0</span>)
+                       <span class="tok-op">&amp;&amp;</span> (EXMEM_rd <span class="tok-op">==</span> IFID_rs2))
+      IFID_forwardB <span class="tok-op">=</span> <span class="tok-num">2&#39;b10</span>;
+    <span class="tok-kw">else</span> <span class="tok-kw">if</span> (MEMWB_regWrite <span class="tok-op">&amp;&amp;</span> (MEMWB_rd <span class="tok-op">!=</span> <span class="tok-num">5&#39;d0</span>)
+                            <span class="tok-op">&amp;&amp;</span> (MEMWB_rd <span class="tok-op">==</span> IFID_rs2))
+      IFID_forwardB <span class="tok-op">=</span> <span class="tok-num">2&#39;b01</span>;
+  <span class="tok-kw">end</span>
+
+<span class="tok-kw">endmodule</span></code></pre>
+          </div>
+        </figure>
+
+        <div class="prose">
+          <p>
+            The branch forwarding unit is the same shape as the one that feeds the
+            ALU, and deliberately so. It reads two source register numbers and
+            compares them against the destinations held in the two pipeline
+            registers downstream, and it produces one select per operand. Only the
+            names have moved a stage earlier: the sources are
+            <code class="fld-rs1">IF/ID_rs1</code> and
+            <code class="fld-rs2">IF/ID_rs2</code> rather than the ID/EX pair,
+            because the comparator now sits in <em>Decode</em>.
+          </p>
+          <p>
+            The two guards that made the first forwarding unit correct are still
+            here and still doing the same jobs. A destination is only worth
+            matching if the instruction that carries it is actually going to write
+            a register, so both tests qualify on
+            <code class="ctrl-sig">regWrite</code>, and register zero is excluded
+            because a write to <em>x0</em> never changes what a read of
+            <em>x0</em> returns. EX/MEM is tested before MEM/WB for the same
+            reason as before, which is that the instruction in <em>Memory</em> is
+            the more recent of the two writers.
+          </p>
+        </div>
+        </div>
+
+        <div class="prose prose--full">
+          <p>
+            The hazard detection unit grows to match. It kept one condition
+            through the last lesson, the load-use case, and it now carries two
+            more, both of them for a branch whose operand is still in flight.
+            Notice that the new pair qualifies on
+            <code class="ctrl-sig">regWrite</code> rather than on
+            <code class="ctrl-sig">memRead</code>, because any instruction that
+            writes a register can leave a branch waiting, not only a load.
+          </p>
+        </div>
+
+        <div class="split split--media-left">
+        <figure class="code-editor code-editor--static" style="width: 30rem; max-width: 100%;">
+          <figcaption class="code-editor__bar">
+            <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+            <span class="code-editor__lang">Verilog HDL</span>
+          </figcaption>
+          <div class="code-editor__body">
+            <pre class="code-editor__hl"><code><span class="tok-kw">module</span> <span class="tok-type">hazard_detection_unit</span> (
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IFID_rs1,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IFID_rs2,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IDEX_rd,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] EXMEM_rd,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span>       IDEX_memRead,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span>       IDEX_regWrite,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span>       EXMEM_memRead,
+    <span class="tok-kw">input</span>  <span class="tok-kw">wire</span>       IFID_branch,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>        IFID_pcWrite,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>        IFID_write,
+    <span class="tok-kw">output</span> <span class="tok-kw">reg</span>        IFID_stall
+);
+
+  <span class="tok-kw">always</span> @(*) <span class="tok-kw">begin</span>
+    <span class="tok-cm">// defaults: pipeline advances normally</span>
+    IFID_pcWrite <span class="tok-op">=</span> <span class="tok-num">1&#39;b1</span>;
+    IFID_write   <span class="tok-op">=</span> <span class="tok-num">1&#39;b1</span>;
+    IFID_stall   <span class="tok-op">=</span> <span class="tok-num">1&#39;b0</span>;
+
+    <span class="tok-cm">// load-use hazard: load in EX, its result</span>
+    <span class="tok-cm">// needed by the instruction in ID</span>
+    <span class="tok-kw">if</span> (IDEX_memRead <span class="tok-op">&amp;&amp;</span> (IDEX_rd <span class="tok-op">!=</span> <span class="tok-num">5&#39;d0</span>)
+                     <span class="tok-op">&amp;&amp;</span> ((IDEX_rd <span class="tok-op">==</span> IFID_rs1) <span class="tok-op">||</span>
+                         (IDEX_rd <span class="tok-op">==</span> IFID_rs2))) <span class="tok-kw">begin</span>
+      IFID_pcWrite <span class="tok-op">=</span> <span class="tok-num">1&#39;b0</span>;  <span class="tok-cm">// hold PC</span>
+      IFID_write   <span class="tok-op">=</span> <span class="tok-num">1&#39;b0</span>;  <span class="tok-cm">// hold IF/ID</span>
+      IFID_stall   <span class="tok-op">=</span> <span class="tok-num">1&#39;b1</span>;  <span class="tok-cm">// zero ID/EX control</span>
+    <span class="tok-kw">end</span>
+
+    <span class="tok-cm">// branch in ID needs an ALU result still in EX:</span>
+    <span class="tok-cm">// one stall, then forwarding covers it</span>
+    <span class="tok-kw">if</span> (IFID_branch <span class="tok-op">&amp;&amp;</span> IDEX_regWrite <span class="tok-op">&amp;&amp;</span> (IDEX_rd <span class="tok-op">!=</span> <span class="tok-num">5&#39;d0</span>)
+                    <span class="tok-op">&amp;&amp;</span> ((IDEX_rd <span class="tok-op">==</span> IFID_rs1) <span class="tok-op">||</span>
+                        (IDEX_rd <span class="tok-op">==</span> IFID_rs2))) <span class="tok-kw">begin</span>
+      IFID_pcWrite <span class="tok-op">=</span> <span class="tok-num">1&#39;b0</span>;
+      IFID_write   <span class="tok-op">=</span> <span class="tok-num">1&#39;b0</span>;
+      IFID_stall   <span class="tok-op">=</span> <span class="tok-num">1&#39;b1</span>;
+    <span class="tok-kw">end</span>
+
+    <span class="tok-cm">// branch in ID needs a load still in MEM:</span>
+    <span class="tok-cm">// this is the second of the two stalls</span>
+    <span class="tok-kw">if</span> (IFID_branch <span class="tok-op">&amp;&amp;</span> EXMEM_memRead <span class="tok-op">&amp;&amp;</span> (EXMEM_rd <span class="tok-op">!=</span> <span class="tok-num">5&#39;d0</span>)
+                    <span class="tok-op">&amp;&amp;</span> ((EXMEM_rd <span class="tok-op">==</span> IFID_rs1) <span class="tok-op">||</span>
+                        (EXMEM_rd <span class="tok-op">==</span> IFID_rs2))) <span class="tok-kw">begin</span>
+      IFID_pcWrite <span class="tok-op">=</span> <span class="tok-num">1&#39;b0</span>;
+      IFID_write   <span class="tok-op">=</span> <span class="tok-num">1&#39;b0</span>;
+      IFID_stall   <span class="tok-op">=</span> <span class="tok-num">1&#39;b1</span>;
+    <span class="tok-kw">end</span>
+  <span class="tok-kw">end</span>
+
+<span class="tok-kw">endmodule</span></code></pre>
+          </div>
+        </figure>
+
+        <div class="prose">
+          <p>
+            Each of the three conditions drives the same three outputs, and they
+            do between them what a stall has always done on this pipeline.
+            <code class="ctrl-sig">pcWrite</code> going low holds the program
+            counter so the same instruction is fetched again,
+            <code class="ctrl-sig">write</code> going low holds the IF/ID register
+            so <em>Decode</em> keeps seeing the instruction it was already
+            looking at, and <code class="ctrl-sig">stall</code> going high zeroes
+            the control fields entering ID/EX so the bubble that moves down the
+            pipeline writes nothing.
+          </p>
+          <p>
+            The two branch conditions are written as separate tests rather than
+            folded into one because they are separate cycles of the same wait. An
+            ALU producer one instruction ahead trips the first and costs a single
+            stall. A load producer trips the second, and after that first stall
+            the load has advanced from <em>Execution</em> into <em>Memory</em>,
+            where the third condition catches it again and buys the second stall
+            the load needs.
+          </p>
+          <p>
+            The flush is not in this module, and that is deliberate. Holding the
+            pipeline still is a decision made by comparing register numbers,
+            which is what a hazard unit does, while flushing IF/ID is driven
+            directly by the taken signal coming out of the comparator in
+            <em>Decode</em>. They arrive at the same register from two different
+            places, so keeping them apart is what stops one being read as the
+            other.
+          </p>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== DYNAMIC BRANCH PREDICTION ================== -->
+    <section class="section" id="prediction" aria-labelledby="pr-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="pr-title">Dynamic Branch Prediction</h2>
+        </div>
+
+        <div class="prose prose--full" style="margin: 0;">
+          <p>
+            Assuming that a branch is not taken is a fixed guess, and a fixed
+            guess is only ever as good as the program it is guessing about.
+            Loops are where it does worst. A loop closes with a branch that
+            jumps backwards to the top, and that branch is taken on every single
+            iteration except the final one, so a machine that always guesses not
+            taken is wrong almost every time around. Depth makes this worse
+            rather than better, because the number of instructions thrown away
+            on a misprediction is set by how far apart the fetch and the
+            resolution are, and that distance grows with every stage added.
+          </p>
+          <p>
+            The alternative is to let each branch's own past decide.
+            <strong>Dynamic branch prediction</strong> keeps a record of how a
+            branch behaved the last few times it ran and predicts that it will
+            behave the same way again. The record lives in a
+            <strong>branch prediction buffer</strong>, a small memory indexed by
+            the low bits of the branch instruction's address and holding a
+            couple of bits of history in each entry. Nothing in that memory has
+            to be right for the processor to be right. It is a hint, checked
+            against the real outcome when the branch resolves, and a wrong hint
+            costs exactly the flush that a wrong fixed guess would have cost.
+          </p>
+        </div>
+
+        <!-- The predictor state machine floats RIGHT, alternating against the
+             two charts above it, on the standard 33rem `--float-right` rather
+             than `.chart-float`. It is four ellipses and eight labelled arrows
+             at 1395x1095, not a dense time chart, so the wider float would only
+             cost the copy beside it a column it does not need to give up. -->
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-right enlarge-wide">
+            <img src="../../assets/pipelined-cpu/predictor-fsm.jpg"
+                 alt="A four-state machine drawn as ellipses. The two on the upper half both read Predict Taken and the two on the lower half both read Predict Not Taken. The upper-left state loops back to itself on Taken and moves right on Not Taken; the upper-right state returns left on Taken and drops to the lower-right state on Not Taken. The lower-right state climbs back up on Taken and moves left on Not Taken, and the lower-left state loops back to itself on Not Taken and returns right on Taken."
+                 decoding="async" />
+          </figure>
+
+          <p>
+            The simplest version of this stores a single bit per entry and
+            predicts whatever the branch did last time. It beats a fixed guess
+            and it still handles loops poorly, because it gets two predictions
+            wrong for every pass through one rather than one. Picture a loop that
+            runs nine times. The bit correctly predicts taken through the ninth
+            iteration, then the loop exits and the prediction is wrong, which was
+            unavoidable, and the bit flips to not taken. The next time the
+            program reaches that loop the very first iteration is predicted not
+            taken and is wrong again. A branch taken ninety percent of the time
+            ends up predicted correctly only eighty percent of the time.
+          </p>
+          <p>
+            Making the predictor slow to change its mind is what fixes it. A
+            <strong>2-bit predictor</strong> holds four states rather than two,
+            and a prediction has to be wrong twice in a row before it flips. The
+            two states on the upper half of the diagram beside this paragraph
+            both predict taken and the two on the lower half both predict not
+            taken, with the outer states holding that opinion strongly and the
+            inner ones holding it weakly. One surprising outcome moves the entry
+            a single state toward the other opinion without yet changing what it
+            predicts, and only a second consecutive surprise crosses the middle.
+            The loop that cost a 1-bit predictor two mispredictions now costs
+            one, since the exit knocks the entry from strongly taken to weakly
+            taken and the next pass still predicts taken correctly.
+          </p>
+          <p>
+            Real processors carry this much further along the same line. A
+            <strong>correlating predictor</strong> indexes its table with the
+            outcomes of the last few branches as well as with the branch address,
+            because branches in real code are rarely independent and one
+            condition being true often implies another. A
+            <strong>tournament predictor</strong> runs several schemes at once
+            and keeps a running score of which one has been serving each branch
+            better, then follows whichever is currently winning. The prediction
+            hardware in a modern core is large, and it is large for the reason
+            this whole lesson has been building towards, which is that every
+            stage of pipeline depth it protects is a stage that would otherwise
+            be paid for on every wrong guess.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== CHECK YOURSELF ===================== -->
+    <section class="section section--tight" id="check" aria-labelledby="check-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="check-title">Check Yourself</h2>
+        </div>
+
+        <div class="quiz" id="quiz" style="max-width: 74rem;">
+          <p class="quiz__q">The branch comparison now happens in Decode. The
+            instruction immediately before a branch is a load, and the register it
+            loads into is one of the branch's two sources. How many stall cycles
+            does the branch need, and why?</p>
+
+          <figure class="figure figure--photo quiz__figure enlarge-wide" style="max-width: 45rem;">
+            <img src="../../assets/pipelined-cpu/branch-forwarding.jpg"
+                 alt="Two instructions on the pipeline with a red line running backwards in time, from the point where the first instruction's result becomes available to the Decode stage of the instruction behind it, labelled NOT POSSIBLE."
+                 decoding="async" />
+          </figure>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button">None, because the branch forwarding unit can take the value straight out of the MEM/WB register.</button>
+            <button class="quiz__opt" type="button">One, since a single stall is enough to let any producer still in flight reach a pipeline register the branch can forward from.</button>
+            <button class="quiz__opt" type="button" data-correct="true">Two, because the loaded value does not exist until the end of the load's Memory stage while the branch wants it during Decode, so one stall is not enough to close the gap.</button>
+            <button class="quiz__opt" type="button">Three, the same as the flush a taken branch used to cost, since both penalties are measured across the same window.</button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <!-- Revealed by the quiz script once the correct answer is chosen. -->
+          <div class="quiz__next">
+            <a class="btn btn--primary" href="../../introduction-to-physical-design/transistor-basics/">
+              Continue to Transistor Basics <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =============================== FOOTER ============================== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="wordmark" href="#top" aria-label="Silicon From Scratch — back to top">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        Silicon From Scratch
+      </a>
+      <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
+         target="_blank" rel="noopener">GitHub Repository</a>
+    </div>
+    <p class="container footer__credit">
+      Adapted from: David A. Patterson and John L. Hennessy,
+      <em>Computer Organization and Design RISC-V Edition: The Hardware/Software
+      Interface</em>, Second Edition, Chapter 4, &ldquo;The Processor,&rdquo;
+      &sect;4.9 &ldquo;Control Hazards&rdquo; (Morgan Kaufmann, 2021).
+    </p>
+  </footer>
+
+  <script src="../../scripts/main.js" defer></script>
+
+  <!-- GSAP + ScrollTrigger from CDN for the same scroll-reveal feel as the rest
+       of the site. If they fail to load, scroll.js removes the `js` class and
+       the page is simply fully visible. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
+  <script src="../../scripts/scroll.js" defer></script>
+
+  <!-- No verilog-mini.js or gate-card.js here: both Verilog blocks are
+       hand-highlighted .code-editor--static figures, not flip cards, so there
+       is nothing on this page for either script to bind to. -->
+
+  <!-- Enlarge: static figure images pop on hover and open enlarged on a
+       blurred backdrop when clicked (see scripts/enlarge.js). -->
+  <script src="../../scripts/enlarge.js" defer></script>
+
+  <!-- "Check yourself" quiz: color the chosen answer, show feedback, and reveal
+       the continue button once the correct answer is picked. -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          if (next) next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+        } else {
+          btn.classList.add("is-wrong");
+          feedback.textContent = "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -2432,6 +2432,25 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 }
 
 /* ------------------------------------------------------------------ *
+   CONTROL HAZARDS (pipelined-cpu/control-hazards)
+ * ------------------------------------------------------------------ */
+
+/* Both Verilog modules in "The Hardware for Both" are top-aligned with the copy
+   beside them, the treatment `#golden-model` uses for its tall portrait sketch
+   and for the same reason. These are listings rather than diagrams: 775px for
+   the branch forwarding unit and 1155px for the hazard detection unit, against
+   411px and 600px of copy at 1440. Centred, the note beside the taller one
+   starts 277px down the page with nothing above it, which reads as a mistake
+   rather than as a note. Top-aligned it starts level with the module line and
+   runs down, and the gap lands at the bottom where a listing running on past
+   its commentary is what a reader expects.
+
+   No counterpart is needed at the narrow end. At 901 the columns invert, 906
+   against 775 and 1359 against 1155, so the copy is the taller side and the
+   modules top out either way. */
+#hardware .split { align-items: start; }
+
+/* ------------------------------------------------------------------ *
    CHECK-YOURSELF QUIZ — a multiple-choice widget: a diagram, four answer
    buttons that turn green (correct) or red (wrong) on click, a status line,
    and a "continue" button revealed once the right answer is picked.

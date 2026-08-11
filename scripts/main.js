@@ -174,7 +174,7 @@
         ["The Pipelined Datapath", "pipelined-cpu/pipelined-datapath/"],
         ["The Pipelined Control", "pipelined-cpu/pipelined-control/"],
         ["Data Hazards", "pipelined-cpu/data-hazards/"],
-        "Control Hazards"
+        ["Control Hazards", "pipelined-cpu/control-hazards/"]
       ]]
     ]],
     ["Very Advanced", [

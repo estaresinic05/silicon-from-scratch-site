@@ -29,6 +29,7 @@ PAGES = ["/", "/about/", "/alu/logic-gates/", "/alu/full-adder/",
          "/pipelined-cpu/pipelining/", "/pipelined-cpu/pipelined-datapath/",
          "/pipelined-cpu/pipelined-control/",
          "/pipelined-cpu/data-hazards/",
+         "/pipelined-cpu/control-hazards/",
          "/introduction-to-physical-design/transistor-basics/",
          "/introduction-to-physical-design/implementing-arbitrary-logic/"]
 
