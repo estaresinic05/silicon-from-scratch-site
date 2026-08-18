@@ -117,8 +117,9 @@ with sync_playwright() as p:
     pg.wait_for_timeout(600)
     check(pg.evaluate("window.__die.attract.tile") is None,
           "and it stands down while the cursor is on a block")
+
     pg.mouse.move(60, 780)
-    pg.wait_for_timeout(400)
+    frames()
 
     print("the credit panel:")
     check(pg.evaluate("document.getElementById('credit-panel').hidden"),

@@ -433,6 +433,19 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   opacity: 0; transition: opacity .5s ease;
 }
 #hint span.show { opacity: 1; }
+/* The click line is the only sentence on the page that says what a block DOES,
+   and it is carrying that alone for anyone who has not moved the mouse yet. The
+   keyboard line is a different job — it names a control that is visible three
+   centimetres below it — so the two are not the same size any more.
+
+   Brighter as well as bigger. At --muted against a photograph of a die this
+   line was competing with the thing it was describing; --text with the same
+   shadow behind it wins that without becoming page furniture. */
+#hint .hint-click {
+  font-size: .86rem;
+  color: var(--text);
+  letter-spacing: .14em;
+}
 #hint kbd {
   font-family: inherit; font-size: .95em;
   padding: .12em .38em;
@@ -639,6 +652,10 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
      class selector, so `.hint-keys { display: none }` alone loses. */
   #hint .hint-keys { display: none; }
   #hint { font-size: .6rem; }
+  /* Scaled from the phone's .6rem base by the same ratio the desktop uses, not
+     carried over at .86rem — the root steps down at this width and a fixed rem
+     here would be proportionally half again as large as it is on a desktop. */
+  #hint .hint-click { font-size: .78rem; letter-spacing: .12em; }
   /* There is no corner free at this width, so the credit goes centred under the
      nav. It is one line now, which is what makes that possible: the block that
      used to live here was four lines deep and the disclaimer had to be dropped

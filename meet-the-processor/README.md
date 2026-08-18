@@ -1134,6 +1134,46 @@ three is that each says a different part of it:
 | the **tag** | this has a name, and it opens |
 | the **hint line** | it, in words, for anyone who has not moved the mouse |
 
+### Making it more obvious, without making it louder
+
+Three changes, and the constraint on all of them was that nothing may be *added*
+to a slab — the pulsing ring and the corner plus were both tried and rejected as
+a rash on a photograph that is already dense.
+
+**The attract pass bounces twice.** A single rise and settle is the same shape as
+every other motion in the scene, so it reads as the die being alive rather than
+as something addressed to the viewer. A second, smaller bounce is a rhythm
+nothing else here has, and rhythm is what separates a signal from ambient
+movement. **The cycle length is deliberately unchanged at 2600ms**: `JUMP_MS`
+grew by 250 and `JUMP_GAP` gave back the same 250. Frequency was the wrong knob,
+because a repeating pattern in the corner of the eye becomes noise as a function
+of how often it happens, not of what it does.
+
+**The breathing is quicker**, `PULSE_HZ` 1.15 to 1.45. A cycle was 870ms, slow
+enough to read as the block glowing steadily rather than pulsing; 690ms is a beat
+and still nowhere near a flicker. It is deliberately not in step with the bounce,
+so a lifted block is running two rhythms that do not divide into each other and
+reads as something responding rather than as a loop playing.
+
+**The click line is bigger and brighter than the keyboard line.** They used to
+share `#hint`'s size. They are not the same job: the keyboard line names a
+control sitting three centimetres below it, while the click line is the only
+sentence on the page that says what a block *does*, carrying that alone for
+anyone who has not moved the mouse. It is `.86rem` against `.66rem` and `--text`
+against `--muted`. Measured at 1440 it runs 567 to 873 with the caption ending at
+442, so the clearance the split bought is intact, and at 320px it is 270px wide
+inside a 320px viewport.
+
+> **A contact shadow under the lift was built here and taken out again**, and the
+> reasoning is kept at the top of `scene.js` because it is the obvious next idea.
+> It worked and it verified, and it genuinely helped at the core stop where 29
+> blocks are packed edge to edge. But **the slabs are glass**: a contact shadow
+> hides under its caster, and here it read straight through the block and pulled
+> its colour down. The only settings where the shadow was clearly legible were
+> the ones where it spoiled the block. Rebuilding it needs the shadow masked by
+> the footprint rather than visible through it, which is a stencil pass, not an
+> opacity.
+
 The middle one did not exist. A viewer who hovered a block watched it rise and
 learned that the page was alive; nothing anywhere connected that movement to the
 sheet a click would open. The one sentence that did say so had to carry the
@@ -1529,8 +1569,56 @@ note, which `.has-video` hides once there is something to play. Wired so far:
 | `load-store` | Load / Store | 2:10 | 16 MB |
 | `integer-execution` | Integer Execution | 2:17 | 19 MB |
 | `ifop-phy` | IFOP PHY | 2:51 | 21 MB |
+| `test-debug` | Test / Debug | 3:58 | 30 MB |
+| `branch-predictor` | Branch Predictor | 4:08 | 40 MB |
+| `l3-cache` | L3 Cache | 6:17 | 52 MB |
 
-`ifop-phy` is the longest, and the most joined: five takes, `ifop-explainer1`
+The last four are the joined ones, and each is reproduced by its own script in
+`tools/` rather than by `cut-fillers.py`, because the edit is hand-chosen and a
+detector would not land on the same frames twice. **`l3-cache` is the longest**
+at 6:17, and **`branch-predictor` is the most joined**: nine takes shot,
+`bp-explainer1` through `9`, and the first shoot whose numbering turned out to be
+the edit order.
+
+**Eight of the nine ship.** Take 6 is cut, and for what it says rather than for
+anything about the edit: it attributes the combining of local and global history
+to *correlating* predictors, which is the definition of the *tournament*
+predictor take 7 then describes. Correlating predictors therefore do not appear
+in the video at all, and putting them back needs a re-shot take.
+
+That script is also where the **AAC padding trap** is written down — the masters
+decode a few milliseconds longer than their containers say, which walks the audio
+late against the video across a splice unless every branch is `atrim`'d to its
+video length.
+
+`l3-cache` is seven takes, `l3-explainer1` through `7`, and **all seven ship**:
+the memory problem, the hierarchy and the library analogy, temporal locality,
+spatial locality, the L3 itself, the way down to L1, and the closing line. The
+numbering is the edit order again, checked the same way. Every join dissolves,
+and this shoot is the roomiest so far — four of the six joins are at or within
+0.09s of the 0.40s cap, where the IFOP set had three joins worth two to five
+frames. The shooting note is being followed.
+
+**Its three trims are all defects rather than content**, and two of them are
+worth knowing as shapes that recur:
+
+- **Take 6 opens on a false start that is also a repeat.** Take 5 trails off on
+  "…try to design processors in a way that…", and take 6 then says "Try to",
+  pauses, says "try to design processors in a way that" again, and only then
+  reaches "shuttles". The clause is delivered three times across one seam. Take 6
+  comes in at 3.58 on "shuttles", which removes the stumble and the repeat at
+  once and lets take 5's sentence finish through the join. Cutting the other way
+  round was refused because take 6 says "tries" where take 5 says "try".
+- **Take 1 ends on an orphaned "and"** with 0.85s of silence in front of it,
+  running to the final frame, so whole it has a tail of 0.00 and the first join
+  cannot dissolve at all. The out-point goes inside that gap, which is the
+  `branch-predictor` take 8 edit performed from the other side, and the tail goes
+  from 0.00s to 0.85s. Take 2 opens "And in general…", so the conjunction is
+  spoken once instead of twice.
+- Take 4 opened on **1.84s of dead air** against 0.10 to 1.03 everywhere else. It
+  comes in at 1.44 and 0.31s of what remains is spent as the 3 → 4 dissolve.
+
+`ifop-phy` is the most instructive of them: five takes, `ifop-explainer1`
 through `5`, in order. They are one script — what the PHY is, ending on "but
 when would we need to use this piece of hardware?", then the example that
 answers it, then how it does it, then why it has to, then the closing line.

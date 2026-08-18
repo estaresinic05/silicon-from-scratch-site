@@ -746,7 +746,10 @@ const REGIONS = [
   ...ROWS.map((v, i) => ({ id: `core-l${i + 1}`, u: COL_L, v, group: 'cores', color: '#ff5f42', label: 'Zen 5 Core' })),
   ...ROWS.map((v, i) => ({ id: `core-r${i + 1}`, u: COL_R, v, group: 'cores', color: '#ff5f42', label: 'Zen 5 Core' })),
   { id: 'l3',    u: [0.356, 0.641],       v: [0.0106, STRIP_TOP],    group: 'l3',    color: '#5b8cf0', label: 'L3 Cache', sub: '32 MB' },
-  { id: 'smu',   u: [DIE_L, DIE_R],       v: [STRIP_TOP, STRIP_MID], group: 'strip', color: '#c9891f', label: 'SMU / Power Management & I/O Interconnect' },
+  /* The id stays 'smu' because it is threaded through SUBJECT_OF, the pick
+     ids and four verify scripts; the LABEL is what the viewer reads and it is
+     no longer that. See the subject copy for why the band was renamed. */
+  { id: 'smu',   u: [DIE_L, DIE_R],       v: [STRIP_TOP, STRIP_MID], group: 'strip', color: '#c9891f', label: 'Infinity Fabric & System Management' },
   { id: 'test',  u: [DIE_L, TEST_R],      v: [STRIP_MID, STRIP_BOT], group: 'strip', color: '#9b6cf0', label: 'Test / Debug' },
   { id: 'ifop1', u: [TEST_R, IFOP_SPLIT], v: [STRIP_MID, STRIP_BOT], group: 'strip', color: '#1d9a7d', label: 'IFOP PHY' },
   { id: 'ifop2', u: [IFOP_SPLIT, DIE_R],  v: [STRIP_MID, STRIP_BOT], group: 'strip', color: '#1d9a7d', label: 'IFOP PHY' },
@@ -1082,6 +1085,27 @@ const RO_WALLS = 10;           // after sBack 1 / sFloor 2 / sCore 3
    its own group, the other being suppressed by an invisible material. Same
    trick the package body uses to extrude an outline without its caps. */
 const HIDDEN = new THREE.MeshBasicMaterial({ visible: false });
+
+/* A CONTACT SHADOW UNDER THE LIFT WAS BUILT HERE AND TAKEN OUT AGAIN, 18 Aug.
+   Recording why, because it is the obvious next idea and it will be had again.
+
+   It worked and it verified: a dark copy of the block's footprint lying on the
+   die, driven by the same `h` as the lift, absent at rest, spreading as it
+   darkened. On the core stop, where 29 blocks are packed edge to edge and a
+   raised one has no gap around it to read the lift by, it did make height
+   legible where brightness alone had not.
+
+   THE PROBLEM IS THAT THE SLABS ARE GLASS. A contact shadow hides under the
+   thing casting it; here the caster is transparent, so the shadow reads straight
+   through the block and drags its colour down. At 0.42 a hovered Load / Store
+   went muddy at exactly the moment it was meant to look picked out. Dropping to
+   0.28 traded that away for a cue faint enough that the brightness was doing the
+   work again anyway, which is the shape of a thing that does not belong: the
+   only settings where it read clearly were the ones where it spoiled the block.
+
+   Anyone rebuilding it needs the shadow to be masked by the footprint rather
+   than visible through it, and that is a stencil pass or a hole in the geometry,
+   not an opacity. */
 
 const TILE_T = 0.16;           // a slab, but a glass one — see the edge AND
                                // the silicon through it
@@ -3849,9 +3873,10 @@ const SUBJECTS = {
     'Tucked away among the larger functional blocks of the CCD is the Test/Debug circuitry, a collection of specialized hardware used during the processor’s development and manufacturing rather than during everyday operation. Before a processor ever runs an operating system or launches an application, engineers rely on these interfaces to verify that billions of transistors are functioning exactly as intended.',
     'The Test/Debug logic provides a window into the processor’s inner workings, allowing engineers to inspect signals, validate designs, and diagnose problems that would otherwise be impossible to observe once the chip is sealed beneath its heat spreader. For example, if a newly manufactured processor fails to boot or produces an unexpected result during testing, engineers can use this circuitry to observe how instructions move through the cores, verify that data is reaching the cache, or confirm that communication between the CCD and I/O die is operating correctly.',
   ] },
-  'smu': { title: 'SMU / Power Management & I/O Interconnect', body: [
-    'Sandwiched in the middle is the SMU, or System Management Unit, the part of the processor responsible for power management and overall coordination of how the chip behaves. The SMU is constantly monitoring temperature, power draw, and workload, making real-time decisions about how fast the processor should run and which parts should be active at any given moment. This continuous balancing act helps the processor stay efficient while still delivering performance when it is needed.',
-    'The I/O interconnect is the internal communication network that ties the major functional blocks of the processor together. It moves data between the cores, cache, memory controllers, and other on-die components, allowing them to operate as a single coordinated system. This is different from the IFOP PHY, which specifically handles high-speed communication between the CCD and the separate I/O die outside of it, while the I/O interconnect focuses on traffic within the die itself.',
+  'smu': { title: 'Infinity Fabric & System Management', body: [
+    'This band sits exactly where its job says it should, between the cores and the L3 above it and the IFOP PHYs below. Everything the compute side cannot answer for itself leaves through here. A request that misses in L3 has nowhere else to go, so it crosses this strip on its way out to memory or to another chiplet, and the answer comes back across it too. Infinity Fabric is the name AMD gives that network, and this is where the compute die joins it.',
+    'It is worth separating from the IFOP PHY directly beneath it, because the two are different halves of one journey. This strip is the logic that decides what to send and keeps it coherent, so that a line of data held in one chiplet is never quietly contradicted by a stale copy in another. The PHY below is the electrical machinery that gets those bits across the package. One speaks in requests and addresses, the other in voltages and timing.',
+    'The same band carries the System Management Unit, the small controller that watches temperature, current and workload and decides moment to moment how fast each core may run. Putting it here rather than out among the cores is deliberate, since it has to reach the clock and voltage machinery for the whole die, and this strip already runs the die’s full width.',
   ] },
   'l2-cache': { title: 'L2 Cache', body: [
     'The L2 cache is a core’s private mid-level memory. Each core gets its own 1 MB that it can access without having to compete with any other core. Because L2 belongs to a single core, it’s built directly onto that core rather than in a shared region of the die. Keeping it close minimizes the distance signals travel, which is what keeps it fast.',
@@ -3966,7 +3991,7 @@ const SUBJECTS = {
    broken player. */
 const HAVE_VIDEO = new Set(['zen5-core', 'instruction-fetch', 'scheduling',
                             'load-store', 'integer-execution', 'ifop-phy',
-                            'test-debug']);
+                            'test-debug', 'branch-predictor', 'l3-cache']);
 
 /* Written, but deliberately NOT in SUBJECT_OF below, so nothing on screen opens
    them yet: only the twelve blocks that were asked for are wired up. The copy is
@@ -4240,7 +4265,17 @@ const HOVER_LIFT = 0.85;     // of the settled rest height
    the attract pass started driving the same response as a demonstration, was too
    quiet to be the thing that draws the eye in the first place. */
 const HOVER_EASE = 0.16;     // per frame, so the rise and fall are not a snap
-const PULSE_HZ = 1.15;
+/* 1.45, up from 1.15, 18 Aug. The breathing is the part of the response that
+   says "this is live" once the lift has finished arriving, and at 1.15 a whole
+   cycle took 870ms — slow enough to read as the block glowing steadily rather
+   than as it pulsing. 690ms is quick enough to be seen as a beat and still well
+   short of a flicker.
+
+   It is deliberately NOT in step with the double bounce. Two rhythms that do not
+   divide into each other keep the block from looking like it is running one
+   animation, which is what makes the attract pass read as a thing responding
+   rather than as a loop playing. */
+const PULSE_HZ = 1.45;
 
 /* A block is selectable exactly while its WALLS are still drawing a coloured
    edge, and that is the right signal rather than an accident of implementation:
@@ -4304,8 +4339,22 @@ const pulse = () => 0.5 + 0.5 * Math.sin(now() * 0.001 * PULSE_HZ * Math.PI * 2)
    corner of the eye becomes noise; an unpredictable one every few seconds
    reads as the die being alive. It does pause while the cursor is actually on
    a block, so the demo never fights a real hover. */
-const JUMP_MS    = 900;    // one block's whole rise and settle
-const JUMP_GAP   = 1700;   // stillness between one jump and the next
+/* TWO bounces, not one. A single rise and settle is the same shape as every
+   other bit of motion in this scene — the wave, the settle, the breathing — so
+   it reads as the die being alive rather than as something addressed to the
+   viewer. A second, smaller bounce behind the first is a rhythm nothing else
+   here has, and a rhythm is what separates a signal from ambient movement. It
+   is the same reason a notification badge bounces twice.
+
+   The cycle is deliberately unchanged at 2600ms: JUMP_MS grew by 250 and
+   JUMP_GAP gave back the same 250, so the demo is more emphatic without
+   becoming more frequent. Frequency was the wrong knob — the note above says a
+   repeating pattern in the corner of the eye becomes noise, and that is a
+   function of how often it happens, not of what it does. */
+const JUMP_MS    = 1150;   // one block's whole rise, echo and settle
+const JUMP_SPLIT = 0.62;   // of JUMP_MS spent on the first bounce
+const JUMP_ECHO  = 0.42;   // the second bounce, as a fraction of the first
+const JUMP_GAP   = 1450;   // stillness between one jump and the next
 const JUMP_FIRST = 700;    // beat after the camera parks before the first
 
 let jumpTile = null;       // the block that was drawn, and stands for its part
@@ -4370,11 +4419,21 @@ function updateJump(live) {
   }
 }
 
-/* A sine bump rather than a ramp in and a ramp out: it leaves and arrives at
-   exactly zero with zero slope, so the block never twitches at either end. */
+/* Sine bumps rather than a ramp in and a ramp out: each one leaves and arrives
+   at exactly zero, so the block never twitches at either end, and the two are
+   butted together at zero so the echo starts from the die rather than from a
+   height the first bounce left it at.
+
+   The split is 0.62/0.38 rather than even. The first bounce keeps very nearly
+   the pace it had as a solo hop — 713ms against the old 900 — because that is
+   the one the viewer reads as "a block moved"; the echo is quicker as well as
+   smaller, which is what makes it read as a bounce rather than as a second,
+   feebler attempt at the same gesture. */
 function jumpLevel(tl) {
   if (!jumpSet || !jumpSet.has(tl)) return 0;
-  return Math.sin(Math.PI * THREE.MathUtils.clamp((now() - jumpT0) / JUMP_MS, 0, 1));
+  const u = THREE.MathUtils.clamp((now() - jumpT0) / JUMP_MS, 0, 1);
+  if (u < JUMP_SPLIT) return Math.sin(Math.PI * (u / JUMP_SPLIT));
+  return JUMP_ECHO * Math.sin(Math.PI * ((u - JUMP_SPLIT) / (1 - JUMP_SPLIT)));
 }
 
 /* ------------------------------------------------------------------ *

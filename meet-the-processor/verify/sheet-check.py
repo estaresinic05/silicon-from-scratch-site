@@ -25,7 +25,7 @@ def turn(uv):
 # screen point off the slab entirely.
 CASES = [
   (0.46, (0.18, 0.12),   0.30, 'Zen 5 Core'),
-  (0.52, (0.50, 0.845),  0.30, 'SMU / Power Management & I/O Interconnect'),
+  (0.52, (0.50, 0.845),  0.30, 'Infinity Fabric & System Management'),
   (0.50, (0.50, 0.30),   0.30, 'L3 Cache'),
   (0.52, (0.17, 0.93),   0.30, 'Test / Debug'),
   (0.52, (0.82, 0.93),   0.30, 'IFOP PHY'),
