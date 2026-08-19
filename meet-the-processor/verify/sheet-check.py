@@ -34,7 +34,10 @@ CASES = [
   (0.80, core_uv(0.3882, 0.4837), 0.11, 'Integer Execution'),
   (0.80, core_uv(0.6514, 0.3683), 0.11, 'Load / Store'),
   (0.80, core_uv(0.8569, 0.1510), 0.11, 'L2 Cache'),
-  (0.80, core_uv(0.9345, 0.4124), 0.11, 'L2 Cache Tags'),
+  # The tag array is part of the L2 cache now, so it opens that sheet, not one
+  # of its own. Kept as a case precisely because the block still carries its own
+  # label on the die: the check is that the label and the sheet disagree.
+  (0.80, core_uv(0.9345, 0.4124), 0.11, 'L2 Cache'),
   (0.80, core_uv(0.6926, 0.9289), 0.11, 'L1I Cache'),
 ]
 with sync_playwright() as p:

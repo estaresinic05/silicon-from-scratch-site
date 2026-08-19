@@ -1808,7 +1808,14 @@ chip.add(coreTileGroup);
     // the path an instruction takes
     'Instruction Fetch', 'L1I Cache', 'Integer Regfile?', 'Integer Execution',
     'Load / Store', 'L1D Cache',
-    'L2 Cache ½', 'L2 Cache Tags', 'L2 Control',
+    /* The two halves and the tag array are ONE part now: they hover as a set
+       and any of the three opens the L2 Cache sheet, so they arrive on one beat
+       too. A viewer who watched the tags land separately would have been told
+       they were a separate thing a beat before being shown they are not. The
+       control block is genuinely separate, keeps its own sheet, and so keeps
+       its own beat. */
+    { labels: ['L2 Cache ½', 'L2 Cache Tags'], together: true },
+    'L2 Control',
     // turning a virtual address into a physical one
     'L2 DTLB', 'L2 ITLB',
     // how the front end knew what to fetch in the first place
@@ -1835,10 +1842,13 @@ chip.add(coreTileGroup);
      take consecutive beats, ordered top-to-bottom then left-to-right. */
   const beats = [];
   CORE_ORDER.forEach((entry) => {
-    const label = entry.label || entry;
-    const set = coreTiles.filter((tl) => tl.label === label)
+    const labels = entry.labels || [entry.label || entry];
+    const set = coreTiles.filter((tl) => labels.includes(tl.label))
       .sort((a, b) => (a.at[1] - b.at[1]) || (a.at[0] - b.at[0]));
-    if (!set.length) console.warn(`CORE_ORDER names a block that does not exist: ${label}`);
+    for (const label of labels) {
+      if (!coreTiles.some((tl) => tl.label === label))
+        console.warn(`CORE_ORDER names a block that does not exist: ${label}`);
+    }
     if (entry.together) beats.push(set); else set.forEach((tl) => beats.push([tl]));
   });
   const placed = beats.flat();
@@ -3843,8 +3853,12 @@ publishCapRoom();
 
    SUBJECTS is keyed by slug, one entry per NAME rather than per polygon: all
    eight Zen 5 cores open the same sheet, as do both L2 halves and both IFOP
-   PHYs. Videos are expected at assets/video/<slug>.mp4; HAVE_VIDEO lists the
-   ones that exist and the player stays blank for the rest.
+   PHYs. The L2 array's tag block opens it too: the tags are read as part of
+   every L2 access rather than as somewhere else the core looks, and the video
+   on this sheet teaches the array and its tags as one idea, so a second sheet
+   for them would have split one explanation across two panels. Videos are
+   expected at assets/video/<slug>.mp4; HAVE_VIDEO lists the ones that exist and
+   the player stays blank for the rest.
 
    The copy is lifted from the live site's Meet the Processor page so the two
    tell the same story in the same voice. Em dashes in the source are recast as
@@ -3881,10 +3895,6 @@ const SUBJECTS = {
   'l2-cache': { title: 'L2 Cache', body: [
     'The L2 cache is a core’s private mid-level memory. Each core gets its own 1 MB that it can access without having to compete with any other core. Because L2 belongs to a single core, it’s built directly onto that core rather than in a shared region of the die. Keeping it close minimizes the distance signals travel, which is what keeps it fast.',
     'You’ll also notice the 1 MB isn’t one solid block but two 512 KB banks. Splitting the array shortens the wiring inside each half, so accesses are quicker and draw less power than one large block would.',
-  ] },
-  'l2-cache-tags': { title: 'L2 Cache Tags', body: [
-    'A cache holds copies of data pulled from main memory, and every stored line carries a tag, a small label recording which memory address it came from. The cache then uses the tag to determine if it actually holds what the core is asking for.',
-    'In our example, the L2 has a dedicated block set aside just for tags, whereas the L3 most likely distributed its tags across its individual slices, each slice tracking the lines it holds.',
   ] },
   'l1i-cache': { title: 'L1I Cache', body: [
     'The L1 cache is the smallest and fastest memory on the core, and the first place the core looks for any instruction or piece of data. Unlike the L2 and L3, it isn’t a single pool. It is split into an instruction cache, the L1i, holding the code the core is about to run, and a data cache, the L1d, holding the values that code operates on. That split exists because the core does both at once: while the front of the core pulls in the next instructions, other parts are busy reading and writing data. Giving each stream its own cache lets the core fetch and move data in parallel instead of competing for the same access.',
@@ -3991,7 +4001,8 @@ const SUBJECTS = {
    broken player. */
 const HAVE_VIDEO = new Set(['zen5-core', 'instruction-fetch', 'scheduling',
                             'load-store', 'integer-execution', 'ifop-phy',
-                            'test-debug', 'branch-predictor', 'l3-cache']);
+                            'test-debug', 'branch-predictor', 'l3-cache',
+                            'l2-cache']);
 
 /* Written, but deliberately NOT in SUBJECT_OF below, so nothing on screen opens
    them yet: only the twelve blocks that were asked for are wired up. The copy is
@@ -4024,7 +4035,7 @@ const SUBJECT_OF = {
   'blk:L1I Cache': 'l1i-cache',
   'blk:L1D Cache': 'l1d-cache',
   'blk:L2 Cache ½': 'l2-cache',
-  'blk:L2 Cache Tags': 'l2-cache-tags',
+  'blk:L2 Cache Tags': 'l2-cache',
   'blk:Integer Execution': 'integer-execution',
   'blk:Load / Store': 'load-store',
   'blk:L2 Control': 'l2-control',
@@ -4166,8 +4177,9 @@ function pick(ev) {
 
 /* --- parts, not blocks ------------------------------------------------
    Several things on this die are ONE part drawn as several blocks: the Zen 5
-   cores, the two L2 halves, the four vector regfile quarters, the four FADD +
-   FMAC lanes, the two Vector Execution columns. The floorplan and the core were
+   cores, the two L2 halves together with their tag array, the four vector
+   regfile quarters, the four FADD + FMAC lanes, the two Vector Execution
+   columns. The floorplan and the core were
    traced that way because that is how the silicon is laid out, and the labels
    say so — "L2 Cache ½", "Vector Regfile ¼".
 

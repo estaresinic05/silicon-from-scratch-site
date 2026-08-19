@@ -616,7 +616,9 @@ was thrown away; it looked good and taught nothing.
 Entries are labels, and several blocks share one — L2 is two halves, the vector
 regfiles and FADD/FMAC lanes are four each. A shared label expands into
 consecutive slots ordered top-to-bottom then left-to-right, so a set fills in as
-a set instead of jumping around the core.
+a set instead of jumping around the core. An entry may also name SEVERAL labels,
+through `labels: [...]`, which is how the L2 halves and their tag array rise as
+the one part they are.
 
 **`CORE_FADE` is 0.10, not the floorplan's 0.34.** That 0.34 makes a *wave*:
 eight tiles each occupying a third of the window, three or four in motion at
@@ -629,7 +631,11 @@ beat may raise more than one block: the four vector regfiles rise together, then
 the four FADD/FMAC lanes together, then the scheduling that feeds them. Four
 identical lanes arriving one after another reads as four separate ideas when it
 is one idea repeated four times — the vector unit is wide, and the width is the
-point. 21 entries become 22 beats over 29 blocks.
+point. The L2 array and its tag block rise together for the same reason and one
+more: they hover as a set and all three open the L2 Cache sheet, so a viewer
+watching the tags land a beat later would have been told they are a separate
+thing immediately before being shown they are not. 20 entries become 20 beats
+over 29 blocks.
 
 **A name has to fit on one piece.** Vector execution was one region carrying
 both of its columns, with `fit: false` so the fitter would not reject a centre
@@ -1572,11 +1578,12 @@ note, which `.has-video` hides once there is something to play. Wired so far:
 | `test-debug` | Test / Debug | 3:58 | 30 MB |
 | `branch-predictor` | Branch Predictor | 4:08 | 40 MB |
 | `l3-cache` | L3 Cache | 6:17 | 52 MB |
+| `l2-cache` | L2 Cache, its two halves and its tag array | 6:43 | 59 MB |
 
-The last four are the joined ones, and each is reproduced by its own script in
+The last five are the joined ones, and each is reproduced by its own script in
 `tools/` rather than by `cut-fillers.py`, because the edit is hand-chosen and a
-detector would not land on the same frames twice. **`l3-cache` is the longest**
-at 6:17, and **`branch-predictor` is the most joined**: nine takes shot,
+detector would not land on the same frames twice. **`l2-cache` is the longest**
+at 6:43, and **`branch-predictor` is the most joined**: nine takes shot,
 `bp-explainer1` through `9`, and the first shoot whose numbering turned out to be
 the edit order.
 
@@ -1617,6 +1624,63 @@ worth knowing as shapes that recur:
   spoken once instead of twice.
 - Take 4 opened on **1.84s of dead air** against 0.10 to 1.03 everywhere else. It
   comes in at 1.44 and 0.31s of what remains is spent as the 3 → 4 dissolve.
+
+`l2-cache` is five takes, `l2-explainer1` through `5`, and **all five ship**:
+blocks and lines with hit and miss and what a miss costs, direct mapped caches,
+why the block alone is not enough, the tag and the two organizations either side
+of it, and the closing line pointing at L1i and L1d. The numbering is the edit
+order again. Every join dissolves, which is what was asked for, and **two of the
+five did not have to**: 1 → 2 scores 3.79 and 4a → 4b scores 1.88, both under
+the 4.0 a hard cut can hide.
+
+**It is the first edit with cuts inside a take, and it has two of them.** The
+first is an "um" in take 1, in "requests information, um, from the cache", with
+0.92s of dead air in front of it. Take 1 goes out at 23.95 and back at 24.99,
+which keeps the word whole, takes the filler and the air around it, and leaves
+0.30s of pause. **That seam is the one hard cut in the piece**: it scores 1.46
+against `JUMP_OK`'s 4.0, because it is one take against itself 1.04s later with
+the pose unmoved, so there is nothing for a dissolve to hide. The two pieces are
+rejoined with `concat`, not `xfade`.
+
+**That cut was made wrong the first time, and the way it was wrong is the thing
+to keep.** It went out at 23.52 and in at 24.38, on a reading that had the 0.18s
+run at 23.53 as the filler and the 0.33s run at 24.63 as the word "from". It is
+the other way round: 23.53 is the tail of "information" and 24.63 is the "um".
+The shipped clip therefore lost the end of a word and kept the filler, and Elliot
+heard it at once.
+
+The check that catches it is the one `cut-fillers.py` already prescribes:
+**name every run of sound on its own, on the OUTPUT as well as the master.**
+Transcribed by itself the run at 24.63 comes back as "um" in as many words. What
+was done instead was a plain transcript of the finished encode, which read
+"requests information from the cache" and looked like proof. It proves nothing —
+whisper *deletes* fillers, so a clean transcript is exactly what a surviving one
+also produces. Nor does the opposite: transcribing with a disfluent
+`initial_prompt` writes an "um" back in at any pause. Only the run naming
+separates the two cases.
+
+The second is a false start. Take 4 begins one sentence three times, "So", a 1.23s pause, "since we have", and only then "since that
+piece of information can be in so many different spots". It goes out at 91.10 and
+comes back at 93.75, which takes the whole false start out in one span and lands
+the join in silence on both sides, so take 4 ships as two segments and five takes
+make five dissolves. The video and audio of a reused input need `split` and `asplit`;
+feeding one input pad to two filters is a filtergraph error rather than a silent
+duplication.
+
+**Its other trim is the l3 take-6 shape, from the other side.** Take 2's last
+complete sentence closes at 75.88, and what follows it is "And so, well, wait a
+minute, that's still," a 1.14s pause, the rest of the thought, and a trailing
+"but." Take 3 then opens "Okay, so wait a minute" and delivers the same beat
+properly and finishes it. Take 2 goes out at 76.60, on the complete sentence, and
+take 3 carries the turn. There the incoming take had said the clause worse; here
+the outgoing one had. The orphaned "but." goes out with it, so it needs no trim
+of its own.
+
+Nothing else is trimmed: every head and tail on this shoot is inside the range
+the series ships. The one tight join is 4b → 5, where take 5 has 0.07s of head
+against take 4's full second of tail; the fade is 0.12, all of it inside take 4's
+silence, and take 5 pays 0.05s of soft attack on the /s/ of "So" — the same trade
+the l3 splice made on the /sh/ of "shuttles".
 
 `ifop-phy` is the most instructive of them: five takes, `ifop-explainer1`
 through `5`, in order. They are one script — what the PHY is, ending on "but

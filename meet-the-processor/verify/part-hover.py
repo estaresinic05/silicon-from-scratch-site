@@ -2,7 +2,8 @@
 
 Several things on the core are one part drawn as several blocks: the vector
 regfile is four quarters, the FADD + FMAC lanes are four, Vector Execution is
-two columns, L2 Cache is two halves. They all open the same panel, so the lift
+two columns, L2 Cache is two halves plus its tag array. They all open the same
+panel, so the lift
 has to outline the part rather than the rectangle under the cursor.
 
 Measures window.__die.state.hover.part / .lifted rather than a screenshot: the
@@ -23,7 +24,10 @@ CASES = [
     ('Vector Regfile ¼', (0.0677, 0.1269), 4),
     ('FADD + FMAC',           (0.0677, 0.3145), 4),
     ('Vector Execution',      (0.0677, 0.5111), 2),
-    ('L2 Cache ½',       (0.8569, 0.1510), 2),
+    # THREE, not two. The tag array opens the L2 Cache sheet, so it is part of
+    # the same part and rises with the halves; hovered from either side.
+    ('L2 Cache ½',       (0.8569, 0.1510), 3),
+    ('L2 Cache Tags',    (0.9345, 0.4124), 3),
     ('Instruction Fetch',     (0.4961, 0.8636), 1),   # a part of one
 ]
 
@@ -43,9 +47,16 @@ with sync_playwright() as pw:
     pg.wait_for_function("()=>Math.abs(window.__die.t-0.80)<0.004", timeout=30000)
     pg.wait_for_timeout(800)
 
+    # The scene draws the die shot a half turn round, so the IFOP PHY faces the
+    # I/O die -- see "The half turn" in ../README.md. Every uv below is written in
+    # the photograph's published frame, exactly as scene.js writes them, and is
+    # turned on the way to the click, the same as sheet-check.py does it. Without
+    # the turn every point here projected off screen and every case in this file
+    # failed as "aim missed the block", which reads like the page and was the
+    # harness.
     def screen(cu, cv, wy=0.11):
         return pg.evaluate("""({cu,cv,W,H,wy})=>{
-          const u=0.015+cu*0.335, v=0.6193+cv*0.1983;
+          const u=1-(0.015+cu*0.335), v=1-(0.6193+cv*0.1983);
           const m=window.__die.state.mvp;
           const x=(u-0.5)*W,z=(v-0.5)*H,y=wy;
           const o=[0,1,2,3].map(r=>m[0*4+r]*x+m[1*4+r]*y+m[2*4+r]*z+m[3*4+r]);
@@ -94,6 +105,7 @@ with sync_playwright() as pw:
 
     def die_screen(u, v, wy=0.22):
         return pg.evaluate("""({u,v,W,H,wy})=>{
+          u = 1-u; v = 1-v;                      // the half turn, as above
           const m=window.__die.state.mvp;
           const x=(u-0.5)*W,z=(v-0.5)*H,y=wy;
           const o=[0,1,2,3].map(r=>m[0*4+r]*x+m[1*4+r]*y+m[2*4+r]*z+m[3*4+r]);

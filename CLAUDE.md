@@ -198,6 +198,7 @@ no clone had.
 | `tools/text-conflicts.py` | **The other gate.** Finds text drawn over other text, and text spilling its container, across a width sweep. Neither shows up as overflow, so `mobile-audit.py` cannot see them. |
 | `tools/freeze-vw.py` | Did the mechanical `Nvw` → `calc(N * var(--vwu))` conversion, 106 terms. Kept because it documents what it deliberately skipped. |
 | `tools/tap-targets.py` | Lists every tappable control under 44px, skipping the ones that are inert by design. |
+| `tools/name-runs.py` | **The gate for a filler cut.** Names every run of sound one at a time, on the master and on the encode. A plain transcript cannot verify a filler cut: whisper deletes "um"s, so a clean transcript is what a SURVIVING one produces too. The l2-cache clip shipped with its filler still in on exactly that mistake. |
 | `tools/cut-fillers.py` | Finds the "um"s in a sheet-video master, cuts the longest half, re-encodes to the site's spec. `--plan` first, always. Whisper deletes fillers from its output, so they are found in the waveform and named run by run. |
 | `meet-the-processor/verify/` | Python checks for the 3D scene: affordance behaviour, stop composition, region coverage. Run these after editing `scene.js`. |
 

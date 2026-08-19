@@ -73,3 +73,6 @@ video-masters/
 meet-the-processor/*.png
 meet-the-processor/verify/*.png
 meet-the-processor/render/
+
+# Working WAVs from tools/name-runs.py
+tools/.name-runs/
