@@ -305,6 +305,11 @@
   <div class="sheet-copy">
     <h2 id="sheet-title">&mdash;</h2>
     <div class="sheet-body" id="sheet-body"></div>
+    <!-- A figure belonging to the copy, built by openSheet from the subject's
+         own `figure`. It sits under the prose and above the lesson cards,
+         because it illustrates what was just read rather than pointing
+         anywhere. Hidden entirely for the subjects that have none. -->
+    <figure class="sheet-figure" id="sheet-figure" hidden></figure>
     <!-- Lesson cards, built by openSheet from the subject's own `links` list.
          A block on this die is often something the site already teaches in full,
          and this is the way across. Hidden entirely for the subjects that have

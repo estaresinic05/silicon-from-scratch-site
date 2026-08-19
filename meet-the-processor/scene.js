@@ -3879,11 +3879,17 @@ const SUBJECTS = {
     'The first major structure that stands out is the L3 cache, a shared pool of 32 MB of ultra-fast memory sitting at the center of the CCD. Rather than storing long-term data, the cache acts as the processor’s working memory, keeping frequently used instructions and information close at hand so the cores don’t have to wait for data to arrive from elsewhere in the system.',
     'On the die photograph, the L3 cache appears as large, orderly blocks of repeating patterns, dense arrays of tiny memory cells packed together with incredible precision. While the cores do the thinking, the cache keeps the information flowing, quietly feeding data to the processor fast enough to keep billions of operations moving every second.',
   ] },
-  'ifop-phy': { title: 'IFOP PHY', body: [
+  'ifop-phy': { figure: {
+      src: '../assets/Meet-The-Processor/delid-grayscaled_dies-on-substrate-web.jpg',
+      alt: 'The delidded 9600X, its two dies bare on the substrate. The compute die above, the I/O die below, and the traces running between them across the package.',
+    }, title: 'IFOP PHY', body: [
     'Situated along the edge of the CCD is the IFOP PHY, short for Infinity Fabric On-Package Physical Layer. This high-speed interface links the compute die to the rest of the processor, carrying requests for memory, data destined for the graphics card, and information traveling to and from the I/O die.',
     'On the die photograph, the IFOP PHY appears as a collection of tightly packed circuitry dedicated not to computation, but communication. While the cores perform calculations and the cache keeps data nearby, the IFOP PHY serves as the CCD’s gateway, ensuring information can move quickly and reliably between the processor’s many pieces.',
   ] },
-  'test-debug': { title: 'Test / Debug', body: [
+  'test-debug': { figure: {
+      src: '../assets/single-cycle-cpu/waveform.jpg',
+      alt: 'A waveform viewer showing dozens of a processor’s internal signals as rows of values changing over time, which is the view test and debug circuitry exists to provide.',
+    }, title: 'Test / Debug', body: [
     'Tucked away among the larger functional blocks of the CCD is the Test/Debug circuitry, a collection of specialized hardware used during the processor’s development and manufacturing rather than during everyday operation. Before a processor ever runs an operating system or launches an application, engineers rely on these interfaces to verify that billions of transistors are functioning exactly as intended.',
     'The Test/Debug logic provides a window into the processor’s inner workings, allowing engineers to inspect signals, validate designs, and diagnose problems that would otherwise be impossible to observe once the chip is sealed beneath its heat spreader. For example, if a newly manufactured processor fails to boot or produces an unexpected result during testing, engineers can use this circuitry to observe how instructions move through the cores, verify that data is reaching the cache, or confirm that communication between the CCD and I/O die is operating correctly.',
   ] },
@@ -3892,9 +3898,17 @@ const SUBJECTS = {
     'It is worth separating from the IFOP PHY directly beneath it, because the two are different halves of one journey. This strip is the logic that decides what to send and keeps it coherent, so that a line of data held in one chiplet is never quietly contradicted by a stale copy in another. The PHY below is the electrical machinery that gets those bits across the package. One speaks in requests and addresses, the other in voltages and timing.',
     'The same band carries the System Management Unit, the small controller that watches temperature, current and workload and decides moment to moment how fast each core may run. Putting it here rather than out among the cores is deliberate, since it has to reach the clock and voltage machinery for the whole die, and this strip already runs the die’s full width.',
   ] },
-  'l2-cache': { title: 'L2 Cache', body: [
+  /* The first subject with a `figure`. Direct mapping is the one idea on this
+     sheet that a reader cannot picture from the prose alone, so the drawing
+     sits under the paragraph that describes it rather than in the video, which
+     a reader who is skimming will not start. */
+  'l2-cache': { figure: {
+      src: '../assets/Meet-The-Processor/direct-mapped-cache.jpg',
+      alt: 'A hand drawn diagram of a direct mapped cache. Eight entries, each fed by every address in main memory whose low bits match its index, so 11101 lands in entry 101.',
+    }, title: 'L2 Cache', body: [
     'The L2 cache is a core’s private mid-level memory. Each core gets its own 1 MB that it can access without having to compete with any other core. Because L2 belongs to a single core, it’s built directly onto that core rather than in a shared region of the die. Keeping it close minimizes the distance signals travel, which is what keeps it fast.',
     'You’ll also notice the 1 MB isn’t one solid block but two 512 KB banks. Splitting the array shortens the wiring inside each half, so accesses are quicker and draw less power than one large block would.',
+    'Sitting alongside the banks is the tag array. Far more addresses exist than there are entries to hold them, so each entry also stores a tag recording which address it is holding at the moment, and every access compares that tag before the core can trust the data beside it.',
   ] },
   'l1i-cache': { title: 'L1I Cache', body: [
     'The L1 cache is the smallest and fastest memory on the core, and the first place the core looks for any instruction or piece of data. Unlike the L2 and L3, it isn’t a single pool. It is split into an instruction cache, the L1i, holding the code the core is about to run, and a data cache, the L1d, holding the values that code operates on. That split exists because the core does both at once: while the front of the core pulls in the next instructions, other parts are busy reading and writing data. Giving each stream its own cache lets the core fetch and move data in parallel instead of competing for the same access.',
@@ -3920,7 +3934,10 @@ const SUBJECTS = {
       img: '../assets/single-cycle-cpu/fde.jpg',
       title: 'Fetch, Decode, Execute' },
   ] },
-  'integer-execution': { title: 'Integer Execution', body: [
+  'integer-execution': { figure: {
+      src: '../assets/ALU/alu-block.jpg',
+      alt: 'The ALU drawn as a block. Two operands enter from the left, a control input selects the operation, and the result leaves to the right alongside its zero and overflow flags.',
+    }, title: 'Integer Execution', body: [
     'These are the units that do the actual work on whole numbers: adding, comparing, shifting, and computing the addresses that loads and stores will use. Most instructions in most programs end up here.',
     'Because nearly everything passes through it, this block sits at the centre of the core with the integer register file immediately beside it, keeping the distance between where values are stored and where they are operated on as short as possible.',
   ] },
@@ -3954,11 +3971,17 @@ const SUBJECTS = {
     'The register file is the small, extremely fast store that the integer units read their operands from and write their results back into. Registers are the only memory the arithmetic hardware touches directly, so everything else has to be loaded into one before it can be worked on.',
     'It is small because it has to be fast, and because it is enormously multiported. Several integer operations issue every cycle and each of them needs its operands in that same cycle, so the array is built to serve many simultaneous reads and writes at once. That costs far more area per bit than a cache pays.',
   ] },
-  'scheduling': { title: 'Scheduling', body: [
+  'scheduling': { figure: {
+      src: '../assets/pipelined-cpu/dependences.jpg',
+      alt: 'Five instructions drawn across a timeline with lines joining each use of a register back to the instruction that produced it, which is the dependence a scheduler has to satisfy before it may issue.',
+    }, title: 'Scheduling', body: [
     'Instructions arrive in program order and do not have to execute in it. The scheduler holds instructions that have been decoded but cannot run yet, watches for the moment each one\'s operands become available, and issues it to a free execution unit as soon as both conditions are satisfied.',
     'This is what keeps the execution units busy. A core that ran instructions strictly in the order they were written would stall every time one waited on a slow load from memory, while a scheduler simply runs whatever else happens to be ready in the meantime. It is among the largest and most power hungry blocks in the core for precisely that reason.',
   ] },
-  'branch-predictor': { title: 'Branch Predictor', body: [
+  'branch-predictor': { figure: {
+      src: '../assets/pipelined-cpu/predictor-fsm.jpg',
+      alt: 'The state machine of a two bit branch predictor. Four states from strongly taken to strongly not taken, and it takes two wrong guesses in a row to change which way it predicts.',
+    }, title: 'Branch Predictor', body: [
     'A core with many instructions in flight at once cannot afford to stop and find out which way a branch goes. The branch predictor guesses, and the front end carries on fetching down the predicted path as though the answer were already known.',
     'Modern predictors are right the overwhelming majority of the time. When one is wrong the core has to throw away everything it executed speculatively after the branch and restart from the correct path, which costs many cycles, so accuracy here turns almost directly into performance.',
   ] },
@@ -4057,6 +4080,7 @@ const SUBJECT_OF = {
 const sheet = document.getElementById('sheet');
 const sheetVideo = document.getElementById('sheet-video');
 const sheetLinks = document.getElementById('sheet-links');
+const sheetFigure = document.getElementById('sheet-figure');
 const sheetMedia = document.querySelector('.sheet-media');
 const sTitle = document.getElementById('sheet-title');
 const sBody = document.getElementById('sheet-body');
@@ -4081,6 +4105,20 @@ function openSheet(id) {
     el.textContent = text;
     return el;
   }));
+  /* The subject's own figure, under the prose it illustrates. Rebuilt rather
+     than reused, so a sheet without one cannot inherit the last one's picture. */
+  if (sub.figure) {
+    const img = document.createElement('img');
+    img.className = 'sheet-figure__img';
+    img.src = sub.figure.src;
+    img.alt = sub.figure.alt || '';
+    img.loading = 'lazy';
+    sheetFigure.replaceChildren(img);
+  } else {
+    sheetFigure.replaceChildren();
+  }
+  sheetFigure.hidden = !sub.figure;
+
   /* The player is always shown, blank when there is nothing to play: a black
      16:9 frame with its controls, rather than a placeholder standing in for it. */
   /* Lesson cards. Hidden outright when the subject has none, rather than left as

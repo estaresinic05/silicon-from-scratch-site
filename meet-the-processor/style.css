@@ -488,7 +488,12 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
 /* --- left: the name, then the text --- */
 .sheet-copy {
-  max-width: 36rem;
+  /* No measure cap. The column already has a width: the grid gives it the room
+     between the sheet's left padding and the gap before the player, and a
+     36rem cap left that room half empty on a wide screen while the player
+     filled its own column completely. The copy now runs to the player's edge
+     and stops there, which is the line the eye already reads as the edge of
+     the text. */
   animation: sheetSlide .38s cubic-bezier(.2,.7,.3,1) both;
 }
 @keyframes sheetSlide { from { opacity:0; transform: translateY(14px);} to { opacity:1; transform:none;} }
@@ -504,6 +509,35 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .sheet-body { color: #c2c9d6; font-size: clamp(.94rem, 1.05vw, 1.02rem); line-height: 1.65; }
 .sheet-body p { margin: 0 0 .9rem; }
 .sheet-body p:last-child { margin-bottom: 0; }
+
+/* --- the subject's own figure, under the prose it illustrates ---
+   The drawings are ink on white, so the figure keeps that white rather than
+   being tinted to the panel, on the same argument as the lesson-card thumbnail
+   above. The height cap is what keeps the sheet inside a short window: this
+   panel does not scroll on desktop, and a wide diagram at full column width is
+   tall enough to push the last paragraph off the top. */
+.sheet-figure {
+  margin: 1.4rem 0 0;
+  animation: sheetSlide .38s .08s cubic-bezier(.2,.7,.3,1) both;
+}
+.sheet-figure[hidden] { display: none; }
+.sheet-figure__img {
+  display: block;
+  /* Sized by the caps rather than by the column, so the height cap shrinks the
+     BOX and not just the drawing inside it. At `width: 100%` the box keeps the
+     full column width once the cap bites, and the white sits out to the right
+     of the diagram as an empty margin. */
+  width: auto; height: auto;
+  max-width: 100%; max-height: 30vh;
+  /* Centred in the column, which only shows on the figures the height cap makes
+     narrower than the column: a square diagram pinned left under a 700px column
+     reads as a hole in the layout rather than as a picture. The wide ones fill
+     the column and centring does nothing to them. */
+  margin-inline: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
 
 /* --- lesson cards: the way out to the lesson that teaches this block ---
    Shaped after the home page's `.mtp-card`: thumbnail, a kicker and a title, an
@@ -578,7 +612,13 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 }
 
 /* --- right: the player, blank until a video is dropped in --- */
-.sheet-media { justify-self: stretch; animation: sheetSlide .38s .05s cubic-bezier(.2,.7,.3,1) both; }
+/* Centred in the row rather than aligned to the top of the copy. The grid row
+   is as tall as the taller column and the sheet centres its rows, so this puts
+   the player in the middle of the screen. It only moves on the sheets whose copy
+   is taller than the player, which is why the title-to-player alignment above is
+   still worth its nudge: on the short sheets the two are the same thing. */
+.sheet-media { justify-self: stretch; align-self: center;
+               animation: sheetSlide .38s .05s cubic-bezier(.2,.7,.3,1) both; }
 .sheet-media video {
   display: block;
   width: 100%;
@@ -622,6 +662,9 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   }
   .sheet-copy { max-width: none; }
   #sheet-title { font-size: 1.6rem; margin-top: 0; }
+  /* The sheet scrolls on a phone, so the figure has room for its full height
+     and the desktop cap would only shrink a diagram that is already narrow. */
+  .sheet-figure__img { max-height: none; }
 }
 
 /* ------------------------------------------------------------------ *

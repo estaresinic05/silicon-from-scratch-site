@@ -1545,6 +1545,69 @@ hysteresis stops a pointer resting on the boundary from flickering it.
 none)` disables the scheme entirely — on a touch device there is no gesture that
 would bring it back that would not also fight the scene.
 
+### Figures in the sheet
+
+A subject can carry a `figure` of `{ src, alt }`, and `openSheet()` puts it under
+the prose and above the lesson cards, inside `.sheet-copy`. It illustrates what
+was just read rather than pointing anywhere else, which is why it sits on that
+side of the panel and not beside the video.
+
+The drawings are ink on white and keep that white, on the same argument as the
+lesson-card thumbnails: tinting artwork to the panel misrepresents it. The image
+is sized by `max-width: 100%` and `max-height: 30vh` with `width: auto`, so the
+height cap shrinks the box rather than leaving white margin out to the right of a
+wide diagram. On a phone the cap comes off, because the sheet scrolls there.
+
+It is centred in the column with `margin-inline: auto`. That shows only on the
+figures the height cap makes narrower than the column, which is every figure that
+is not much wider than it is tall: a square diagram pinned left under a 700px
+column reads as a hole in the layout. The wide ones fill the column and centring
+does nothing to them.
+
+**The 30vh cap is what every sheet's height budget is built on.** L2 is the
+binding case: at 1280×720 its copy plus figure clears the sheet's padding with
+about 14px to spare, so raising the cap overflows that sheet before it improves
+any other. A portrait or square figure is therefore small on a wide screen and
+that is the trade, not an oversight.
+
+Wired so far:
+
+| slug | figure | note |
+|---|---|---|
+| `l2-cache` | `Meet-The-Processor/direct-mapped-cache.jpg` | Under the tag-array paragraph. Fills the column. |
+| `ifop-phy` | `Meet-The-Processor/delid-grayscaled_dies-on-substrate-web.jpg` | Both dies bare on the substrate, traces visible between them. Square, so it renders at the cap. |
+| `test-debug` | `single-cycle-cpu/waveform.jpg` | A waveform viewer, which is literally what the copy describes. Widest of the set, fills the column. |
+| `integer-execution` | `ALU/alu-block.jpg` | The ALU symbol. Square, renders at the cap. |
+| `branch-predictor` | `pipelined-cpu/predictor-fsm.jpg` | The two-bit predictor state machine. Reads at the cap. |
+| `scheduling` | `pipelined-cpu/dependences.jpg` | **The one that does not survive the size.** Five instructions and their dependences, and at 363px the instruction labels are not legible. It reads as texture rather than as a diagram. A cropped version, or a different figure, would fix it.
+
+### The copy column has no measure cap
+
+`.sheet-copy` carried `max-width: 36rem` and no longer does. The grid already
+gives the column a width, the room between the sheet's left padding and the gap
+before the player, and the cap left a third of that room empty on a wide screen
+while the player filled its own column to the pixel. The copy now runs to the
+player's edge and stops at the grid gap.
+
+This is a long measure by the usual rule, 716px at 1707 wide and 816px at 1920,
+and it is deliberate: the edge of the player is the line the eye already reads
+as the edge of the text, and a narrower column beside a full-width player reads
+as a mistake rather than as typography. It also buys back the height, which is
+what keeps every sheet inside the window: this panel is centred and does not
+scroll on desktop, so a subject's copy plus its figure has a real budget.
+Measured at 1280×720, 1707×950 and 1920×1080, all eleven wired sheets sit inside
+the sheet's own padding at every one.
+
+### The player sits in the middle of the screen
+
+`.sheet-media` is `align-self: center`. The grid row is as tall as the taller of
+the two columns and the sheet centres its rows, so this puts the player in the
+vertical middle of the window. It only moves on the sheets whose copy outruns it,
+which today is L2 and, by a few pixels, the Infinity Fabric band. On every other
+sheet the copy is the shorter column, so the player still defines the row and the
+title still lines up with its top edge, which is what the nudge on `#sheet-title`
+is for.
+
 ### Lesson cards in the sheet
 
 A subject can carry a `links` array, and `openSheet()` builds a card per entry
