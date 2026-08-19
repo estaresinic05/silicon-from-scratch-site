@@ -2311,42 +2311,61 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   #rose-glasses .prose--flow .flow-figure--float-right { width: 24.75rem; }
 }
 
-/* The three-instruction example beside the forwarding module is three short
-   monospace lines, so at the copy column's full width it was a wide band of
-   mostly empty card. Shrunk to its content and floated, with the paragraph that
-   reads it running down the right.
+/* The three-instruction example on data-hazards is three short lines, so at any
+   full-width card it reads as a wide band of mostly empty surface. Shrunk to its
+   content and floated, with the paragraph that reads it running down the right.
 
    `width: max-content` and not a rem: the card should be exactly as wide as its
    longest instruction plus the marker gutter, and that is a value the type
    metrics own, not one to hand-write. It measures 223px.
 
-   IT FLOATS IN THE FULL COLUMN, NOT IN THE SPLIT, and that is the whole design
-   decision. Inside the copy column beside the module there is no width at which
-   this works across the desktop range: that column is the grid remainder after a
-   448px module, so it is 864px at 1440 but 357px at 901, and a 223px card in
-   357px leaves a 94px ribbon, which is not a paragraph.
+   IT FLOATS IN THE SPLIT'S COPY COLUMN, beside the module, and that placement is
+   a decision with a known cost. Read the arithmetic before moving it again.
 
-   Two wrong answers were built before this one, both worth naming:
+   The column is the grid remainder after the 448px module, so it is 864px at a
+   1440 window and 357px at 901, the narrowest desktop. Take the card and its
+   margin off that and the ribbon left for the paragraph runs:
 
-   1. `max-width: 50%` as a guard. It clamped the card to 178px at 901 and wrapped
-      `addi x2, x2, -1` onto two lines, which is the failure it was meant to
-      prevent rather than a milder version of it.
+       1440 → 609px    1280 → 481px    1100 → 301px    1000 → 201px    901 → 102px
+
+   **Below about 1100 that stops being a paragraph**, and at 901 it is three words
+   a line for the five lines the card is tall. That is the cost, it is real, and
+   it is accepted because every alternative is worse somewhere the reader looks
+   more often. Four were built:
+
+   1. `max-width: 50%` as a guard on the card. It clamped it to 178px at 901 and
+      wrapped `addi x2, x2, -1` onto two lines, which is the failure it was meant
+      to prevent rather than a milder version of it.
    2. A container query on the copy column, floating only above 34rem. It
       measured correctly and it is still wrong: the list then floats above about a
       1050px window and not below, which is a third rendering. `width-sweep.py`
       does not catch it, because it fingerprints type and spacing rather than
       floats. STYLE_GUIDE.md answers this exactly: if a composition needs a width
       between the two modes, the composition is what is wrong.
+   3. No float at all, the card at the column's full width. Robust at every width
+      and it is the wide band of mostly empty surface this note exists to avoid.
+   4. The card and its paragraph in a full-width block below the pair, floated
+      there. The ribbon is then 1089px at 1440 and still 582px at 901, so the
+      float is never cramped. It shipped on 08-09 and it is the tempting answer.
+      **What it costs is the split**: the example and its paragraph are most of
+      the copy column's height, so taking them out drops the column from 771px to
+      279px against a 775px module, a 496px dead band at 1440. It also strands
+      the colon that ends "Consider three instructions that all write the same
+      register:" at the bottom of a column, pointing at empty space.
 
-   So the list moved out of the split into the full column, where it has 1100px
-   of ribbon at 1440 and still 590px at 901, and the same rule holds at every
-   desktop width. Below the line nothing matches and it keeps the full-width card
+   The arithmetic under all of it: at 901 the container is 853px, and module plus
+   card plus a readable ribbon is 448 + 223 + 300 = 971. It does not fit at any
+   module width, so the example is either beside the module or floated properly,
+   never both. Answer 4 is the other side of that trade and is a legitimate place
+   to land if the narrow end ever matters more than the split does.
+
+   Below the line nothing matches and the card keeps the full-width surface
    `.prose ul` gives it everywhere else, so mobile.css needs no counterpart. */
 @media (min-width: 901px) {
-  #forwarding .prose--flow ul {
+  #forwarding .split .prose ul {
     float: left;
     width: max-content;
-    margin: 0.4rem var(--space-5) var(--space-4) 0;
+    margin: 0.4rem var(--space-4) var(--space-3) 0;
   }
 }
 

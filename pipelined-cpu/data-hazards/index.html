@@ -403,22 +403,20 @@
              that page: the column is `minmax(0, auto)`, so the code's own width
              is what sizes the track.
 
-             ALL of the copy that reads this module now sits in the right column,
-             including the worked three-instruction example that used to run full
-             width below the pair. 28rem is why it fits: the module's own
-             `max-content` is 445px, so 28rem is its natural width and every pixel
-             above that was gutter.
+             ALL of the copy that reads this module sits in the right column,
+             including the worked three-instruction example. 28rem is what the
+             module needs: its own `max-content` is 445px, so 28rem is its
+             natural width and every pixel above that was gutter. It is also
+             what lets the column balance the module, 771px against 775px at
+             1440, since the example and its paragraph are most of that height.
 
-             28rem is now load-bearing for a second reason, and it is the one that
-             decides ties. The instruction list floats once its column clears
-             34rem, and the column is the grid remainder after this module, so
-             every rem added here is a rem off the column. Measured: at 28rem the
-             float survives down to a 1100px window; at 30rem it dies at 1100 and
-             at 36rem it dies at 1200. A wider module does balance the row better
-             at 1440, -43px against -142px, but that trade buys vertical tidiness
-             at one width by dropping the float at three. `align-items: center`
-             splits the 142px evenly, so the shorter column reads as centred
-             rather than short.
+             Every rem added here is a rem off the copy column, which is the grid
+             remainder after this module: 864px at a 1440 window and 357px at
+             901, the narrowest desktop. 28rem is the smallest number that clips
+             no code, so it is also the largest that column can be given, and a
+             wider module only narrows the paragraphs beside it. `align-items:
+             center` centres the module against the taller column rather than
+             pinning it to the top.
 
              Both Verilog blocks on this page are 28rem, and that they agree is a
              happy accident of two modules being about as wide as each other, not
@@ -483,15 +481,12 @@
             which is deliberate. Consider three instructions that all write the
             same register:
           </p>
-        </div>
-        </div>
-
-        <!-- The worked example runs below the pair, in the full column, because
-             that is the only place the list can float. See the note on the rule
-             in alu.css: beside the module the copy column is 357px at the
-             narrowest desktop, and a 223px card there leaves no paragraph.
-             `.prose--flow` is `display: flow-root`, so the float is contained. -->
-        <div class="prose prose--flow">
+          <!-- The example is a narrow floated card with the paragraph that reads
+               it running down the right, and it stays in this column rather than
+               in a full-width block below the pair. Two things follow from that
+               and both are written up in alu.css: the card is what balances the
+               775px module, and the ribbon beside it is the copy column's
+               remainder, so it runs 609px at 1440 down to 102px at 901. -->
           <ul>
             <li><em>addi x2, x2, -1</em></li>
             <li><em>addi x2, x2, -2</em></li>
@@ -511,6 +506,7 @@
             is what makes the unit pick the most recent write rather than merely
             a recent one.
           </p>
+        </div>
         </div>
       </div>
     </section>
@@ -719,7 +715,7 @@
 
           <!-- Revealed by the quiz script once the correct answer is chosen. -->
           <div class="quiz__next">
-            <a class="btn btn--primary" href="../../coming-soon/?topic=Control%20Hazards">
+            <a class="btn btn--primary" href="../control-hazards/">
               Continue to Control Hazards <span aria-hidden="true">&rarr;</span>
             </a>
           </div>

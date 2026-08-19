@@ -74,17 +74,37 @@
        button sits under the centered "Coming Soon" text. */
     .coming-soon .about__actions { justify-content: center; }
 
-    /* Two "keep learning" stubs: each a link with a little photo-collage of the
-       project's diagrams above its title. */
+    /* Three "keep learning" stubs: each a link with a little photo-collage of the
+       project's diagrams above its title.
+
+       One card per track, so the column count is the card count and there is
+       never a short last row. 72rem holds three at 362px, which is within a few
+       pixels of the 384px two of them took at 50rem, so the bricks did not have
+       to be retuned when the third card landed.
+
+       The stack drops to one column at the site's own 900px line and not at the
+       640 this used to carry. That 640 was a third rendering: below it one
+       column, between it and 900 a phone running a multi-column grid, above 900
+       the desktop. Three cards made it visible rather than introducing it, since
+       three 263px cards at 901 leave a 104px brick that no diagram reads in. */
     .learn-cards {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: var(--space-4);
       width: 100%;
-      max-width: 50rem;
+      max-width: 72rem;
       margin: var(--space-5) auto var(--space-4);
     }
-    @media (max-width: 640px) { .learn-cards { grid-template-columns: 1fr; } }
+    /* One column on a phone, and capped so the card keeps roughly the width it
+       has on the desktop. Without the cap a single column is the whole container,
+       so at a 768 tablet the card ran 700px wide while the bricks stayed 168 and
+       88px tall and the diagrams sat small in a lot of white. 28rem is 364px at
+       the phone root, against 363px on the desktop, so the wall is the same
+       shape in both modes and the bricks needed no second set of numbers. On a
+       390px screen the container is the smaller limit and wins. */
+    @media (max-width: 900px) {
+      .learn-cards { grid-template-columns: 1fr; max-width: 28rem; }
+    }
 
     .learn-card {
       display: flex;
@@ -150,6 +170,14 @@
     .learn-card[href*="single-cycle-cpu"] .learn-card__collage { grid-template-columns: 1.4fr 1fr; }
     .learn-card[href*="single-cycle-cpu"] .learn-card__collage img:nth-child(2) { object-position: top; padding: 4px; }
     .learn-card[href*="single-cycle-cpu"] .learn-card__collage img:nth-child(3) { object-position: top; padding: 8px; }
+    /* Pipelined CPU brick tweaks: the forwarding unit is a 2.29 ratio drawing and
+       the dependence chart is 1.29, so an even split letterboxes the first and
+       pillarboxes the second. Widening the left brick to 1.35fr and trimming its
+       padding spends the difference where it buys size: the forwarding unit goes
+       from 133px to 156px wide and the chart is unchanged, because it is limited
+       by the brick's height either way. */
+    .learn-card[href*="pipelined-cpu"] .learn-card__collage { grid-template-columns: 1.35fr 1fr; }
+    .learn-card[href*="pipelined-cpu"] .learn-card__collage img:nth-child(2) { padding: 6px; }
 
     .learn-card__foot {
       display: flex;
@@ -230,6 +258,18 @@
             </span>
             <span class="learn-card__foot">
               <span class="learn-card__title">Learn the Single Cycle CPU</span>
+              <span class="learn-card__arrow" aria-hidden="true">&rarr;</span>
+            </span>
+          </a>
+
+          <a class="learn-card" href="../pipelined-cpu/pipelining/">
+            <span class="learn-card__collage learn-card__collage--3" aria-hidden="true">
+              <img src="../assets/pipelined-cpu/pipelined-cpu-architecture.jpg" alt="" decoding="async" />
+              <img src="../assets/pipelined-cpu/forwarding-unit.jpg" alt="" decoding="async" />
+              <img src="../assets/pipelined-cpu/forwarding-dependences.jpg" alt="" decoding="async" />
+            </span>
+            <span class="learn-card__foot">
+              <span class="learn-card__title">Learn the Pipelined CPU</span>
               <span class="learn-card__arrow" aria-hidden="true">&rarr;</span>
             </span>
           </a>
