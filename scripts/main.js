@@ -175,8 +175,7 @@
       ], [
         { src: "assets/single-cycle-cpu/sc-cpu-architecture.jpg",
           alt: "The complete single cycle datapath, with the instruction memory, register file, ALU and data memory wired together under the control unit." }
-      ]],
-      ["Memory Hierarchy", ["Coming Soon"]]
+      ]]
     ]],
     ["Advanced", [
       ["Pipelined CPU", [
