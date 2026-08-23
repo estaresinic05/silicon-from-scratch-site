@@ -243,6 +243,56 @@
 }
 .navsheet__group { flex: 0 0 auto; }
 
+/* One picture per difficulty, sitting immediately after that difficulty's
+   lesson columns and picked up by the row's own gap, so it reads as the next
+   thing along rather than something parked at the far edge.
+
+   Capped in HEIGHT, and shorter than a full lesson column on purpose. Every
+   sheet shares one grid cell in `.navsheets`, so all four stand as tall as the
+   tallest thing in any of them, and a picture taller than the longest lesson
+   list would deepen the bands that have no picture at all.
+
+   Inert: no pointer events, no drag, no selection. It is there to be looked
+   at, and the only things in this band that answer to a cursor are the
+   lesson links. */
+.navsheet__art {
+  margin: 0;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+
+  /* The picture is taller than the row it sits in, and overhangs into the
+     sheet's own padding. A negative block margin is what makes that free:
+     a flex item contributes its OUTER size to the line, so 14rem of picture
+     less 33px of negative margin contributes 191px, exactly the tallest
+     lesson column. The band therefore cannot deepen, which is the constraint
+     this whole rule exists to satisfy. The two margins must keep summing to
+     -33px; only their split may change.
+
+     The split is what centres it. Measuring from `flex-start`, the margin box
+     starts at the sheet's 88px top padding, so the picture's top edge lands at
+     88 - 4 = 84px. The band is only VISIBLE from 65px, where the top bar's
+     1px border ends, down to 327px, so 84 leaves 19px of white above the
+     picture and 19px below it. Centring on the row instead put 7px above and
+     32px below, because the row is not the thing the eye sees. */
+  margin-top: -4px;
+  margin-bottom: -29px;
+}
+.navsheet__art img {
+  display: block;
+  /* 14rem centred in the row spans 71.5px to 295.5px inside the sheet. The
+     top bar reaches 65px and the sheet ends at 327px, so it clears both.
+     Going much past this slides the picture under the bar. */
+  max-height: 14rem;
+  width: auto;
+  height: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--hairline);
+  -webkit-user-drag: none;
+}
+
 /* Project name: bold black. */
 .navsheet__title {
   margin: 0 0 0.4rem;

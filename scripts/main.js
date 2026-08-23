@@ -156,6 +156,13 @@
         ["32-bit ALU Slice", "alu/alu-slice/"],
         ["Complete 32-bit ALU", "alu/complete-alu/"],
         ["Testing Your ALU", "alu/testing/"]
+      ], [
+        // Optional third slot on a PROJECT: pictures drawn immediately after
+        // that project's column of lessons, in the order given, so the project
+        // after it starts to their right. Paths are from the site root, like
+        // every other path in MENU, so PREFIX resolves them.
+        { src: "assets/ALU/alu-chain-2.jpg",
+          alt: "The 1-bit slices chained into a 32-bit ALU, each slice's carry out feeding the carry in of the slice above it." }
       ]]
     ]],
     ["Intermediate", [
@@ -165,6 +172,9 @@
         ["Constructing a Datapath", "single-cycle-cpu/constructing-a-datapath/"],
         ["The Control Unit", "single-cycle-cpu/control-unit/"],
         ["Testing Your Single Cycle CPU", "single-cycle-cpu/testing/"]
+      ], [
+        { src: "assets/single-cycle-cpu/sc-cpu-architecture.jpg",
+          alt: "The complete single cycle datapath, with the instruction memory, register file, ALU and data memory wired together under the control unit." }
       ]],
       ["Memory Hierarchy", ["Coming Soon"]]
     ]],
@@ -175,12 +185,18 @@
         ["The Pipelined Control", "pipelined-cpu/pipelined-control/"],
         ["Data Hazards", "pipelined-cpu/data-hazards/"],
         ["Control Hazards", "pipelined-cpu/control-hazards/"]
+      ], [
+        { src: "assets/pipelined-cpu/pipelined-cpu-architecture.jpg",
+          alt: "The complete pipelined datapath, its five stages separated by the IF/ID, ID/EX, EX/MEM and MEM/WB pipeline registers." }
       ]]
     ]],
     ["Very Advanced", [
       ["Pipelined CPU Physical Design", [
         ["Transistor Basics", "introduction-to-physical-design/transistor-basics/"],
         ["Implementing Arbitrary Logic and Stick Diagrams", "coming-soon/"]
+      ], [
+        { src: "assets/introduction-to-physical-design/die-routed.jpg",
+          alt: "The routed die of the pipelined CPU, its metal layers drawn in colour over the standard cell rows, with the power rails running down the sides." }
       ]]
     ]]
   ];
@@ -323,6 +339,21 @@
         });
         group.appendChild(ul);
         cols.appendChild(group);
+
+        /* This project's pictures, straight after its column, so whatever
+           project comes next in the difficulty begins to their right. */
+        (proj[2] || []).forEach(function (pic) {
+          var art = document.createElement("figure");
+          art.className = "navsheet__art";
+          var img = document.createElement("img");
+          img.src = PREFIX + pic.src;
+          img.alt = pic.alt || "";
+          img.loading = "lazy";
+          img.decoding = "async";
+          img.draggable = false;
+          art.appendChild(img);
+          cols.appendChild(art);
+        });
       });
       sheet.appendChild(cols);
       wrap.appendChild(sheet);
