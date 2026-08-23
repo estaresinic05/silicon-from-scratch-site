@@ -539,7 +539,7 @@
           </div>
         </div>
 
-        <div class="prose prose--full">
+        <div class="prose prose--full" style="margin-top: var(--space-4);">
           <p>
             With both of those in place the datapath is finished, and it is worth
             seeing the whole of it at once. The comparator and its adder have moved
@@ -659,30 +659,38 @@
         </div>
 
         <div class="quiz" id="quiz" style="max-width: 74rem;">
-          <p class="quiz__q">The branch comparison now happens in Decode. The
-            instruction immediately before a branch is a load, and the register it
-            loads into is one of the branch's two sources. How many stall cycles
-            does the branch need, and why?</p>
+          <p class="quiz__q">The hazard unit's load-use test qualifies on memRead,
+            but its branch test qualifies on regWrite. Why is the branch's test the broader of the two?</p>
 
-          <figure class="figure figure--photo quiz__figure enlarge-wide" style="max-width: 45rem;">
-            <img src="../../assets/pipelined-cpu/branch-forwarding.jpg"
-                 alt="Two instructions on the pipeline with a red line running backwards in time, from the point where the first instruction's result becomes available to the Decode stage of the instruction behind it, labelled NOT POSSIBLE."
+          <!-- The finished datapath rather than a single scenario: the question
+               asks the reader to find the answer in the hardware they have just
+               watched being built. Wider than the 45rem this slot used to carry,
+               because the drawing is dense and its labels have to be legible
+               without opening the enlarged view. -->
+          <figure class="figure figure--photo quiz__figure enlarge-wide" style="max-width: 56rem;">
+            <img src="../../assets/pipelined-cpu/pipelined-cpu-architecture.jpg"
+                 alt="The complete pipelined datapath. The five stages run left to right, separated by the IF/ID, ID/EX, EX/MEM and MEM/WB pipeline registers. A comparator and its own adder sit in Decode, fed by a branch forwarding unit that selects between the register file, the EX/MEM register and the MEM/WB register. A hazard detection unit drives the PC write enable, the IF/ID write enable and the control-zeroing path into ID/EX, and the taken signal from Decode runs back to flush the IF/ID register."
                  decoding="async" />
           </figure>
 
           <div class="quiz__options" role="group" aria-label="Answer choices">
-            <button class="quiz__opt" type="button">None, because the branch forwarding unit can take the value straight out of the MEM/WB register.</button>
-            <button class="quiz__opt" type="button">One, since a single stall is enough to let any producer still in flight reach a pipeline register the branch can forward from.</button>
-            <button class="quiz__opt" type="button" data-correct="true">Two, because the loaded value does not exist until the end of the load's Memory stage while the branch wants it during Decode, so one stall is not enough to close the gap.</button>
-            <button class="quiz__opt" type="button">Three, the same as the flush a taken branch used to cost, since both penalties are measured across the same window.</button>
+            <button class="quiz__opt" type="button">Because a branch has two sources while a load-use hazard concerns only one, so a wider test is needed to cover both of them.</button>
+            <button class="quiz__opt" type="button">Because memRead is not available that early. regWrite is the only control bit the hazard unit can see in Decode.</button>
+            <button class="quiz__opt" type="button">Because a branch must be held whenever any instruction ahead of it is still in flight, whether or not the register numbers match.</button>
+            <button class="quiz__opt" type="button" data-correct="true">Because the branch reads its operands a stage earlier than the ALU does, so any instruction that writes a register can still be too far behind to forward from. A load is only the worst case, needing two stalls where an ALU producer needs one.</button>
           </div>
 
           <p class="quiz__feedback" role="status" aria-live="polite"></p>
 
-          <!-- Revealed by the quiz script once the correct answer is chosen. -->
-          <div class="quiz__next">
+          <!-- Revealed by the quiz script once the correct answer is chosen.
+               This is the last lesson of the Pipelined CPU, so it takes the
+               end-of-project close the ALU and Single Cycle CPU both end on:
+               the congratulations line, the applause mark, and the next project
+               rather than the next lesson. -->
+          <div class="quiz__next quiz__next--done">
+            <p class="quiz__done">Congratulations! You have completed the Pipelined CPU! &#128079;</p>
             <a class="btn btn--primary" href="../../introduction-to-physical-design/transistor-basics/">
-              Continue to Transistor Basics <span aria-hidden="true">&rarr;</span>
+              Start the Pipelined CPU Physical Design <span aria-hidden="true">&rarr;</span>
             </a>
           </div>
         </div>
@@ -730,6 +738,86 @@
        lines of the listing it describes (see scripts/code-explorer.js). -->
   <script src="../../scripts/code-explorer.js" defer></script>
 
+  <!-- Confetti celebration for finishing the module: a self-contained canvas
+       burst that rains from the top of the screen under gravity, with drift and
+       spin. No external library, so nothing can fail to load. Skipped entirely
+       for users who prefer reduced motion. -->
+  <script>
+  (function () {
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.launchConfetti = function () {
+      if (reduce) return;
+      var colors = ["#b794f6", "#6B2FC9", "#86efac", "#4ec9b0", "#f4a5d0", "#ffd166", "#63c7ff"];
+      var canvas = document.createElement("canvas");
+      canvas.setAttribute("aria-hidden", "true");
+      canvas.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999";
+      document.body.appendChild(canvas);
+      var ctx = canvas.getContext("2d");
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      function W() { return window.innerWidth; }
+      function H() { return window.innerHeight; }
+      function resize() {
+        canvas.width = W() * dpr;
+        canvas.height = H() * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      resize();
+      window.addEventListener("resize", resize);
+      function rand(a, b) { return a + Math.random() * (b - a); }
+      var parts = [];
+      for (var i = 0; i < 220; i++) {
+        parts.push({
+          x: rand(0, W()),
+          y: rand(-H() * 2, -10),          // staggered well above the top -> a longer, sustained fall
+          vx: rand(-1.4, 1.4),
+          vy: rand(1, 3),
+          size: rand(6, 12),
+          ratio: rand(0.45, 1),            // rectangles of varying aspect
+          round: Math.random() < 0.22,     // a few round pieces
+          color: colors[(Math.random() * colors.length) | 0],
+          rot: rand(0, Math.PI * 2),
+          vr: rand(-0.22, 0.22)
+        });
+      }
+      var gravity = 0.1, drag = 0.995, last = null;
+      function frame(t) {
+        if (last === null) last = t;
+        var dt = Math.min((t - last) / 16.67, 2);   // normalize to ~60fps steps
+        last = t;
+        ctx.clearRect(0, 0, W(), H());
+        for (var i = parts.length - 1; i >= 0; i--) {
+          var p = parts[i];
+          p.vy += gravity * dt;
+          p.vx *= Math.pow(drag, dt);
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.rot += p.vr * dt;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          if (p.round) {
+            ctx.beginPath();
+            ctx.arc(0, 0, p.size * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillRect(-p.size / 2, -p.size * p.ratio / 2, p.size, p.size * p.ratio);
+          }
+          ctx.restore();
+          if (p.y > H() + 40) parts.splice(i, 1);
+        }
+        if (parts.length) {
+          requestAnimationFrame(frame);
+        } else {
+          window.removeEventListener("resize", resize);
+          canvas.remove();
+        }
+      }
+      requestAnimationFrame(frame);
+    };
+  })();
+  </script>
+
   <!-- "Check yourself" quiz: color the chosen answer, show feedback, and reveal
        the continue button once the correct answer is picked. -->
   <script>
@@ -748,6 +836,7 @@
           feedback.classList.add("is-correct");
           if (next) next.classList.add("is-shown");
           quiz.classList.add("is-solved");
+          if (window.launchConfetti) window.launchConfetti();
         } else {
           btn.classList.add("is-wrong");
           feedback.textContent = "Incorrect, try again.";
