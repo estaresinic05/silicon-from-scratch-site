@@ -229,7 +229,7 @@
 
         <!-- The two-instruction sketch floats LEFT with the copy reading it on
              the right, in the same slot and at the same width the chart in the
-             section above takes. It is a landscape drawing at 1530x837, so it
+             section above takes. It is a landscape drawing at 1494x807, so it
              sits comfortably narrower than the time charts and `.chart-float`
              is still the right size for it. -->
         <div class="prose prose--flow">
@@ -251,12 +251,59 @@
             the arrow the branch would need points backwards in time, which is the
             one thing a forwarding path can never do.
           </p>
+        </div>
+
+        <!-- The load case, floated RIGHT so it alternates with the ALU sketch
+             above it and the copy reading it runs down the left. It is a taller
+             drawing than that one at 1919x1525, four datapaths stacked rather
+             than two, so it needs the room: on the shared `.chart-float` it is
+             646px wide and 514px tall, which is still shorter than the three
+             paragraphs reading it and is the difference between the stall
+             clouds being legible on the page and not. Its own `.prose--flow`
+             block, not the one above, because a flow-root contains its floats
+             and this one therefore starts below the left sketch instead of
+             sitting beside it. -->
+        <div class="prose prose--flow">
+          <figure class="flow-figure flow-figure--float-right chart-float enlarge-wide">
+            <img src="../../assets/pipelined-cpu/branch-forwarding-MEM.jpg"
+                 alt="Four copies of the pipeline datapath stacked one above the other. The load is on top, with a dot on the wire leaving its data memory into the MEM/WB register. Below it the branch is drawn twice, each time shaded green and labelled Stall, and a red line runs from that dot back and down to the IF/ID register in each of them, both labelled NOT POSSIBLE because they point backwards in time. The bottom copy is the branch after two stalls, and an orange line labelled POSSIBLE runs straight down from the same dot to its IF/ID register."
+                 decoding="async" />
+          </figure>
+
           <p>
             If a load sits immediately before a branch and the branch reads what
             it loaded, two stalls are needed instead of one, since the loaded
             value does not appear until the end of the <em>Memory</em> cycle and
             the branch wants it during <em>Decode</em>.
           </p>
+          <p>
+            The drawing beside this paragraph follows that case all the way
+            through. The load is on top, and the branch behind it is drawn twice
+            more, held still by a stall each time before it is allowed to decode.
+            The first red line is the forward the branch would need if it were
+            not stalled at all, and the second is the forward it would still need
+            after a single stall. Both of them point backwards in time, and that
+            is the whole reason one stall cannot close this particular gap.
+          </p>
+          <p>
+            Once the second stall has been inserted, the orange path is the one
+            that works. The loaded word is written into the MEM/WB pipeline
+            register at the end of the load's <em>Memory</em> cycle, and the
+            branch now reads its operands in the cycle after that, so the branch
+            forwarding unit can hand the value straight across. The price is two
+            dead cycles on every load that feeds a branch directly, which is a
+            strong reason for a compiler to schedule some independent instruction
+            between the two whenever it can find one.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= PUTTING IT ALL TOGETHER =================== -->
+    <section class="section" id="hardware" aria-labelledby="hw-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="hw-title">Putting It All Together</h2>
         </div>
 
         <div class="prose prose--full">
@@ -268,46 +315,60 @@
             the IF/ID pipeline register. When the branch is taken we
             <strong>flush</strong> that register, which means forcing its contents
             to zero so that the instruction it held decodes as a
-            <em>nop</em> and travels the rest of the pipeline writing nothing. It
-            is the same trick the stall used in the last lesson, applied to a
-            different register and for a different reason. A stall zeroes the
-            control fields to hold an instruction still, while a flush zeroes a
-            whole fetched instruction to make it disappear.
+            <em>nop</em> and travels the rest of the pipeline writing nothing.
+          </p>
+          <p>
+            The other half of the job is holding the program counter. Whenever the
+            pipeline stalls, whether for a load feeding the instruction behind it
+            or for a branch still waiting on an operand, the PC must be
+            <strong>held</strong> from writing for that cycle and the IF/ID
+            register has to be held with it. If the counter were allowed to
+            advance, the instruction the stall was protecting would be replaced by
+            the next one before it had ever been used, and the cycle the stall
+            bought would be spent on the wrong instruction. So a stall zeroes the
+            control fields and freezes the PC to hold an instruction still, while a
+            flush zeroes a whole fetched instruction to make it disappear, and the
+            two modules below are the hardware that decides when each one fires.
+          </p>
+          <p>
+            Only one of the two ends up inside a module. Holding the pipeline
+            still is a decision made by comparing register numbers, which is what
+            a hazard unit does, while the flush is driven straight off the taken
+            signal coming out of the comparator in <em>Decode</em>. They reach the
+            same register from two different places, so keeping them apart is what
+            stops one being read as the other.
           </p>
         </div>
-      </div>
-    </section>
 
-    <!-- ============================== THE HARDWARE ======================= -->
-    <section class="section" id="hardware" aria-labelledby="hw-title">
-      <div class="container container--wide">
-        <div class="section__head">
-          <h2 id="hw-title">The Hardware for Both</h2>
-        </div>
+        <!-- CODE EXPLORER - both modules in one box so the section fits a
+             screen: the tabs swap between them and only one is on the page at a
+             time, and the commentary that used to run down a column beside each
+             listing is now a set of notes that light the lines they describe.
+             Behaviour is in scripts/code-explorer.js, styling in styles/alu.css.
 
-        <!-- Read-only Verilog, the `.code-editor--static` pattern
-             single-cycle-cpu/control-unit established and both blocks on Data
-             Hazards follow. The tok-* spans are hand-authored rather than
-             produced by verilog-mini.js, so this page loads neither
-             verilog-mini.js nor gate-card.js. main.js adds the Copy button to
-             every .code-editor, so both of these still get one. Parentheses are
-             left unclassed, matching those pages.
+             The listings themselves are unchanged: the same read-only
+             `.code-editor--static` figures with hand-authored tok-* spans that
+             the Data Hazards blocks use, so main.js still finds them and gives
+             each one its Copy button. code-explorer.js wraps each line in a
+             `.code-line` span at run time and separates them with a
+             `display: none` newline span, which is why Copy still yields the
+             module exactly as typed. -->
+        <div class="code-explorer" id="hw-explorer">
+          <div class="code-explorer__tabs" role="tablist" aria-label="The two new modules">
+            <button class="code-explorer__tab" type="button" role="tab" id="tab-bfu"
+                    aria-controls="panel-bfu" aria-selected="true">branch_forwarding_unit</button>
+            <button class="code-explorer__tab" type="button" role="tab" id="tab-hdu"
+                    aria-controls="panel-hdu" aria-selected="false" tabindex="-1">hazard_detection_unit</button>
+          </div>
 
-             Module left, the copy that reads it right, on the shared
-             `.split--media-left` variant, so it needs no page CSS and mobile.css
-             already stacks it at the line. The width is inline on each figure:
-             the column is `minmax(0, auto)`, so the code's own width is what
-             sizes the track, and every rem added here is a rem off the copy
-             column beside it. Both numbers were measured against the block's own
-             `max-content` rather than copied from the other. -->
-        <div class="split split--media-left">
-        <figure class="code-editor code-editor--static" style="width: 28rem; max-width: 100%;">
-          <figcaption class="code-editor__bar">
-            <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
-            <span class="code-editor__lang">Verilog HDL</span>
-          </figcaption>
-          <div class="code-editor__body">
-            <pre class="code-editor__hl"><code><span class="tok-kw">module</span> <span class="tok-type">branch_forwarding_unit</span> (
+          <div class="code-explorer__panel" role="tabpanel" id="panel-bfu" aria-labelledby="tab-bfu">
+            <figure class="code-editor code-editor--static code-explorer__code">
+              <figcaption class="code-editor__bar">
+                <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+                <span class="code-editor__lang">Verilog HDL</span>
+              </figcaption>
+              <div class="code-editor__body">
+                <pre class="code-editor__hl"><code><span class="tok-kw">module</span> <span class="tok-type">branch_forwarding_unit</span> (
     <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IFID_rs1,
     <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IFID_rs2,
     <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] EXMEM_rd,
@@ -341,54 +402,50 @@
   <span class="tok-kw">end</span>
 
 <span class="tok-kw">endmodule</span></code></pre>
+              </div>
+            </figure>
+
+            <div class="code-explorer__notes">
+              <p class="code-explorer__hint">Pick a note to light the lines it is about.</p>
+            <button class="code-note" type="button" data-lines="2-3" aria-pressed="false">
+              <span class="code-note__head">
+                <span class="code-note__title">The sources moved a stage earlier</span>
+                <span class="code-note__lines">lines 2-3</span>
+              </span>
+              <span class="code-note__body">The same shape as the first forwarding unit, one stage earlier. Because the comparator now sits in <em>Decode</em>, the sources are <code class="fld-rs1">IF/ID_rs1</code> and <code class="fld-rs2">IF/ID_rs2</code> rather than the ID/EX pair.</span>
+            </button>
+            <button class="code-note" type="button" data-lines="8-9" aria-pressed="false">
+              <span class="code-note__head">
+                <span class="code-note__title">One select per operand</span>
+                <span class="code-note__lines">lines 8-9</span>
+              </span>
+              <span class="code-note__body">Each operand of the comparison gets its own two-bit select. A value of <code>2'b00</code> leaves the comparator reading the register file as normal, <code>2'b10</code> takes the operand from the EX/MEM pipeline register, and <code>2'b01</code> takes it from MEM/WB.</span>
+            </button>
+            <button class="code-note" type="button" data-lines="18-19" aria-pressed="false">
+              <span class="code-note__head">
+                <span class="code-note__title">The two guards that make it correct</span>
+                <span class="code-note__lines">lines 18-19</span>
+              </span>
+              <span class="code-note__body">A destination is only worth matching if the instruction carrying it is actually going to write a register, so both tests qualify on <code class="ctrl-sig">regWrite</code>. Register zero is excluded as well, because a write to <em>x0</em> never changes what a read of <em>x0</em> returns.</span>
+            </button>
+            <button class="code-note" type="button" data-lines="18-23" aria-pressed="false">
+              <span class="code-note__head">
+                <span class="code-note__title">EX/MEM is tested before MEM/WB</span>
+                <span class="code-note__lines">lines 18-23</span>
+              </span>
+              <span class="code-note__body">When both pipeline registers hold a write to the same source, the order of the test decides the answer, and EX/MEM has to win. The instruction sitting in <em>Memory</em> is the more recent of the two writers, so its value is the one the branch is entitled to see.</span>
+            </button>
+            </div>
           </div>
-        </figure>
 
-        <div class="prose">
-          <p>
-            The branch forwarding unit is the same shape as the one that feeds the
-            ALU, and deliberately so. It reads two source register numbers and
-            compares them against the destinations held in the two pipeline
-            registers downstream, and it produces one select per operand. Only the
-            names have moved a stage earlier: the sources are
-            <code class="fld-rs1">IF/ID_rs1</code> and
-            <code class="fld-rs2">IF/ID_rs2</code> rather than the ID/EX pair,
-            because the comparator now sits in <em>Decode</em>.
-          </p>
-          <p>
-            The two guards that made the first forwarding unit correct are still
-            here and still doing the same jobs. A destination is only worth
-            matching if the instruction that carries it is actually going to write
-            a register, so both tests qualify on
-            <code class="ctrl-sig">regWrite</code>, and register zero is excluded
-            because a write to <em>x0</em> never changes what a read of
-            <em>x0</em> returns. EX/MEM is tested before MEM/WB for the same
-            reason as before, which is that the instruction in <em>Memory</em> is
-            the more recent of the two writers.
-          </p>
-        </div>
-        </div>
-
-        <div class="prose prose--full">
-          <p>
-            The hazard detection unit grows to match. It kept one condition
-            through the last lesson, the load-use case, and it now carries two
-            more, both of them for a branch whose operand is still in flight.
-            Notice that the new pair qualifies on
-            <code class="ctrl-sig">regWrite</code> rather than on
-            <code class="ctrl-sig">memRead</code>, because any instruction that
-            writes a register can leave a branch waiting, not only a load.
-          </p>
-        </div>
-
-        <div class="split split--media-left">
-        <figure class="code-editor code-editor--static" style="width: 30rem; max-width: 100%;">
-          <figcaption class="code-editor__bar">
-            <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
-            <span class="code-editor__lang">Verilog HDL</span>
-          </figcaption>
-          <div class="code-editor__body">
-            <pre class="code-editor__hl"><code><span class="tok-kw">module</span> <span class="tok-type">hazard_detection_unit</span> (
+          <div class="code-explorer__panel" role="tabpanel" id="panel-hdu" aria-labelledby="tab-hdu" hidden>
+            <figure class="code-editor code-editor--static code-explorer__code">
+              <figcaption class="code-editor__bar">
+                <span class="code-editor__glyph" aria-hidden="true">&lt;/&gt;</span>
+                <span class="code-editor__lang">Verilog HDL</span>
+              </figcaption>
+              <div class="code-editor__body">
+                <pre class="code-editor__hl"><code><span class="tok-kw">module</span> <span class="tok-type">hazard_detection_unit</span> (
     <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IFID_rs1,
     <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IFID_rs2,
     <span class="tok-kw">input</span>  <span class="tok-kw">wire</span> [<span class="tok-num">4</span>:<span class="tok-num">0</span>] IDEX_rd,
@@ -440,41 +497,63 @@
   <span class="tok-kw">end</span>
 
 <span class="tok-kw">endmodule</span></code></pre>
-          </div>
-        </figure>
+              </div>
+            </figure>
 
-        <div class="prose">
+            <div class="code-explorer__notes">
+              <p class="code-explorer__hint">Pick a note to light the lines it is about.</p>
+            <button class="code-note" type="button" data-lines="10-12" aria-pressed="false">
+              <span class="code-note__head">
+                <span class="code-note__title">Three outputs, one stall</span>
+                <span class="code-note__lines">lines 10-12</span>
+              </span>
+              <span class="code-note__body">All three conditions drive the same three signals. <code class="ctrl-sig">pcWrite</code> low holds the program counter, <code class="ctrl-sig">write</code> low holds IF/ID so <em>Decode</em> keeps seeing the same instruction, and <code class="ctrl-sig">stall</code> high zeroes the control fields entering ID/EX so the bubble writes nothing.</span>
+            </button>
+            <button class="code-note" type="button" data-lines="21-29" aria-pressed="false">
+              <span class="code-note__head">
+                <span class="code-note__title">The load-use case, carried over</span>
+                <span class="code-note__lines">lines 21-29</span>
+              </span>
+              <span class="code-note__body">The condition the last lesson built, unchanged. A load is in <em>Execution</em> and the instruction behind it in <em>Decode</em> wants the register the load is about to fill, so the pipeline waits a cycle and forwarding covers the rest.</span>
+            </button>
+            <button class="code-note" type="button" data-lines="31-39" aria-pressed="false">
+              <span class="code-note__head">
+                <span class="code-note__title">A branch waiting on an ALU result</span>
+                <span class="code-note__lines">lines 31-39</span>
+              </span>
+              <span class="code-note__body">This one qualifies on <code class="ctrl-sig">regWrite</code> rather than <code class="ctrl-sig">memRead</code>, because any instruction that writes a register can leave a branch waiting, not only a load. One stall is enough, since the producer reaches EX/MEM while the branch is held.</span>
+            </button>
+            <button class="code-note" type="button" data-lines="41-49" aria-pressed="false">
+              <span class="code-note__head">
+                <span class="code-note__title">A branch waiting on a load</span>
+                <span class="code-note__lines">lines 41-49</span>
+              </span>
+              <span class="code-note__body">The two branch tests are separate because they are separate cycles of the same wait. After the first stall a load producer has moved from <em>Execution</em> into <em>Memory</em>, where this condition catches it again and holds the branch one more cycle.</span>
+            </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="prose prose--full">
           <p>
-            Each of the three conditions drives the same three outputs, and they
-            do between them what a stall has always done on this pipeline.
-            <code class="ctrl-sig">pcWrite</code> going low holds the program
-            counter so the same instruction is fetched again,
-            <code class="ctrl-sig">write</code> going low holds the IF/ID register
-            so <em>Decode</em> keeps seeing the instruction it was already
-            looking at, and <code class="ctrl-sig">stall</code> going high zeroes
-            the control fields entering ID/EX so the bubble that moves down the
-            pipeline writes nothing.
-          </p>
-          <p>
-            The two branch conditions are written as separate tests rather than
-            folded into one because they are separate cycles of the same wait. An
-            ALU producer one instruction ahead trips the first and costs a single
-            stall. A load producer trips the second, and after that first stall
-            the load has advanced from <em>Execution</em> into <em>Memory</em>,
-            where the third condition catches it again and buys the second stall
-            the load needs.
-          </p>
-          <p>
-            The flush is not in this module, and that is deliberate. Holding the
-            pipeline still is a decision made by comparing register numbers,
-            which is what a hazard unit does, while flushing IF/ID is driven
-            directly by the taken signal coming out of the comparator in
-            <em>Decode</em>. They arrive at the same register from two different
-            places, so keeping them apart is what stops one being read as the
-            other.
+            With both of those in place the datapath is finished, and it is worth
+            seeing the whole of it at once. The comparator and its adder have moved
+            up into <em>Decode</em>, the branch forwarding unit feeds them from the
+            two pipeline registers downstream, the hazard detection unit holds the
+            PC and the IF/ID register when an operand is not ready yet, and the
+            taken signal runs back to flush the one instruction that was fetched
+            behind a branch that turned out to be taken.
           </p>
         </div>
-        </div>
+
+        <!-- The finished pipeline at the end of the section, on the standard
+             full-column 68rem plate the other whole-datapath drawings in this
+             project use. -->
+        <figure class="figure enlarge-wide" style="max-width: 68rem; margin-inline: auto;">
+          <img src="../../assets/pipelined-cpu/pipelined-cpu-architecture.jpg"
+               alt="The complete pipelined datapath. The five stages run left to right, separated by the IF/ID, ID/EX, EX/MEM and MEM/WB pipeline registers. In Decode a comparator and its own adder resolve the branch, fed by a branch forwarding unit that selects between the register file, the EX/MEM register and the MEM/WB register. A hazard detection unit reads the source and destination register numbers and drives the PC write enable, the IF/ID write enable and the control-zeroing path into ID/EX. The taken signal from Decode runs back to flush the IF/ID register, and the original forwarding unit still feeds the ALU inputs in Execution."
+               decoding="async" />
+        </figure>
       </div>
     </section>
 
@@ -517,7 +596,7 @@
              at 1395x1095, not a dense time chart, so the wider float would only
              cost the copy beside it a column it does not need to give up. -->
         <div class="prose prose--flow">
-          <figure class="flow-figure flow-figure--float-right enlarge-wide">
+          <figure class="flow-figure flow-figure--float-right chart-float enlarge-wide">
             <img src="../../assets/pipelined-cpu/predictor-fsm.jpg"
                  alt="A four-state machine drawn as ellipses. The two on the upper half both read Predict Taken and the two on the lower half both read Predict Not Taken. The upper-left state loops back to itself on Taken and moves right on Not Taken; the upper-right state returns left on Taken and drops to the lower-right state on Not Taken. The lower-right state climbs back up on Taken and moves left on Not Taken, and the lower-left state loops back to itself on Not Taken and returns right on Taken."
                  decoding="async" />
@@ -641,6 +720,10 @@
   <!-- Enlarge: static figure images pop on hover and open enlarged on a
        blurred backdrop when clicked (see scripts/enlarge.js). -->
   <script src="../../scripts/enlarge.js" defer></script>
+
+  <!-- Code explorer: the two modules share one box, and each note lights the
+       lines of the listing it describes (see scripts/code-explorer.js). -->
+  <script src="../../scripts/code-explorer.js" defer></script>
 
   <!-- "Check yourself" quiz: color the chosen answer, show feedback, and reveal
        the continue button once the correct answer is picked. -->

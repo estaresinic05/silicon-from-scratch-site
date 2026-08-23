@@ -2454,20 +2454,203 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
    CONTROL HAZARDS (pipelined-cpu/control-hazards)
  * ------------------------------------------------------------------ */
 
-/* Both Verilog modules in "The Hardware for Both" are top-aligned with the copy
-   beside them, the treatment `#golden-model` uses for its tall portrait sketch
-   and for the same reason. These are listings rather than diagrams: 775px for
-   the branch forwarding unit and 1155px for the hazard detection unit, against
-   411px and 600px of copy at 1440. Centred, the note beside the taller one
-   starts 277px down the page with nothing above it, which reads as a mistake
-   rather than as a note. Top-aligned it starts level with the module line and
-   runs down, and the gap lands at the bottom where a listing running on past
-   its commentary is what a reader expects.
+/* CODE EXPLORER — the two modules of "Putting It All Together" in one box.
 
-   No counterpart is needed at the narrow end. At 901 the columns invert, 906
-   against 775 and 1359 against 1155, so the copy is the taller side and the
-   modules top out either way. */
-#hardware .split { align-items: start; }
+   This replaced two stacked `.split--media-left` blocks, which between them ran
+   1155px and 775px of listing with a column of commentary beside each: the
+   section was three screens tall and the reader had to hold a paragraph in mind
+   while hunting for the lines it was about. Here only one module is on the page
+   at a time, the box is capped to a screen, and the commentary is a set of notes
+   that light their own lines in the listing.
+
+   Behaviour is scripts/code-explorer.js. Nothing here depends on it having run:
+   with the script blocked, both panels still render as ordinary listings with
+   their notes beside them, and only the highlighting is missing. */
+.code-explorer {
+  margin-top: var(--space-4);
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* Module switch. Pills, because they are actions (STYLE_GUIDE), and the selected
+   one takes `--fill` rather than `--accent`: it is a background carrying white
+   text, which is the whole distinction between the two purples. */
+.code-explorer__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--hairline);
+}
+.code-explorer__tab {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  padding: 0.5rem 1rem;
+  color: var(--soft-ink);
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.18s var(--ease), background 0.18s var(--ease),
+              border-color 0.18s var(--ease);
+}
+.code-explorer__tab:hover { color: var(--ink); border-color: var(--accent); }
+.code-explorer__tab[aria-selected="true"] {
+  color: #fff;
+  background: var(--fill);
+  border-color: var(--fill);
+}
+
+/* Listing left, notes right. `minmax(0, …)` on the code track so a long line
+   scrolls inside the panel instead of widening the grid. */
+.code-explorer__panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(17rem, 0.95fr);
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+.code-explorer__panel[hidden] { display: none; }
+
+/* The cap that makes the section fit a screen, and the reason both panels are
+   the same height.
+
+   A fixed `height` and not a `max-height`: the two modules are 34 and 52 lines,
+   so a cap alone gives two boxes of different heights and the tab swap becomes a
+   jump. Fixed, both listings are exactly one screenful and the longer one simply
+   scrolls further. `align-self: start` for the same reason — stretching the
+   figure to the notes column made its height depend on how much commentary that
+   panel happened to carry, which is what put them 218px apart. The notes are cut
+   to fit this height instead; see the panel rule above. */
+.code-explorer__code { align-self: start; width: 100%; }
+.code-explorer__code .code-editor__body {
+  /* `flex: none` first, and it is what makes the height stick. The body is a
+     flex item of the editor card at `flex: 1`, which is `flex-basis: 0` plus
+     grow, and a flex basis beats `height` on the main axis — so the height was
+     ignored and the box grew to its content. The old `max-height` appeared to
+     work only because a max clamps whatever the flex algorithm produced. */
+  flex: none;
+  min-height: 0;
+  height: min(58vh, 32rem);
+  overflow: auto;
+}
+/* The listing is as wide as its longest line so a lit line's background reaches
+   the end of that line rather than stopping at the edge of the visible box.
+
+   The width goes on the <pre> and NOT on the <code> inside it, and the lines
+   take no negative margin. Both of those are deliberate: `.code-line` is a block
+   and resolves its width against the nearest block container, so widening the
+   <pre> is what makes a long line's highlight run the whole line, while widening
+   the <code> instead leaves its own children hanging out of a box that now has a
+   real width, which is exactly the shape tools/text-conflicts.py reports as a
+   spill. The panel still scrolls horizontally on its own, as every static code
+   block on the site does. */
+.code-explorer__code .code-editor__hl {
+  width: max-content;
+  min-width: 100%;
+}
+
+/* One line of a listing. The number is generated content, so it is drawn but
+   never copied — see the header comment in code-explorer.js. */
+.code-line { display: block; }
+.code-line::before {
+  content: attr(data-line);
+  display: inline-block;
+  width: 2.2em;
+  margin-right: 1.1em;
+  text-align: right;
+  color: #6e7681;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.code-nl { display: none; }
+.code-line.is-lit {
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+  box-shadow: inset 0.18rem 0 0 var(--accent);
+}
+.code-line.is-lit::before { color: #cfcfcf; }
+
+/* The notes column, capped to the same screenful as the listing beside it.
+
+   The notes are written to fit that height at the container's full width, and at
+   1440 they come in at 530 against the listing's 546. The cap is for the widths
+   under it: the column narrows, the copy rewraps taller, and by 901 the same four
+   notes stand 837px. Without it the box grows there, and grows by a different
+   amount on each tab, so swapping modules jumps the page. With it both panels are
+   exactly one screenful at every width and the overflow scrolls, which is the
+   treatment the listing already gets.
+
+   Lifted again on a phone, in mobile.css: the columns stack there, so there is no
+   second column to match and a nested scroller inside a page that already scrolls
+   is the wrong thing to hand a thumb. */
+.code-explorer__notes {
+  display: grid;
+  align-content: start;
+  gap: 0.5rem;
+  max-height: min(58vh, 32rem);
+  overflow-y: auto;
+}
+.code-explorer__hint {
+  margin: 0 0 0.15rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--soft-ink);
+}
+.code-note {
+  display: grid;
+  gap: 0.3rem;
+  text-align: left;
+  padding: 0.65rem 0.85rem;
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-left: 3px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.18s var(--ease), border-color 0.18s var(--ease);
+}
+.code-note:hover { border-color: var(--accent); }
+.code-note.is-active {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  border-left-color: var(--accent);
+}
+.code-note__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.code-note__title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.code-note.is-active .code-note__title { color: var(--accent); }
+.code-note__lines {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--soft-ink);
+}
+.code-note__body {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--soft-ink);
+}
+.code-note.is-active .code-note__body { color: var(--ink); }
+/* Inline code inside a note keeps the prose treatment rather than the listing's,
+   the same override `.hazard-box code` makes just above. */
+.code-note__body code { font-size: 0.86em; }
 
 /* ------------------------------------------------------------------ *
    CHECK-YOURSELF QUIZ — a multiple-choice widget: a diagram, four answer
