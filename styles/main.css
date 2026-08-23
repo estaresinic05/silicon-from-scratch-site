@@ -2882,7 +2882,10 @@ code.ctrl-sig,
    HOW TO GET STARTED — intro copy + a "Open the Project Directory"
    button with a nudge alongside it.
  * ------------------------------------------------------------------ */
-.getstarted { max-width: 62rem; margin-inline: auto; }
+/* 72rem, not the 62rem it used to be, so the three "keep learning" cards below
+   are wide enough for "Learn the Single Cycle CPU" to sit on one line beside its
+   arrow. The lead paragraph keeps its own 60rem measure and is unaffected. */
+.getstarted { max-width: 72rem; margin-inline: auto; }
 /* The main line — same treatment as the Hands On intro paragraph. */
 .getstarted__lead {
   max-width: 60rem;

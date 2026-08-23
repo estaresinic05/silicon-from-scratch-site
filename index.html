@@ -95,19 +95,23 @@
        is scoped to max-width 768px, so desktop is untouched. -->
   <link rel="stylesheet" href="styles/mobile.css" />
 
-  <!-- "Keep learning" cards in How to Get Started — the same two project
+  <!-- "Keep learning" cards in How to Get Started — the same three project
        widgets as the Coming Soon page (which keeps its own copy of these
        rules; if you tweak one, tweak both). -->
   <style>
     .learn-cards {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: var(--space-4);
       width: 100%;
-      max-width: 50rem;
+      max-width: 72rem;
       margin: var(--space-4) auto 0;
     }
-    @media (max-width: 640px) { .learn-cards { grid-template-columns: 1fr; } }
+    /* One column on a phone, capped so the card keeps roughly the width it has
+       on the desktop. Same numbers as the Coming Soon page. */
+    @media (max-width: 900px) {
+      .learn-cards { grid-template-columns: 1fr; max-width: 28rem; }
+    }
 
     .learn-card {
       display: flex;
@@ -167,6 +171,12 @@
     .learn-card[href*="single-cycle-cpu"] .learn-card__collage { grid-template-columns: 1.4fr 1fr; }
     .learn-card[href*="single-cycle-cpu"] .learn-card__collage img:nth-child(2) { object-position: top; padding: 4px; }
     .learn-card[href*="single-cycle-cpu"] .learn-card__collage img:nth-child(3) { object-position: top; padding: 8px; }
+    /* Pipelined CPU brick tweaks: the forwarding unit is a 2.29 ratio drawing and
+       the dependence chart is 1.29, so an even split letterboxes the first and
+       pillarboxes the second. Widening the left brick to 1.35fr and trimming its
+       padding spends the difference where it buys size. */
+    .learn-card[href*="pipelined-cpu"] .learn-card__collage { grid-template-columns: 1.35fr 1fr; }
+    .learn-card[href*="pipelined-cpu"] .learn-card__collage img:nth-child(2) { padding: 6px; }
 
     .learn-card__foot {
       display: flex;
@@ -591,21 +601,21 @@ endmodule</textarea>
               </div>
             </div>
 
-            <div class="alu-controls__group" role="group" aria-label="Control bits">
+            <div class="alu-controls__group" aria-label="control[3:0] for the selected operation">
               <span class="alu-controls__label">control[3:0]</span>
               <div class="alu-bits">
-                <button class="alu-bit" type="button" data-bit="3" aria-pressed="false" aria-label="control bit 3, Ainvert">
+                <span class="alu-bit" data-bit="3" data-on="0">
                   <span class="alu-bit__name">Ainv</span><span class="alu-bit__val">0</span>
-                </button>
-                <button class="alu-bit" type="button" data-bit="2" aria-pressed="false" aria-label="control bit 2, Bnegate">
+                </span>
+                <span class="alu-bit" data-bit="2" data-on="0">
                   <span class="alu-bit__name">Bneg</span><span class="alu-bit__val">0</span>
-                </button>
-                <button class="alu-bit" type="button" data-bit="1" aria-pressed="false" aria-label="control bit 1, Operation high">
+                </span>
+                <span class="alu-bit" data-bit="1" data-on="0">
                   <span class="alu-bit__name">Op1</span><span class="alu-bit__val">0</span>
-                </button>
-                <button class="alu-bit" type="button" data-bit="0" aria-pressed="false" aria-label="control bit 0, Operation low">
+                </span>
+                <span class="alu-bit" data-bit="0" data-on="0">
                   <span class="alu-bit__name">Op0</span><span class="alu-bit__val">0</span>
-                </button>
+                </span>
               </div>
             </div>
 
@@ -685,7 +695,7 @@ endmodule</textarea>
             your way through them in order. You don't learn to ride a bike by
             reading about it! Get going!
           </p>
-          <!-- Two "keep learning" cards (same widgets as the Coming Soon
+          <!-- Three "keep learning" cards (same widgets as the Coming Soon
                page): a photo-collage of each project's diagrams above its
                title, linking into the first lesson of each. -->
           <div class="learn-cards">
@@ -709,6 +719,18 @@ endmodule</textarea>
               </span>
               <span class="learn-card__foot">
                 <span class="learn-card__title">Learn the Single Cycle CPU</span>
+                <span class="learn-card__arrow" aria-hidden="true">&rarr;</span>
+              </span>
+            </a>
+
+            <a class="learn-card" href="pipelined-cpu/pipelining/">
+              <span class="learn-card__collage learn-card__collage--3" aria-hidden="true">
+                <img src="assets/pipelined-cpu/pipelined-cpu-architecture.jpg" alt="" decoding="async" />
+                <img src="assets/pipelined-cpu/forwarding-unit.jpg" alt="" decoding="async" />
+                <img src="assets/pipelined-cpu/forwarding-dependences.jpg" alt="" decoding="async" />
+              </span>
+              <span class="learn-card__foot">
+                <span class="learn-card__title">Learn the Pipelined CPU</span>
                 <span class="learn-card__arrow" aria-hidden="true">&rarr;</span>
               </span>
             </a>
