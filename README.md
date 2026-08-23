@@ -96,3 +96,9 @@ codes are shown literally per their bits (labelled e.g. `control=1011`).
 - All internal links are relative, so the site is ready for a custom domain later
   with no file changes.
 - Motion is restrained and fully disabled under `prefers-reduced-motion`.
+
+## License
+
+The **code** is MIT licensed, see [`LICENSE`](LICENSE). The **lessons, figures,
+video, Verilog listings and the Silicon From Scratch name and logo** are all
+rights reserved, see [`LICENSE-CONTENT.md`](LICENSE-CONTENT.md).

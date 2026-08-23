@@ -2269,6 +2269,26 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
   text-decoration: underline;
 }
 
+/* Copyright and trademark line. Same voice as the credits, last thing on the
+   page, with a hairline above so it reads as the site's own notice rather than
+   as one more attribution. */
+.footer__legal {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--hairline);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  line-height: 1.7;
+  color: var(--soft-ink);
+  opacity: 0.85;
+}
+.footer__legal a {
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-decoration: underline;
+}
+
 /* ------------------------------------------------------------------ *
    16. MOTION — Phase 2: scroll-driven reveals (GSAP + ScrollTrigger)
    CSS here defines ONLY the pre-reveal hidden state, and ONLY when the

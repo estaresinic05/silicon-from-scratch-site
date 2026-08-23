@@ -995,6 +995,14 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 }
 
 #credit-panel p + p { margin-top: .7em; color: rgba(184, 192, 205, .82); }
+/* The copyright and trademark notice, set off from the attribution above it by
+   the same hairline the specs use, so the panel reads as specs, credits, then
+   the site's own claim. */
+.credit-legal {
+  padding-top: .7em;
+  border-top: 1px solid var(--line);
+  font-size: .92em;
+}
 @keyframes creditIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 /* ------------------------------------------------------------------ *
