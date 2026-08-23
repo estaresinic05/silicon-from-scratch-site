@@ -1,28 +1,29 @@
-MIT License
+Copyright (c) 2026 Elliot Staresinic. All rights reserved.
 
-Copyright (c) 2026 Elliot Staresinic
+This repository holds the source of the Silicon From Scratch website,
+published at https://siliconfromscratch.com. It is public so that the site
+can be served from it and so that its construction can be read. It is not
+open source.
 
-This license covers the SOURCE CODE of the Silicon From Scratch website only:
-the HTML structure, CSS, and JavaScript in this repository, including the
-scripts under tools/ and meet-the-processor/verify/. It does NOT cover the
-lessons, prose, figures, diagrams, photographs, video, audio, logos, or the
-"Silicon From Scratch" name and branding. Those are governed by
-LICENSE-CONTENT.md in this repository and are all rights reserved.
+No part of it may be copied, modified, republished, mirrored, redistributed,
+used to train a model, or used as the basis of another site, course or
+product without written permission from the author. That covers the HTML,
+CSS and JavaScript; the lessons, quizzes and all other prose; the figures,
+diagrams, die images and photographs; the video and audio; the Verilog shown
+in the lessons; and the tooling under tools/ and meet-the-processor/verify/.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+"Silicon From Scratch", the wordmark and the logo are trademarks of Elliot
+Staresinic and may not be used to describe any other work, or in any way that
+suggests endorsement or affiliation.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+You may link to any page, read the site to learn, and quote short passages
+for commentary or review with attribution and a link.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Some material is used under its owners' terms and remains theirs: processor
+die photography by Fritzchens Fritz (CC0 1.0); figures adapted from Patterson
+and Hennessy, Computer Organization and Design, RISC-V Edition; stock imagery
+credited where it appears; GSAP, loaded from a CDN under its own license; and
+Three.js, vendored under meet-the-processor/vendor/ under the MIT License.
+
+For permission, open an issue on this repository or contact the author
+through https://github.com/estaresinic05.

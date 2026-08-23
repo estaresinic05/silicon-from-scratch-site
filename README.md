@@ -99,6 +99,7 @@ codes are shown literally per their bits (labelled e.g. `control=1011`).
 
 ## License
 
-The **code** is MIT licensed, see [`LICENSE`](LICENSE). The **lessons, figures,
-video, Verilog listings and the Silicon From Scratch name and logo** are all
-rights reserved, see [`LICENSE-CONTENT.md`](LICENSE-CONTENT.md).
+All rights reserved, see [`LICENSE`](LICENSE). The repository is public so the
+site can be served from it and its construction read, not so it can be reused.
+The hardware designs, which are open, live in
+[Silicon-From-Scratch](https://github.com/estaresinic05/Silicon-From-Scratch).

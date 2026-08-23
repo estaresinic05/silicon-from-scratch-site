@@ -2283,11 +2283,6 @@ html.cpu-ready .cpu-stage__fallback { display: none; }
   color: var(--soft-ink);
   opacity: 0.85;
 }
-.footer__legal a {
-  font-size: inherit;
-  letter-spacing: inherit;
-  text-decoration: underline;
-}
 
 /* ------------------------------------------------------------------ *
    16. MOTION — Phase 2: scroll-driven reveals (GSAP + ScrollTrigger)

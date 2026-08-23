@@ -726,13 +726,6 @@
     align-items: center;
     min-height: 44px;
   }
-  /* Not the two links inside the copyright line, though. Those are words in a
-     sentence, and a 44px row in the middle of running text tears the paragraph
-     apart. The line is a notice, not a control; nobody is aiming for it. */
-  .footer__legal a {
-    display: inline;
-    min-height: 0;
-  }
 
   /* The code editor's toolbar buttons. 36px was already an improvement over
      the 15px they started at, but 36 is not 44 and this is the control that
