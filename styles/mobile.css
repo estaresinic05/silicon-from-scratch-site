@@ -640,17 +640,41 @@
     transform: translate(-50%, -50%);
   }
 
+  /* CODE EXPLORER (control-hazards) stacks: the listing first, its notes under
+     it. The screen cap comes down with it, because a panel that fills the phone
+     leaves the notes below the fold with no sign they are there. The tabs and
+     the notes are real controls, so they are sized in px here for the reason the
+     rest of this file is: the root steps to 13px on a phone. */
+  .code-explorer__panel { grid-template-columns: 1fr; }
+  .code-explorer__code .code-editor__body { height: min(46vh, 22rem); }
+  /* No cap on the notes here: stacked, they have the whole page to run down,
+     and a scroller nested inside a scrolling page is a trap on a phone. */
+  .code-explorer__notes { max-height: none; overflow: visible; }
+  /* min-height, not more padding: the pill is already the right shape and a
+     44px floor is what tools/tap-targets.py measures. */
+  .code-explorer__tab {
+    min-height: 44px;
+    padding: 11px 16px;
+    font-size: 12px;
+  }
+  .code-note { padding: 11px 13px; }
+  .code-note__title { font-size: 15px; }
+  .code-note__body { font-size: 14px; }
+  .code-note__lines { font-size: 10px; }
+  .code-line::before { width: 2.4em; margin-right: 0.9em; }
+
   /* Same treatment for the other genuinely-small controls: the signal chips
-     embedded in diagrams and the control bits, where the visual size is
-     semantic and must not change. */
+     embedded in diagrams and the Check Yourself control bits, where the visual
+     size is semantic and must not change. The ALU widget's .alu-bit is NOT in
+     this list: it is a readout of the selected preset's control pattern, not a
+     toggle, so there is nothing to tap and a 44px pad would only sit invisibly
+     over the diagram beside it. */
   .gate-sim__chip,
-  .ctrl-bit,
-  .alu-bit {
+  .ctrl-bit {
     position: relative;
   }
   .gate-sim__chip::after,
-  .ctrl-bit::after,
-  .alu-bit::after {
+  .ctrl-bit::after {
     content: "";
     position: absolute;
     top: 50%;

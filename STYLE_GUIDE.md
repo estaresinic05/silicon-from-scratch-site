@@ -870,7 +870,11 @@ the stylesheet in `<head>` and the script deferred before `</body>`:
 - `.alu-preset[data-code="N"]` — preset buttons; `data-code` is the **decimal**
   value of `control[3:0]`.
 - `.alu-bit[data-bit="k"]` each wrapping a `.alu-bit__val` — the four control-bit
-  toggles; `data-bit` is the bit position (`3`=Ainvert, `2`=Bnegate, `1:0`=Operation).
+  **readouts**; `data-bit` is the bit position (`3`=Ainvert, `2`=Bnegate,
+  `1:0`=Operation). These are display only. The reader chooses an operation with
+  the presets and the script writes the pattern here, setting `data-on="1"` on
+  each bit that is high. They are `<span>`s, not buttons, and take no hover, no
+  pointer cursor and no 44px phone tap pad.
 
 ### Markup — the control panel (the stable part)
 
@@ -892,12 +896,12 @@ The SVG stage is just the empty `#alu-diagram`; the panel is what you copy:
         <!-- OR=1, add=2, subtract=6, slt=7, NOR=12, NAND=13 -->
       </div>
     </div>
-    <div class="alu-controls__group" role="group" aria-label="Control bits">
+    <div class="alu-controls__group" aria-label="control[3:0] for the selected operation">
       <span class="alu-controls__label">control[3:0]</span>
       <div class="alu-bits">
-        <button class="alu-bit" type="button" data-bit="3" aria-pressed="false" aria-label="control bit 3, Ainvert">
+        <span class="alu-bit" data-bit="3" data-on="0">
           <span class="alu-bit__name">Ainv</span><span class="alu-bit__val">0</span>
-        </button>
+        </span>
         <!-- data-bit 2=Bneg, 1=Op1, 0=Op0 -->
       </div>
     </div>

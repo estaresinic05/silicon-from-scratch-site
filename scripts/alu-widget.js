@@ -10,7 +10,8 @@
      bottom. The gates/muxes/adder live INSIDE each box. Between the two boxes a
      "⋮" stands in for the 30 identical slices, with the carry chain and the
      MSB Set -> bit-0 Less feedback wired across.
-   - Wires the control panel (named-operation buttons + four control bits).
+   - Wires the control panel: the named-operation buttons choose the operation,
+     and the four control[3:0] cells display the pattern that choice sends in.
    - "Illuminates" the active datapath for the current control[3:0] value.
 
    HOW THE HIGHLIGHTING IS DRIVEN  (the one place you edit to change behavior)
@@ -694,12 +695,15 @@
     syncControls(code);
   }
 
+  /* The four control[3:0] cells are a READOUT, not a set of toggles: the reader
+     picks a named operation above and these show the bit pattern that operation
+     sends into the datapath. */
   function syncControls(code) {
-    bitEls.forEach(function (btn) {
-      var bit = +btn.getAttribute("data-bit");
+    bitEls.forEach(function (cell) {
+      var bit = +cell.getAttribute("data-bit");
       var on = (code >> bit) & 1;
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-      var v = btn.querySelector(".alu-bit__val");
+      cell.setAttribute("data-on", on ? "1" : "0");
+      var v = cell.querySelector(".alu-bit__val");
       if (v) v.textContent = on;
     });
     presetEls.forEach(function (btn) {
@@ -732,13 +736,6 @@
         applyHighlight(current);
       });
     });
-    bitEls.forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        current ^= (1 << +btn.getAttribute("data-bit"));
-        applyHighlight(current);
-      });
-    });
-
     applyHighlight(current);
   }
 
