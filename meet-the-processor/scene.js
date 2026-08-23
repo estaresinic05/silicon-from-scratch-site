@@ -3875,9 +3875,43 @@ const SUBJECTS = {
     'Surrounding the cache are the Zen 5 cores themselves, the parts of the processor responsible for executing instructions and doing the actual work of computation. Whether rendering graphics, compiling code, simulating physics, or running a game, nearly every task performed by the processor ultimately passes through these cores.',
     'On the die photograph, the cores appear as large, complex blocks filled with smaller structures dedicated to specific jobs: fetching instructions, making decisions about what comes next, performing calculations, and moving data where it needs to go. Together, billions of transistors work in concert, turning streams of electrical signals into the software and experiences we interact with every day.',
   ] },
-  'l3-cache': { title: 'L3 Cache', body: [
+  /* Two die shots side by side rather than one figure: the L3 is the block
+     whose shape changed most visibly between generations, and the pair lets a
+     reader see it. Zen 5 is this die; Zen 4 is the CCD it replaced. `figures`
+     is the plural form of `figure`, each entry carrying the label drawn above
+     its picture, and openSheet lays them out in a two-column grid under the
+     player, where the column is wide enough for the gaps to be seen. */
+  'l3-cache': { figure: {
+      src: 'assets/tsvs-web.jpg',
+      alt: 'A close micrograph of the L3 cache’s TSV rows: regular columns of through silicon via landing pads between the cache arrays.',
+      /* Pads traced by hand in prototypes/cpu-layers/trace.html on
+         tsvs-web.jpg, one `poly` per pad exactly as the tracer emitted it, in
+         u,v. Nothing is highlighted: each callout is one label at `at`, also
+         in u,v, with an arrow from it to every pad in its list, tipped at the
+         edge of the pad nearest the label so the head sits beside the pad
+         rather than on top of something 3px wide. The pads are single vias,
+         not rows, which is the point: this picture is close enough to see
+         one. */
+      callouts: [
+        { name: 'Databus TSVs', at: [0.11, 0.62], pads: [
+          [[0.2541,0.3351],[0.2541,0.3649],[0.2603,0.3649],[0.2603,0.3345]],
+          [[0.2849,0.3381],[0.2849,0.3655],[0.2919,0.3655],[0.2919,0.3354]],
+          [[0.3164,0.3345],[0.3164,0.3649],[0.3236,0.3649],[0.3236,0.3348]],
+        ] },
+        { name: 'Power/Ground TSVs', at: [0.62, 0.06], pads: [
+          [[0.356,0.3252],[0.356,0.3678],[0.3666,0.3678],[0.3666,0.3222]],
+          [[0.3774,0.324],[0.3774,0.3654],[0.3878,0.3654],[0.3878,0.3228]],
+        ] },
+      ],
+    }, figures: [
+      { label: 'Zen 5', src: 'assets/zen5-dieshot-web.jpg',
+        alt: 'Top-down die shot of the Zen 5 compute die, with its 32 MB L3 cache as the repeating array down the centre and the eight cores either side of it.' },
+      { label: 'Zen 4', src: 'assets/zen4-dieshot-web.jpg',
+        alt: 'Top-down die shot of the Zen 4 compute die, with the L3 cache as the repeating array down the centre and the eight cores either side of it.' },
+    ], title: 'L3 Cache', body: [
     'The first major structure that stands out is the L3 cache, a shared pool of 32 MB of ultra-fast memory sitting at the center of the CCD. Rather than storing long-term data, the cache acts as the processor’s working memory, keeping frequently used instructions and information close at hand so the cores don’t have to wait for data to arrive from elsewhere in the system.',
-    'On the die photograph, the L3 cache appears as large, orderly blocks of repeating patterns, dense arrays of tiny memory cells packed together with incredible precision. While the cores do the thinking, the cache keeps the information flowing, quietly feeding data to the processor fast enough to keep billions of operations moving every second.',
+    'On the die photograph, the L3 cache appears as large, orderly blocks of repeating patterns, dense arrays of tiny memory cells packed together with incredible precision. Comparing the two generations below shows how much that packing improved. From Zen 4 to Zen 5, AMD cut the L3 from about 24 mm² down to only 15.7 mm², shrinking it from 34.6% of the entire die to just 22.4%, and it did so without making the cache cells themselves any smaller. The saving came from pulling the arrays much closer together. In Zen 4, three wide vertical gaps split the cache into columns, while in Zen 5 the two outer gaps have narrowed considerably and the middle one has all but vanished.',
+    'Those gaps are not wasted space. They hold the rows of through silicon vias, or TSVs, vertical copper connections that pass straight through the silicon so that a second die can be bonded on top and wired electrically into this one. It is the same landing site that AMD’s stacked cache uses to sit a further 64 MB of L3 directly above the CCD, and tightening those rows is what let Zen 5 keep the capability while handing the area back to the rest of the die.',
   ] },
   'ifop-phy': { figure: {
       src: '../assets/Meet-The-Processor/delid-grayscaled_dies-on-substrate-web.jpg',
@@ -4081,6 +4115,7 @@ const sheet = document.getElementById('sheet');
 const sheetVideo = document.getElementById('sheet-video');
 const sheetLinks = document.getElementById('sheet-links');
 const sheetFigure = document.getElementById('sheet-figure');
+const sheetFigureMedia = document.getElementById('sheet-figure-media');
 const sheetMedia = document.querySelector('.sheet-media');
 const sTitle = document.getElementById('sheet-title');
 const sBody = document.getElementById('sheet-body');
@@ -4107,17 +4142,94 @@ function openSheet(id) {
   }));
   /* The subject's own figure, under the prose it illustrates. Rebuilt rather
      than reused, so a sheet without one cannot inherit the last one's picture. */
-  if (sub.figure) {
+  const figImg = (fig) => {
     const img = document.createElement('img');
     img.className = 'sheet-figure__img';
-    img.src = sub.figure.src;
-    img.alt = sub.figure.alt || '';
+    img.src = fig.src;
+    img.alt = fig.alt || '';
     img.loading = 'lazy';
-    sheetFigure.replaceChildren(img);
-  } else {
-    sheetFigure.replaceChildren();
-  }
+    if (!(fig.callouts && fig.callouts.length)) return img;
+    /* Callouts: a label off to one side, and an arrow from it to each pad it
+       names. The overlay is an SVG whose viewBox takes the picture's own
+       aspect once it has loaded, so u,v from the tracer maps onto it by a
+       plain scale and the arrowheads, sized in user units, are not squashed.
+       Strokes are non-scaling so the shaft stays a hairline at any size; the
+       label is real text in the page's type rather than SVG text, so it keeps
+       the page's size and its pill. */
+    const frame = document.createElement('span');
+    frame.className = 'sheet-figure__frame';
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'sheet-figure__overlay');
+    svg.setAttribute('aria-hidden', 'true');
+    const labels = fig.callouts.map((c, i) => {
+      const label = document.createElement('span');
+      label.className = `sheet-callout__label sheet-callout__label--${i % 2}`;
+      label.textContent = c.name;
+      /* Placed through custom properties rather than `left`/`top` directly,
+         so the phone block in style.css can override where a pill sits
+         without fighting an inline style. */
+      label.style.setProperty('--at-u', `${(c.at[0] * 100).toFixed(2)}%`);
+      label.style.setProperty('--at-v', `${(c.at[1] * 100).toFixed(2)}%`);
+      frame.append(label);
+      return label;
+    });
+    /* Arrows start from where each pill actually is, measured, rather than
+       from `at`: the pill's height in picture fractions depends on how big the
+       picture is, so on a phone, where the picture is 96px tall and a pill is
+       a third of that, an arrow drawn from `at` would start inside the pill.
+       Redrawn whenever the frame resizes, which also covers the image load. */
+    const draw = () => {
+      const W = 1000, H = Math.round(W * img.naturalHeight / img.naturalWidth) || W;
+      const fr = frame.getBoundingClientRect();
+      if (!fr.width || !fr.height) return;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.replaceChildren();
+      fig.callouts.forEach((c, i) => {
+        /* From the pill's top or bottom edge, whichever faces the pads, so a
+           label placed below its pads sends its arrows up and not through
+           itself. */
+        const lr = labels[i].getBoundingClientRect();
+        const au = (lr.left + lr.width / 2 - fr.left) / fr.width;
+        const mid = (lr.top + lr.height / 2 - fr.top) / fr.height;
+        const padV = c.pads.flat().reduce((s, p) => s + p[1], 0) / c.pads.flat().length;
+        const av = ((padV < mid ? lr.top : lr.bottom) - fr.top) / fr.height;
+        c.pads.forEach((pad) => {
+          /* The tip: the point of the pad's box nearest the arrow's start,
+             which for an axis-aligned trace is that start clamped into the box. */
+          const us = pad.map((p) => p[0]), vs = pad.map((p) => p[1]);
+          const tu = Math.min(Math.max(au, Math.min(...us)), Math.max(...us));
+          const tv = Math.min(Math.max(av, Math.min(...vs)), Math.max(...vs));
+          const line = document.createElementNS(NS, 'line');
+          line.setAttribute('class', `sheet-callout__arrow sheet-callout__arrow--${i % 2}`);
+          line.setAttribute('x1', (au * W).toFixed(1)); line.setAttribute('y1', (av * H).toFixed(1));
+          line.setAttribute('x2', (tu * W).toFixed(1)); line.setAttribute('y2', (tv * H).toFixed(1));
+          svg.append(line);
+        });
+      });
+    };
+    new ResizeObserver(draw).observe(frame);
+    frame.prepend(img, svg);
+    return frame;
+  };
+  /* A single `figure` goes under the prose; a `figures` pair goes under the
+     player, in the wider column. Both slots are rebuilt every time so neither
+     can carry the last sheet's picture. The pair is labelled: each picture
+     under its own caption, the captions above rather than below so the two
+     names are read before the eye drops into the detail and has to come back
+     up to learn which was which. */
+  sheetFigure.replaceChildren(...(sub.figure ? [figImg(sub.figure)] : []));
   sheetFigure.hidden = !sub.figure;
+  sheetFigureMedia.replaceChildren(...(sub.figures || []).map((fig) => {
+    const item = document.createElement('figure');
+    item.className = 'sheet-figure__item';
+    const cap = document.createElement('figcaption');
+    cap.className = 'sheet-figure__label';
+    cap.textContent = fig.label;
+    item.append(cap, figImg(fig));
+    return item;
+  }));
+  sheetFigureMedia.hidden = !sub.figures;
 
   /* The player is always shown, blank when there is nothing to play: a black
      16:9 frame with its controls, rather than a placeholder standing in for it. */
@@ -5477,6 +5589,10 @@ Promise.all([
     },
     get stops() { return STOPS.slice(); },
     get keyTimes() { return KEYS.map((k) => k.t); },
+    /* For verify: open a block's sheet by its pick id, as a click on it would,
+       so a headless capture can check the sheet's layout without having to
+       find the block's pixels first. */
+    sheet(id) { return openSheet(id); },
     /* For verify: the demo lift on each slotted block, and whether it is live. */
     get attract() {
       return { on: atStop() && !frozen && !hovered,

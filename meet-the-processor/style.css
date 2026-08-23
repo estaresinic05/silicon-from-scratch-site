@@ -495,6 +495,20 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
      and stops there, which is the line the eye already reads as the edge of
      the text. */
   animation: sheetSlide .38s cubic-bezier(.2,.7,.3,1) both;
+  /* The sheet centres its row in the window, so a column taller than the
+     window clips at BOTH ends and the title is the first thing to go. Three
+     paragraphs and a figure under them can reach 857px, and a 768px laptop
+     has 676px to give them. So the column may scroll, but only once
+     it is taller than the window: the cap is the sheet's own height less its
+     vertical padding, and a column that fits never shows a bar. */
+  max-height: calc(100vh - 2 * clamp(2.2rem, 6vh, 5rem));
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(253,253,251,.22) transparent;
+  /* Room between the text and a bar when one appears, so the bar does not sit
+     on the ends of the lines. Taken from the gap, not added to the column. */
+  padding-right: .6rem;
+  margin-right: -.6rem;
 }
 @keyframes sheetSlide { from { opacity:0; transform: translateY(14px);} to { opacity:1; transform:none;} }
 
@@ -538,6 +552,81 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   border-radius: 12px;
   background: #fff;
 }
+/* --- callouts on a figure ---
+   The frame shrinks to the picture, so percentages on the overlay and the
+   labels are percentages of the picture and nothing else. The SVG's viewBox
+   is set to the picture's aspect when it loads, so u,v from the tracer lands
+   on the right pixels and an arrowhead sized in user units keeps its shape.
+   Shafts are non-scaling strokes, a hairline at any size. Each group is one
+   colour on pill and arrows alike, so the eye pairs them without reading:
+   the page's fill purple, --accent, for the first, and the floorplan's
+   Load/Store blue, --callout-blue, for the second; both carry white text and
+   both read against the micrograph's amber. The arrowhead fills in index.html
+   are the same two written out, since a marker cannot read the page's
+   tokens. */
+.sheet-figure__frame { --callout-blue: #4a76d9; }
+.sheet-figure__frame {
+  position: relative;
+  display: block;
+  width: fit-content;
+  margin-inline: auto;
+}
+.sheet-figure__frame .sheet-figure__img { margin: 0; }
+.sheet-figure__overlay {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.sheet-callout__arrow {
+  stroke: var(--accent); stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+  marker-end: url(#sheet-arrowhead-0);
+}
+.sheet-callout__arrow--1 { stroke: var(--callout-blue); marker-end: url(#sheet-arrowhead-1); }
+/* The pill's top-centre sits on its `at`; the arrow leaves from whichever
+   of its measured edges faces the pads, so the shaft never crosses the pill. */
+.sheet-callout__label {
+  position: absolute;
+  left: var(--at-u); top: var(--at-v);
+  transform: translate(-50%, 0);
+  padding: .18rem .5rem;
+  border-radius: 999px;
+  font-size: .72rem; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+  white-space: nowrap;
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 2px 10px rgba(0,0,0,.45);
+}
+.sheet-callout__label--1 { background: var(--callout-blue); }
+
+/* Two pictures side by side, each under its own label, in the media column
+   under the player. The grid splits that column evenly so the two die shots
+   read at one scale, and each is capped to the same 30vh as the single figure
+   so the column stays inside a short window. Nested <figure>s carry no margin
+   of their own: the outer figure supplies the gap to the player. */
+.sheet-figure--pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+  margin-top: 1.1rem;
+}
+.sheet-figure__item { margin: 0; min-width: 0; }
+.sheet-figure__label {
+  margin: 0 0 .45rem;
+  font-size: .78rem; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted);
+  /* The picture under it is centred in its cell by the single figure's
+     margin-inline: auto, and a label pinned to the cell's left edge then floats
+     off to one side of it. Centred, it sits over the picture it names. */
+  text-align: center;
+}
+/* Die shots are photographs, not ink on white, so the white ground that suits
+   the drawings would only frame them in a pale border. */
+.sheet-figure--pair .sheet-figure__img { background: #000; }
 
 /* --- lesson cards: the way out to the lesson that teaches this block ---
    Shaped after the home page's `.mtp-card`: thumbnail, a kicker and a title, an
@@ -619,6 +708,16 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
    still worth its nudge: on the short sheets the two are the same thing. */
 .sheet-media { justify-self: stretch; align-self: center;
                animation: sheetSlide .38s .05s cubic-bezier(.2,.7,.3,1) both; }
+/* With a pair of pictures under the player this is the tall column, so it
+   takes the same cap as the copy: scroll only once it outgrows the window.
+   :has() scopes it to the sheets that carry a pair; the others keep the
+   player centred on the copy as before. */
+.sheet-media:has(.sheet-figure--pair:not([hidden])) {
+  max-height: calc(100vh - 2 * clamp(2.2rem, 6vh, 5rem));
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(253,253,251,.22) transparent;
+}
 .sheet-media video {
   display: block;
   width: 100%;
@@ -660,7 +759,19 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
     padding: 4.2rem clamp(1.1rem, 5vw, 2rem) 2rem;
     overflow-y: auto;
   }
-  .sheet-copy { max-width: none; }
+  /* The whole sheet scrolls on a phone, so the column needs no cap of its own:
+     a capped column would be a scroll region inside a scroll region. */
+  .sheet-copy { max-width: none; max-height: none; overflow: visible;
+                padding-right: 0; margin-right: 0; }
+  .sheet-media:has(.sheet-figure--pair:not([hidden])) { max-height: none; overflow: visible; }
+  /* Callout pills on a phone: the picture is under 100px tall there and a
+     pill is a third of its width, so the pills are set smaller and pinned into
+     the picture's top corners, first left and second right, rather than
+     placed by `at`; centred on `at` they ran off the edges. The arrows start
+     from wherever a pill actually is, so they follow on their own. */
+  .sheet-callout__label { top: .25rem; font-size: .6rem; padding: .12rem .4rem; transform: none; }
+  .sheet-callout__label--0 { left: .25rem; }
+  .sheet-callout__label--1 { left: auto; right: .25rem; }
   #sheet-title { font-size: 1.6rem; margin-top: 0; }
   /* The sheet scrolls on a phone, so the figure has room for its full height
      and the desktop cap would only shrink a diagram that is already narrow. */

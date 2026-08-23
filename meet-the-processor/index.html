@@ -315,6 +315,25 @@
          because it illustrates what was just read rather than pointing
          anywhere. Hidden entirely for the subjects that have none. -->
     <figure class="sheet-figure" id="sheet-figure" hidden></figure>
+    <!-- Arrowheads for the figure's callouts, defined once here rather than
+         in every overlay openSheet builds. One per callout colour. Sized in
+         user units, not stroke widths: the shafts are non-scaling hairlines,
+         and a head measured in those would be a 1.5-unit speck on a 1000-unit
+         overlay. -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <marker id="sheet-arrowhead-0" viewBox="0 0 10 10" refX="9" refY="5"
+                markerUnits="userSpaceOnUse" markerWidth="16" markerHeight="16"
+                orient="auto-start-reverse">
+          <path d="M0 0L10 5L0 10z" fill="#6b2fc9"/>
+        </marker>
+        <marker id="sheet-arrowhead-1" viewBox="0 0 10 10" refX="9" refY="5"
+                markerUnits="userSpaceOnUse" markerWidth="16" markerHeight="16"
+                orient="auto-start-reverse">
+          <path d="M0 0L10 5L0 10z" fill="#4a76d9"/>
+        </marker>
+      </defs>
+    </svg>
     <!-- Lesson cards, built by openSheet from the subject's own `links` list.
          A block on this die is often something the site already teaches in full,
          and this is the way across. Hidden entirely for the subjects that have
@@ -324,6 +343,11 @@
   <div class="sheet-media">
     <video id="sheet-video" playsinline controls preload="metadata"></video>
     <p class="sheet-media-note">Video coming soon</p>
+    <!-- The second figure slot, for a subject's `figures` pair. It sits under
+         the player rather than under the prose because two die shots want the
+         wider column: split across the copy column they came out 190px wide,
+         too small to show the TSV gaps the L3 copy points at. -->
+    <figure class="sheet-figure sheet-figure--pair" id="sheet-figure-media" hidden></figure>
   </div>
   <button id="sheet-close" class="sheet-x" aria-label="Close and resume">&times;</button>
 </div>
