@@ -192,7 +192,8 @@
     ["Very Advanced", [
       ["Pipelined CPU Physical Design", [
         ["Transistor Basics", "introduction-to-physical-design/transistor-basics/"],
-        ["Implementing Arbitrary Logic and Stick Diagrams", "coming-soon/"]
+        ["Implementing Arbitrary Logic and Stick Diagrams", "introduction-to-physical-design/implementing-arbitrary-logic/"],
+        ["Standard Cells and the Library", "coming-soon/"]
       ], [
         { src: "assets/introduction-to-physical-design/die-routed.jpg",
           alt: "The routed die of the pipelined CPU, its metal layers drawn in colour over the standard cell rows, with the power rails running down the sides." }

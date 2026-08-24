@@ -111,22 +111,387 @@
           and a <strong>stick diagram</strong> lets us sketch its layout before
           drawing a single rectangle for real.
         </p>
+        <div class="doc-hero__actions">
+          <span class="doc-hero__prompt">Think you got this already?</span>
+          <a class="btn btn--primary" href="#check">Skip to Check Yourself</a>
+        </div>
       </div>
+
+      <!-- Slightly narrower than the 44rem art track, so the card reads a
+           touch smaller beside the title. -->
+      <figure class="doc-hero__art"
+              style="width: 100%; max-width: 39rem; justify-self: center; align-self: center;">
+        <img src="../../assets/introduction-to-physical-design/stick-diagram-example.jpg"
+             alt="A hand-drawn stick diagram of a CMOS gate: a blue V-DD rail across the top and a blue GND rail across the bottom, an orange p-diffusion strip and a green n-diffusion strip running between them, four red polysilicon lines labeled B, C, A and D crossing both strips, blue metal wires joining the strips to the rails and to the output Y, and black crosses marking every contact."
+             decoding="async" />
+      </figure>
     </section>
 
-    <!-- ============================== COMING SOON ========================= -->
-    <section class="section" id="coming-soon" aria-labelledby="coming-soon-title">
+    <!-- ===================== SWITCHES IN SERIES AND PARALLEL ============= -->
+    <section class="section" id="series-parallel" aria-labelledby="series-parallel-title">
       <div class="container container--wide">
         <div class="section__head">
-          <h2 id="coming-soon-title">Coming Soon</h2>
+          <h2 id="series-parallel-title">Switches in Series and in Parallel</h2>
         </div>
 
         <div class="prose prose--flow">
           <p style="margin-top: 0;">
-            This lesson is being written. Check back soon, or head back to
-            <a href="../transistor-basics/">Transistor Basics</a> in the
-            meantime.
+            Before we build anything out of transistors, it is worth stepping back
+            to the plainest picture we have of one: a switch. A transistor either
+            joins its two ends or it does not, and the gate decides which. Once we
+            think of it that way, the two logic operations we have leaned on since
+            the very first lesson turn out to have shapes. They are not just
+            symbols in an expression. They are ways of arranging switches.
           </p>
+        </div>
+
+        <!-- FIGURE TO DRAW: two sketches side by side. Left, two switches in
+             series between a node and ground, labeled A and B, with the note
+             that the path closes only when both are closed. Right, the same two
+             switches in parallel, with the note that the path closes when either
+             is closed. Drop them in as a .split with two .figure cards once
+             drawn; the cards below carry the explanation until then. -->
+        <div class="split" style="grid-template-columns: 1fr 1fr; align-items: stretch;
+                                  margin-top: var(--space-4);">
+          <div class="prose" style="display: flex; flex-direction: column;">
+            <div class="term-card" style="flex: 1; margin: 0;">
+              <p class="term-card__title">Series is AND</p>
+              <p>
+                Put two switches one after the other on the same wire, so that
+                current has to pass through the first and then the second to get
+                across. That path is complete only when <em>both</em> switches
+                are closed. If either one is open, the wire is broken and nothing
+                gets through. Two switches in <strong>series</strong> therefore
+                behave exactly like an AND: the connection exists when A is true
+                and B is true, and not otherwise.
+              </p>
+            </div>
+          </div>
+          <div class="prose" style="display: flex; flex-direction: column;">
+            <div class="term-card" style="flex: 1; margin: 0;">
+              <p class="term-card__title">Parallel is OR</p>
+              <p>
+                Now put the two switches side by side, each one offering its own
+                route between the same two points. Current needs only one of those
+                routes to be open for it. If A is closed, it gets through. If B is
+                closed, it gets through. Two switches in <strong>parallel</strong>
+                behave like an OR: the connection exists when A is true or B is
+                true, and it is broken only when both are open.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="prose prose--flow" style="margin-top: var(--space-4);">
+          <p style="margin-top: 0;">
+            This is the whole trick, and everything else in the lesson is a
+            consequence of it. Any expression made of ANDs and ORs can be drawn as
+            a network of switches, with series for every AND and parallel for
+            every OR, nested as deeply as the expression demands. A term like
+            A&middot;B + C is two switches in series, and that pair in parallel with a
+            third. Hold on to that picture. We are about to find out that silicon
+            adds one twist to it.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ WHY CMOS INVERTS ===================== -->
+    <section class="section" id="inverting" aria-labelledby="inverting-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="inverting-title">Why CMOS Naturally Inverts</h2>
+        </div>
+
+        <div class="prose prose--flow">
+          <p style="margin-top: 0;">
+            Let us try the simplest thing the last section suggests. We want the
+            function A&middot;B, so we take two nMOS transistors, which close when
+            their gates are high, and put them in series between an output node
+            and ground. Drive A high and B high and both switches close, a path
+            opens from the output down to ground, and the node discharges to
+            logic 0. Any other combination leaves at least one switch open, and
+            the node is not pulled anywhere.
+          </p>
+          <p>
+            Look carefully at what we have built, because it is not an AND. The
+            output goes <em>low</em> when both inputs are high. When the path to
+            ground closes, the output is 0, and the only time that happens is
+            when A and B are both 1. That is the behaviour of a NAND. Our series
+            pair of nMOS is computing the AND we asked for, but it is using the
+            answer to pull the output <em>down</em>, so the value that appears at
+            the node is the AND inverted.
+          </p>
+        </div>
+
+        <!-- FIGURE TO DRAW: two nMOS in series from the output node Y down to
+             ground, gates labeled A and B, with nothing above Y. Annotate the
+             node as floating, or Hi-Z, when either input is low. -->
+        <div class="prose prose--flow" style="margin-top: var(--space-4);">
+          <div class="term-card" style="margin-top: 0;">
+            <p class="term-card__title">The Floating Node</p>
+            <p>
+              There is a second problem, and it is worse. When the inputs are
+              not both high, we said the node is not pulled anywhere, and we
+              meant it literally. Nothing is driving it. It is connected neither
+              to ground nor to the supply, and a node in that condition is said
+              to be <strong>floating</strong>, or in a
+              <strong>high-impedance</strong> state, written Hi-Z. Whatever
+              charge happened to be sitting on the wire stays there, leaking
+              slowly away, and the next gate along reads a voltage that nobody
+              chose. A logic gate has to produce a definite 1 or a definite 0
+              for every possible input, and half of a gate cannot do that.
+            </p>
+            <p>
+              So the pull-down network on its own is not a gate. For every input
+              combination where the PDN is open, something else has to close and
+              connect the output to V<sub>DD</sub> instead. That something is the
+              pull-up network, and the question is what shape it should have.
+            </p>
+          </div>
+        </div>
+
+        <div class="prose prose--flow" style="margin-top: var(--space-4);">
+          <p style="margin-top: 0;">
+            We can answer that with algebra. The PDN pulls Y to 0 exactly when
+            A&middot;B is true, so the function our gate produces is
+            Y = <span class="ovl">A&middot;B</span>. The PUN must pull Y to 1
+            in every remaining case, which is to say whenever
+            <span class="ovl">A&middot;B</span> is true, and
+            <strong>De Morgan's law</strong> tells us what that condition looks
+            like when we write it in terms of the inputs themselves:
+          </p>
+          <p class="eq" style="text-align: center; font-size: 1.35rem; margin-block: var(--space-3);">
+            <span class="ovl"><var>A</var>&middot;<var>B</var></span>
+            &nbsp;=&nbsp;
+            <span class="ovl"><var>A</var></span> + <span class="ovl"><var>B</var></span>
+          </p>
+          <p>
+            Read that right-hand side as a set of instructions. It says the
+            pull-up should close when A is low <em>or</em> B is low. A switch that
+            closes when its input is low is a pMOS, and OR means parallel. So the
+            PUN is two pMOS in parallel between V<sub>DD</sub> and the output,
+            one with its gate on A and one with its gate on B. Put the two
+            networks together and we have the complete gate.
+          </p>
+        </div>
+
+        <div class="split split--media-left" style="align-items: start; margin-top: var(--space-4);">
+          <figure class="figure enlarge-xl" style="max-width: 34rem;">
+            <img src="../../assets/introduction-to-physical-design/check-yourself-NAND.jpg"
+                 alt="A CMOS NAND gate: two p-type transistors in parallel between V-DD and the output y, their gates driven by a and b, and two n-type transistors in series between y and ground, their gates also driven by a and b."
+                 decoding="async" />
+          </figure>
+          <div class="prose">
+            <p style="margin-top: 0;">
+              Check it against every input. With A and B both high, the two pMOS
+              are off and the two nMOS are on, so Y is pulled firmly to ground.
+              With either input low, at least one pMOS is on and the series pair
+              of nMOS is broken, so Y is pulled firmly to V<sub>DD</sub>. There
+              is no input for which both networks are on, so there is never a
+              path straight from supply to ground, and there is no input for
+              which both are off, so the output never floats. This is the
+              <strong>static CMOS NAND</strong>, and it is the same circuit you
+              identified at the end of Transistor Basics.
+            </p>
+            <p>
+              Notice the shape of the two halves. The PDN is a series pair and
+              the PUN is a parallel pair. That is not a coincidence, it is De
+              Morgan's law drawn in transistors. Every AND in the pull-down
+              becomes an OR in the pull-up, and every OR becomes an AND, so the
+              two networks are always <strong>duals</strong> of each other:
+              where one is series, the other is parallel. Once the PDN is
+              designed, the PUN is written for you.
+            </p>
+          </div>
+        </div>
+
+        <div class="prose prose--flow" style="margin-top: var(--space-4);">
+          <p style="margin-top: 0;">
+            Now the general lesson. An nMOS switch closes for a high input and
+            connects the output to <em>ground</em>, so the function the PDN
+            computes always arrives at the output upside down. A pMOS closes for
+            a low input and connects the output to the <em>supply</em>, which is
+            the same inversion seen from the other side. Either way, a single
+            stage of static CMOS produces the complement of whatever its
+            pull-down network computes. This is what it means to say that CMOS
+            is a naturally <strong>inverting</strong> technology. NAND, NOR, and
+            the inverter itself come out of one stage each. AND and OR do not.
+            To build an AND you build a NAND and follow it with an inverter, and
+            in a real cell library that is exactly what the AND cell is: three
+            transistor pairs, not two.
+          </p>
+          <p>
+            The recipe for an arbitrary function follows directly. Write the
+            function you want in the form Y = <span class="ovl">F</span>. Draw F
+            as a network of nMOS switches, series for AND and parallel for OR,
+            between the output and ground. Then draw its dual out of pMOS
+            switches, parallel where the PDN was series and series where it was
+            parallel, between the output and V<sub>DD</sub>. The gate you are
+            left with computes <span class="ovl">F</span> for every input, never
+            floats, and never draws static current.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= STICK DIAGRAMS ====================== -->
+    <section class="section" id="stick-diagrams" aria-labelledby="stick-diagrams-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="stick-diagrams-title">Stick Diagrams</h2>
+        </div>
+
+        <div class="prose prose--flow">
+          <p style="margin-top: 0;">
+            A schematic tells us which terminal connects to which. It tells us
+            nothing about where anything sits on the silicon, and in the last
+            lesson we saw that the layout of even an inverter is a different
+            picture from its schematic. Drawing a full layout is slow work, with
+            every rectangle sized to the process rules, and it is a poor way to
+            think. What we want is something in between: a sketch that keeps
+            the geometry of the layout and throws away the dimensions. That
+            sketch is a <strong>stick diagram</strong>, and it is drawn with
+            coloured lines, one colour per layer, each line standing for a strip
+            of material whose width we will decide later.
+          </p>
+        </div>
+
+        <div class="split" style="grid-template-columns: 1fr 1fr; align-items: stretch;
+                                  margin-top: var(--space-4);">
+          <div class="prose" style="display: flex; flex-direction: column;">
+            <div class="term-card" style="flex: 1; margin: 0;">
+              <p class="term-card__title">The Layers</p>
+              <p>
+                Four colours carry the whole drawing. <strong>Green</strong> is
+                n-type diffusion, the strip of silicon that nMOS transistors are
+                formed in. <strong>Orange</strong> is p-type diffusion, the strip
+                the pMOS transistors are formed in. <strong>Red</strong> is
+                polysilicon, the gate material. <strong>Blue</strong> is metal,
+                the wiring that joins everything up. Where a wire on one layer
+                needs to reach a wire on another, a small cross marks a
+                <strong>contact</strong>, the vertical connection we met as a via
+                in the inverter layout.
+              </p>
+            </div>
+          </div>
+          <div class="prose" style="display: flex; flex-direction: column;">
+            <div class="term-card" style="flex: 1; margin: 0;">
+              <p class="term-card__title">The Rules</p>
+              <p>
+                A transistor exists wherever a red line crosses a diffusion
+                line. That single rule does most of the work: poly crossing
+                green is an nMOS, poly crossing orange is a pMOS, and the poly
+                itself is the gate. Metal crossing anything is just a wire
+                passing over it, with no connection unless a contact is drawn.
+                Diffusion and poly never cross each other except to make a
+                transistor, and the two diffusions never touch at all.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="prose prose--flow" style="margin-top: var(--space-4);">
+          <p style="margin-top: 0;">
+            The layout of a gate then falls into a fixed arrangement, the same
+            one the inverter used. A metal rail for V<sub>DD</sub> runs along the
+            top and a rail for ground along the bottom. Just below the supply
+            rail runs the orange strip, so every pMOS sits near the supply it
+            pulls from, and just above the ground rail runs the green strip, so
+            every nMOS sits near ground. The inputs come in as vertical red
+            lines, and here is the elegant part: one poly line can cross both
+            strips on its way down. A single input therefore drives its pMOS and
+            its nMOS with the same piece of gate material, which is exactly what
+            the schematic asked for when it tied the two gates together. Read
+            along the orange strip and you are reading the pull-up network. Read
+            along the green strip and you are reading the pull-down. Metal does
+            the rest, joining the ends of the strips to the rails and to the
+            output.
+          </p>
+        </div>
+
+        <div class="split split--media-left" style="align-items: start; margin-top: var(--space-4);">
+          <figure class="figure enlarge-xl" style="max-width: 40rem;">
+            <img src="../../assets/introduction-to-physical-design/stick-diagram-example.jpg"
+                 alt="The same stick diagram as at the top of the lesson: V-DD and GND rails in blue, an orange p-diffusion strip and a green n-diffusion strip, four red poly lines B, C, A and D crossing both, and blue metal with contact crosses wiring the strips to the rails and to the output Y."
+                 decoding="async" />
+          </figure>
+          <div class="prose">
+            <p style="margin-top: 0;">
+              Let us read the diagram at the top of this lesson the way a layout
+              engineer would. Four red lines cross both strips, so this is a
+              four-input gate with four pMOS along the orange strip and four
+              nMOS along the green one. Start on the green strip and follow the
+              contacts. Ground enters between C and A. Going left from there,
+              current must cross C and then B to reach the far left end, and a
+              blue wire carries that end across to the node between A and D.
+              Going right from ground, it crosses A alone to reach that same
+              node. So B in series with C sits in parallel with A. From that node
+              the only way onward is through D, and the contact past D is the
+              output. The pull-down conducts when D and, at the same time, A or
+              both of B and C are true, so the gate computes
+              Y = <span class="ovl">D&middot;(A + B&middot;C)</span>.
+            </p>
+            <p>
+              Now read the orange strip and watch the dual appear. The supply
+              enters between B and C, so B and C are in parallel with each
+              other, where below they were in series. Their shared far ends meet
+              A in series, where below A was in parallel. And the supply enters
+              again at the far right, past D, putting D in parallel with the
+              whole of the rest, where below it was in series. Every series has
+              become a parallel and every parallel a series. The drawing is De
+              Morgan's law made visible, one strip above the other.
+            </p>
+          </div>
+        </div>
+
+        <div class="prose prose--flow" style="margin-top: var(--space-4);">
+          <p style="margin-top: 0;">
+            One more thing the diagram shows that the schematic could not. Each
+            diffusion strip is unbroken from end to end, with the four transistors
+            sharing their source and drain regions along it. That is possible
+            only because the inputs were placed in the order B, C, A, D, an order
+            chosen so that a single walk along the strip visits every transistor
+            once. Choose a different order and one of the strips has to break,
+            costing an extra contact and extra width. Finding an order that works
+            for both networks at once is the first real layout decision a
+            designer makes, and a stick diagram is where it gets made, long
+            before anything is drawn to scale. In the next lesson we will take a
+            sketch like this one and turn it into the real thing: a standard cell,
+            drawn to the rules of a process and characterised so that a tool can
+            use it.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== CHECK YOURSELF ===================== -->
+    <section class="section section--tight" id="check" aria-labelledby="check-title">
+      <div class="container container--wide">
+        <div class="section__head">
+          <h2 id="check-title">Check Yourself</h2>
+        </div>
+
+        <!-- Placeholder quiz: one question on the hero stick diagram, so the
+             page has a working gate to the next lesson. Replace the question
+             and add a figure when the real one is drawn. -->
+        <div class="quiz quiz--wide" id="quiz">
+          <p class="quiz__q">Reading the stick diagram at the top of this lesson, which function does the gate implement? Choose from one of the four options below.</p>
+
+          <div class="quiz__options" role="group" aria-label="Answer choices">
+            <button class="quiz__opt" type="button" data-hint="Look at the pull-down network again. Is D in series with the rest, or in parallel with it?"><span class="eq"><var>Y</var> = <span class="ovl"><var>D</var> + <var>A</var>&middot;<var>B</var>&middot;<var>C</var></span></span></button>
+            <button class="quiz__opt" type="button" data-correct="true"><span class="eq"><var>Y</var> = <span class="ovl"><var>D</var>&middot;(<var>A</var> + <var>B</var>&middot;<var>C</var>)</span></span></button>
+            <button class="quiz__opt" type="button" data-hint="The pull-down network pulls Y to ground. A single stage of CMOS always inverts."><span class="eq"><var>Y</var> = <var>D</var>&middot;(<var>A</var> + <var>B</var>&middot;<var>C</var>)</span></button>
+            <button class="quiz__opt" type="button" data-hint="Follow the contacts on the green strip once more. Which transistor does the output sit beyond?"><span class="eq"><var>Y</var> = <span class="ovl"><var>A</var>&middot;(<var>B</var> + <var>C</var>&middot;<var>D</var>)</span></span></button>
+          </div>
+
+          <p class="quiz__feedback" role="status" aria-live="polite"></p>
+
+          <div class="quiz__next">
+            <a class="btn btn--primary" href="../../coming-soon/">
+              Continue to Standard Cells and the Library <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
         </div>
       </div>
     </section>
@@ -142,6 +507,13 @@
       <a href="https://github.com/estaresinic05/Silicon-From-Scratch"
          target="_blank" rel="noopener">GitHub Repository</a>
     </div>
+    <p class="container footer__credit">
+      Informed by: Neil H. E. Weste and David Money Harris,
+      <em>CMOS VLSI Design: A Circuits and Systems Perspective</em>, Fourth
+      Edition, Chapter 1, &ldquo;Introduction,&rdquo; &sect;1.4 &ldquo;CMOS
+      Logic&rdquo; and &sect;1.5 &ldquo;CMOS Fabrication and Layout&rdquo;
+      (Addison-Wesley, 2011).
+    </p>
     <p class="container footer__legal">
       &copy; 2026 Elliot Staresinic. All rights reserved. Silicon From Scratch&trade; is a
       trademark of Elliot Staresinic.
@@ -156,5 +528,37 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous"></script>
   <script src="../../scripts/scroll.js" defer></script>
+  <!-- Enlarge: static figure images pop on hover and open enlarged on a
+       blurred backdrop when clicked (see scripts/enlarge.js). -->
+  <!-- Check Yourself quiz (see STYLE_GUIDE.md — Check Yourself). -->
+  <script>
+  (function () {
+    var quiz = document.getElementById("quiz");
+    if (!quiz) return;
+    var feedback = quiz.querySelector(".quiz__feedback");
+    var next = quiz.querySelector(".quiz__next");
+    quiz.querySelectorAll(".quiz__opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (quiz.classList.contains("is-solved")) return;
+        if (btn.dataset.correct === "true") {
+          btn.classList.add("is-correct");
+          feedback.textContent = "Correct!";
+          feedback.classList.remove("is-wrong");
+          feedback.classList.add("is-correct");
+          if (next) next.classList.add("is-shown");
+          quiz.classList.add("is-solved");
+        } else {
+          btn.classList.add("is-wrong");
+          // A wrong choice can carry a tailored nudge in data-hint; the stock
+          // line is the fallback for the rest.
+          feedback.textContent = btn.dataset.hint || "Incorrect, try again.";
+          feedback.classList.remove("is-correct");
+          feedback.classList.add("is-wrong");
+        }
+      });
+    });
+  })();
+  </script>
+  <script src="../../scripts/enlarge.js" defer></script>
 </body>
 </html>
