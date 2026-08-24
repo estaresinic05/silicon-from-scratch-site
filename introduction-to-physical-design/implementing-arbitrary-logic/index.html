@@ -145,38 +145,44 @@
           </p>
         </div>
 
-        <!-- FIGURE TO DRAW: two sketches side by side. Left, two switches in
-             series between a node and ground, labeled A and B, with the note
-             that the path closes only when both are closed. Right, the same two
-             switches in parallel, with the note that the path closes when either
-             is closed. Drop them in as a .split with two .figure cards once
-             drawn; the cards below carry the explanation until then. -->
+        <!-- Each drawing sits directly above the card that reads it, so the
+             two columns line up: series over "Series is AND", parallel over
+             "Parallel is OR". -->
         <div class="split" style="grid-template-columns: 1fr 1fr; align-items: stretch;
                                   margin-top: var(--space-4);">
           <div class="prose" style="display: flex; flex-direction: column;">
+            <figure class="figure enlarge-xl" style="max-width: 30rem; margin: 0 auto var(--space-3);">
+              <img src="../../assets/introduction-to-physical-design/and-functionality.jpg"
+                   alt="AND functionality: a wire from x to Y broken by two switches in series, labeled A and B, with the equation Y equals x times A B."
+                   decoding="async" />
+            </figure>
             <div class="term-card" style="flex: 1; margin: 0;">
               <p class="term-card__title">Series is AND</p>
               <p>
                 Put two switches one after the other on the same wire, so that
-                current has to pass through the first and then the second to get
-                across. That path is complete only when <em>both</em> switches
-                are closed. If either one is open, the wire is broken and nothing
-                gets through. Two switches in <strong>series</strong> therefore
-                behave exactly like an AND: the connection exists when A is true
-                and B is true, and not otherwise.
+                whatever is at x has to pass through A and then B to reach Y. That
+                path is complete only when <em>both</em> switches are closed. If
+                either one is open, the wire is broken. Two switches in
+                <strong>series</strong> therefore behave exactly like an AND: Y
+                sees x when A is true and B is true, and not otherwise.
               </p>
             </div>
           </div>
           <div class="prose" style="display: flex; flex-direction: column;">
+            <figure class="figure enlarge-xl" style="max-width: 30rem; margin: 0 auto var(--space-3);">
+              <img src="../../assets/introduction-to-physical-design/or-functionality.jpg"
+                   alt="OR functionality: a wire from x to Y that splits into two branches, one through switch A and one through switch B, then rejoins, with the equation Y equals x times A plus B."
+                   decoding="async" />
+            </figure>
             <div class="term-card" style="flex: 1; margin: 0;">
               <p class="term-card__title">Parallel is OR</p>
               <p>
                 Now put the two switches side by side, each one offering its own
-                route between the same two points. Current needs only one of those
-                routes to be open for it. If A is closed, it gets through. If B is
-                closed, it gets through. Two switches in <strong>parallel</strong>
-                behave like an OR: the connection exists when A is true or B is
-                true, and it is broken only when both are open.
+                route from x to Y. Only one of those routes needs to be closed. If
+                A is closed, x gets through. If B is closed, x gets through. Two
+                switches in <strong>parallel</strong> behave like an OR: Y sees x
+                when A is true or B is true, and is cut off only when both are
+                open.
               </p>
             </div>
           </div>
@@ -208,45 +214,46 @@
             Let us try the simplest thing the last section suggests. We want the
             function A&middot;B, so we take two nMOS transistors, which close when
             their gates are high, and put them in series between an output node
-            and ground. Drive A high and B high and both switches close, a path
-            opens from the output down to ground, and the node discharges to
-            logic 0. Any other combination leaves at least one switch open, and
-            the node is not pulled anywhere.
-          </p>
-          <p>
-            Look carefully at what we have built, because it is not an AND. The
-            output goes <em>low</em> when both inputs are high. When the path to
-            ground closes, the output is 0, and the only time that happens is
-            when A and B are both 1. That is the behaviour of a NAND. Our series
-            pair of nMOS is computing the AND we asked for, but it is using the
-            answer to pull the output <em>down</em>, so the value that appears at
-            the node is the AND inverted.
+            Y and ground. The capacitor C<sub>L</sub> stands for whatever Y
+            drives, charged to V<sub>DD</sub> to begin with. Drive A high and B high and both switches close, a path opens from Y
+            down to ground, and the node discharges to logic 0. Any other
+            combination leaves at least one switch open, and the node is not
+            pulled anywhere.
           </p>
         </div>
 
-        <!-- FIGURE TO DRAW: two nMOS in series from the output node Y down to
-             ground, gates labeled A and B, with nothing above Y. Annotate the
-             node as floating, or Hi-Z, when either input is low. -->
+        <figure class="figure enlarge-xl" style="max-width: 52rem; margin: var(--space-4) auto 0;">
+          <img src="../../assets/introduction-to-physical-design/pdn-example.jpg"
+               alt="Two nMOS transistors N1 and N2 in series from the output Y down to ground, their gates driven by A and B, with a load capacitor C-L on Y whose initial voltage is V-DD. Beside it, a truth table: Y is 1 for every input pair except A equals 1 and B equals 1, where both transistors are on and Y is 0."
+               decoding="async" />
+        </figure>
+
         <div class="prose prose--flow" style="margin-top: var(--space-4);">
-          <div class="term-card" style="margin-top: 0;">
+          <p style="margin-top: 0;">
+            Look at the table, because this is not an AND. The output goes
+            <em>low</em> when both inputs are high, and only then. That is a
+            NAND. Our series pair of nMOS computes the AND we asked for, but
+            uses the answer to pull the output <em>down</em>, so what appears at
+            Y is the AND inverted.
+          </p>
+          <div class="term-card">
             <p class="term-card__title">The Floating Node</p>
             <p>
-              There is a second problem, and it is worse. When the inputs are
-              not both high, we said the node is not pulled anywhere, and we
-              meant it literally. Nothing is driving it. It is connected neither
-              to ground nor to the supply, and a node in that condition is said
-              to be <strong>floating</strong>, or in a
-              <strong>high-impedance</strong> state, written Hi-Z. Whatever
-              charge happened to be sitting on the wire stays there, leaking
-              slowly away, and the next gate along reads a voltage that nobody
-              chose. A logic gate has to produce a definite 1 or a definite 0
-              for every possible input, and half of a gate cannot do that.
+              There is a second problem, and it is worse. Look at the three rows
+              where Y reads 1. Nothing is driving that 1. It is only the charge
+              we put on C<sub>L</sub> before we started, and it is connected
+              neither to ground nor to the supply. A node in that condition is
+              said to be <strong>floating</strong>, or in a
+              <strong>high-impedance</strong> state, written Hi-Z. The stored
+              charge leaks slowly away, and the next gate along reads a voltage
+              that nobody chose. A logic gate has to produce a definite 1 or a
+              definite 0 for every input, and half of a gate cannot do that.
             </p>
             <p>
-              So the pull-down network on its own is not a gate. For every input
-              combination where the PDN is open, something else has to close and
-              connect the output to V<sub>DD</sub> instead. That something is the
-              pull-up network, and the question is what shape it should have.
+              So the pull-down network on its own is not a gate. For every row
+              where the PDN is open, something else has to close and connect Y
+              to V<sub>DD</sub> instead. That something is the pull-up network,
+              and the question is what shape it should have.
             </p>
           </div>
         </div>
@@ -270,29 +277,37 @@
             Read that right-hand side as a set of instructions. It says the
             pull-up should close when A is low <em>or</em> B is low. A switch that
             closes when its input is low is a pMOS, and OR means parallel. So the
-            PUN is two pMOS in parallel between V<sub>DD</sub> and the output,
-            one with its gate on A and one with its gate on B. Put the two
-            networks together and we have the complete gate.
+            PUN is two pMOS in parallel between V<sub>DD</sub> and Y, one with
+            its gate on A and one with its gate on B. Start C<sub>L</sub> empty
+            this time and read the table: the pull-up charges Y to 1 in exactly
+            the three rows the pull-down left floating, and in the fourth row it
+            is the pull-up that has nothing to say. Put the two together.
           </p>
         </div>
 
+        <figure class="figure enlarge-xl" style="max-width: 52rem; margin: var(--space-4) auto 0;">
+          <img src="../../assets/introduction-to-physical-design/pun-example.jpg"
+               alt="Two pMOS transistors P1 and P2 in parallel between V-DD and the output Y, their gates driven by A and B, with a load capacitor C-L on Y whose initial voltage is zero. Beside it, a truth table: Y is 1 whenever at least one transistor is on, and 0 only for A equals 1 and B equals 1, where both are off."
+               decoding="async" />
+        </figure>
+
         <div class="split split--media-left" style="align-items: start; margin-top: var(--space-4);">
-          <figure class="figure enlarge-xl" style="max-width: 34rem;">
-            <img src="../../assets/introduction-to-physical-design/check-yourself-NAND.jpg"
-                 alt="A CMOS NAND gate: two p-type transistors in parallel between V-DD and the output y, their gates driven by a and b, and two n-type transistors in series between y and ground, their gates also driven by a and b."
+          <figure class="figure enlarge-xl" style="max-width: 24rem;">
+            <img src="../../assets/introduction-to-physical-design/nand2.jpg"
+                 alt="NAND2: two pMOS transistors P1 and P2 in parallel between V-DD and the output Y, and two nMOS transistors N1 and N2 in series between Y and ground, A driving P1 and N1, B driving P2 and N2, with the load capacitor C-L on Y."
                  decoding="async" />
           </figure>
           <div class="prose">
             <p style="margin-top: 0;">
-              Check it against every input. With A and B both high, the two pMOS
+              Check it against every row. With A and B both high, the two pMOS
               are off and the two nMOS are on, so Y is pulled firmly to ground.
               With either input low, at least one pMOS is on and the series pair
               of nMOS is broken, so Y is pulled firmly to V<sub>DD</sub>. There
               is no input for which both networks are on, so there is never a
-              path straight from supply to ground, and there is no input for
-              which both are off, so the output never floats. This is the
-              <strong>static CMOS NAND</strong>, and it is the same circuit you
-              identified at the end of Transistor Basics.
+              path straight from supply to ground, and none for which both are
+              off, so Y never floats. This is the <strong>static CMOS
+              NAND</strong>, the same circuit you identified at the end of
+              Transistor Basics.
             </p>
             <p>
               Notice the shape of the two halves. The PDN is a series pair and
