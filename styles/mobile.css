@@ -596,9 +596,6 @@
   /* The switch pair on Implementing Arbitrary Logic: two drawing-and-sentence
      rows inside one card. Two columns at 20rem + prose need more than a
      phone has, so each row stacks, drawing over sentence. */
-  /* The inline column template on the .split that hangs the card beside
-     the prose would otherwise outrank the stacking here. Card first. */
-  .sw-split,
   .sw-pair__row {
     grid-template-columns: 1fr !important;
   }
