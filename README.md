@@ -60,7 +60,7 @@ It is fully self-contained: to remove it, delete the `#explore` `<section>`, the
 The script keys off the ids `alu-widget`, `alu-diagram`, `alu-op-name`,
 `alu-op-bits`, and the `.alu-preset` / `.alu-bit` buttons — keep those intact.
 
-**Tweaking the highlight colours**
+**Tweaking the highlight colors**
 
 Edit the local custom properties at the top of `.alu-widget` in
 `styles/alu-widget.css`:
@@ -89,7 +89,7 @@ Every wire/gate in the SVG has a stable, descriptive id (e.g. `wire-b0-ainv-not`
 adding or editing an operation means touching the table, never the drawing code.
 
 This datapath cannot produce XOR/XNOR or constant outputs; the unnamed `control`
-codes are shown literally per their bits (labelled e.g. `control=1011`).
+codes are shown literally per their bits (labeled e.g. `control=1011`).
 
 ## Notes
 

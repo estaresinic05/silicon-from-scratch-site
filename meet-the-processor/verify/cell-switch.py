@@ -69,7 +69,7 @@ with sync_playwright() as pw:
 
     if rows:
         # base values, read off the resting frame rather than hardcoded. The cell
-        # rests with NOTHING lit now, so this frame is the plain base colour of
+        # rests with NOTHING lit now, so this frame is the plain base color of
         # every part and the checks below are all relative to it.
         rest = rows[-1][1]
         DIM_P, DIM_N, DIM_G = rest["pmos"], rest["nmos"], rest["gate"]

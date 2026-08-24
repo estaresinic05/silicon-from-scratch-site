@@ -31,7 +31,7 @@ with sync_playwright() as b_:
           return {{cx,cy,top:top?top.id||top.className||top.tagName:'none',
                   hit: top===e||e.contains(top)}};
         }}""")
-        print(f"  {sel}: centre ({box['cx']:.0f},{box['cy']:.0f})  topmost element "
+        print(f"  {sel}: center ({box['cx']:.0f},{box['cy']:.0f})  topmost element "
               f"= {box['top']!r}  reachable={box['hit']}")
     # real click on the X
     pg.mouse.click(*pg.evaluate("""()=>{const r=document.getElementById('sheet-close')

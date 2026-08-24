@@ -19,7 +19,7 @@ block unhid a completely unstyled panel. The descent froze as designed and nothi
 was visible, because the element had no position, no z-index and no size, sitting
 far down a 2000vh page.
 
-**Symptom to remember: new behaviour, old appearance.** It is almost always this.
+**Symptom to remember: new behavior, old appearance.** It is almost always this.
 
 ## Isolation
 
@@ -36,7 +36,7 @@ This folder is completely self-contained and **cannot affect the live site**:
 |---|-------|--------------|
 | 01 | The Packaged Chip | The AM5 package under its nickel lid, slowly settling square |
 | 02 | Bare Silicon | The IHS rises and drifts away, both dies are revealed, and the camera comes to eye level beside them |
-| 03 | The Floorplan Beneath | Delayers, then regions bloom in as flat colour; parks with every region up and fully filled |
+| 03 | The Floorplan Beneath | Delayers, then regions bloom in as flat color; parks with every region up and fully filled |
 | 04 | Inside One Core | Descends into the photograph's bottom-left core, which the half turn below draws at the die's far-right corner; its 29 blocks rise as glass slabs a beat at a time, in the order an instruction meets them, while the camera orbits low |
 | 05 | The Metal Stack | 15 graded copper tiers cascade apart from the bottom up, a pulse of light climbs them, and the camera flies in among them |
 | 06 | The Cell Rows | The stack folds back down, top first, leaving its lowest gap open as a room; M1 turns to glass and a field of standard cell rows shows through the floor |
@@ -55,14 +55,14 @@ but only while parked at a stop.
   lying on the surface reads as belonging to the object. They fade out again by
   t 0.40, before the delayer strips the CCD — stage 05's line is that up close
   this is just polished silicon, so the name should not still be lying on it.
-- **Region highlights** — colour fill that blooms in, then settles to a glowing
+- **Region highlights** — color fill that blooms in, then settles to a glowing
   outline — for anything that is an *area of a die*: the floorplan's cores, L3
   and bottom strip, and now the blocks within a single core too.
 
 ### The region highlight
 
 During stage 03 the regions reveal in sequence — the eight cores, then L3,
-then the SMU/IFOP strip — as flat colour fills that mimic the annotated
+then the SMU/IFOP strip — as flat color fills that mimic the annotated
 reference die shot, then cross-fade to glowing outlines so the real silicon
 comes back before the camera dives into a core.
 
@@ -128,7 +128,7 @@ What it moves, and what it does not:
 Stage 07's regions are **traced by hand**, in `trace.html`, and used verbatim.
 
 Three rounds of deriving them automatically each landed close but wrong: from
-the annotation's colour washes, from rectangles snapped to the die's white
+the annotation's color washes, from rectangles snapped to the die's white
 lines, and from the die's own smooth-field sections. The last was the best of
 them — texture energy does separate smooth logic (1.7-2.7) from patterned array
 (7.7-47.7) cleanly, and the sections it produced agreed with the annotation at
@@ -149,13 +149,13 @@ name turned out not to fit — see below.
 
 #### Rules applied to every traced region
 
-**Snap flush to neighbours.** Traced edges are axis-aligned, so an edge is
+**Snap flush to neighbors.** Traced edges are axis-aligned, so an edge is
 (orientation, coordinate, span). It snaps onto an existing edge only when that
 edge is parallel, within **0.008 uv**, *and their spans overlap* — without the
 overlap test a distant edge sharing a coordinate would drag it sideways.
 Load/store arrived 0.0015-0.0044 off L1d on three edges; integer execution 0.0007-0.0045 off on four.
 
-> Not every near-miss is a neighbour. The L2 halves sit 0.0063 from Load/store,
+> Not every near-miss is a neighbor. The L2 halves sit 0.0063 from Load/store,
 > inside tolerance, but the 13 px between them is array texture — the L2$
 > control and interconnect column, which the reference names as its own region.
 > Snapping there would erase a real block, so check what is in the gap before
@@ -166,7 +166,7 @@ pixels, so the raw masks overlap by a few hundred pixels even when correct.
 Erode each by 1 px first: across all five regions that gives **0 px** of real
 overlap.
 
-**Fit the label to the shape.** The anchor stored per region maximises an
+**Fit the label to the shape.** The anchor stored per region maximizes an
 inscribed *circle*, but type is a wide rectangle, so it is only a starting
 guess — "Load / store" spilled straight out of its region. The overlay now
 measures the real string, then walks the font size down and tries the anchor
@@ -191,8 +191,8 @@ Real extruded geometry, 37.15 × 37.48 mm, in two parts: a thin flange and a
 raised platform.
 
 **The silhouette is traced, not approximated.** `assets/lid-outline.json`
-holds the real contour plus the platform square, both in millimetres about the
-lid centre, produced by boundary-tracing the cleaned lid mask at 1024 px,
+holds the real contour plus the platform square, both in millimeters about the
+lid center, produced by boundary-tracing the cleaned lid mask at 1024 px,
 smoothing with Chaikin, and simplifying with Douglas–Peucker. The one
 departure from the trace is that the eight notch floors are straightened onto
 the platform's four lines — see below for why.
@@ -226,7 +226,7 @@ x≈530, the lid edge at x≈215):
 | 28 px | 505 | bridge broken |
 | 40 px+ | 507 | no further gain, shape shrinks |
 
-So: threshold → 28 px erode → flood-fill from the centre → 28 px dilate.
+So: threshold → 28 px erode → flood-fill from the center → 28 px dilate.
 
 This replaced three failed analytic attempts, and the failures are worth
 recording:
@@ -243,7 +243,7 @@ A traced contour has none of these problems and needs no alpha at all.
 
 **Read the lid as a square with eight fins hanging off it** — four corner arms
 and four mid-edge tabs. The raised platform covers that square **and reaches
-out into every fin**, stopping only where the grey changes: each outer edge
+out into every fin**, stopping only where the gray changes: each outer edge
 carries a darker, coarser band, and that band is the lower flange face. The
 platform is **971 mm², 91% of the lid**, and along every edge it shares — the
 square runs and both flanks of every tab — it is flush, its step face *being*
@@ -256,7 +256,7 @@ the lid's edge. Reach into the mid tabs, measured from the square line:
 | left | 2.65 mm | 3.98 mm | 1.33 mm |
 | right | 2.60 mm | 3.98 mm | 1.38 mm |
 
-The two greys are separated by finish, the same way the platform was found in
+The two grays are separated by finish, the same way the platform was found in
 the first place: machined smooth against rough, split by local standard
 deviation.
 
@@ -368,7 +368,7 @@ bottom-right corner, which reads as a bump on the edge. Its cause is the one
 this file already warns about: a bank of surface-mount capacitors on whitish
 adhesive sits hard against the lid edge there, and being bright *and*
 desaturated it passes the `S<70` lid test — measured inside the bulge, S runs
-2–23 where the substrate a few millimetres away reads 83.
+2–23 where the substrate a few millimeters away reads 83.
 
 The straightening pass missed it because its tolerance was 0.15 mm. Widening
 that is not the fix: the concave fillet at each tab base departs the line
@@ -427,7 +427,7 @@ and the flange's area changes by 0.48 mm² (0.04%).
 **Verified on the raster, not the vertex lists.** At 200 px/mm: **zero**
 platform pixels outside the flange, and across the square runs the two
 boundaries land on the same pixel — mean gap **0.0000 mm** on all four sides,
-worst case 0.010 mm, which is 2 px of quantisation.
+worst case 0.010 mm, which is 2 px of quantization.
 
 > When checking a side, exclude scan lines that cross a fin. The notch floor's
 > span brackets the mid-edge tab too, so including them measures fin height —
@@ -518,7 +518,7 @@ where the tab meets the square. The four corner arms are still traced.
 Dimensions are measured, only the shape is idealised. **The tabs are not all
 the same size**, which is easy to assume and wrong:
 
-| tab | width | reach beyond the square | centre |
+| tab | width | reach beyond the square | center |
 |---|---|---|---|
 | top | 3.707 mm | 3.980 mm | −0.076 |
 | bottom | 3.795 mm | 3.980 mm | +0.057 |
@@ -537,7 +537,7 @@ teal back on exactly the corners the trim just cleaned. Extending the fins
 further would make it much worse.
 
 So `ihs.jpg` is no longer the raw crop. Every pixel outside the metal is
-replaced by its nearest metal colour, which decouples silhouette from texture:
+replaced by its nearest metal color, which decouples silhouette from texture:
 the outline is now set purely by the geometry, and there is no teal left to
 leak. Teal within 3 mm of the lid edge falls from the entire band to **974
 pixels, 0.3%**. The pristine crop is kept alongside as `ihs-photo.jpg`, and
@@ -572,7 +572,7 @@ isolation:
 
 It used to be two flat planes over the core photograph, crossfading a fill
 canvas into an outline canvas. That worked, but it made stage 07 the one reveal
-in the piece that was a diagram being coloured in — one stage after the
+in the piece that was a diagram being colored in — one stage after the
 floorplan had established that regions come *out of* the die.
 
 It is now the floorplan's construction verbatim, at the core's scale: 28
@@ -638,7 +638,7 @@ thing immediately before being shown they are not. 20 entries become 20 beats
 over 29 blocks.
 
 **A name has to fit on one piece.** Vector execution was one region carrying
-both of its columns, with `fit: false` so the fitter would not reject a centre
+both of its columns, with `fit: false` so the fitter would not reject a center
 that lands in the channel between them. The name was therefore drawn across
 both — and the channel, plus the section gap now inset on either side of it, cut
 a 25 px white slice straight through "Ex|ecution" and "Sche|duling". It is two
@@ -653,14 +653,14 @@ wrong. Dumping the fill canvas on its own, by eval'ing `overlayTexture` and
 immediately. **When type on a region looks wrong, look at the canvas before
 looking at the scene.**
 
-**No settle to outline, unlike the floorplan.** A block takes its colour when it
+**No settle to outline, unlike the floorplan.** A block takes its color when it
 rises and keeps it until the whole core clears with the die surfaces. The
 floorplan hands the silicon back because its regions are read once and then get
 out of the way for the descent into a core; this stage is building a picture of
 a datapath, and a block that has faded to a rim is no longer part of it.
 
 That also means the core builds no outline canvas at all — the `fill` canvas is
-self-contained (colour flood, white boundary stroke, name plate), and stacking
+self-contained (color flood, white boundary stroke, name plate), and stacking
 the outline canvas over it at full opacity would double-strike every label,
 since both modes draw the name.
 
@@ -693,7 +693,7 @@ But turning it off unconditionally is just as wrong, because **at rest these
 walls are opaque**, and opaque geometry that does not write depth falls back on
 the transparent sort for occlusion — which sorts per *object*, by centroid. A
 big concave block like instruction fetch has a centroid that says little about
-which of its arms is nearest, so a small neighbour's edge drew over it from some
+which of its arms is nearest, so a small neighbor's edge drew over it from some
 angles and not others. That was the L2 ITLB edge showing through instruction
 fetch.
 
@@ -710,7 +710,7 @@ extrude an outline without its caps:
 |---|---|---|
 | top face | 0 | *before* the die plane, so the plane paints over it — that is what makes the slab read as glass with the silicon lying flat underneath, instead of a second copy of the photograph floating at the slab's own height |
 | walls | 10 | *after* sBack 1 / sFloor 2 / sCore 3, so nothing erases their edges |
-| fill / outline caps | 45, 46, 50 | colour and name, last |
+| fill / outline caps | 45, 46, 50 | color and name, last |
 
 ### A fade that never played
 
@@ -729,7 +729,7 @@ fails on any frame where the fade and the visibility disagree.
 
 ### Section gaps
 
-Boundaries here are measured flush on purpose — neighbouring regions share an
+Boundaries here are measured flush on purpose — neighboring regions share an
 edge exactly, so a partitioned band reads as one band. That is right for the
 measurement and wrong for the look: the die's own core column and L3 happen to
 sit 0.004 uv apart, and that hairline is exactly what makes those two read as
@@ -767,7 +767,7 @@ quarter, so a block with one thin feature still gets whatever gap it can carry.
 > ring keeps ~90% of its area, so the area test passed them. The resulting ring
 > self-intersects — which `ExtrudeGeometry` will still happily build walls
 > along, but `ShapeGeometry` cannot triangulate. That block therefore drew its
-> coloured edges and **no cap at all**, silently losing its fill and its name.
+> colored edges and **no cap at all**, silently losing its fill and its name.
 > It presented as "the text is hard to read", which sent the first two
 > diagnoses (occlusion, material opacity) in entirely the wrong direction.
 
@@ -816,13 +816,13 @@ The substrate has a semicircular cutout bitten out of its edge, and it is a
 real through-hole — you can see the background straight through it. Both
 photographs agree on the geometry:
 
-| source | chord | depth | centre, from mid-edge |
+| source | chord | depth | center, from mid-edge |
 |---|---|---|---|
 | retail photo, top edge | 2.23 mm | 1.04 mm | −2.77 mm |
 | retail photo, bottom edge | 2.26 mm | 0.98 mm | −2.79 mm |
 | `substrate.jpg` | 2.25 mm | — | −2.81 mm |
 
-Modelled as a true half circle, r = 1.125 mm at x = −2.78 mm. The package is
+Modeled as a true half circle, r = 1.125 mm at x = −2.78 mm. The package is
 built from a `Shape` carrying both bites: `ShapeGeometry` for the two
 photographic faces and an `ExtrudeGeometry` of the same outline for the body,
 so the laminate edge wraps the inside of each cutout and the hole reads as a
@@ -878,7 +878,7 @@ buffer cannot resolve 2 µm. In depth-buffer LSBs, with `near 0.05 / far 600`:
 | t 0.36, down at die level | 17 | 5.81 LSB | resolved |
 | t 0.415 | 16 | 6.55 LSB | resolved |
 
-Below 1 LSB the two surfaces quantise to the *same* value. The crossover falls
+Below 1 LSB the two surfaces quantize to the *same* value. The crossover falls
 exactly at the t 0.36 keyframe where the camera drops to `y = 3.0`, which is
 where the flicker was reported to stop — the arithmetic reproduces the symptom
 without needing to see it.
@@ -907,7 +907,7 @@ Two deliberate departures from reality, both stated in the UI:
 - **The metal stack is 15 representative tiers.** TSMC does not publish the
   metal layer count for N4P, so no specific number is claimed.
 - **The stack's vertical scale is exaggerated ~400×.** Real back-end-of-line
-  wiring is a few micrometres tall on a die millimetres wide; at true scale it
+  wiring is a few micrometers tall on a die millimeters wide; at true scale it
   would be invisible. Horizontal proportions are to scale.
 
 ## Assets
@@ -921,7 +921,7 @@ is kept outside this repo:
 | `ihs.jpg` | the above, edge-extended past the metal | stages 01–03 |
 | `pads.jpg` | package underside | stage 02 |
 | `substrate.jpg` | delid, cropped to the 40 mm package | stages 03–05 |
-| `die-backside.jpg` | delid, true colour | stages 03–05 |
+| `die-backside.jpg` | delid, true color | stages 03–05 |
 | `iod-backside.jpg` | delid, cropped to the I/O die | stages 03–06 |
 | `die-floorplan.jpg` | straightened delayered CCD | stages 06, 08 |
 | `core-detail.jpg` | crop of the bottom-left core | stage 07 |
@@ -944,7 +944,7 @@ The I/O die measures 12.74 × 9.88 mm = 125.8 mm² against ~122 mm² published
 for the Granite Ridge I/O die — a ~3% overshoot that reflects the hand-read
 die bounds, not the scale mapping.
 
-> **Check before this ever ships publicly:** confirm the licence/attribution
+> **Check before this ever ships publicly:** confirm the license/attribution
 > for the die photography. Fine for a local prototype; needs sorting out if it
 > becomes a live page.
 
@@ -981,7 +981,7 @@ stage it is now, and each solves a specific failure of the version before it.
 tightly pitched and barely coppery at M1 and thick, sparse and warm at M15, so
 appearance alone should tell you how high up you are. The first attempt tinted
 the material, which cannot work: a tint multiplies, so an already orange map
-cannot be desaturated toward tungsten by any colour you choose. The wire colour
+cannot be desaturated toward tungsten by any color you choose. The wire color
 is therefore mixed **inside** `routingTexture` — `mix('#8e8a85','#d98a44', t**0.75)`
 — and `tierLook(i)` is left to carry lightness and roughness only.
 
@@ -1005,7 +1005,7 @@ reads as passing through a veil.
 
 **An exit that takes two keys.** One was not enough. A single jump from inside
 the stack to above it left the camera at 0.926 still among the tiers, below the
-top and metres from a plane — chaos, not emergence. 0.918 clears the footprint
+top and meters from a plane — chaos, not emergence. 0.918 clears the footprint
 and 0.934 clears the height, and only from up there do the bond bumps read as
 the thing the whole stack was climbing toward.
 
@@ -1117,10 +1117,10 @@ Three things this forced:
   plane. A blended box shows its own back faces through its front ones and stops
   reading as metal, and the see-through quality this stage wants comes from the
   gaps *between* bars — structural, not material.
-- **Bar colour is graded on the material**, tungsten-grey at M1 to copper at the
-  top. This is the tint that could not work on the plane: a material colour
-  multiplies, so it can never desaturate an already orange texture toward grey.
-  With no map to fight, the same grading finally works as a colour.
+- **Bar color is graded on the material**, tungsten-gray at M1 to copper at the
+  top. This is the tint that could not work on the plane: a material color
+  multiplies, so it can never desaturate an already orange texture toward gray.
+  With no map to fight, the same grading finally works as a color.
 - **Two near-fade bands, because the plane and the bars fail differently.** The
   plane is a full sheet: at a grazing angle from just below, it washed the entire
   upper frame flat orange and buried the structure the bars had just added, so
@@ -1163,7 +1163,7 @@ reads as something responding rather than as a loop playing.
 
 **The click line is bigger and brighter than the keyboard line.** They used to
 share `#hint`'s size. They are not the same job: the keyboard line names a
-control sitting three centimetres below it, while the click line is the only
+control sitting three centimeters below it, while the click line is the only
 sentence on the page that says what a block *does*, carrying that alone for
 anyone who has not moved the mouse. It is `.86rem` against `.66rem` and `--text`
 against `--muted`. Measured at 1440 it runs 567 to 873 with the caption ending at
@@ -1175,7 +1175,7 @@ inside a 320px viewport.
 > It worked and it verified, and it genuinely helped at the core stop where 29
 > blocks are packed edge to edge. But **the slabs are glass**: a contact shadow
 > hides under its caster, and here it read straight through the block and pulled
-> its colour down. The only settings where the shadow was clearly legible were
+> its color down. The only settings where the shadow was clearly legible were
 > the ones where it spoiled the block. Rebuilding it needs the shadow masked by
 > the footprint rather than visible through it, which is a stencil pass, not an
 > opacity.
@@ -1195,7 +1195,7 @@ arrive together; and it stands down while the tag is up, because the tag is
 saying the same thing better and about a specific block.
 
 **The tag is a chip with two lines**, the block's name and "Click to read about
-it", and its left rule takes the block's own colour so it reads as belonging to
+it", and its left rule takes the block's own color so it reads as belonging to
 that slab rather than as page chrome that happened to appear. It rides the
 cursor on hover — and the attract pass raises the *same chip* over the block it
 is demonstrating, which is the point: the demo now teaches the click and not
@@ -1206,7 +1206,7 @@ Three consequences worth knowing about:
 - **`attractLevel` now gates on `selectable`.** It never did, so the demo ran its
   three slots at *every* stop, lifting slabs whose opacity was zero. Invisible
   and harmless — right up until the tag started naming whatever the demo had
-  claimed and cheerfully labelled an L1D Cache in the middle of the metal stack.
+  claimed and cheerfully labeled an L1D Cache in the middle of the metal stack.
 - **Stages 03 and 04 lost "Click any region to read about it."** Four tellings of
   one fact, and the caption's was the one that could be given up.
 - **`tagW`/`tagH` are measured when the text changes, not per frame.** Reading
@@ -1230,12 +1230,12 @@ room.
 The split is by **obligation**, not by length. Crediting the photograph is the
 condition this page carries, so that is one permanent line and never depends on
 anybody opening anything. The disclaimer about the annotations is a note rather
-than a condition, so it goes behind a labelled toggle — and the moment it is
+than a condition, so it goes behind a labeled toggle — and the moment it is
 behind a toggle it can be set at 0.74rem, a size somebody might actually read.
 
 What that buys: the corner shrinks from four lines to one; the long text becomes
 legible instead of merely present; and the phone gets all of it for the first
-time, in a panel centred on the viewport.
+time, in a panel centered on the viewport.
 
 The toggle is a **word, not a bare glyph**. A lone information glyph in a corner
 is a mystery box, and the one thing a viewer needs before deciding to open it is
@@ -1346,7 +1346,7 @@ were in the way. The stage is the copper getting out of the way.
 - **Rails on every boundary**, shared between the row above and the row below.
   Supply is warm and ground is cool, decided once in `VDD_COL` / `GND_COL`, and
   the inverter's own straps read those same two constants — the rail along the
-  hero cell's PMOS edge is the same colour as the rail along every other cell's,
+  hero cell's PMOS edge is the same color as the rail along every other cell's,
   so crossing from the floor into the cell is not learning a second scheme. Which
   boundary is supply is fixed *relative to the hero row*, not by the raw index:
   keyed off `b % 2` it depended on `ROW_N`'s parity, and the cell's VDD strap
@@ -1372,7 +1372,7 @@ brings it all back with no other edit; `cell-switch.py` reports the flag rather
 than failing.
 
 **Contacts are tinted by the net they carry**, not by the metal they are made of,
-and that is what makes the wiring readable. Drawn all one tungsten grey, six
+and that is what makes the wiring readable. Drawn all one tungsten gray, six
 identical posts stood between the metal and the silicon and gave no clue which
 belonged to which — you could see that the supply rail came down somewhere and
 that the output strap went down somewhere, but not that they reached different
@@ -1401,27 +1401,27 @@ ones go to the circuit.
 **Devices are blocks, not fins.** Four ridges per device read as texture rather
 than structure at the size this renders. Source and drain are drawn *identically*
 and deliberately: in a MOSFET they are the same object and only the wiring tells
-them apart, so colouring them differently would invent a distinction the silicon
+them apart, so coloring them differently would invent a distinction the silicon
 does not have.
 
-Colour carries the rest, following the reference: **green P-type**, **teal
+Color carries the rest, following the reference: **green P-type**, **teal
 N-type** (pushed off flat blue so it cannot be read as the cool GND rail),
 **salmon gate**, a sliver of **yellow gate oxide**, and every connection — posts,
-straps, output via and output wire — in **one neutral grey**. Two coloured bars at
-the edges are power; everything grey between them is the circuit.
+straps, output via and output wire — in **one neutral gray**. Two colored bars at
+the edges are power; everything gray between them is the circuit.
 
-Two colour details that are not obvious from the code:
+Two color details that are not obvious from the code:
 
 - **`SIGNAL_COL` is darker than `CONTACT_COL` on purpose.** The posts are a
   physical material and are lit; the straps above them are a *basic* material and
   are not, because the switching loop has to drive them past 1.0 and only an
   unlit material can be. Given the same hex the straps rendered visibly paler and
-  the circuit looked like two different greys.
-- **The power ties are built from `railMat` itself**, not from a matching colour:
+  the circuit looked like two different grays.
+- **The power ties are built from `railMat` itself**, not from a matching color:
   same material, same instanceColor, same height, same thickness, overlapping the
-  rail's near half so there is no seam. A hand-matched colour reads as a near
+  rail's near half so there is no seam. A hand-matched color reads as a near
   miss, which is worse than an obvious difference — a strap that is *almost* the
-  rail's colour looks like a mistake, one that is exactly it looks like the rail.
+  rail's color looks like a mistake, one that is exactly it looks like the rail.
 
 The last two camera keys sit about **15 degrees to the left** of what they aim at.
 Square-on was the right correction from the 45-degree diagonal these used to have,
@@ -1431,13 +1431,13 @@ under the lifted straps without rotating the axes back into a diamond.
 
 Moving left put a stack column straight through the cell, so the vias now fade to
 3% at stop 07 rather than the 20% the sheets fade to. A tier is a thin plane seen
-edge-on and survives being a ghost; a column is a metre of copper standing between
+edge-on and survives being a ghost; a column is a meter of copper standing between
 the camera and a cell half a unit wide.
 
 **Keeping the cell in front of the copper — and the wrong fix first.** A via
 crossing the inverter used to hide it, so `viaMat.depthWrite` was turned off. That
 cured the symptom and broke the vias everywhere else: depth writes are exactly what
-make a via read as a solid rod rather than a coloured film, and every column in the
+make a via read as a solid rod rather than a colored film, and every column in the
 room and every via in stage 05 went see-through at once.
 
 The right fix is on the object that has to win, not on every object it might lose
@@ -1451,7 +1451,7 @@ the metal at 227 painted straight over IN and OUT.
 
 `tieMat` is a **clone** of `railMat` for the same reason: the ties have to stop
 depth-testing with the rest of the cell, and `railMat` is shared with the floor's
-rails, which must keep theirs. `updateScene` copies colour and opacity across each
+rails, which must keep theirs. `updateScene` copies color and opacity across each
 frame so the clone cannot drift.
 
 **The cell publishes a pin, not a route.** The output via and the long wire that
@@ -1481,10 +1481,10 @@ they were fading in and dropping into place. They read as appearing from nowhere
 The climb they are the reward for is the camera's, and the reward has to be there
 before the climb ends.
 
-Lit colour is derived **from each piece's own base**, not from one shared bright
+Lit color is derived **from each piece's own base**, not from one shared bright
 value, so a conducting ground rail goes bright blue and a conducting supply rail
 goes bright copper. Shared, both washed to the same warm white the instant they
-switched, throwing away the colour the floor had just spent a whole stage
+switched, throwing away the color the floor had just spent a whole stage
 establishing — at exactly the moment you most want to know which rail it is. The switching loop is a pure function of its phase — no edge detection, no
 comparison against the last frame — so seeking to a `t` gives the same frame every
 time and the video renderer's clock override still works. Exactly one device is
@@ -1558,10 +1558,10 @@ is sized by `max-width: 100%` and `max-height: 30vh` with `width: auto`, so the
 height cap shrinks the box rather than leaving white margin out to the right of a
 wide diagram. On a phone the cap comes off, because the sheet scrolls there.
 
-It is centred in the column with `margin-inline: auto`. That shows only on the
+It is centered in the column with `margin-inline: auto`. That shows only on the
 figures the height cap makes narrower than the column, which is every figure that
 is not much wider than it is tall: a square diagram pinned left under a 700px
-column reads as a hole in the layout. The wide ones fill the column and centring
+column reads as a hole in the layout. The wide ones fill the column and centering
 does nothing to them.
 
 **The 30vh cap is what every sheet's height budget is built on.** L2 is the
@@ -1593,7 +1593,7 @@ This is a long measure by the usual rule, 716px at 1707 wide and 816px at 1920,
 and it is deliberate: the edge of the player is the line the eye already reads
 as the edge of the text, and a narrower column beside a full-width player reads
 as a mistake rather than as typography. It also buys back the height, which is
-what keeps every sheet inside the window: this panel is centred and does not
+what keeps every sheet inside the window: this panel is centered and does not
 scroll on desktop, so a subject's copy plus its figure has a real budget.
 Measured at 1280×720, 1707×950 and 1920×1080, all eleven wired sheets sit inside
 the sheet's own padding at every one.
@@ -1601,7 +1601,7 @@ the sheet's own padding at every one.
 ### The player sits in the middle of the screen
 
 `.sheet-media` is `align-self: center`. The grid row is as tall as the taller of
-the two columns and the sheet centres its rows, so this puts the player in the
+the two columns and the sheet centers its rows, so this puts the player in the
 vertical middle of the window. It only moves on the sheets whose copy outruns it,
 which today is L2 and, by a few pixels, the Infinity Fabric band. On every other
 sheet the copy is the shorter column, so the player still defines the row and the
@@ -1818,7 +1818,7 @@ committed, ~200 MB each. Web encodes under `assets/video/`, tracked, because the
 **The encode, and the part that is easy to get wrong.** The masters are **HLG HDR
 in BT.2020**, which is what a phone shoots by default and never mentions. Encoded
 straight to 8-bit H.264 the result does not error, does not warn, and is visibly
-grey and desaturated on every normal display. It has to be tone-mapped first:
+gray and desaturated on every normal display. It has to be tone-mapped first:
 
 ```sh
 ffmpeg -i video-masters/<name>.mov   -vf "zscale=w=1280:h=720:f=lanczos:t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p"   -r 30 -c:v libx264 -profile:v high -level 4.0 -crf 22 -preset medium   -c:a aac -b:a 128k -ac 2 -movflags +faststart   meet-the-processor/assets/video/<slug>.mp4
@@ -1853,7 +1853,7 @@ whisper's text is reliable where its timings are not — and put the splice insi
 a silence so no consonant is clipped. Re-transcribe the finished file afterwards
 and check both the count and the words either side.
 
-**Hard cut or dissolve is a measurement, not a judgement.** Extract the frame
+**Hard cut or dissolve is a measurement, not a judgment.** Extract the frame
 that would play last before the cut and the one that would play first after it,
 and take the mean absolute difference. On this take a still pose scored 0.9 to
 2.7 and cut cleanly; 6.7 was a shift in the chair and 11.4 was a hand coming up

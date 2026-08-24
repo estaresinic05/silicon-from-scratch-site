@@ -1,6 +1,6 @@
-"""Two behaviours around the outline phase of the macro regions:
+"""Two behaviors around the outline phase of the macro regions:
 
-  1. while a region is see-through but still showing its coloured outline,
+  1. while a region is see-through but still showing its colored outline,
      hovering must bring its highlighted fill back
   2. once the overlay has cleared entirely, the region must not be selectable
 

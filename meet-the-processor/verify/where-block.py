@@ -57,7 +57,7 @@ for col, pts in targets:
     q = proj(cxw, ys+0.055, czw)
     if not q: print("  behind camera"); continue
     px,py = int(q[0]), int(q[1])
-    print(f"\n  piece centre -> screen ({px}, {py})   authored colour {col}")
+    print(f"\n  piece center -> screen ({px}, {py})   authored color {col}")
     if 0<=px<W and 0<=py<H:
         for dx,dy in ((0,0),(-12,0),(12,0),(0,-8),(0,8)):
             x,y = min(max(px+dx,0),W-1), min(max(py+dy,0),H-1)

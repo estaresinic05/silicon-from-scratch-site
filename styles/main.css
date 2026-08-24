@@ -418,7 +418,7 @@ body::before {
 }
 .topbar__inner .wordmark { justify-self: start; }
 /* The links group with the GitHub mark and the hamburger on the RIGHT, instead
-   of floating in the centre of the bar. Two things fall out of that and both
+   of floating in the center of the bar. Two things fall out of that and both
    are why it changed: the wordmark gets the whole left side to itself, and the
    nav reads as one cluster of controls rather than as two groups with an
    unexplained gap between them.
@@ -597,14 +597,14 @@ main section[id] { scroll-margin-top: 5rem; }
        headline is what a first-time reader is meant to read first. */
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
 
-    /* Where both columns sit down the screen: centred in the band between the
+    /* Where both columns sit down the screen: centered in the band between the
        bottom of the fixed top bar and the bottom of the viewport.
 
        This replaces years of hand-solved padding. The old rule carried a
        viewport-proportional top push (4rem + 8.44vh) against a small bottom
        term, chosen so the headline landed on a particular y at one particular
        screen height. Every time the copy rewrapped or the artwork changed size
-       the number had to be re-solved, because the row is centred inside the
+       the number had to be re-solved, because the row is centered inside the
        padded box and half of any height change lands on the top edge. It was
        re-solved three times.
 
@@ -615,12 +615,12 @@ main section[id] { scroll-margin-top: 5rem; }
          * the hero is min-height 100vh with one auto row, and a grid's default
            align-content stretches that row to fill the content box, so the row
            IS the band;
-         * align-items: center then centres each column in the row
-           independently, so the card and the copy are each centred in the band
-           on their own terms rather than being centred as a pair.
+         * align-items: center then centers each column in the row
+           independently, so the card and the copy are each centered in the band
+           on their own terms rather than being centered as a pair.
 
        Nothing to re-solve when the copy rewraps or the card's proportions
-       change: both stay centred by construction, at every screen height.
+       change: both stay centered by construction, at every screen height.
 
        The pinned scroll cue owns the foot of the screen and needs no padding
        reserved for it — it is position: fixed and outside this box entirely.
@@ -648,7 +648,7 @@ main section[id] { scroll-margin-top: 5rem; }
      headline broke to three lines in a column wide enough for two. */
   .hero h1 { max-width: none; }
 }
-/* Single column: centre the pair, since a left-aligned emblem under
+/* Single column: center the pair, since a left-aligned emblem under
    left-aligned copy reads as a mistake rather than a composition. */
 @media (max-width: 900px) {
   .hero { justify-items: center; text-align: center; }
@@ -754,7 +754,7 @@ main section[id] { scroll-margin-top: 5rem; }
   object-fit: cover;
   border-radius: var(--radius-sm);
   /* The scene's own backdrop, so a clip that has not decoded yet is a hole of
-     exactly the colour that is about to fill it. */
+     exactly the color that is about to fill it. */
   background: #0f0b1a;
 }
 .mtp-card__clip--wide { grid-column: 1 / 3; aspect-ratio: 16 / 7; }
@@ -861,7 +861,7 @@ main section[id] { scroll-margin-top: 5rem; }
   gap: 0.75rem;
   justify-content: flex-start;
 }
-/* Stacked layout re-centres the copy block with the emblem beneath it. */
+/* Stacked layout re-centers the copy block with the emblem beneath it. */
 @media (max-width: 900px) {
   .hero h1,
   .hero__intro { margin-inline: auto; }
@@ -869,7 +869,7 @@ main section[id] { scroll-margin-top: 5rem; }
 }
 
 /* The GitHub mark inside the ghost button. Sized to the cap height of the label
-   and inheriting its colour, so it dims and lights with the button rather than
+   and inheriting its color, so it dims and lights with the button rather than
    sitting on it as a separate object. */
 .btn__icon {
   width: 1.05em;
@@ -980,7 +980,7 @@ main section[id] { scroll-margin-top: 5rem; }
     transform: translateX(clamp(-3.75rem, calc(6.5 * var(--vwu)) - 124px, -0.5rem));
   }
   .buildpath-main { min-width: 0; }
-  /* Path sits flush inside its column (the grid handles centring). */
+  /* Path sits flush inside its column (the grid handles centering). */
   .buildpath-main .buildpath { margin-inline: 0; max-width: none; padding-inline: 0; }
   /* Center the "YOUR PATH" eyebrow over the WHOLE layout (≈ the screen middle),
      not just the serpentine column: lift it out of the right column's flow and
@@ -1292,7 +1292,7 @@ main section[id] { scroll-margin-top: 5rem; }
 }
 /* Zoom layer inside the die-map frame: fills it and holds the image + all the
    highlight rectangles. scroll.js scrubs scale()/x on this layer to focus on a
-   single core, so the frame (.journey__detail) keeps its centring transform and
+   single core, so the frame (.journey__detail) keeps its centering transform and
    stays pinned exactly in place. transform-origin = the focal core, so that
    point holds still while everything else expands outward (mirrors
    .overview-band__zoom). The frame's overflow:hidden crops the overshoot. */
@@ -2360,11 +2360,11 @@ html.js .buildpath-intro { --rail-progress: 0; }
 .theme-dark {
   /* Near-black rather than the old #1b1b22 charcoal. The darker base is what
      lets the violet field in the top-left register as a HUE rather than as a
-     lightening of an already-grey page. */
+     lightening of an already-gray page. */
   --bg:          #08080b;
   /* Raised surfaces come down with it. The lift over the page has to stay
      roughly what it was, or every card, quiz and figure on the site turns into
-     a pale grey box floating on black. Old delta was #1b1b22 -> #24242e; this
+     a pale gray box floating on black. Old delta was #1b1b22 -> #24242e; this
      keeps a comparable step from the new, much darker base. */
   --paper:       #14141c;
   --ink:         #fdfdfb;   /* primary text */
@@ -2390,14 +2390,14 @@ html.js .buildpath-intro { --rail-progress: 0; }
    (var(--accent)) the rest of the page uses for links and kickers, and therefore
    needed near-black label text to stay legible. That made the one element on
    the page that is supposed to be the loudest thing in the frame read as a
-   pale chip, and it made the button the same colour as every inline link.
+   pale chip, and it made the button the same color as every inline link.
 
    So the button leaves the accent token deliberately. --accent stays var(--accent)
    for links, kickers, code and focus rings, where a light tint is right on a
    dark page; the primary action alone drops to the full-strength brand purple
    and carries white. That also puts it back in step with the light theme,
    whose --accent already IS #6b2fc9, so the primary button is now the same
-   colour on both themes rather than two different purples.
+   color on both themes rather than two different purples.
 
    White on #6b2fc9 measures 7.3:1, which clears WCAG AAA for body text. */
 .theme-dark .btn--primary,
@@ -2431,7 +2431,7 @@ code.ctrl-sig,
    14% white rule reads as a bright line rather than an edge.
 
    The slide-in drawer (.toc__menu) already paints with var(--bg), so it
-   follows the new base colour without a rule of its own. */
+   follows the new base color without a rule of its own. */
 .theme-dark .topbar {
   background: color-mix(in srgb, var(--bg) 80%, transparent);
   backdrop-filter: saturate(1.1) blur(24px);
@@ -2456,7 +2456,7 @@ code.ctrl-sig,
 
 /* The ambient hue: ONE soft violet field in the top-left corner.
 
-   It replaces the old top-centre glow, and the two differences that matter are
+   It replaces the old top-center glow, and the two differences that matter are
    where it sits and that it never moves. body::before is already
    `position: fixed; inset: 0`, so this layer is pinned to the VIEWPORT, not to
    the document: the hue sits in the top-left corner at every scroll position,
@@ -2717,7 +2717,7 @@ code.ctrl-sig,
 .awv-toggle--off .awv-eye__lid { stroke: rgba(253, 253, 251, 0.4); }
 .awv-toggle--off .awv-eye__pupil { fill: rgba(253, 253, 251, 0.4); }
 .awv-toggle:focus-visible .awv-eye__lid { stroke: var(--accent); }
-/* Travelling bead — EXACTLY the datapath treatment: a fat, round-capped dash
+/* Traveling bead — EXACTLY the datapath treatment: a fat, round-capped dash
    that rides the trace like a bulge, color set per signal + a soft glow.
    Hidden at rest; the JS animation reveals it. */
 .awv-bead {
@@ -3362,7 +3362,7 @@ code.ctrl-sig,
 /* Title hard left, close button hard right. */
 .glossary-card__head {
   display: flex;
-  /* Centred so the X sits on the same line as the middle of the title. */
+  /* Centered so the X sits on the same line as the middle of the title. */
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
@@ -3508,7 +3508,7 @@ code.ctrl-sig,
 
 /* Wide images (e.g. the full waveform) fill nearly the whole viewport width
    when enlarged, since the default 1000px cap leaves them small. */
-/* width/float/margin !important neutralise any inline float-layout sizing the
+/* width/float/margin !important neutralize any inline float-layout sizing the
    clone carries over (e.g. the forwarding diagram floated at width: 40rem), so a
    wide figure expands to the full 96vw when enlarged regardless of its in-page size. */
 .enlarge-overlay .enlarge-wide {
@@ -3524,7 +3524,7 @@ code.ctrl-sig,
 .enlarge-overlay .enlarge-wide--sm img { max-width: 100%; max-height: 86vh; }
 
 /* Laundry figure: opens larger than default but not full-bleed. width/height:auto
-   !important neutralise the inline flush-layout sizing (height + object-fit) the
+   !important neutralize the inline flush-layout sizing (height + object-fit) the
    clone carries over, so it shows at natural size within the caps. */
 .enlarge-overlay .enlarge-laundry { max-width: min(88vw, 1000px) !important; height: auto !important; }
 .enlarge-overlay .enlarge-laundry img { width: auto !important; height: auto !important; max-width: 100%; max-height: 78vh; }
@@ -3540,7 +3540,7 @@ code.ctrl-sig,
 }
 
 /* ==========================================================================
-   VIDEO MODAL — the CMOS explainer, opened front and centre the first time
+   VIDEO MODAL — the CMOS explainer, opened front and center the first time
    someone lands on About and reopenable afterwards from "Watch the intro"
    (see scripts/about-video.js). Backdrop, fade and card scale are lifted from
    .glossary-overlay so the three overlays on this site read as one idea.

@@ -896,7 +896,7 @@ function buildBpTrace(managed) {
     // back to center. The table lives in the copy in markup (so it's in-context
     // and collapses to cards on mobile); here we relocate it into the sticky
     // media so it pins below the image. Only animate `top` (not transforms) so
-    // we never fight the image's centring transform or the table's own.
+    // we never fight the image's centering transform or the table's own.
     var l1Table = journey.querySelector(".cache-table");
     var mediaEl = journey.querySelector(".journey__media");
     var detailEl = journey.querySelector(".journey__detail");
@@ -945,7 +945,7 @@ function buildBpTrace(managed) {
        — the same scrubbed scale/transform-origin move as the ALU overview band.
        The .journey__zoom layer (absolute, inset:0, transform-origin in CSS)
        holds the image AND its highlight rectangles, so they scale/pan together
-       WITHOUT touching .journey__detail's centring transform — the frame stays
+       WITHOUT touching .journey__detail's centering transform — the frame stays
        pinned exactly where it is. The extra bottom runway on .journey__copy
        (see CSS) keeps the map pinned through the zoom. */
     var dieZoom = journey.querySelector(".journey__zoom");

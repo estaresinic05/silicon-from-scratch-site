@@ -8,8 +8,8 @@
    photographic twin and the hand-off between them is seamless.
 
    The metal stack is the one deliberate exaggeration: it is scaled ~400x
-   vertically, because real back-end-of-line wiring is a few micrometres tall
-   on a die millimetres wide and would otherwise be invisible.
+   vertically, because real back-end-of-line wiring is a few micrometers tall
+   on a die millimeters wide and would otherwise be invisible.
 
    CONTENTS
    1. Constants & stage script
@@ -42,7 +42,7 @@ const DIE_T = 0.62;
 const PKG = 40;               // AM5 package, 40 mm square
 const PKG_T = 2.0;
 
-/* Measured off the delid photo relative to the package centre. The package
+/* Measured off the delid photo relative to the package center. The package
    square is 2653 px across in all three photographs (x 150–2803, y 148–2802),
    i.e. 66.33 px/mm — NOT the 2701 px used earlier, which stretched every
    package texture by ~1.8% and left the dies sitting off their photographs. */
@@ -53,13 +53,13 @@ const DIE_OFF_Z = 8.80;
    independent check that the px/mm mapping is right. */
 const IOD_X = 0.02, IOD_Z = -3.35, IOD_W = 12.74, IOD_H = 9.88;
 
-/* IHS: 38.12 x 37.81 mm, centred on the package. Its silhouette and the
+/* IHS: 38.12 x 37.81 mm, centered on the package. Its silhouette and the
    outline of its raised platform are traced from the photograph and live in
    assets/lid-outline.json — see shapeFromPoints() for why.
 
    Read the lid as a SQUARE with eight fins hanging off it: four corner arms
    and four mid-edge tabs. The raised platform covers that square (29.03 x
-   28.98 mm) AND reaches out into every fin, stopping where the grey changes:
+   28.98 mm) AND reaches out into every fin, stopping where the gray changes:
    each outer edge carries a darker, coarser band that is the lower flange
    face. Along every edge the two share — the square runs and both flanks of
    every tab — the platform is FLUSH, its step face being the lid's edge.
@@ -94,7 +94,7 @@ const IOD_X = 0.02, IOD_Z = -3.35, IOD_W = 12.74, IOD_H = 9.88;
 
    Because those built corners sit slightly outside the real metal, ihs.jpg is
    edge-extended: everything outside the lid is replaced by its nearest metal
-   colour, so the silhouette comes from the geometry alone and no teal can
+   color, so the silhouette comes from the geometry alone and no teal can
    leak onto a fin. See the README. */
 const LID_W = 37.83, LID_H = 37.75;
 const LID_CX = -0.10, LID_CZ = -0.08;
@@ -102,7 +102,7 @@ const LID_CX = -0.10, LID_CZ = -0.08;
 const FLANGE_T = 1.2;
 const PLATEAU_RISE = 1.7;
 
-// Package centre in world space (the die itself sits at the world origin).
+// Package center in world space (the die itself sits at the world origin).
 const PCX = -DIE_OFF_X, PCZ = -DIE_OFF_Z;
 
 const N_METAL = 15;
@@ -128,7 +128,7 @@ const isSmall = window.matchMedia('(max-width: 860px)').matches;
    substance is folded into that card. */
 const STAGES = [
   { t: 0.000, num: '01', title: 'The Packaged Chip',
-    body: 'A Ryzen 5 9600X as it arrives: a 40 mm square of fibreglass and copper under a nickel-plated lid. Nothing you can see yet does any computing.' },
+    body: 'A Ryzen 5 9600X as it arrives: a 40 mm square of fiberglass and copper under a nickel-plated lid. Nothing you can see yet does any computing.' },
   { t: 0.398, num: '02', title: 'Bare Silicon',
     body: 'The lid lifts away, and underneath sit two separate pieces of silicon: a compute die carrying the cores, and an I/O die handling memory and PCIe. Up close both are just polished silicon, scratched and dusty, because you are looking at the back of the die. Everything that matters is buried beneath this surface.' },
   { t: 0.512, num: '03', title: 'The Floorplan Beneath',
@@ -142,7 +142,7 @@ const STAGES = [
   { t: 0.888, num: '05', title: 'The Metal Stack',
     body: 'A transistor does nothing until something connects it, and that job belongs to the copper stacked overhead. The lowest tiers are thin and packed tightly together for short hops inside a block, while the highest are thick and widely spaced so they can carry power and the clock clear across the die. Each tier runs at right angles to the one beneath it, which is what lets wires cross without ever touching. The short pillars standing between the tiers are vias, and they are the only way a signal changes level. The balls settling on top at the end are solder bumps, where the finished die is joined face down to its package.' },
   { t: 0.966, num: '06', title: 'The Cell Rows',
-    body: 'The stack folds back down onto the lowest layer of metal, and underneath it the design stops being wiring and becomes logic. Every gate in the processor is one of a few hundred prebuilt tiles taken from a standard cell library, and each of those tiles is drawn to exactly the same height so that it can be dropped into a row and pushed up against its neighbours with nothing wasted in between. Power and ground run the length of every row boundary and are shared by the rows above and below, which is why one row is the mirror of the next.' },
+    body: 'The stack folds back down onto the lowest layer of metal, and underneath it the design stops being wiring and becomes logic. Every gate in the processor is one of a few hundred prebuilt tiles taken from a standard cell library, and each of those tiles is drawn to exactly the same height so that it can be dropped into a row and pushed up against its neighbors with nothing wasted in between. Power and ground run the length of every row boundary and are shared by the rows above and below, which is why one row is the mirror of the next.' },
   { t: 0.990, num: '07', title: 'A Closer Look',
     /* Upper and lower here describe the SCREEN, not the scene's z axis. The
        camera at this stop puts VDD along the bottom of the frame, so the PMOS
@@ -190,10 +190,10 @@ const renderer = new THREE.WebGLRenderer({
   canvas, antialias: true, powerPreference: 'high-performance',
   /* Transparent canvas, so the PAGE is the backdrop rather than the scene.
      The site's ambient violet field lives in CSS on a fixed layer; with an
-     opaque clear colour the canvas covered the whole viewport and that layer
+     opaque clear color the canvas covered the whole viewport and that layer
      could never be seen. Now empty space shows the page ground and its hue,
      and only actual geometry is drawn by WebGL. Fog still fades distant
-     geometry to the same ground colour, so the two meet seamlessly. */
+     geometry to the same ground color, so the two meet seamlessly. */
   alpha: true,
 });
 renderer.setPixelRatio(DPR);
@@ -211,7 +211,7 @@ renderer.toneMappingExposure = 0.98;
 
 const scene = new THREE.Scene();
 /* No scene.background: the canvas is transparent (see the renderer above) and
-   the page behind it supplies the ground. Fog keeps the site's ground colour so
+   the page behind it supplies the ground. Fog keeps the site's ground color so
    geometry receding into the distance meets the CSS backdrop without a seam. */
 // far enough out that the 40 mm package, viewed from ~80 units, stays clear
 scene.fog = new THREE.Fog(0x08080b, 130, 400);
@@ -279,10 +279,10 @@ function routingTexture(tier) {
   const width = 2 + Math.pow(t, 1.6) * 26;
   const horizontal = tier % 2 === 0;
 
-  /* Wire colour by level. The lowest levels are barely copper to the eye — thin,
+  /* Wire color by level. The lowest levels are barely copper to the eye — thin,
      dull, closer to tungsten — and each level up is warmer and brighter. Tinting
      the MATERIAL cannot do this, because a tint multiplies an already-orange map
-     and everything stays orange; the colour has to go into the texture. This is
+     and everything stays orange; the color has to go into the texture. This is
      what lets the eye read HEIGHT from appearance instead of counting sheets. */
   const mix = (a, b, u) => '#' + [0, 1, 2].map((k) => {
     const av = parseInt(a.slice(1 + k * 2, 3 + k * 2), 16);
@@ -324,7 +324,7 @@ function routingTexture(tier) {
    4. PACKAGE
  * ------------------------------------------------------------------ */
 
-/* assembly's own origin is the PACKAGE centre, so the flip in stage 02
+/* assembly's own origin is the PACKAGE center, so the flip in stage 02
    rotates about the package rather than about the die. Offsetting the whole
    assembly then puts the die itself at the world origin, which is what every
    later camera key is written against. */
@@ -352,8 +352,8 @@ const PKG_BOT_Y = -DIE_T - PKG_T;
 /* The package has a semicircular cutout bitten out of two of its edges — real
    through-holes, so you see straight past them. Measured on the boundary of
    the retail photo and again on substrate.jpg, which agree: chord 2.25 mm,
-   depth ~1.0 mm, both centred 2.78 mm off the middle of their edge and on the
-   same side. Modelled as a true half circle of r = chord/2.
+   depth ~1.0 mm, both centered 2.78 mm off the middle of their edge and on the
+   same side. Modeled as a true half circle of r = chord/2.
 
    There are TWO, not one per edge. Scanning the whole perimeter of both photos
    finds indentations only on the pair of edges that map to world ∓Z; the other
@@ -425,8 +425,8 @@ const LID_REST = 0.08;
    analytic attempt — rounded square, notch fractions, corner radius — either
    overhangs onto substrate or, once alpha-tested to fix that, leaves ragged
    edges and orphaned extrusion walls. assets/lid-outline.json holds the real
-   contour and an eroded copy for the raised platform, both in millimetres
-   about the lid centre. */
+   contour and an eroded copy for the raised platform, both in millimeters
+   about the lid center. */
 function shapeFromPoints(pts) {
   const s = new THREE.Shape();
   s.moveTo(pts[0][0], pts[0][1]);
@@ -485,7 +485,7 @@ function buildLid(outline) {
 }
 
 /* --- I/O die -----------------------------------------------------------
-   Modelled in 3D like the CCD so the two dies read as the same kind of
+   Modeled in 3D like the CCD so the two dies read as the same kind of
    object, but it keeps its bare silicon backside throughout: we never
    descend into it, and delayering it would promise otherwise. */
 const iodGroup = new THREE.Group();
@@ -504,7 +504,7 @@ iodGroup.add(iodBody);
 /* Each die's photographic face is a separate plane 2 µm above the box's top,
    which is far too fine for the depth buffer to resolve at package distance:
    with near 0.05 / far 600 the two surfaces are 0.35 LSB apart at t 0.225 and
-   0.87 at t 0.30 — i.e. they quantise to the SAME depth value and fight. They
+   0.87 at t 0.30 — i.e. they quantize to the SAME depth value and fight. They
    only separate (5.8 LSB) once the camera drops to die level at t 0.36, which
    is exactly where the flicker used to stop.
 
@@ -529,7 +529,7 @@ iodGroup.add(iodTop);
 /* The I/O die gets delayered too, at the same moment the CCD does. It is never
    the subject — the camera never turns to it and it carries no highlights — but
    letting it keep its polished backside while the die beside it resolves into a
-   floorplan made it read as a dead grey slab. It gets its own die shot, held a
+   floorplan made it read as a dead gray slab. It gets its own die shot, held a
    little dimmer than the CCD, and fades out on its own well after the camera
    has committed to the compute die. */
 const iodFloorMat = new THREE.MeshPhysicalMaterial({
@@ -709,9 +709,9 @@ chip.add(sCore);
                 ends of the die, which is what settles the layout below
      STRIP_BOT  where the busy content stops, short of the seal ring at 0.983 */
 const STRIP_TOP = 0.8195, STRIP_MID = 0.8737, STRIP_BOT = 0.9815;
-/* Boundaries sit on the CENTRE of each measured separator so neighbouring
+/* Boundaries sit on the CENTER of each measured separator so neighboring
    regions share an edge exactly — no gaps, no overlaps. */
-const IFOP_SPLIT = 0.6520;   // centre of a dead-flat divider, u 0.6458-0.6582
+const IFOP_SPLIT = 0.6520;   // center of a dead-flat divider, u 0.6458-0.6582
 const TEST_R = 0.3376;       // dark quiet column; texture jumps 9 -> 26 across it
 
 /* --- core rows and columns ------------------------------------------ */
@@ -758,7 +758,7 @@ const REGIONS = [
 const GROUPS = ['cores', 'l3', 'strip'];
 
 /* --- section gaps ---------------------------------------------------
-   Boundaries here are measured flush on purpose: neighbouring regions share an
+   Boundaries here are measured flush on purpose: neighboring regions share an
    edge exactly, so a partitioned band reads as one band rather than as separate
    tiles. That is right for the measurement and, it turns out, wrong for the
    look — the die's own core column and L3 happen to sit 0.004 uv apart, and
@@ -786,7 +786,7 @@ const GAP = 0.036;             // = the die's own cores <-> L3 hairline, 0.004 u
    at a 0.0062 inset per side those arms turn inside out while the ring keeps
    ~90% of its area, so the area test passed them happily. The resulting ring
    self-intersects, which ExtrudeGeometry will still happily build walls along
-   but ShapeGeometry cannot triangulate — so the block drew its coloured edges
+   but ShapeGeometry cannot triangulate — so the block drew its colored edges
    and no cap at all, losing its fill and its name while looking, at a glance,
    merely "hard to read".
 
@@ -891,11 +891,11 @@ function overlayTexture(list, mode, aspect, glow = 1, wash = 1, inset = 0) {
       }
     };
 
-    /* No inset: neighbouring regions must share their edges exactly, so the
+    /* No inset: neighboring regions must share their edges exactly, so the
        strip reads as one partitioned band rather than separate tiles. The
-       stroke is drawn centred on the boundary, which both sides share. */
+       stroke is drawn centered on the boundary, which both sides share. */
     if (mode === 'fill') {
-      /* `wash` thins the colour flood WITHOUT thinning the name drawn over it
+      /* `wash` thins the color flood WITHOUT thinning the name drawn over it
          later, which dimming the whole layer through material opacity cannot
          do. The lifted floorplan tiles need a light flood so the silicon reads
          through them, and a name you can still read. */
@@ -909,8 +909,8 @@ function overlayTexture(list, mode, aspect, glow = 1, wash = 1, inset = 0) {
     } else {
       /* The glow has to be scaled to how densely the group tiles its area.
          At the floorplan's 13 big regions a 20px bloom reads as a halo; at the
-         core's 29 small ones, every region blooms into its neighbours and the
-         whole core fills in with a flat grey wash. */
+         core's 29 small ones, every region blooms into its neighbors and the
+         whole core fills in with a flat gray wash. */
       g.strokeStyle = color;
       g.lineWidth = 6 * glow;
       g.shadowColor = color;
@@ -927,7 +927,7 @@ function overlayTexture(list, mode, aspect, glow = 1, wash = 1, inset = 0) {
        it — so a polygon carries its own anchor, the point furthest from any
        edge (pole of inaccessibility), computed when the shape was traced.
 
-       That anchor maximises an inscribed CIRCLE, but type is a wide rectangle,
+       That anchor maximizes an inscribed CIRCLE, but type is a wide rectangle,
        so it is only a starting guess: fit the actual text box inside the actual
        path. Walk the size down, and at each size try the anchor first and then
        a ring of offsets around it, taking the first that lands wholly inside. */
@@ -935,9 +935,9 @@ function overlayTexture(list, mode, aspect, glow = 1, wash = 1, inset = 0) {
     let cx = r.at ? r.at[0] * CW : x + w / 2;
     let cy = r.at ? r.at[1] * CH : y + h / 2;
     /* `fit: false` opts a region out of the inside-the-path search and just
-       centres the type on its anchor at the size the bounding box allows. That
+       centers the type on its anchor at the size the bounding box allows. That
        is what you want when a region is two pieces with a channel between them
-       and the name belongs across both: the true centre is in the gap, so the
+       and the name belongs across both: the true center is in the gap, so the
        fitter would reject every candidate and fall back to the 14 px floor. */
     if (polys && r.fit !== false) {
       trace();                       // path to hit-test against
@@ -999,7 +999,7 @@ function overlayTexture(list, mode, aspect, glow = 1, wash = 1, inset = 0) {
 /* --- rippling a group in as real tiles ------------------------------
    Each region becomes a thin slab of its own rather than a patch of one flat
    plane, so the reveal is a wave of tiles LIFTING OUT of the die and settling
-   back, not a wash of colour crossing a diagram. Same trick the core blocks
+   back, not a wash of color crossing a diagram. Same trick the core blocks
    use one stage down: the tile wears the group's shared overlay canvas through
    a planar uv, clipped to its own outline, so thirteen independently animated
    tiles still cost two textures per group and no extra canvases.
@@ -1025,7 +1025,7 @@ function overlayTexture(list, mode, aspect, glow = 1, wash = 1, inset = 0) {
    walls are opaque, and opaque geometry that does not write depth falls back on
    the transparent sort for occlusion — which sorts per OBJECT, by centroid. A
    big concave block like instruction fetch has a centroid that says little about
-   which of its arms is nearest, so a small neighbour's edge drew over it from
+   which of its arms is nearest, so a small neighbor's edge drew over it from
    some angles and not others. That was the L2 ITLB edge showing through
    instruction fetch.
 
@@ -1057,12 +1057,12 @@ function overlayTexture(list, mode, aspect, glow = 1, wash = 1, inset = 0) {
 
    Flat on the die that is invisible, because the tiles are disjoint and never
    overlap on screen. It becomes visible the moment one LIFTS: a raised block
-   covers its neighbours, and any neighbour listed later in the array paints
+   covers its neighbors, and any neighbor listed later in the array paints
    straight back over it. Hovering Branch put L1 BTB — a block strictly behind
    it — on top of it, and the periodic jump hit the same thing wherever the
    dice landed on a block declared early with something behind it declared late.
 
-   So: geometry is centred on its own origin, and the position is carried by the
+   So: geometry is centered on its own origin, and the position is carried by the
    MESH. Then the sort has real distances to work with and back-to-front is
    simply correct, at every camera angle, for the lift and the hover and the
    jump alike, with no per-case handling anywhere. Any new tile built here must
@@ -1097,7 +1097,7 @@ const HIDDEN = new THREE.MeshBasicMaterial({ visible: false });
 
    THE PROBLEM IS THAT THE SLABS ARE GLASS. A contact shadow hides under the
    thing casting it; here the caster is transparent, so the shadow reads straight
-   through the block and drags its colour down. At 0.42 a hovered Load / Store
+   through the block and drags its color down. At 0.42 a hovered Load / Store
    went muddy at exactly the moment it was meant to look picked out. Dropping to
    0.28 traded that away for a cue faint enough that the brightness was doing the
    work again anyway, which is the shape of a thing that does not belong: the
@@ -1112,10 +1112,10 @@ const TILE_T = 0.16;           // a slab, but a glass one — see the edge AND
 const TILE_PEAK = 0.55;        // how far out of the die the wave lifts one
 const TILE_REST = 0.20;        // ...and where it settles, leaving a raised mosaic
 /* Share of its group's window one tile occupies, so also how long a single slab
-   takes to rise: widening it overlaps neighbours more and slows each one.
+   takes to rise: widening it overlaps neighbors more and slows each one.
 
    It also, and this is the catch, controls the SEPARATION between slabs: a tile
-   that occupies more of the window overlaps further into its neighbour. Raising
+   that occupies more of the window overlaps further into its neighbor. Raising
    it to 0.60 slowed each slab nicely and pushed the four strip regions to within
    136 ms of each other, which is slower motion and less legible sequence at the
    same time. Back at 0.44 with a longer leg underneath, both are had at once —
@@ -1125,7 +1125,7 @@ const TILE_REST = 0.20;        // ...and where it settles, leaving a raised mosa
    size. As a single number it sets how much of a group's window ONE slab spends
    rising, so a group of eight and a group of one both rose over 34% of their own
    window — and L3's window is the smallest of the three, being one slab. The L3
-   therefore snapped up in 495 ms while its neighbours took 800 to 1400, which is
+   therefore snapped up in 495 ms while its neighbors took 800 to 1400, which is
    what made it look like it popped.
 
    The right value depends entirely on how many slabs share the window. Eight
@@ -1213,8 +1213,8 @@ GROUPS.forEach((grp) => {
        region appeared to lift its own piece of the photograph up with it.
 
        Now it is a thin sheen and nothing else, so you look straight through to
-       the real die below. The region still reads, because its colour and its
-       name live on the caps below and its walls are coloured; the top face is
+       the real die below. The region still reads, because its color and its
+       name live on the caps below and its walls are colored; the top face is
        only there to catch a highlight and give the glass a surface. */
     const face = new THREE.MeshPhysicalMaterial({
       transparent: true, opacity: 0, depthWrite: false,
@@ -1223,7 +1223,7 @@ GROUPS.forEach((grp) => {
     });
     const geo = planar(
       new THREE.ExtrudeGeometry(shape, { depth: TILE_T, bevelEnabled: false }));
-    /* Centre the geometry on its own origin and carry the position on the MESH.
+    /* Center the geometry on its own origin and carry the position on the MESH.
        See "sorting transparent tiles" above RO_WALLS — this is the whole reason
        a raised tile draws in front of the ones behind it. uv is written by
        planar() first, because it reads the untranslated coordinates. */
@@ -1273,7 +1273,7 @@ GROUPS.forEach((grp) => {
 });
 
 /* --- one core, block by block --------------------------------------
-   The same language as the floorplan above: colour fills that bloom in and
+   The same language as the floorplan above: color fills that bloom in and
    settle to glowing outlines, rather than callouts on leader lines.
 
    Boxes measured from the annotated core reference, ccd-dieshot-bottom-left-
@@ -1341,7 +1341,7 @@ const CORE_BLOCKS = [
        [0.5386,0.5481], [0.4455,0.5481], [0.4455,0.5750], [0.3426,0.5750],
        [0.3426,0.3952], [0.429,0.3952]],
     ] },
-  /* The two L2 halves share their x extent exactly and are labelled
+  /* The two L2 halves share their x extent exactly and are labeled
      separately, as the reference labels each half. */
   { label: 'L2 Cache ½', sub: '512 KB', color: '#c9891f', at: [0.8569, 0.1510],
     polys: [
@@ -1366,7 +1366,7 @@ const CORE_BLOCKS = [
   /* Named "L2 control / interconnect" rather than spelled out: the only part of
      the C wide enough to hold type is the left column, 122 px on the overlay
      canvas, and the full name only fits there at the 14 px floor. */
-  /* Second, detached piece below the L2: same region, same colour, one label.
+  /* Second, detached piece below the L2: same region, same color, one label.
      Its left edge is 0.7929, the L2 column's own left edge — the traced 0.794
      sits just past a bright wiring channel (0.7876-0.7920, peak 95) that
      separates it from instruction fetch, so the two correctly do not meet. */
@@ -1384,7 +1384,7 @@ const CORE_BLOCKS = [
   /* Green. The two TLBs and the branch predictor used to be three shades of the
      same violet — the TLBs were literally the same hex, and the predictor 26 Lab
      away, which is not a difference you can name across a die. They are now
-     chosen against the blocks they actually sit beside: this one's neighbours
+     chosen against the blocks they actually sit beside: this one's neighbors
      are L1d's red-orange, load/store's blue and L2's gold, all far from green,
      which is why the green went here and the teal went to the iTLB rather than
      the other way round — the iTLB sits against a green L1i cache.
@@ -1412,7 +1412,7 @@ const CORE_BLOCKS = [
       [[0.6296,0.0269], [0.6296,0.1294], [0.6702,0.1294], [0.6702,0.0776],
        [0.7235,0.0776], [0.7235,0.2329], [0.7693,0.2329], [0.7693,0.0269]],
     ] },
-  /* Two edges of this block moved as its neighbours arrived. The step in the
+  /* Two edges of this block moved as its neighbors arrived. The step in the
      left boundary went 0.7974 -> 0.7981 for the microcode ROM: a strong line
      (121), and the same one CPL's top and the L2 lower half's bottom sit on, so
      it runs most of the width of the die. The top of the notch went
@@ -1424,7 +1424,7 @@ const CORE_BLOCKS = [
      just below the wide band's top edge at v 0.8321. The old anchor was up in
      the narrow left column, which reads as off to one side of an L-shaped
      block. Dropping it into the wide band also lets the fitter keep the type
-     large: the widest rectangle the path admits is 0.227 x 0.063 uv centred
+     large: the widest rectangle the path admits is 0.227 x 0.063 uv centered
      here, against 0.20 x 0.056 at the old spot, and anything straddling
      v 0.8321 gets clipped on the right where the column ends at u 0.5386. */
   { label: 'Instruction Fetch', sub: 'and Decode', color: '#c93f90',
@@ -1438,7 +1438,7 @@ const CORE_BLOCKS = [
     ] },
   /* Was a muted lavender, which sat too close to the two TLB purples (#8f5fd0)
      and read as washed out against the die's blue field. Rose is the one hue
-     nothing else in the core claims: the nearest neighbours are gold above,
+     nothing else in the core claims: the nearest neighbors are gold above,
      brown to the left and green across the notch, and it is well clear of
      instruction fetch's magenta, which does not touch this block anyway.
      Deepened from a first pass at #ff5c8a: that scored 3.99 against white type,
@@ -1488,7 +1488,7 @@ const CORE_BLOCKS = [
          separately by the user, which is the better description — the hook was
          one outline pretending two disconnected areas were one shape.
 
-         Every edge landed on a neighbour within 0.0024: L1 BTB above and right,
+         Every edge landed on a neighbor within 0.0024: L1 BTB above and right,
          L2 BTB below, load/store on the outside. */
       [[0.7275,0.4667], [0.7275,0.4036], [0.7866,0.4036], [0.7866,0.3513],
        [0.7183,0.3513], [0.7183,0.4667]],
@@ -1569,7 +1569,7 @@ const CORE_BLOCKS = [
      which is the reason to define it this way rather than snap edge by edge.
 
      ONE BLOCK PER COLUMN, not one two-piece block. It used to be a single region
-     carrying both columns with `fit: false`, because the combined centre lands in
+     carrying both columns with `fit: false`, because the combined center lands in
      the channel between them and the fitter would have rejected every candidate.
      That drew the name across both — and the channel, plus the section gap now
      inset on either side of it, cut a 25 px white slice straight through
@@ -1614,7 +1614,7 @@ const CORE_BLOCKS = [
   /* Deep teal. It used to share the L2 DTLB's exact purple on the grounds that
      they are two halves of one structure, which made them impossible to tell
      apart and both of them hard to tell from the branch predictor. Teal because
-     this one's neighbours are L1i's green, CPL's rose and instruction fetch's
+     this one's neighbors are L1i's green, CPL's rose and instruction fetch's
      magenta; it is the darkest of the three at 7.02 against white type. */
   { label: 'L2 ITLB', sub: '2K entries', color: '#195776', at: [0.7610, 0.9150],
     polys: [
@@ -1689,7 +1689,7 @@ const coreShapes = (r) => r.polys.map((ring) => {
 });
 
 /* ExtrudeGeometry keeps the shape's coordinates in x,y for the side walls too,
-   so one planar pass covers every vertex. The walls are painted a flat colour
+   so one planar pass covers every vertex. The walls are painted a flat color
    and never sample the map, so their uv does not matter. */
 const corePlanar = (geo) => {
   const p = geo.attributes.position, uv = geo.attributes.uv;
@@ -1707,7 +1707,7 @@ const corePlanar = (geo) => {
 
    This used to be two flat planes over the core photograph, crossfading fill
    into outline. That made stage 04 the one reveal in the piece that was a
-   diagram being coloured in rather than silicon coming apart, and it did not
+   diagram being colored in rather than silicon coming apart, and it did not
    match the language stage 03 had already established one stage earlier. */
 const coreTiles = [];
 const coreTileGroup = new THREE.Group();
@@ -1715,13 +1715,13 @@ chip.add(coreTileGroup);
 {
   /* Glow is turned right down for this group. At the floorplan's 13 big regions
      a 20 px bloom reads as a halo; at 29 small ones every region blooms into its
-     neighbours and the whole core fills in with a flat grey wash. */
+     neighbors and the whole core fills in with a flat gray wash. */
   /* Only the fill canvas. The floorplan builds an outline canvas too and
      crossfades to it, handing the silicon back once its regions have been read;
-     the core does NOT, because a block here keeps its colour for the whole
+     the core does NOT, because a block here keeps its color for the whole
      stage. That also avoids drawing every name twice — both canvases carry the
      name plate, so stacking them at full opacity double-strikes the type. The
-     fill canvas is self-contained anyway: colour flood, white boundary stroke
+     fill canvas is self-contained anyway: color flood, white boundary stroke
      and the name, all in one. */
   const fillTex = overlayTexture(CORE_BLOCKS, 'fill', coreW / coreH, 0.22, 1,
                                  (GAP_CORE / 2) * (1600 / coreW));
@@ -1744,7 +1744,7 @@ chip.add(coreTileGroup);
     });
     const geo = corePlanar(
       new THREE.ExtrudeGeometry(shapes, { depth: LIFT_T, bevelEnabled: false }));
-    /* Centred on its own origin so the transparent sort has a real distance to
+    /* Centered on its own origin so the transparent sort has a real distance to
        work with — see "sorting transparent tiles" above RO_WALLS. This is the
        group where it matters most: 29 blocks packed edge to edge, any of which
        can be lifted by a hover or by the periodic jump. */
@@ -1879,7 +1879,7 @@ chip.add(coreTileGroup);
    levels are thin, tightly pitched and duller — barely copper to look at — and
    each level up is thicker, sparser and warmer until the top ones are effectively
    power rails and clock distribution. routingTexture already varies pitch and
-   width; this adds the colour and the finish, so the eye can read HEIGHT from
+   width; this adds the color and the finish, so the eye can read HEIGHT from
    appearance alone rather than having to count.
 
    CASCADE. The tiers used to separate all at once. Now each GAP opens on its own
@@ -1889,10 +1889,10 @@ chip.add(coreTileGroup);
    fifteen separate sheets rather than one accordion.
 
    THE PULSE. A gaussian of light climbing the tiers, on emissiveIntensity so it
-   brightens the copper's own colour. This is the only part of the stage that says
+   brightens the copper's own color. This is the only part of the stage that says
    what the wiring is FOR: without it, fifteen beautiful sheets of metal are just
    sheets of metal. Vias light as the wave passes them, a little ahead of the
-   tiers, so the signal reads as travelling UP through the connections.
+   tiers, so the signal reads as traveling UP through the connections.
 
    NEAR-FADE. The camera now flies up through the stack, which means it passes
    through tiers. A textured plane crossing the near plane is a full-screen flash
@@ -1919,11 +1919,11 @@ const tierLook = (i) => {
     /* The PLANE's hue lives in its texture, so its tint only lifts the upper
        tiers slightly: higher metal is thicker and catches more light. */
     color: new THREE.Color().setScalar(THREE.MathUtils.lerp(0.82, 1.06, u)),
-    /* The BARS have no map, so they can be graded here directly — tungsten-grey
+    /* The BARS have no map, so they can be graded here directly — tungsten-gray
        at M1 through to copper at the top. This is the tint that could not work on
-       the plane: a material colour multiplies, so it can never desaturate an
-       already orange texture toward grey. With no texture there is nothing to
-       fight, and the same grading finally works as a colour. */
+       the plane: a material color multiplies, so it can never desaturate an
+       already orange texture toward gray. With no texture there is nothing to
+       fight, and the same grading finally works as a color. */
     bar: new THREE.Color().setHSL(
       THREE.MathUtils.lerp(0.075, 0.055, u),
       THREE.MathUtils.lerp(0.06, 0.50, u),
@@ -2002,7 +2002,7 @@ for (let i = 0; i < N_METAL; i++) {
   }
   for (let k = 0; k < nj; k++) {
     const len = pitch * THREE.MathUtils.lerp(1.6, 3.4, Math.random());
-    /* Clamped so a jog cannot hang off the edge of the die. The centre used to be
+    /* Clamped so a jog cannot hang off the edge of the die. The center used to be
        drawn across 0.9 of the span with no regard for the jog's own length, and a
        long one placed near the rim stuck out past the silicon — most visibly on
        the top tiers, where the pitch is widest and a jog can be nearly half the
@@ -2108,7 +2108,7 @@ const tierY = new Float32Array(N_METAL);
    power pillars at the top. */
 const viaGeo = new THREE.BoxGeometry(1, 1, 1);
 /* depthWrite stays ON, unlike most transparent things here, and that is what
-   makes a via read as a solid rod rather than a coloured film. It was turned off
+   makes a via read as a solid rod rather than a colored film. It was turned off
    once to stop a column hiding the inverter and the cure was far worse than the
    disease: every via in the stack and every column in the room went see-through
    at the same time. The cell is kept in front by disabling depth TESTING on the
@@ -2134,7 +2134,7 @@ for (let g = 0; g < N_METAL - 1; g++) {
   const u = g / (N_METAL - 2);
   /* Gap 0 carries a fifth of what the others do, and it is thinned HERE at build
      time rather than during the fold. It is the gap the stack leaves open as a
-     room, so its vias are the only ones that end up metres tall and standing
+     room, so its vias are the only ones that end up meters tall and standing
      where the camera walks: at the density the other gaps use, the room is a
      forest and the nearest columns are seventy pixels wide.
 
@@ -2153,7 +2153,7 @@ for (let g = 0; g < N_METAL - 1; g++) {
        whole point being made there — a camera standing INSIDE the gap is inside
        a forest, and the near ones are 70px wide and wall off the frame. The rest
        retire as the room opens. The room is a 500x exaggeration of a 30nm gap;
-       drawing a representative few of its vias is the same order of licence, and
+       drawing a representative few of its vias is the same order of license, and
        it is the only version you can see the floor through. */
     viaSeeds.push({ gap: g, w,
       x: (viaRnd() - 0.5) * DIE_W * 0.94,
@@ -2162,7 +2162,7 @@ for (let g = 0; g < N_METAL - 1; g++) {
 }
 const vias = new THREE.InstancedMesh(viaGeo, viaMat, viaSeeds.length);
 vias.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-/* Frustum culling OFF, and this is not an optimisation being declined — it is a
+/* Frustum culling OFF, and this is not an optimization being declined — it is a
    correctness fix for a mesh whose instances move.
 
    three.js culls an InstancedMesh against a boundingSphere it computes ONCE, the
@@ -2213,7 +2213,7 @@ for (let ix = 0; ix < BUMP_NX; ix++) {
    being logic, and the first surprising thing about that logic is how regular it
    looks. There is no sea of bespoke transistors down here. There is a field of
    prebuilt tiles, every one of them the same height, snapped into rows and
-   pushed up against its neighbours with nothing in between.
+   pushed up against its neighbors with nothing in between.
 
    Three properties carry the stage, and only three, because the camera stands
    three units off a field eight units across and anything finer than this is a
@@ -2232,7 +2232,7 @@ for (let ix = 0; ix < BUMP_NX; ix++) {
    ABUTMENT, NOT SPACING. The cells touch. A field of tiles with air between them
    is a picture of a floorplan; a field with no air is a picture of a standard
    cell row, and that difference is the entire point of the stage. The 0.006 gap
-   below is a seam, not a space: without it neighbouring cells fuse into one long
+   below is a seam, not a space: without it neighboring cells fuse into one long
    bar and the row stops having cells in it at all.
 
    SEEDED DETERMINISTICALLY, unlike the vias and the bar jogs above, which reach
@@ -2247,7 +2247,7 @@ cellField.visible = false;
 chip.add(cellField);
 
 /* ROW_N is odd at BOTH breakpoints deliberately, and the rows are laid out from
-   the centre outward rather than from one edge, so there is always a row centred
+   the center outward rather than from one edge, so there is always a row centered
    exactly on z = 0 however many of them there are. That is what lets the hero
    cell be a fixed world point instead of an index into a field whose spacing
    changes with the viewport — the stop 06 camera key has to aim at the same
@@ -2264,7 +2264,7 @@ const ROW_PITCH = DIE_H * 0.92 / ROW_N;
    between them is what makes them read as separate. Rows are not: a row boundary
    is where two cells ABUT, and the rail sits on that line. Left 3% short, every
    boundary opened a gap the rail was then laid over, and the void showed as a
-   faint grey line running the length of each rail and taking its colour with it. */
+   faint gray line running the length of each rail and taking its color with it. */
 const CELL_H    = ROW_PITCH;
 const CELL_T    = 0.070;                     // how far a cell stands proud
 /* The device layer, below M1 at 0.02. The exact depth is set by the stage that
@@ -2300,7 +2300,7 @@ for (let r = 0; r < ROW_N; r++) {
   const z = rowZ(r);
   if (r === HERO_ROW) {
     /* The hero row is packed OUTWARD from the hero cell in both directions, so
-       that its two neighbours abut it exactly. Packing this row left to right
+       that its two neighbors abut it exactly. Packing this row left to right
        like the others and jumping over the reserved slot would leave a ragged
        hole against the one cell the camera actually lands on, and a hole in a
        row of abutted cells reads as a mistake rather than as a gap. */
@@ -2341,7 +2341,7 @@ cellField.add(cells);
     tv.set(c.x, CELL_Y, c.z);
     sv.set(c.w, CELL_T, CELL_H);
     cells.setMatrixAt(k, m.compose(tv, q, sv));
-    /* A narrow spread of cool grey. Wider than this and the field reads as a
+    /* A narrow spread of cool gray. Wider than this and the field reads as a
        mosaic of different MATERIALS, when the thing that actually differs
        between two cells is only what they compute.
 
@@ -2358,7 +2358,7 @@ cellField.add(cells);
 
 /* Supply is warm and ground is cool, and these two constants are the only place
    that is decided. The inverter's own straps read them straight out of here, so
-   the rail running along the top of the hero cell is the same colour as the rail
+   the rail running along the top of the hero cell is the same color as the rail
    running along the top of every other cell in the field, and a reader crossing
    from the floor to the cell is not asked to learn a second scheme. */
 const VDD_COL = 0xd9924e, GND_COL = 0x7f8fa8;
@@ -2377,7 +2377,7 @@ const RAIL_H = ROW_PITCH * 0.15;
    Thin is also the truer reading. M1 is a FILM, and the cell's own pads on the
    same layer are 0.007; a rail four times thicker than the metal it is part of
    was the odd one out. At 0.010 the side is a hairline and the top reads as one
-   continuous colour. It also lifts the rail clear of the cell tops, which it had
+   continuous color. It also lifts the rail clear of the cell tops, which it had
    been intersecting by 0.003. */
 /* A rail is a thin BAR, and the two numbers under it are the whole story of a
    dark line that took three attempts to kill.
@@ -2405,7 +2405,7 @@ const railGeo = new THREE.BoxGeometry(1, 1, 1);
    gate and the diffusion are silicon and poly, M1 is the first layer of wiring
    over the top of them, and the contacts are the posts that climb from one to the
    other. A rail level with the gate it is insulated from is not a wiring layer,
-   it is a kerb.
+   it is a curb.
 
    0.060 clears the gate at 0.053. It sat at 0.037 for one commit while the dark
    line alongside every rail was being chased, and it was the wrong lever: the
@@ -2486,7 +2486,7 @@ cellField.add(heroCell);
    · centreGeometry is NOT called on any of this. Its contract is re-origining an
      extruded tile that gets laid flat by a -90 degree rotation about x, and it
      returns the parent-space offset that rotation implies. Every object below is
-     an origin-centred BoxGeometry and none of them is rotated, so a call would
+     an origin-centered BoxGeometry and none of them is rotated, so a call would
      silently translate the cell rather than fix it.
    · DIE_FACE_OFFSET is used on the n-well and nowhere else, because the n-well
      is the only genuinely coplanar pair in here. The metal pads sit at their own
@@ -2516,15 +2516,15 @@ const M1_Y  = 0.02 - CELL_Y;
    physically identical and interchangeable; what makes one a source and the
    other a drain is only what it is connected to. So they are drawn identically
    and the WIRING tells them apart: the sources reach out to the rails, the two
-   drains are strapped to each other and that junction is the output. Colouring
+   drains are strapped to each other and that junction is the output. Coloring
    them differently would be inventing a distinction the silicon does not have.
 
-   The colour coding is the reference's: P-type green, N-type a teal blue, the
+   The color coding is the reference's: P-type green, N-type a teal blue, the
    gate salmon, and a thin band of gate oxide in yellow between the gate and the
    channel it controls. The N-type is pushed toward teal rather than the
    reference's flat blue so that it cannot be read as the cool GND rail, which
-   is a colour this page had already committed to. */
-const DEV_Z  = INV_H * 0.255;          // centre of each device band
+   is a color this page had already committed to. */
+const DEV_Z  = INV_H * 0.255;          // center of each device band
 const DEV_D  = INV_H * 0.30;           // how deep a band runs in z
 const DEV_X  = INV_W * 0.265;          // source and drain, either side of the gate
 const DEV_W  = INV_W * 0.34;
@@ -2565,7 +2565,7 @@ const DEV_BASE = [PMOS_COL, PMOS_COL, NMOS_COL, NMOS_COL].map((hex) => {
   _dc.set(hex);
   return [_dc.r, _dc.g, _dc.b];
 });
-/* Conducting is the same colour lifted past 1.0 rather than a different hue.
+/* Conducting is the same color lifted past 1.0 rather than a different hue.
    ACES rolls the overshoot into a highlight, so a channel that turns on reads as
    the same silicon carrying current instead of as a lamp swapped in behind it.
 
@@ -2579,7 +2579,7 @@ const DEV_HOT = DEV_BASE.map((c) => c.map((v) => v * 3.2 + 0.06));
 
 /* Three strips of poly, and only the middle one is the gate. The other two sit
    on the cell boundaries, which is what a real cell carries: a dummy strip at
-   each edge so the device beside the boundary sees the same neighbourhood as one
+   each edge so the device beside the boundary sees the same neighborhood as one
    in the middle of a row. They are also what makes the abutment legible from
    inside a cell.
 
@@ -2610,7 +2610,7 @@ fets.add(gates);
 const GATE_LIVE = 1;                    // the middle strip is the one being driven
 const GATE_BASE = (() => { _dc.set(GATE_COL); return [_dc.r, _dc.g, _dc.b]; })();
 const GATE_HOT  = GATE_BASE.map((v) => v * 2.4 + 0.30);
-/* The two dummies are a dull grey-brown, not a dimmer salmon. Dimming alone was
+/* The two dummies are a dull gray-brown, not a dimmer salmon. Dimming alone was
    not enough: three salmon strips across a cell read as three gates, and this
    cell has exactly one. Poly is poly in a real layout and these really are the
    same material, but only one of them is connected to anything, and that is the
@@ -2621,7 +2621,7 @@ const GATE_DIM = (() => { _dc.set(0x6b5c57); return [_dc.r, _dc.g, _dc.b]; })();
    works. It is a couple of atoms thick in reality and it is drawn at a
    thousand times that here, for the same reason the metal stack is exaggerated
    400x — a layer you cannot see is a layer nobody learns. Yellow, as the
-   reference has it, and the only warm-light colour in the cell that is not
+   reference has it, and the only warm-light color in the cell that is not
    copper. */
 const OXIDE_N = 2;
 const oxideMat = new THREE.MeshPhysicalMaterial({
@@ -2655,8 +2655,8 @@ const nwell = new THREE.Mesh(
 nwell.position.set(0, -0.004, DEV_Z);
 fets.add(nwell);
 
-/* Contacts. Neutral grey and nothing else — this is the "different grey metal"
-   the local wiring is made of, and keeping every connection one colour is what
+/* Contacts. Neutral gray and nothing else — this is the "different gray metal"
+   the local wiring is made of, and keeping every connection one color is what
    lets the two RAILS keep theirs. One contact per terminal, four in all; the
    well and substrate taps that used to sit out at the cell edge are gone,
    because they are a detail of a real layout that the reference does not draw
@@ -2667,8 +2667,8 @@ const CONTACT_COL = 0xb8c0c9;
    are lit; the straps above them are a BASIC material and are not, because they
    have to be driven past 1.0 when the cell switches and only an unlit material
    can be. Given the same hex the unlit ones came out visibly paler and the
-   circuit looked like it was made of two different greys. This is the value that
-   renders as the same grey the lit posts do. */
+   circuit looked like it was made of two different grays. This is the value that
+   renders as the same gray the lit posts do. */
 const SIGNAL_COL = 0x6f777f;
 const contactMat = new THREE.MeshPhysicalMaterial({
   color: CONTACT_COL, metalness: 0.5, roughness: 0.4,
@@ -2696,7 +2696,7 @@ fets.add(contacts);
 
 /* The cell's own metal, in the order the pin labels name them: supply, ground,
    input, output. Basic rather than physical, and driven past 1.0 by the
-   switching loop, which is the same trick the travelling bead used: ACES rolls
+   switching loop, which is the same trick the traveling bead used: ACES rolls
    the overshoot off into a highlight instead of clipping it flat.
 
    Y is a strap running the full height of the cell because that is what an
@@ -2708,7 +2708,7 @@ const PIN_Y = RAIL_Y_OFF;
 /* Six pieces of metal, and between them they are the whole circuit.
 
    The two RAILS run along the cell's top and bottom edges, which is the row
-   boundary, which is where the field's own rails run — same place, same colour,
+   boundary, which is where the field's own rails run — same place, same color,
    because they are the same rails. They overhang the cell slightly at each end
    for the same reason a real one does: it carries on into the cell next door.
 
@@ -2726,10 +2726,10 @@ const RAIL_Z = ROW_PITCH / 2;          // where the row's rails actually run
 const TIE_X  = -DEV_X;
 /* Four pieces of metal, and NONE of them is a rail.
 
-   A and Y are the SIGNAL metal and they are grey, the same grey as the contacts
+   A and Y are the SIGNAL metal and they are gray, the same gray as the contacts
    under them. Everything carrying logic is one material; everything carrying
-   power keeps its rail colour. That split is the fastest way to read the cell:
-   the two coloured bars are the row's supply and ground, and every grey thing
+   power keeps its rail color. That split is the fastest way to read the cell:
+   the two colored bars are the row's supply and ground, and every gray thing
    between them is the circuit.
 
    The two TIES are the whole point of the arrangement. Each runs in z from a
@@ -2746,7 +2746,7 @@ const M1_PINS = [
   { x: DEV_X, z: 0, sx: INV_W * 0.10, sz: INV_H * 0.46, col: SIGNAL_COL, lift: true },
 ];
 const PIN_A = 0, PIN_Y_ = 1;
-/* Base colours, unpacked once. m1Mat is a BASIC material, so instanceColor is
+/* Base colors, unpacked once. m1Mat is a BASIC material, so instanceColor is
    the final pixel and these are read straight off the same two constants the
    field's rails use rather than being matched by eye. */
 const _mc = new THREE.Color();
@@ -2757,7 +2757,7 @@ const M1_BASE = M1_PINS.map((pin) => {
 /* Lit is derived FROM the base rather than being one shared bright value, so a
    conducting ground rail goes bright blue and a conducting supply rail goes
    bright copper. Shared, they both washed to the same warm white the moment they
-   switched, which threw away the colour the previous stage had just spent the
+   switched, which threw away the color the previous stage had just spent the
    whole floor establishing — and the lit rail is exactly the moment you most
    want to know which rail it is. The lift past 1.0 is the usual trick: ACES
    rolls it off into a highlight instead of clipping — weighted toward the
@@ -2768,21 +2768,21 @@ const M1_HOT = M1_BASE.map((c) => c.map((v) => v * 2.2 + 0.45));
 
 /* Every contact is tinted by the NET it carries rather than by the metal it is
    made of, and that one change is what makes the wiring readable. Drawn all the
-   same tungsten grey, six identical posts stood between the metal and the
+   same tungsten gray, six identical posts stood between the metal and the
    silicon and gave no clue which belonged to which: you could see THAT the
    supply rail came down somewhere and THAT the output strap went down
    somewhere, but not that they went to different terminals of different
-   devices. Coloured, the path reads in one look — warm rail, warm strap, warm
+   devices. Colored, the path reads in one look — warm rail, warm strap, warm
    post, into the source of the PMOS; and the same story in cool for ground.
 
-   The output's two posts take the signal colour, which is what says the thing
+   The output's two posts take the signal color, which is what says the thing
    the schematic says: the two drains are tied together and that junction IS the
    output. */
 /* The contacts are no longer tinted per net. Tinting them was the right call
-   when the local straps were all one cream colour and the posts were the only
+   when the local straps were all one cream color and the posts were the only
    thing that could say which net was which; now the straps themselves carry it —
-   the rails are coloured, the signal metal is grey — and colouring the posts as
-   well made a cell of five different metals. One grey for everything that
+   the rails are colored, the signal metal is gray — and coloring the posts as
+   well made a cell of five different metals. One gray for everything that
    connects, which is what the reference does. */
 const m1Mat = new THREE.MeshBasicMaterial({
   transparent: true, opacity: 0, depthWrite: false,
@@ -2800,11 +2800,11 @@ m1pins.instanceColor = new THREE.InstancedBufferAttribute(
 /* The two power connections, and they are not the cell's metal at all — they are
    the ROW'S RAILS, carried inward to the source they feed.
 
-   So they are built from railMat itself rather than from a matching colour: the
+   So they are built from railMat itself rather than from a matching color: the
    same material, the same instanceColor, the same height above the cell and the
-   same thickness. Given a hand-matched colour on the signal material they read as
+   same thickness. Given a hand-matched color on the signal material they read as
    a near miss, which is worse than an obvious difference — a strap that is almost
-   the rail's colour looks like a mistake, where one that is exactly it looks like
+   the rail's color looks like a mistake, where one that is exactly it looks like
    the rail. They overlap the rail's near half in z so there is no seam to see.
 
    They are also the reason nothing here lifts: a rail is not the cell's to raise,
@@ -3037,8 +3037,8 @@ const KEYS = [
   // --- package ---
   // A 40 mm package needs ~75 units of standoff at fov 34 to sit in frame
   // with margin; these are sized from 20/tan(fov/2), not eyeballed.
-  /* The opening frame. It used to sit 46 degrees up, dead centre, at the same
-     34 degree lens as everything else — a parts-catalogue three-quarter, even
+  /* The opening frame. It used to sit 46 degrees up, dead center, at the same
+     34 degree lens as everything else — a parts-catalog three-quarter, even
      and flat. Now it comes down to 30 degrees so the lid's fins and the
      package's own edge catch the light, sits on a longer 29 degree lens for
      the compression that reads as filmic, and aims a little left and low of
@@ -3089,7 +3089,7 @@ const KEYS = [
   /* --- floorplan ---
      A LOW sweep across the front of the die, right to left, so the tiles lifting
      out of the surface and the die's own thickness both read as depth rather than
-     as a flat diagram being coloured in.
+     as a flat diagram being colored in.
 
      That was always the intent, and for a long time the keys did not deliver it.
      The elevations ran 21, 46, 19: the camera climbed to a near birds-eye view at
@@ -3227,7 +3227,7 @@ const KEYS = [
   { t: 0.902, p: [ 0.40, 2.60,  0.90], l: [-2.6, 3.05, -2.2], f: 38 },
   /* Leaving takes TWO keys. One was not enough: a single jump from inside to
      above put the camera still among the tiers at 0.926, below the top of the
-     stack and metres from a plane, which read as chaos rather than as emerging.
+     stack and meters from a plane, which read as chaos rather than as emerging.
      0.916 clears the footprint, 0.928 clears the height — and only from up there
      do the bond bumps on top read as the thing the stack was climbing toward.
 
@@ -3287,7 +3287,7 @@ const KEYS = [
   /* --- one cell ---
      Two keys, because the standoff collapses from three and a half units to one
      across this leg and that is the largest change of scale anywhere on the
-     path. 0.978 picks the hero cell out with its neighbours still around it,
+     path. 0.978 picks the hero cell out with its neighbors still around it,
      which is what makes it read as ONE OF the tiles rather than as a new object
      that has just been introduced.
 
@@ -3323,7 +3323,7 @@ const KEYS = [
      printed on it. Fifteen degrees is enough to see under the lifted straps and
      not enough to start rotating the axes back into a diamond.
 
-     The aim still sits left of the cell's centre so the subject lands in the
+     The aim still sits left of the cell's center so the subject lands in the
      right of the frame, where the caption is not. */
   { t: 0.978, p: [ 0.62, 0.80,  2.00], l: [ 0.46, -0.06, 0.05], f: 34 },
   { t: 0.990, p: [ 0.14, 0.70,  1.00], l: [ 0.44, -0.10, -0.02], f: 34 },
@@ -3376,7 +3376,7 @@ const TAN = (() => {
     const m = new Array(n);
     m[0] = d[0];
     m[n - 1] = d[n - 2];
-    /* Centred difference. Strict Fritsch-Carlson would force the tangent to zero
+    /* Centered difference. Strict Fritsch-Carlson would force the tangent to zero
        wherever the two secants disagree in sign, and on the package orbit all
        three axes reverse at the same key (t 0.150: x swings out and back, y rises
        then falls, z the same). Zeroing all three at once is a dead stop in the
@@ -3399,7 +3399,7 @@ const TAN = (() => {
        the approach, and the short segment then had to travel its small distance
        at that speed and brake hard: a spike of 0.46 rad/s at t 0.646, right as
        the core blocks began appearing, on a leg whose median is 0.15. Capping
-       against the slower neighbour makes the camera shed speed BEFORE it
+       against the slower neighbor makes the camera shed speed BEFORE it
        arrives, which is what arriving somewhere looks like. */
     for (let i = 0; i < n; i++) {
       const dl = Math.abs(d[i > 0 ? i - 1 : 0]);
@@ -3453,7 +3453,7 @@ function sampleCamera(t) {
                completes at 0.512 and toOutline starts at 0.512, so this is the
                single instant where all of them are up and none has begun to
                settle to an outline. One frame later and they are fading.
-     4  0.800  every core block is in and still at full colour. blockIn reaches 1
+     4  0.800  every core block is in and still at full color. blockIn reaches 1
                at exactly (0.640 + 0.160).
      5  0.888  inside the stack. A camera key, level and side-on among the tiers.
                NOT the 0.902 key further in: at 0.902 the camera sits 0.12 under a
@@ -3501,7 +3501,7 @@ function sampleCamera(t) {
    it cannot close after 0.512, which stop 04 is pinned to. Once those were spent
    the only honest lever left was the clock. This slows the camera sweep across
    the floorplan by the same factor, which is the trade, and on a leg whose job is
-   reading rather than travelling that is the right way round. */
+   reading rather than traveling that is the right way round. */
 /* The last two legs are authored the same way the first one was, by asking what
    has to happen inside them rather than by measuring how far they travel.
 
@@ -3553,7 +3553,7 @@ function goTo(i) {
   flyFrom = current;
   flyTo = STOPS[i];
   /* Reverse uses the same leg's duration as forward — the leg between two stops
-     is the same leg whichever way it is travelled. */
+     is the same leg whichever way it is traveled. */
   flyMs = LEG_MS[back ? i : i - 1] * (reduceMotion ? 0 : 1);
   flyT0 = now();
   flying = true;
@@ -3905,9 +3905,9 @@ const SUBJECTS = {
       ],
     }, figures: [
       { label: 'Zen 5', src: 'assets/zen5-dieshot-web.jpg',
-        alt: 'Top-down die shot of the Zen 5 compute die, with its 32 MB L3 cache as the repeating array down the centre and the eight cores either side of it.' },
+        alt: 'Top-down die shot of the Zen 5 compute die, with its 32 MB L3 cache as the repeating array down the center and the eight cores either side of it.' },
       { label: 'Zen 4', src: 'assets/zen4-dieshot-web.jpg',
-        alt: 'Top-down die shot of the Zen 4 compute die, with the L3 cache as the repeating array down the centre and the eight cores either side of it.' },
+        alt: 'Top-down die shot of the Zen 4 compute die, with the L3 cache as the repeating array down the center and the eight cores either side of it.' },
     ], title: 'L3 Cache', body: [
     'The first major structure that stands out is the L3 cache, a shared pool of 32 MB of ultra-fast memory sitting at the center of the CCD. Rather than storing long-term data, the cache acts as the processor’s working memory, keeping frequently used instructions and information close at hand so the cores don’t have to wait for data to arrive from elsewhere in the system.',
     'On the die photograph, the L3 cache appears as large, orderly blocks of repeating patterns, dense arrays of tiny memory cells packed together with incredible precision. Comparing the two generations below shows how much that packing improved. From Zen 4 to Zen 5, AMD cut the L3 from about 24 mm² down to only 15.7 mm², shrinking it from 34.6% of the entire die to just 22.4%, and it did so without making the cache cells themselves any smaller. The saving came from pulling the arrays much closer together. In Zen 4, three wide vertical gaps split the cache into columns, while in Zen 5 the two outer gaps have narrowed considerably and the middle one has all but vanished.',
@@ -3973,7 +3973,7 @@ const SUBJECTS = {
       alt: 'The ALU drawn as a block. Two operands enter from the left, a control input selects the operation, and the result leaves to the right alongside its zero and overflow flags.',
     }, title: 'Integer Execution', body: [
     'These are the units that do the actual work on whole numbers: adding, comparing, shifting, and computing the addresses that loads and stores will use. Most instructions in most programs end up here.',
-    'Because nearly everything passes through it, this block sits at the centre of the core with the integer register file immediately beside it, keeping the distance between where values are stored and where they are operated on as short as possible.',
+    'Because nearly everything passes through it, this block sits at the center of the core with the integer register file immediately beside it, keeping the distance between where values are stored and where they are operated on as short as possible.',
   ] },
   'load-store': { title: 'Load / Store', body: [
     'This is the machinery that moves data between the core’s registers and memory. It turns the addresses a program uses into the physical addresses the hardware needs, and it talks directly to the L1 data cache sitting next to it.',
@@ -3982,7 +3982,7 @@ const SUBJECTS = {
 
   /* --- the rest of one core -------------------------------------
      Fourteen blocks that had no sheet at all: clicking them did nothing,
-     while their neighbours opened. This copy is written HERE rather than
+     while their neighbors opened. This copy is written HERE rather than
      lifted from the live site, because that page has not reached these
      yet, and it should be replaced by the site's own words when it does
      so the two do not drift.
@@ -3991,7 +3991,7 @@ const SUBJECTS = {
      so in its first line rather than presenting a guess as a fact. */
   'l2-control': { title: 'L2 Control', body: [
     'Every cache needs logic that decides what it holds and when. The L2 control block tracks which lines are resident, issues the fills that bring a missing line in from L3 or from memory, and chooses which line to evict when a new one arrives and there is no room left for it.',
-    'It also keeps this core\'s view of memory consistent with every other core\'s. When a neighbouring core asks for a line this one has modified, the coherence traffic that resolves the conflict passes through here. That is why the block sits hard against the L2 array rather than out among the rest of the core logic.',
+    'It also keeps this core\'s view of memory consistent with every other core\'s. When a neighboring core asks for a line this one has modified, the coherence traffic that resolves the conflict passes through here. That is why the block sits hard against the L2 array rather than out among the rest of the core logic.',
   ] },
   'l2-dtlb': { title: 'L2 DTLB', body: [
     'Programs address memory with virtual addresses, and the hardware has to turn each one into a physical address before it can reach the cache. A translation lookaside buffer keeps recent translations close by so the work does not have to be repeated on every single access.',
@@ -4033,7 +4033,7 @@ const SUBJECTS = {
   ] },
   'microcode': { title: 'Microcode', body: [
     'Most x86 instructions are decoded directly into the simple internal operations the core actually executes. A minority are too complex for that, and those are handled by microcode: a small program held inside the processor that expands one complicated instruction into the sequence of simple steps which carry it out.',
-    'Microcode is also how a processor is repaired after it has shipped. Because these sequences live in a patchable store rather than in fixed logic, a manufacturer can change the behaviour of an instruction with a firmware update. That is how a great many errata and security fixes reach processors already sitting in people\'s machines.',
+    'Microcode is also how a processor is repaired after it has shipped. Because these sequences live in a patchable store rather than in fixed logic, a manufacturer can change the behavior of an instruction with a firmware update. That is how a great many errata and security fixes reach processors already sitting in people\'s machines.',
   ] },
   'l1-btb': { title: 'L1 BTB', body: [
     'The branch target buffer remembers where branches went last time. The predictor decides whether a branch is taken, and the BTB supplies the address it jumps to, so the front end can begin fetching from the target without waiting for the branch itself to be worked out.',
@@ -4048,7 +4048,7 @@ const SUBJECTS = {
     'A structure in this position holds instructions that have already been decoded, so that running the same code again does not mean decoding it again. Decoding x86 is genuinely expensive, and keeping already decoded operations near the front end saves both the time and the power the decoders would otherwise spend repeating work they have already done.',
   ] },
   'cpl': { title: 'CPL', body: [
-    'This is the least certain label on the die. Unlike its neighbours, CPL is not an abbreviation that published material pins down for this core, and the block is small enough that its structure gives little away.',
+    'This is the least certain label on the die. Unlike its neighbors, CPL is not an abbreviation that published material pins down for this core, and the block is small enough that its structure gives little away.',
     'The reading that best fits its size and its position against the core\'s control logic is clock and power management: the circuitry that generates and distributes this core\'s clock and handles its transitions between voltage and frequency states. Every core needs such a block, and it has to sit close to the logic it drives.',
   ] },
 };
@@ -4072,9 +4072,9 @@ const SUBJECTS_UNWIRED = {
   iod: { title: 'I/O die',
     body: ['The larger of the two dies, and the reason the 9600X is called a chiplet design. It holds the memory controllers, PCIe, and a small integrated GPU. Built on an older, cheaper TSMC N6 process, because none of that logic benefits much from the newest node.'] },
   ccd: { title: 'Zen 5 CCD "Eldora"',
-    body: ['The compute die: eight Zen 5 cores and 32 MB of L3 in 70.6 square millimetres of TSMC N4P silicon. This is the only part of the package built on a leading-edge process, which is precisely why AMD separates it from the I/O die.'] },
+    body: ['The compute die: eight Zen 5 cores and 32 MB of L3 in 70.6 square millimeters of TSMC N4P silicon. This is the only part of the package built on a leading-edge process, which is precisely why AMD separates it from the I/O die.'] },
   metal: { title: 'Copper interconnect',
-    body: ['Wiring, not logic. The lowest layers are thin and tightly pitched, carrying signals a few micrometres between neighbouring transistors. Each layer up is thicker and more widely spaced, until the topmost layers are effectively power rails and clock distribution. Layers alternate their preferred routing direction so wires can cross without touching.'] },
+    body: ['Wiring, not logic. The lowest layers are thin and tightly pitched, carrying signals a few micrometers between neighboring transistors. Each layer up is thicker and more widely spaced, until the topmost layers are effectively power rails and clock distribution. Layers alternate their preferred routing direction so wires can cross without touching.'] },
   fets: { title: 'The transistors',
     body: ['Beneath all the wiring sit the switches themselves. N4P is a FinFET process: the silicon channel stands up as a fin and the gate wraps over three of its sides. Gate-all-around structures replace this arrangement at the 2 nm generation, but not here.'] },
 };
@@ -4214,7 +4214,7 @@ function openSheet(id) {
   };
   /* A single `figure` goes under the prose; a `figures` pair goes under the
      player, in the wider column. Both slots are rebuilt every time so neither
-     can carry the last sheet's picture. The pair is labelled: each picture
+     can carry the last sheet's picture. The pair is labeled: each picture
      under its own caption, the captions above rather than below so the two
      names are read before the eye drops into the detail and has to come back
      up to learn which was which. */
@@ -4408,7 +4408,7 @@ canvas.addEventListener('pointermove', (ev) => {
 canvas.addEventListener('pointerleave', () => { setHover(null); });
 
 /* --- hover feedback -------------------------------------------------
-   A hovered part rises a little further out of the die and its colour breathes,
+   A hovered part rises a little further out of the die and its color breathes,
    which is the affordance: these slabs already move, so a static highlight would
    not read as "this one is different", but a slab that lifts under the cursor and
    pulses does.
@@ -4439,9 +4439,9 @@ const HOVER_EASE = 0.16;     // per frame, so the rise and fall are not a snap
    rather than as a loop playing. */
 const PULSE_HZ = 1.45;
 
-/* A block is selectable exactly while its WALLS are still drawing a coloured
+/* A block is selectable exactly while its WALLS are still drawing a colored
    edge, and that is the right signal rather than an accident of implementation:
-   the wall is the "coloured block outline" — it is what remains visible through
+   the wall is the "colored block outline" — it is what remains visible through
    the whole outline phase, after the fill has crossfaded away, and it is the last
    thing to go when the overlay clears. So the same number gates picking, hover,
    and whether hover may restore a fill.
@@ -4478,12 +4478,12 @@ const pulse = () => 0.5 + 0.5 * Math.sin(now() * 0.001 * PULSE_HZ * Math.PI * 2)
 
    Every previous attempt at this added a mark to each block: a pulsing ring, then
    a plus in the corner. Both had the same problem, which is that they are a
-   SECOND thing on a slab that is already carrying a colour, a name and a size,
+   SECOND thing on a slab that is already carrying a color, a name and a size,
    on top of a photograph that is itself dense with detail. Thirteen of them, or
    twenty-nine, is not a hint; it is a rash.
 
    So nothing is added. Instead the scene performs its own hover response on a
-   block: it rises out of the die and its colour brightens exactly as it would
+   block: it rises out of the die and its color brightens exactly as it would
    under a cursor, then settles. Movement in a still frame is the strongest
    attention cue there is, and what the viewer is shown is precisely what they
    will get when they try it themselves, so the demo IS the instruction. It
@@ -4730,7 +4730,7 @@ function updateScene(t) {
 
   // --- die surfaces ---
   // The die must already be wearing its real silicon texture the moment the
-  // lid clears it, otherwise the CCD reads as a bare grey slab sitting next
+  // lid clears it, otherwise the CCD reads as a bare gray slab sitting next
   // to the photographic I/O die.
   const backIn  = ramp(t, 0.075, 0.145);
   const delayer = ramp(t, 0.405, 0.452);
@@ -4780,7 +4780,7 @@ function updateScene(t) {
      stop was reached, which named them only in passing on the way past.
 
      They still go before the die photograph does, which was the original point —
-     up close this is meant to read as polished silicon, not as a labelled
+     up close this is meant to read as polished silicon, not as a labeled
      diagram — so the fade now tracks `delayer`, the backside-to-floorplan swap
      just below, and is gone a little ahead of it.
 
@@ -4848,14 +4848,14 @@ function updateScene(t) {
     tl.side.opacity = e * base;
     tl.side.depthWrite = tl.side.opacity > 0.995;
     /* Hovering undoes the crossfade to outline, so a region that has gone
-       see-through gets its highlighted colour back under the cursor. Note this
+       see-through gets its highlighted color back under the cursor. Note this
        is still multiplied by `base`: once the overlay itself has cleared there is
        nothing to restore, which is what stops hover from resurrecting a region
        the descent has finished with. */
     tl.fill.opacity = Math.min(1, e * base * (1 - toOutline * (1 - h)) * (1 + 0.35 * h * p));
     tl.line.opacity = Math.min(1, e * base * toOutline * (1 + 0.35 * h * p));
     /* The breathing lives on emissiveIntensity, which brightens the walls'
-       own colour rather than washing them toward white the way opacity would. */
+       own color rather than washing them toward white the way opacity would. */
     /* The pulse floors at 0.45 rather than 0: a raised block whose glow drops
        right back to unlit every cycle reads as flickering, and during the
        attract pass it could sit at the bottom of the beat for the whole lift. */
@@ -4877,7 +4877,7 @@ function updateScene(t) {
      the core standing complete for the orbit that carries the rest of the stage.
 
      There is NO settle to outline here, unlike the floorplan. A block takes its
-     colour when it rises and keeps it until the whole core clears. The floorplan
+     color when it rises and keeps it until the whole core clears. The floorplan
      hands the silicon back because its regions are read once and then got out of
      the way for the descent into a core; this stage is building a picture of a
      datapath, and a block that has faded to a rim is no longer part of it. */
@@ -4905,7 +4905,7 @@ function updateScene(t) {
     tl.face.opacity = e * blockBase * 0.88;
     tl.side.opacity = e * blockBase;
     tl.side.depthWrite = tl.side.opacity > 0.995;
-    // full colour from the moment it arrives, and it keeps it
+    // full color from the moment it arrives, and it keeps it
     tl.fill.opacity = Math.min(1, e * blockBase * (1 + 0.35 * h * p));
     tl.side.emissiveIntensity = 1 + 1.6 * h * (0.45 + 0.55 * p);
     const on = e > 0.002 && blockBase > 0.002 && !!tl.face.map;
@@ -5046,7 +5046,7 @@ function updateScene(t) {
       if (i < N_METAL - 1) y += gapSpan(i, t);
     }
 
-    /* The pulse: a gaussian centred on a position that climbs past the top and
+    /* The pulse: a gaussian centered on a position that climbs past the top and
        wraps, so light keeps arriving from below rather than strobing in place.
        PULSE_SPAN overshoots N_METAL at both ends so the wave enters and leaves
        off-stack instead of appearing at M1 and vanishing at M15. */
@@ -5112,7 +5112,7 @@ function updateScene(t) {
     }
 
     /* Vias stretch to whatever their gap currently is, and light a little AHEAD
-       of the tiers — the signal is travelling up through the connections, so the
+       of the tiers — the signal is traveling up through the connections, so the
        connection should brighten before the sheet it feeds. */
     const viaGlow = Math.exp(-Math.pow(((wave + 0.55) - 7) / 6.0, 2));
     /* The columns hold more of themselves than the ceiling does, for the same
@@ -5170,11 +5170,11 @@ function updateScene(t) {
   cellField.visible = cellIn > 0.002;
   if (cellField.visible) {
     cellMat.opacity = railMat.opacity = cellIn;
-    /* The neighbouring tiles stand down at stop 07 so the one being read is the
+    /* The neighboring tiles stand down at stop 07 so the one being read is the
        brightest thing in the frame. Not out, though: "one OF those tiles" is
        half the sentence the stage is making, and a cell alone in the dark is
        back to being the free-floating patch this replaced. Driven on the
-       material colour rather than on opacity, because these are the floor and
+       material color rather than on opacity, because these are the floor and
        dropping their opacity would turn depthWrite off and let the room sort
        through its own ground. */
     const fieldQuiet = 1 - 0.42 * cellFocus;
@@ -5239,7 +5239,7 @@ function updateScene(t) {
     /* Supply and its tie light together, ground and its tie light together, so
        the current path reads end to end rather than as a rail and a strap
        happening to be bright at the same time. Each piece brightens from its OWN
-       base colour, which is what keeps a lit ground rail cool and a lit supply
+       base color, which is what keeps a lit ground rail cool and a lit supply
        rail warm instead of both washing to the same white. */
     const pc = m1pins.instanceColor.array;
     const pinLit = [sigA, sigY];               // A, Y
@@ -5253,7 +5253,7 @@ function updateScene(t) {
 
     /* Each piece of the via reads the gaussian on its own height, which is the
        same way the traced net's pieces read one on their arc length: five boxes
-       that flash in sequence are a signal travelling, one box that flashes is a
+       that flash in sequence are a signal traveling, one box that flashes is a
        light being switched on. */
   }
 
@@ -5267,7 +5267,7 @@ const railFill = document.getElementById('rail-fill');
 let drift = !reduceMotion;
 
 /* Wall clock for anything that animates on its own rather than on scroll — the
-   copper stack's travelling light, the hover pulse. Overridable, and it has to be:
+   copper stack's traveling light, the hover pulse. Overridable, and it has to be:
    the camera drift taught this lesson once already. Wall-clock motion advances by
    however long a frame took to ENCODE during a headless render, so a 40-minute
    video render turns a smooth 1.6-second pulse into jitter. render-video.py sets
@@ -5369,7 +5369,7 @@ resize();
      leg 5->6   progs 8->12   tex 16->33                  383 ms
      leg 6->7   progs 12->13                              150 ms
 
-   Three kinds of lazy initialisation, all paid on the first frame that draws a
+   Three kinds of lazy initialization, all paid on the first frame that draws a
    thing rather than when the thing is created: WebGL links the shader program,
    uploads the texture, and allocates the vertex buffers. Every object already
    exists at boot — only its GPU-side resources are deferred — so all of it can
@@ -5386,7 +5386,7 @@ resize();
    It has to be the CANVAS, not an offscreen target, and that is the whole trick.
    The first version drew to a 1x1 WebGLRenderTarget, which warmed the textures
    and the vertex buffers perfectly and did nothing at all for the shaders: three
-   applies tone mapping and the output colour space only when rendering to the
+   applies tone mapping and the output color space only when rendering to the
    screen, both are part of the program cache key, so an offscreen pass compiles
    a parallel set of programs and leaves the on-screen ones to be compiled later,
    mid-pan, exactly as before. It measured as a boot-time program count of 18
@@ -5558,7 +5558,7 @@ Promise.all([
        batched passes that follow are left with only the vertex buffers to
        allocate. Falls through to the batches either way: without the extension
        this resolves immediately and the passes compile as they draw, which is
-       just the previous behaviour. */
+       just the previous behavior. */
     renderer.compileAsync(scene, camera)
       .catch(() => { /* warm the slow way */ })
       .then(() => { warmQueue = buildWarmQueue(); });
@@ -5600,7 +5600,7 @@ Promise.all([
                                  jumpTile.body.userData.pick || '?') : null,
                lift: +(jumpTile ? jumpLevel(jumpTile) : 0).toFixed(2) };
     },
-    /* Stop 07's four pin names, in normalised device coordinates: 0 is the
+    /* Stop 07's four pin names, in normalized device coordinates: 0 is the
        middle of the frame and 1 is its edge, so anything over 1 has been cut
        off. The narrow-viewport pull is what decides this, and a screenshot
        cannot tell "OUT just clears the edge" from "it just does not" — one is

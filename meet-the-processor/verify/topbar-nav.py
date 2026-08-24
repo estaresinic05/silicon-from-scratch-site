@@ -29,7 +29,7 @@ with sync_playwright() as pw:
     pg.wait_for_function("window.__die !== undefined", timeout=90000)
     pg.wait_for_timeout(2500)
 
-    print("top bar — hover is a colour lift, with NO underline on any link:")
+    print("top bar — hover is a color lift, with NO underline on any link:")
     # Asserted in the negative on purpose. The underline was added here once,
     # because the bar is a hand copy of the site's and the gap looked like a bug.
     # It is not wanted, so the test has to be able to catch it coming back.
@@ -51,16 +51,16 @@ with sync_playwright() as pw:
         check(not drawn, f"{label}: no underline at rest (content={rest['content']})")
 
     about = pg.locator('.sitenav a', has_text="About").first
-    colour_rest = pg.evaluate("""()=>{const a=[...document.querySelectorAll('.sitenav a')]
+    color_rest = pg.evaluate("""()=>{const a=[...document.querySelectorAll('.sitenav a')]
       .find(x=>x.textContent.trim()==='About'); return getComputedStyle(a).color;}""")
     about.hover()
     pg.wait_for_timeout(400)
     hov = after_of("About")
-    colour_hov = pg.evaluate("""()=>{const a=[...document.querySelectorAll('.sitenav a')]
+    color_hov = pg.evaluate("""()=>{const a=[...document.querySelectorAll('.sitenav a')]
       .find(x=>x.textContent.trim()==='About'); return getComputedStyle(a).color;}""")
     check(hov["content"] == "none", f"About: still no underline while hovered ({hov['content']})")
-    check(colour_rest != colour_hov,
-          f"About: hover still lifts the colour ({colour_rest} -> {colour_hov})")
+    check(color_rest != color_hov,
+          f"About: hover still lifts the color ({color_rest} -> {color_hov})")
 
     # The pill's padding is the regression to watch: any `.sitenav a { padding }`
     # rule outranks `.sitenav__pill`'s own — one class plus a type beats one class.

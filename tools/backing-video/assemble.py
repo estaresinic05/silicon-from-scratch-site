@@ -61,7 +61,7 @@ def build(clips, out, fps):
 
     parts = []
     for i, _ in enumerate(clips):
-        # Normalise before blending: xfade will not touch inputs whose timebase,
+        # Normalize before blending: xfade will not touch inputs whose timebase,
         # rate or pixel format disagree, and a fallback-encoded clip can easily
         # disagree with an NVENC one.
         parts.append(
@@ -78,7 +78,7 @@ def build(clips, out, fps):
             #     offset(k) = sum(d[:k]) - k*X
             # Written for VARYING clip lengths on purpose. Shots may differ in
             # duration -- only the dissolve is required to be identical -- and
-            # the constant-length form (k*(D-X)) silently desynchronises the
+            # the constant-length form (k*(D-X)) silently desynchronizes the
             # moment one shot is longer than the rest.
             off = sum(c[1].seconds for c in clips[:k]) - k * X
             tag = f'[x{k}]'

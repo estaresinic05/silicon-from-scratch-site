@@ -184,7 +184,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   color: var(--muted); text-decoration: none;
   transition: color .15s ease;
 }
-/* Hover is a colour lift and nothing else. There is deliberately NO animated
+/* Hover is a color lift and nothing else. There is deliberately NO animated
    underline here, even though `.nav a` in styles/main.css draws one on every
    other page.
 
@@ -195,7 +195,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
    in this bar and two of them — the current page and the filled pill — must not
    carry an underline anyway, so the rule only ever reached About, and a single
    underlined item in a row of three reads as an inconsistency rather than an
-   affordance. The colour change already says the link is live.
+   affordance. The color change already says the link is live.
 
    If you are here because you compared this file against main.css and found the
    underline missing: that is the expected diff. Leave it. */
@@ -206,7 +206,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 /* Now a <button>, not an <a>, because it opens the drawer rather than going
    anywhere. Buttons take none of the inherited type or the reset above, so the
    font and the border have to be stated or the pill renders in the UA's
-   13px system face inside a grey chrome frame. */
+   13px system face inside a gray chrome frame. */
 .sitenav__pill {
   appearance: none; -webkit-appearance: none;
   border: 0;
@@ -436,7 +436,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 /* The click line is the only sentence on the page that says what a block DOES,
    and it is carrying that alone for anyone who has not moved the mouse yet. The
    keyboard line is a different job — it names a control that is visible three
-   centimetres below it — so the two are not the same size any more.
+   centimeters below it — so the two are not the same size any more.
 
    Brighter as well as bigger. At --muted against a photograph of a die this
    line was competing with the thing it was describing; --text with the same
@@ -464,7 +464,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
    No solid card: the scene stays visible through a heavy blur, so the block you
    just clicked is still there behind the words rather than replaced by a panel.
 
-   The alignment is the fiddly part. `align-content: center` centres the single
+   The alignment is the fiddly part. `align-content: center` centers the single
    grid ROW in the viewport, and `align-items: start` then puts both columns at
    the top of that row. The row is as tall as the player, so the title's cap
    height lands level with the top of the player rather than at the top of the
@@ -495,7 +495,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
      and stops there, which is the line the eye already reads as the edge of
      the text. */
   animation: sheetSlide .38s cubic-bezier(.2,.7,.3,1) both;
-  /* The sheet centres its row in the window, so a column taller than the
+  /* The sheet centers its row in the window, so a column taller than the
      window clips at BOTH ends and the title is the first thing to go. Three
      paragraphs and a figure under them can reach 857px, and a 768px laptop
      has 676px to give them. So the column may scroll, but only once
@@ -543,10 +543,10 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
      of the diagram as an empty margin. */
   width: auto; height: auto;
   max-width: 100%; max-height: 30vh;
-  /* Centred in the column, which only shows on the figures the height cap makes
+  /* Centered in the column, which only shows on the figures the height cap makes
      narrower than the column: a square diagram pinned left under a 700px column
      reads as a hole in the layout rather than as a picture. The wide ones fill
-     the column and centring does nothing to them. */
+     the column and centering does nothing to them. */
   margin-inline: auto;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -558,7 +558,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
    is set to the picture's aspect when it loads, so u,v from the tracer lands
    on the right pixels and an arrowhead sized in user units keeps its shape.
    Shafts are non-scaling strokes, a hairline at any size. Each group is one
-   colour on pill and arrows alike, so the eye pairs them without reading:
+   color on pill and arrows alike, so the eye pairs them without reading:
    the page's fill purple, --accent, for the first, and the floorplan's
    Load/Store blue, --callout-blue, for the second; both carry white text and
    both read against the micrograph's amber. The arrowhead fills in index.html
@@ -584,7 +584,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   marker-end: url(#sheet-arrowhead-0);
 }
 .sheet-callout__arrow--1 { stroke: var(--callout-blue); marker-end: url(#sheet-arrowhead-1); }
-/* The pill's top-centre sits on its `at`; the arrow leaves from whichever
+/* The pill's top-center sits on its `at`; the arrow leaves from whichever
    of its measured edges faces the pads, so the shaft never crosses the pill. */
 .sheet-callout__label {
   position: absolute;
@@ -619,9 +619,9 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   font-size: .78rem; font-weight: 600;
   letter-spacing: .08em; text-transform: uppercase;
   color: var(--muted);
-  /* The picture under it is centred in its cell by the single figure's
+  /* The picture under it is centered in its cell by the single figure's
      margin-inline: auto, and a label pinned to the cell's left edge then floats
-     off to one side of it. Centred, it sits over the picture it names. */
+     off to one side of it. Centered, it sits over the picture it names. */
   text-align: center;
 }
 /* Die shots are photographs, not ink on white, so the white ground that suits
@@ -635,7 +635,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
    none of the site's CSS. Keep the two in step by eye if the home card changes.
 
    The thumbnail is a real lesson figure, not an icon. A reader who has seen the
-   R-type diagram recognises where they are being sent before they read the
+   R-type diagram recognizes where they are being sent before they read the
    title, which is the whole job of the picture. */
 .sheet-links {
   display: grid;
@@ -701,8 +701,8 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 }
 
 /* --- right: the player, blank until a video is dropped in --- */
-/* Centred in the row rather than aligned to the top of the copy. The grid row
-   is as tall as the taller column and the sheet centres its rows, so this puts
+/* Centered in the row rather than aligned to the top of the copy. The grid row
+   is as tall as the taller column and the sheet centers its rows, so this puts
    the player in the middle of the screen. It only moves on the sheets whose copy
    is taller than the player, which is why the title-to-player alignment above is
    still worth its nudge: on the short sheets the two are the same thing. */
@@ -711,7 +711,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 /* With a pair of pictures under the player this is the tall column, so it
    takes the same cap as the copy: scroll only once it outgrows the window.
    :has() scopes it to the sheets that carry a pair; the others keep the
-   player centred on the copy as before. */
+   player centered on the copy as before. */
 .sheet-media:has(.sheet-figure--pair:not([hidden])) {
   max-height: calc(100vh - 2 * clamp(2.2rem, 6vh, 5rem));
   overflow-y: auto;
@@ -767,7 +767,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   /* Callout pills on a phone: the picture is under 100px tall there and a
      pill is a third of its width, so the pills are set smaller and pinned into
      the picture's top corners, first left and second right, rather than
-     placed by `at`; centred on `at` they ran off the edges. The arrows start
+     placed by `at`; centered on `at` they ran off the edges. The arrows start
      from wherever a pill actually is, so they follow on their own. */
   .sheet-callout__label { top: .25rem; font-size: .6rem; padding: .12rem .4rem; transform: none; }
   .sheet-callout__label--0 { left: .25rem; }
@@ -797,7 +797,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
      text is worse than no labels at all. The caption still names every terminal
      in prose, which is the same trade the keyboard hint makes below: an
      affordance that only works with room to put it in is desktop-only. */
-  /* Clears the hint and the centred nav stacked beneath it. */
+  /* Clears the hint and the centered nav stacked beneath it. */
   #caption { bottom: 8.8rem; max-width: none; right: clamp(1rem,4vw,2.6rem); }
   #caption h2 { font-size: 1.4rem; }
   #caption p { font-size: .88rem; }
@@ -810,11 +810,11 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
      carried over at .86rem — the root steps down at this width and a fixed rem
      here would be proportionally half again as large as it is on a desktop. */
   #hint .hint-click { font-size: .78rem; letter-spacing: .12em; }
-  /* There is no corner free at this width, so the credit goes centred under the
+  /* There is no corner free at this width, so the credit goes centered under the
      nav. It is one line now, which is what makes that possible: the block that
      used to live here was four lines deep and the disclaimer had to be dropped
      outright. Behind the toggle it survives at this width for the first time,
-     and the panel is centred on the viewport rather than hung off a right edge
+     and the panel is centered on the viewport rather than hung off a right edge
      that no longer exists. */
   #credit {
     right: auto; left: 50%; transform: translateX(-50%);
@@ -876,7 +876,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
    disclaimer entirely for want of room, now gets all of it.
 
    Right-aligned into the one corner nothing else claims. The caption owns the
-   bottom left, the hint and the nav own the bottom centre, the rail owns the
+   bottom left, the hint and the nav own the bottom center, the rail owns the
    right edge above it.
  * ------------------------------------------------------------------ */
 #credit {
@@ -1006,16 +1006,16 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 @keyframes creditIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 /* ------------------------------------------------------------------ *
-   Stage navigation — bottom centre
+   Stage navigation — bottom center
    The primary control of the whole page, so it is placed and weighted like one.
    It used to be two hairline chevrons in the bottom-right corner, which is both
    the least-scanned part of the frame and the place a viewer reads as chrome
    rather than as the thing to press.
 
    Three deliberate choices:
-     · CENTRED, so it sits in the natural scan path under the scene, directly
+     · CENTERED, so it sits in the natural scan path under the scene, directly
        below the hint that describes it.
-     · ASYMMETRIC. Forward is a labelled accent pill, back is a quiet circle.
+     · ASYMMETRIC. Forward is a labeled accent pill, back is a quiet circle.
        The silhouette alone says which way the story runs.
      · A pulse ring on forward until the first press, then it stops for good.
        An affordance that keeps pulsing after it has been understood is noise.
@@ -1071,7 +1071,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 }
 /* Both buttons are the same size now. Direction is carried by the chevron and
    PRIMACY by the fill: forward is the solid brand purple, back is tinted glass.
-   Colour does the job the old shape difference did. */
+   Color does the job the old shape difference did. */
 .nav-btn { width: var(--nav-btn-w); }
 .nav-back { width: var(--nav-btn-w); }
 
@@ -1083,8 +1083,8 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
    reads identically on every stage of the descent. */
 /* The primary action, styled as the site styles its own: a FLAT fill of the
    brand purple with a white label. It was a vertical gradient carrying a
-   coloured drop-shadow and an inset highlight — three effects doing what one
-   solid colour does, and none of them appear anywhere on the live site. */
+   colored drop-shadow and an inset highlight — three effects doing what one
+   solid color does, and none of them appear anywhere on the live site. */
 .nav-fwd {
   gap: 0;
   padding: 0;
@@ -1218,7 +1218,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
    KNOWN GAP: unlike styles/mobile.css this block has no landscape clause, so
    a phone on its side (844 or 932px wide) takes the desktop composition of a
-   page that fills the viewport. Not folded in here because it is a behaviour
+   page that fills the viewport. Not folded in here because it is a behavior
    change rather than a breakpoint move.
  * ------------------------------------------------------------------ */
 @media (max-width: 900px) {
@@ -1259,7 +1259,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
   /* Clear the notch. The bar is the full width of the screen, so in
      landscape it runs under the rounded corners and the camera housing
-     unless the inset is honoured on both edges. */
+     unless the inset is honored on both edges. */
   .sitebar__inner {
     padding-left: max(20px, env(safe-area-inset-left));
     padding-right: max(20px, env(safe-area-inset-right));
@@ -1373,7 +1373,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
      the stops with the most to say the die had less room than the words
      about it.
 
-     Now the nav and the credit SHARE the bottom row — they are a centred
+     Now the nav and the credit SHARE the bottom row — they are a centered
      control and a right-aligned one, so they never contended for the same
      space, only for the same stack — and the hint moves to the top, under
      the bar. It is an instruction rather than content, it retires for good
@@ -1385,7 +1385,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   /* One baseline for all three. The nav's buttons are 46px against the
      credit's 44, so equal `bottom` values are what puts their bottom edges
      on the same line — matching the taller one's offset would sit it 2px
-     low against its neighbours. */
+     low against its neighbors. */
   #credit  { bottom: calc(.75rem + env(safe-area-inset-bottom)); }
   #nav     { bottom: calc(.75rem + env(safe-area-inset-bottom)); }
 
@@ -1403,13 +1403,13 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
     bottom: auto;
   }
 
-  /* The arrows leave the centre. The row reads stage block, back, forward,
+  /* The arrows leave the center. The row reads stage block, back, forward,
      credit from the left, so the nav is anchored off the credit's corner
      rather than off the middle of the screen — that keeps the gap between
      the arrows and the ⓘ constant while the space the stage block gets
      absorbs the difference between one screen width and another.
 
-     The base rule centres with left: 50% and a translate, so BOTH have to
+     The base rule centers with left: 50% and a translate, so BOTH have to
      be unset; a right alone would lose to the left already there. */
   #nav {
     left: auto;
@@ -1418,7 +1418,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   }
 
   /* ---- The nav has to clear the corner ------------------------------
-     The credit chip claims the bottom-right, and the nav is centred, so
+     The credit chip claims the bottom-right, and the nav is centered, so
      the two collide once the nav gets wide enough. It does exactly once:
      at stop 7 the forward pill is swapped for the "Start Building" CTA,
      which is sized by its label. Measured overlap at that stop: -4px at
@@ -1441,7 +1441,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
   /* 320 is still a shipping width — the small iPhone SE and a long tail of
      budget Androids — and it is the one that does not clear: the nav is
-     centred, so the room either side of it shrinks at half the rate the
+     centered, so the room either side of it shrinks at half the rate the
      screen does, and the chip's corner does not move. One more step down
      for the CTA and the back pill closes it. Nested rather than widened,
      because at 360 and up the larger sizes fit and are the better read. */
@@ -1595,7 +1595,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
        needs a transitionend listener and this needs none, and because the
        ceiling it belongs to is essentially never reached: the longest stage
        measures 284px against a 42vh cap of 354. The bar was only ever a
-       transition artefact of a box that could not overflow once settled. */
+       transition artifact of a box that could not overflow once settled. */
     scrollbar-width: none;
   }
   #cap-body::-webkit-scrollbar { width: 0; height: 0; }
@@ -1654,8 +1654,8 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
   /* ---- The toggle ---------------------------------------------------
      Sits on the index line, after "01 / 07", so the closed state reads as
-     one row: number, rule, control. Labelled rather than a bare chevron —
-     at this size an unlabelled caret beside a title is as likely to be
+     one row: number, rule, control. Labeled rather than a bare chevron —
+     at this size an unlabeled caret beside a title is as likely to be
      read as decoration as as a control, and the label is two words. */
   .cap-toggle {
     display: inline-flex;
@@ -1754,12 +1754,12 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
   /* The ⓘ was NOT fixed to the corner, and the reason is three properties
      this block never unset. At <=900px the credit is deliberately a
-     centred banner — `right: auto; left: 50%; transform: translateX(-50%);
+     centered banner — `right: auto; left: 50%; transform: translateX(-50%);
      width: 96vw` — from when it was a line of text under the nav. Setting
      `right` alone does nothing against that: with left, width and right all
      specified the box is over-constrained and CSS DISCARDS `right`.
 
-     So the button rode the right edge of a centred box capped at 26rem,
+     So the button rode the right edge of a centered box capped at 26rem,
      which put it at (viewport - min(96vw, 416)) / 2 from the corner — 6px
      at 320, 9px at 430, 62px at 540. It slid with the screen because it
      was never anchored to the corner at all.
@@ -1774,7 +1774,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
     bottom: calc(.75rem + env(safe-area-inset-bottom));
   }
 
-  /* The panel has to be re-anchored for the same reason. It is centred on
+  /* The panel has to be re-anchored for the same reason. It is centered on
      the credit's box by `right: 50%` and a translate, which put it in the
      middle of the viewport while that box WAS the viewport. Against a
      44px box it would hang off the right edge instead. Aligned to the

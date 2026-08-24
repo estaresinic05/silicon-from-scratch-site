@@ -12,7 +12,7 @@ so clicking a block unhid a completely unstyled panel. The descent froze, as it 
 meant to, and nothing was visible, because the element had no position, no z-index
 and no size and was sitting far down a 2000vh page.
 
-Symptom to remember: new behaviour, old appearance. It is almost always this.
+Symptom to remember: new behavior, old appearance. It is almost always this.
 
 IT ALSO SERVES BYTE RANGES, which `http.server` does not. Without them a
 <video> reports an empty `seekable` range, so its scrub bar does nothing: you

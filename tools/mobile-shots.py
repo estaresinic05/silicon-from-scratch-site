@@ -94,7 +94,7 @@ def shoot(pw, page_file: Path, width: int, landscape: bool = False) -> Path:
     # Real device emulation, not just a narrow window. The device pixel ratio
     # matters because it is what makes hairlines and small type render the way
     # they actually do on a phone, and `is_mobile` is what makes the page use
-    # the mobile user-agent and viewport behaviour rather than a desktop one.
+    # the mobile user-agent and viewport behavior rather than a desktop one.
     # A resized desktop window passes tests a real phone fails.
     context = browser.new_context(
         viewport={"width": width, "height": 390 if landscape else 844},

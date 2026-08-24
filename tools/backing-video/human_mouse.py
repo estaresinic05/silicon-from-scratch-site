@@ -92,7 +92,7 @@ MOUSEEVENTF_ABSOLUTE = 0x8000
 MOUSEEVENTF_VIRTUALDESK = 0x4000
 MOUSEEVENTF_WHEEL = 0x0800
 
-# Virtual-screen metrics, for the absolute-coordinate normalisation below.
+# Virtual-screen metrics, for the absolute-coordinate normalization below.
 SM_XVIRTUALSCREEN, SM_YVIRTUALSCREEN = 76, 77
 SM_CXVIRTUALSCREEN, SM_CYVIRTUALSCREEN = 78, 79
 
@@ -112,7 +112,7 @@ class POINT(ctypes.Structure):
 def _spin_until(deadline):
     """Sleep to roughly `deadline`, then spin the last millisecond.
 
-    time.sleep on Windows quantises to the system timer, so a bare sleep(1/480)
+    time.sleep on Windows quantizes to the system timer, so a bare sleep(1/480)
     lands anywhere from 2ms to 16ms later. Sleeping the bulk and spinning the
     remainder costs a little CPU and buys a pointer that actually moves at the
     rate it claims to.
@@ -194,10 +194,10 @@ class Hand:
         exactly like the physical mouse, which is the entire premise of this
         harness.
 
-        Absolute coordinates are normalised to 0..65535 across the VIRTUAL
+        Absolute coordinates are normalized to 0..65535 across the VIRTUAL
         desktop (all monitors), not the primary one -- hence VIRTUALDESK and the
         virtual-screen origin. On a 2560-wide desktop one unit is about 0.04px,
-        so the quantisation is far below the sub-pixel tremor.
+        so the quantization is far below the sub-pixel tremor.
         """
         if self.dry_run:
             self._fake = (int(round(x)), int(round(y)))
@@ -228,7 +228,7 @@ class Hand:
     # -- movement ----------------------------------------------------------
 
     def _duration_for(self, dist):
-        """Fitts-flavoured: distance costs logarithmically, not linearly.
+        """Fitts-flavored: distance costs logarithmically, not linearly.
 
         Doubling the distance does not double the time -- the hand just moves
         faster. Clamped at both ends so a nudge is not instant and a corner-to-

@@ -20,7 +20,7 @@
 (function () {
   "use strict";
 
-  /* A drag counts as a page turn once it has travelled this far horizontally
+  /* A drag counts as a page turn once it has traveled this far horizontally
      AND is clearly more horizontal than vertical, so a diagonal thumb on the
      way down the page scrolls instead of turning. */
   var SWIPE_MIN  = 40;

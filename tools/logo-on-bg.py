@@ -17,7 +17,7 @@ expressed as fractions of a 1440x900 desktop viewport at a 16px root, which is
 what those rem values resolve to there, so the glow keeps the proportions it has
 on screen rather than the ones a differently-shaped canvas would give it.
 
-`transparent 64%` is the part worth not guessing at: colour stops sit along the
+`transparent 64%` is the part worth not guessing at: color stops sit along the
 gradient ray where 100% is the ellipse edge, so the glow has faded out entirely
 by 64% of the radius. Ramping across the full radius instead makes it noticeably
 larger and softer than the page's.

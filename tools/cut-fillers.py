@@ -25,7 +25,7 @@ boundaries here come from the RMS profile and never from the model.
 
 An earlier version only transcribed runs that no word overlapped, on the theory
 that a filler is what whisper heard and did not write down. That misses the ones
-it merges into a neighbouring word's span -- two of eight, in the take it was
+it merges into a neighboring word's span -- two of eight, in the take it was
 written against -- so every run above MIN_RUN is transcribed now.
 
 
@@ -40,7 +40,7 @@ over-edited.
 HARD CUT OR DISSOLVE
 --------------------
 Measured, not judged. The frame that would play last before the cut against the
-one that would play first after it, mean absolute difference over a greyscale
+one that would play first after it, mean absolute difference over a grayscale
 frame. Under JUMP_OK the pose has not moved and the cut is invisible; above it
 the splice needs a dissolve to hide the jump.
 
@@ -67,7 +67,7 @@ PAD = 0.10           # air taken either side of a cut word, gap permitting
 FILLER = {'um', 'umm', 'uh', 'uhh', 'hmm', 'mm', 'er', 'erm', 'ah'}
 
 # The site's encode, from meet-the-processor/README.md. The masters are HLG HDR
-# in BT.2020 and go grey and desaturated without the tone-map chain.
+# in BT.2020 and go gray and desaturated without the tone-map chain.
 TONEMAP = ('zscale=w=1280:h=720:f=lanczos:t=linear:npl=100,format=gbrpf32le,'
            'zscale=p=bt709,tonemap=hable:desat=0,'
            'zscale=t=bt709:m=bt709:r=tv,format=yuv420p')

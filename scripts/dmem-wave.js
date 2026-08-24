@@ -10,7 +10,7 @@
      - readData                          → 32-bit hex bus, output deep-purple
    Reuses the .awv-* structure/markup from the style-guide waveforms; the
    .dmemwave CSS scope re-colors everything for the light lesson page. Each row
-   keeps the eye show/hide toggle and the hover scrubber; no travelling beads
+   keeps the eye show/hide toggle and the hover scrubber; no traveling beads
    (the capture redraws on every pulse, so a constant ripple would only distract).
    ========================================================================= */
 (function () {
@@ -236,7 +236,7 @@
       }
       var dStr = bitPath(s.bits, s.top);
       svg.appendChild(el("path", { "class": "awv-trace awv-trace--" + s.role, d: dStr }));
-      // Travelling ripple (bead), same treatment as the datapath / style guide.
+      // Traveling ripple (bead), same treatment as the datapath / style guide.
       var bead = el("path", { "class": "awv-bead awv-bead--" + s.role, d: dStr });
       svg.appendChild(bead);
       beads.push(bead);

@@ -60,7 +60,7 @@ with sync_playwright() as p:
         lo = min(inner)
         at = a + (b - a) * (skip + inner.index(lo)) / len(sp)
         # Slowing through a genuine corner is fine; slowing AT a key is the
-        # artefact this exists to catch, so say which one it is.
+        # artifact this exists to catch, so say which one it is.
         keys = pg.evaluate("window.__die.keyTimes")
         near = min(keys, key=lambda k: abs(k - at))
         where = f"t={at:.3f} {'AT KEY ' + format(near, '.3f') if abs(near - at) < (b - a) / 60 else '(mid-segment)'}"

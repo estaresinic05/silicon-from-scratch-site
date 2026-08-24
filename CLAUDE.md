@@ -25,7 +25,7 @@ Do not invent a pattern that is already written down. In priority order:
 
 | Document | What it governs | When to read it |
 |---|---|---|
-| **`STYLE_GUIDE.md`** (root) | The golden set. Responsive strategy, colour/type tokens, section headings, figure cards, lesson headers, Verilog flip cards, waveforms, Check Yourself quizzes, GitHub / go-back cards. | **Before writing any markup or CSS on a lesson page.** |
+| **`STYLE_GUIDE.md`** (root) | The golden set. Responsive strategy, color/type tokens, section headings, figure cards, lesson headers, Verilog flip cards, waveforms, Check Yourself quizzes, GitHub / go-back cards. | **Before writing any markup or CSS on a lesson page.** |
 | **`.claude/skills/mobile-scheme/SKILL.md`** | The phone scheme: why `styles/mobile.css` is one media query, rem-vs-px for touch targets, the 44px floor, containment, and how to measure without being fooled by in-flight reveals. | **Before any CSS that could affect a narrow screen.** |
 | `README.md` (root) | Repo structure, how to run locally, the ALU datapath explorer's internals. | Onboarding, or touching `alu-widget.js`. |
 | `meet-the-processor/DESIGN.md` | The 2D interface over the die-descent canvas: its own tokens, layout, components, motion, a11y. | Any change to the Meet the Processor chrome. |
@@ -53,13 +53,21 @@ These are not preferences to weigh. They are how the site is written.
 3. **Multiplexers are written `2x1`, never `2-to-1`.** Same for `4x1`, `8x1`.
 4. **Bold the key term** on first use, per the rule in `STYLE_GUIDE.md`.
 
+5. **American English spelling, everywhere.** Color, gray, center, labeled,
+   behavior, neighbor, optimize, license, artifact, meter. This applies to
+   lesson prose, alt text, captions, CSS and JS comments, Python docstrings,
+   and every Markdown file in the repo. The one exception is a spelling fixed
+   by a standard, such as the `aria-labelledby` attribute. The site was
+   audited on 2026-08-23 and 449 British spellings were corrected in one
+   pass; do not let them back in.
+
 ### Markup and CSS
 
-5. **Copy the golden-set pattern exactly** — same classes, same markup shape.
+6. **Copy the golden-set pattern exactly** — same classes, same markup shape.
    Every instance of a component must look and behave identically across pages.
-6. **Every page's top bar uses the logo *symbol* image**, never a plain purple
+7. **Every page's top bar uses the logo *symbol* image**, never a plain purple
    dot. Copy the bar from an existing page.
-7. **Two modes, one line at 900px.** The site is a desktop layout and a phone
+8. **Two modes, one line at 900px.** The site is a desktop layout and a phone
    layout with nothing in between. `(max-width: 900px)` is the phone; `(min-width:
    901px)` is the desktop. There is no third rendering, and no new breakpoint may
    be introduced on either side of the line. The full reasoning is the first
@@ -85,25 +93,25 @@ These are not preferences to weigh. They are how the site is written.
    desktop widths; and **touch targets inside it are sized in `px`**, because
    the root steps to 13px on a phone and would otherwise shrink every control by
    19% exactly where a thumb needs more room, not less.
-8. **`--fill` is a background behind white text; `--accent` is text on the page.**
+9. **`--fill` is a background behind white text; `--accent` is text on the page.**
    They are two different purples and are not interchangeable. Derive tints with
    `color-mix(...)` — never hand-type an `rgba()` purple, which freezes an old
    accent and silently stops tracking the token.
-9. **Actions are pills (`999px`); surfaces keep `--radius`.**
-10. **Shared components live in the shared stylesheets.** Don't redefine a figure
+10. **Actions are pills (`999px`); surfaces keep `--radius`.**
+11. **Shared components live in the shared stylesheets.** Don't redefine a figure
     card or a quiz per page.
 
 ### Working style
 
-11. **Reload the page in the browser after finishing a change** and actually look
+12. **Reload the page in the browser after finishing a change** and actually look
     at it. Playwright is available; so is `tools/mobile-shots.py`.
-12. **Check the mobile layout** after any desktop-focused change — read the
+13. **Check the mobile layout** after any desktop-focused change — read the
     `mobile-scheme` skill and render at real phone widths with
     `tools/mobile-shots.py`. **Phone fixes go in `styles/mobile.css` and
     nowhere else**, so the desktop layout stays provably untouched.
-13. **Commit messages carry no `Co-Authored-By` trailer.** Author is
+14. **Commit messages carry no `Co-Authored-By` trailer.** Author is
     `estaresinic05 <yellowsockem@gmail.com>`.
-14. **Don't leave half-wired work in the tree.** A script with no `<script>` tag
+15. **Don't leave half-wired work in the tree.** A script with no `<script>` tag
     pointing at it is dead weight; either finish it or leave it uncommitted.
 
 ---
@@ -171,7 +179,7 @@ on the same port and differs in two ways that both matter:
 
 - **`Cache-Control: no-store`.** `http.server` sends no cache header at all, and a
   browser may then apply heuristic freshness and serve a stale stylesheet without
-  revalidating. **Symptom to remember: new behaviour, old appearance.** It is
+  revalidating. **Symptom to remember: new behavior, old appearance.** It is
   almost always the cache.
 - **Byte ranges.** `http.server` ignores `Range` and answers 200 with the whole
   file. A `<video>` then reports an empty `seekable` range, so its scrub bar goes
@@ -200,7 +208,7 @@ no clone had.
 | `tools/tap-targets.py` | Lists every tappable control under 44px, skipping the ones that are inert by design. |
 | `tools/name-runs.py` | **The gate for a filler cut.** Names every run of sound one at a time, on the master and on the encode. A plain transcript cannot verify a filler cut: whisper deletes "um"s, so a clean transcript is what a SURVIVING one produces too. The l2-cache clip shipped with its filler still in on exactly that mistake. |
 | `tools/cut-fillers.py` | Finds the "um"s in a sheet-video master, cuts the longest half, re-encodes to the site's spec. `--plan` first, always. Whisper deletes fillers from its output, so they are found in the waveform and named run by run. |
-| `meet-the-processor/verify/` | Python checks for the 3D scene: affordance behaviour, stop composition, region coverage. Run these after editing `scene.js`. |
+| `meet-the-processor/verify/` | Python checks for the 3D scene: affordance behavior, stop composition, region coverage. Run these after editing `scene.js`. |
 
 **A new page must be added to four hardcoded lists** — `desktop-unchanged.py`,
 `mobile-audit.py`, `tap-targets.py` and `text-conflicts.py` each carry their own

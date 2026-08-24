@@ -136,7 +136,7 @@ SCAN = """
      counts absolutely-positioned descendants that sit outside the box on
      purpose, and this site has two such patterns everywhere: `.reveal-hint`
      parks an affordance at `left: calc(100% + .6rem)` in the gutter, and the
-     mobile scheme's 44px touch regions are centred `::after` boxes deliberately
+     mobile scheme's 44px touch regions are centered `::after` boxes deliberately
      larger than the control they wrap. Both reported as 4-57px spills on
      elements that are perfectly fine. An absolute child is positioned, not
      overflowing. */
@@ -155,7 +155,7 @@ SCAN = """
     }
     /* With no element children, scrollWidth is NOT text-only: it also counts
        ::before/::after. The mobile scheme's 44px touch regions are exactly that
-       -- a centred pseudo box deliberately wider than the control -- so every
+       -- a centered pseudo box deliberately wider than the control -- so every
        one of them reported as a 10px spill. Measure the text itself instead. */
     let over;
     if (e.children.length) {

@@ -29,7 +29,7 @@ intelligence, not prior knowledge.
 
 ## 2. Design tokens
 
-### Colour
+### Color
 
 | Token | Value | Use |
 |---|---|---|
@@ -41,8 +41,8 @@ intelligence, not prior knowledge.
 | `--accent` | `#6B2FC9` | Brand purple (carried from the main site) |
 | `--accent-lit` | `#a97bff` | Lit purple — active states, stage number, rail |
 
-Die-region highlight colours (used in the 3D overlay; the UI may reference
-them in a legend, but must not use them as interface colours):
+Die-region highlight colors (used in the 3D overlay; the UI may reference
+them in a legend, but must not use them as interface colors):
 
 | Region | Value |
 |---|---|
@@ -52,7 +52,7 @@ them in a legend, but must not use them as interface colours):
 | Test / Debug | `#9b6cf0` |
 | IFOP PHY | `#38c9a0` |
 
-**Rule:** the interface is monochrome plus purple. Region colours belong to
+**Rule:** the interface is monochrome plus purple. Region colors belong to
 the die, never to buttons, borders or text.
 
 ### Type
@@ -113,8 +113,8 @@ Everything is absolutely positioned over a fixed full-bleed canvas.
   it stays legible over bright silicon. Content swaps per stage.
 - **Progress rail** — right edge, vertical, 2px, 34vh tall, fills with an
   accent gradient as scroll advances.
-- **Hint** — bottom-centre, fades out after 3% scroll.
-- **Detail panel** — right side, vertically centred, ~23rem wide. Appears on
+- **Hint** — bottom-center, fades out after 3% scroll.
+- **Detail panel** — right side, vertically centered, ~23rem wide. Appears on
   click. Never auto-opens.
 
 ### Scrims
@@ -123,7 +123,7 @@ The interface sits over photography that ranges from near-black to bright
 silicon. Every text cluster needs its own scrim:
 
 - Top bar: linear gradient, `rgba(7,8,11,.85)` → transparent, 190% of bar height
-- Caption: radial gradient centred on the text, `.94` → transparent by 100%
+- Caption: radial gradient centered on the text, `.94` → transparent by 100%
 
 These are essential, not decorative. Do not remove them.
 
@@ -172,7 +172,7 @@ fact label            value
 
 ## 5. Motion
 
-| Element | Behaviour |
+| Element | Behavior |
 |---|---|
 | Camera | Damped follow of scroll (lerp 0.075/frame) — never 1:1 |
 | Caption | Fade + rise on stage change only |
@@ -213,7 +213,7 @@ The 3D viewport always fills the screen. Never letterbox it.
 - Panel is dismissible with Escape
 - The 3D canvas is decorative-with-content: every fact stated visually is also
   reachable as text in a panel
-- Do not rely on the region colours alone to convey meaning — each coloured
+- Do not rely on the region colors alone to convey meaning — each colored
   region also carries its name
 
 ---

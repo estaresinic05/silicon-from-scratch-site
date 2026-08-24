@@ -247,7 +247,7 @@
 .doc-hero--balanced .doc-hero__lead { text-align: center; }
 .doc-hero--balanced .doc-hero__actions { justify-content: center; }
 /* Text-shift variant: everything stays centered per the style guide (title, lead,
-   and actions inherit the .doc-hero--balanced centring above); we only nudge the
+   and actions inherit the .doc-hero--balanced centering above); we only nudge the
    whole text column a little toward the outside (left) so the one-line title has
    breathing room from the picture instead of crowding it. Desktop only — mobile
    still stacks and centers per the base balanced rules. */
@@ -2129,7 +2129,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 /* The front face is a `.figure` (top margin: space-5) while the back is a plain
    div, so the front's card used to sit ~48px lower than the back and broke the
    flush-with-paragraph alignment. Zero that margin and let the front stretch to
-   fill the cell, centring the diagram, so both faces line up at the top. */
+   fill the cell, centering the diagram, so both faces line up at the top. */
 .dmem-layout .mem-card .gate-card__face--front {
   margin-top: 0;
   align-self: stretch;
@@ -2374,7 +2374,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
    class and read at matching size.
 
    `min(40.4rem, 47%)` and not a bare rem. 40.4rem is 85% of the 47.5rem they
-   were, which was itself 85% of the 56rem the first chart took as a centred
+   were, which was itself 85% of the 56rem the first chart took as a centered
    plate; the percentage came down in step so the guard keeps the same
    relationship to the rem cap. That guard is one the repo has already paid for
    twice. A float has no negotiation the
@@ -2415,7 +2415,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 /* The two labels are the page's only headings inside a card, and they read as
    titles rather than as the mono eyebrow the site uses for kickers: display
    face, sentence case as authored, and plain white so they sit above the
-   coloured signal names underneath rather than competing with them. */
+   colored signal names underneath rather than competing with them. */
 .hazard-box__title {
   margin: 0 0 0.6rem;
   font-family: var(--font-display);
@@ -2432,8 +2432,8 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   line-height: 1.55;
   color: var(--soft-ink);
 }
-/* The chip comes off, the colour stays. Keeping the `<code>` element is what
-   lets `.theme-dark code.fld-*` remain the one place the field colours are
+/* The chip comes off, the color stays. Keeping the `<code>` element is what
+   lets `.theme-dark code.fld-*` remain the one place the field colors are
    written down; re-typing the hexes here would freeze a copy of them.
 
    `.theme-dark` has to be on the selector. The chip background is set by
@@ -2463,7 +2463,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
    at a time, the box is capped to a screen, and the commentary is a set of notes
    that light their own lines in the listing.
 
-   Behaviour is scripts/code-explorer.js. Nothing here depends on it having run:
+   Behavior is scripts/code-explorer.js. Nothing here depends on it having run:
    with the script blocked, both panels still render as ordinary listings with
    their notes beside them, and only the highlighting is missing. */
 .code-explorer {
@@ -3267,7 +3267,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   aspect-ratio: 1400 / 846;
   /* The drawings are on white. Cross-fading them by opacity means that midway
      through, both are half transparent and whatever sits behind shows through,
-     which on the dark card reads as a dip to grey. Backing the stage with the
+     which on the dark card reads as a dip to gray. Backing the stage with the
      same white the artwork is on keeps the brightness constant all the way
      across the fade. */
   background: #fff;
@@ -3321,7 +3321,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
   aspect-ratio: 1942 / 1528;      /* the aligned inverter-layout JPGs */
   /* Same white backing as .mode-switch: the drawings are on white, so a
      solid white stage keeps the brightness constant through the fade
-     instead of letting the dark card show through as a grey dip. */
+     instead of letting the dark card show through as a gray dip. */
   background: #fff;
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -3344,12 +3344,12 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .layout-fade__track {
   position: relative;
   height: 1.5rem;
-  width: 54%;                    /* a hair past half the card width, centred */
+  width: 54%;                    /* a hair past half the card width, centered */
   margin: var(--space-4) auto 0;
   cursor: pointer;
   touch-action: none;            /* let us own the drag on touch screens */
 }
-/* The rail the bubble rides along, centred vertically inside the taller hit
+/* The rail the bubble rides along, centered vertically inside the taller hit
    area: a slim hairline groove, no outline, so it reads as an understated
    line rather than a chunky bar. */
 .layout-fade__track::before {
@@ -3423,7 +3423,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 .layout-fade__track:active { cursor: grabbing; }
 
 /* Bare schematic artwork (Transistor Basics — "Putting Transistors in a
-   Circuit"). The drawings already carry their own coloured card, so they sit on
+   Circuit"). The drawings already carry their own colored card, so they sit on
    the page without a figure frame and are simply rounded off. `corner-shape`
    makes that rounding a squircle, where the curve eases into the straight edge
    instead of meeting it at a hard tangent; browsers that don't support it get
@@ -3436,7 +3436,7 @@ code.sig-ctrl { color: #4a90d9; background: rgba(74, 144, 217, 0.10); }
 }
 /* Caption under a bare schematic. The standard .figure figcaption hangs below a
    hairline rule, which only reads correctly inside a framed card; with no frame
-   the rule has nothing to divide, so this one is simply centred under the art. */
+   the rule has nothing to divide, so this one is simply centered under the art. */
 .schematic-cap {
   margin-top: var(--space-3);
   font-size: 0.92rem;

@@ -11,7 +11,7 @@ question is how many blocks are off the die, and a rise of a few hundredths of a
 world unit does not survive being eyeballed.
 
 Also checks the converse — a block that is a part of one still lifts alone, and
-its neighbours stay put — because "everything rises" would pass a naive count.
+its neighbors stay put — because "everything rises" would pass a naive count.
 """
 from playwright.sync_api import sync_playwright
 
@@ -19,7 +19,7 @@ DIE_W, DIE_H = 9.07, 7.78
 T = 0.80                       # the core standing complete
 
 # label -> a core-local (u, v) inside one of its blocks, and how many blocks the
-# part has. Coordinates are the `at` centres straight out of CORE_BLOCKS.
+# part has. Coordinates are the `at` centers straight out of CORE_BLOCKS.
 CASES = [
     ('Vector Regfile ¼', (0.0677, 0.1269), 4),
     ('FADD + FMAC',           (0.0677, 0.3145), 4),

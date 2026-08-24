@@ -394,7 +394,7 @@
       }
     );
 
-    /* top overlay layer for the travelling beads (populated per operation) */
+    /* top overlay layer for the traveling beads (populated per operation) */
     beadLayer = add(svg, "g", { class: "alu-beads" });
   }
 
@@ -607,7 +607,7 @@
     return 4;
   }
 
-  /* Rebuild the travelling beads. One overlay path per active wire, animated with
+  /* Rebuild the traveling beads. One overlay path per active wire, animated with
      a per-bead Web Animation so the bead moves at a CONSTANT pixel speed on every
      wire (duration ∝ the wire's real length — no speeding up on long wires). Each
      stage only starts once the longest wire of the previous stage has fully
@@ -664,7 +664,7 @@
       var travel = r.len + MARGIN;
       var f = Math.max((travel / SPEED) / CYCLE, 0.002);
       /* Opacity stays at 1 the whole time — the bead is simply parked off the
-         wire (dash beyond either end) when it isn't travelling, so it slides in
+         wire (dash beyond either end) when it isn't traveling, so it slides in
          and out cleanly instead of fading. */
       r.bead.animate([
         { strokeDashoffset: PAD + "px",               opacity: 1, offset: 0 },

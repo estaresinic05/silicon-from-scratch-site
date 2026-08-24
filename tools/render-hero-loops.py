@@ -57,7 +57,7 @@ CHROME = ('#loader, #sitebar, #caption, #rail, #hint, #pins, '
 # crf is per clip because the panels are not the same size on screen. The wide
 # one draws about 570 CSS px across and gets the careful setting; the two small
 # ones draw about 287 and are therefore already sampled at better than 2x, where
-# the extra quantisation has nowhere to show itself.
+# the extra quantization has nowhere to show itself.
 CLIPS = [
     # name     t0      t1     secs   W     H   crf   what it shows
     # Opens at 0.020 rather than 0.100 so the lid is still seated for the first
@@ -109,7 +109,7 @@ def render(page, name, t0, t1, secs, w, h, probe):
     print(f'  {name}: {n} frames, t {t0:.3f} -> {t1:.3f}, {w}x{h}', flush=True)
     for i, t in enumerate(ts):
         page.evaluate('(t)=>window.__die.seek(t)', float(t))
-        # Self-animation — the copper stack's travelling pulse — must advance by
+        # Self-animation — the copper stack's traveling pulse — must advance by
         # FRAME, not by wall clock, or it jitters by however long each frame
         # took to encode. Same hazard the camera drift has, same fix.
         page.evaluate('(ms)=>{window.__die.clock = ms;}', i / FPS * 1000.0)

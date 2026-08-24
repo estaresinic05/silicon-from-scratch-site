@@ -196,7 +196,7 @@
         ["Standard Cells and the Library", "coming-soon/"]
       ], [
         { src: "assets/introduction-to-physical-design/die-routed.jpg",
-          alt: "The routed die of the pipelined CPU, its metal layers drawn in colour over the standard cell rows, with the power rails running down the sides." }
+          alt: "The routed die of the pipelined CPU, its metal layers drawn in color over the standard cell rows, with the power rails running down the sides." }
       ]]
     ]]
   ];
@@ -751,7 +751,7 @@
     /* Text links first, then the Project Directory pill LAST.
        It used to lead the bar, where "Home" once sat. A filled pill reads as
        the end of a nav, not the start of one: leading with it put the loudest
-       element in the middle of the group and left the eye travelling down in
+       element in the middle of the group and left the eye traveling down in
        weight from there. Trailing it, the run goes quiet-to-loud and finishes
        on the one control that opens something. */
     QUICK.forEach(function (q) { nav.appendChild(quickNode(q[0], q[1])); });

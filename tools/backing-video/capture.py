@@ -374,7 +374,7 @@ def seed_profile(profile_dir):
 # instead the hrefs are rewritten to the real production URLs: the bubble then
 # reads siliconfromscratch.com, which is both true and better looking.
 #
-# Clicks on links are cancelled to match. Nothing in the shot list navigates by
+# Clicks on links are canceled to match. Nothing in the shot list navigates by
 # clicking a link -- every page change goes through page.goto -- so this costs
 # nothing and stops a stray click loading the live site mid-take.
 LINK_REWRITE = """
@@ -524,7 +524,7 @@ class Recorder:
         if not self.proc:
             return
         try:
-            self.proc.stdin.write(b'q')   # clean shutdown: finalises the mp4
+            self.proc.stdin.write(b'q')   # clean shutdown: finalizes the mp4
             self.proc.stdin.flush()
             self.proc.wait(timeout=20)
         except Exception:
@@ -630,7 +630,7 @@ class Stage:
         # only accurate to about a pixel -- the page reports clientX 0 for the
         # cursor sitting on the window's border column as well as on the first
         # content column -- and one pixel is the difference between a clean
-        # frame and a faint grey hairline down the left edge of every shot.
+        # frame and a faint gray hairline down the left edge of every shot.
         # GetClientRect is exact by construction. This was a real defect in the
         # first cut; do not "simplify" it back to one origin.
         mx, my = self.to_screen(0, 0)
@@ -659,7 +659,7 @@ class Stage:
         self.page.wait_for_timeout(400)
 
     def blank_on_site_bg(self):
-        """Park on a blank page painted the site's own background colour.
+        """Park on a blank page painted the site's own background color.
 
         Used only by the opening shot, which navigates ON camera so the hero's
         one-shot GSAP settle is actually filmed. Cutting from black to a white
@@ -780,7 +780,7 @@ class Stage:
 
         Approximate by design. Chrome's per-notch distance depends on settings
         and its own smooth-scroll curve is applied on top; framing is prep's job
-        and this only has to land in the neighbourhood.
+        and this only has to land in the neighborhood.
         """
         self.hand.scroll(round(dy / 100.0), duration=duration)
 
@@ -839,7 +839,7 @@ class Stage:
         must not be the thing that costs us the shot.
         """
         b = self.page.locator('#sheet-video').bounding_box()
-        # The CENTRE, not the control bar. A Chromium video that has never
+        # The CENTER, not the control bar. A Chromium video that has never
         # played draws a large central play overlay, and clicking the body of a
         # video with controls toggles playback anyway. Aiming at the little
         # button in the control bar missed, because the bar spans the element
@@ -893,12 +893,12 @@ def main():
     ap.add_argument('--browser', help='path to a chromium-family exe')
     ap.add_argument('--seed', type=int, default=7,
                     help='pointer RNG seed; same seed reproduces the same motion')
-    # Default 0 -- MEASURED, do not "optimise" this back on. Matching the
+    # Default 0 -- MEASURED, do not "optimize" this back on. Matching the
     # display to the capture rate is the obvious move and it is wrong here:
     # dropping the panel from 240Hz to 60Hz took gdigrab from 41 fps to 31,
     # because a grab that cannot finish inside one 16.7ms frame lands on the
     # next vsync and halves. At 240Hz the desktop presents every 4.2ms and the
-    # grabber is not quantised nearly as hard.
+    # grabber is not quantized nearly as hard.
     ap.add_argument('--refresh', type=int, default=0,
                     help='drop the display to this refresh rate while filming '
                          '(0, the default, leaves it alone). Measured to make '

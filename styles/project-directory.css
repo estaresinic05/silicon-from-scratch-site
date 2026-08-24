@@ -271,18 +271,18 @@
      this whole rule exists to satisfy. The two margins must keep summing to
      -33px; only their split may change.
 
-     The split is what centres it. Measuring from `flex-start`, the margin box
+     The split is what centers it. Measuring from `flex-start`, the margin box
      starts at the sheet's 88px top padding, so the picture's top edge lands at
      88 - 4 = 84px. The band is only VISIBLE from 65px, where the top bar's
      1px border ends, down to 327px, so 84 leaves 19px of white above the
-     picture and 19px below it. Centring on the row instead put 7px above and
+     picture and 19px below it. Centering on the row instead put 7px above and
      32px below, because the row is not the thing the eye sees. */
   margin-top: -4px;
   margin-bottom: -29px;
 }
 .navsheet__art img {
   display: block;
-  /* 14rem centred in the row spans 71.5px to 295.5px inside the sheet. The
+  /* 14rem centered in the row spans 71.5px to 295.5px inside the sheet. The
      top bar reaches 65px and the sheet ends at 327px, so it clears both.
      Going much past this slides the picture under the bar. */
   max-height: 14rem;
@@ -323,7 +323,7 @@
 }
 .navsheet__links a:hover,
 .navsheet__links a:focus-visible {
-  /* The Start Building purple, so the one colour that means "this is the
+  /* The Start Building purple, so the one color that means "this is the
      action" is the same in the bar, the hero and the directory. It was
      #4f1f9e, a deeper shade that belonged to no other control on the page.
      White on #6b2fc9 measures 7.3:1, so the label stays legible while lit. */

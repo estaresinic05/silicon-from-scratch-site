@@ -5,7 +5,7 @@ its own comment claimed: the elevations ran 21, 46, 19, so the camera climbed to
 near birds-eye right as the first regions bloomed and then dropped back. That is
 hard to see while scrubbing a scroll and obvious in motion.
 
-A jump of more than ~12 degrees between neighbouring keys is worth a look; inside
+A jump of more than ~12 degrees between neighboring keys is worth a look; inside
 a stage it is almost always a mistake. Deliberate rises exist (the run into the
 core, and the lift off it at the end) and are annotated as such below.
 """

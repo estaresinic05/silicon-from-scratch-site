@@ -6,7 +6,7 @@
        swatch you click to bring them back),
      - a "Time (ns)" scale on top,
      - the traces on the right, color-coded by role,
-     - a travelling bead per visible signal (like the datapath), all starting at
+     - a traveling bead per visible signal (like the datapath), all starting at
        0 ns and sweeping forward together at the same speed.
 
    Self-contained. Reuses only the design tokens; no other script. Auto-inits

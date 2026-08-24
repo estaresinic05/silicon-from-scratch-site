@@ -30,7 +30,7 @@ filler is; only the output tells you whether it left.
 
 Boundaries come from the waveform and never from the model, whose word
 timestamps drift by up to half a second — enough to swap a filler with its
-neighbour, which is the error this file was written after.
+neighbor, which is the error this file was written after.
 """
 import subprocess, sys, os, wave
 import numpy as np

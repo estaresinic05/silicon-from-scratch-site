@@ -1,7 +1,7 @@
 """What each fill actually looks like, and whether white type survives on it.
 
 The overlay is drawn at globalAlpha 0.62 over the die photo, so the authored hex
-is not what reaches the eye. Blend each region's colour over the real pixels it
+is not what reaches the eye. Blend each region's color over the real pixels it
 covers and score the result against white with the WCAG contrast ratio. 4.5 is
 the usual floor for body text, 3.0 for large text; these labels are large, so
 treat under 3.0 as failing and 3.0-3.5 as marginal.

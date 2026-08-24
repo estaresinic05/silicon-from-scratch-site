@@ -1,5 +1,5 @@
 """Does hovering a block lift it, pulse it, and set the cursor — and does it leave
-its neighbours alone?
+its neighbors alone?
 
 Measures the actual mesh y and emissiveIntensity over time rather than trusting a
 screenshot, because a lift of a few hundredths of a world unit is not something
@@ -15,7 +15,7 @@ with sync_playwright() as pw:
     pg.wait_for_timeout(4000)
     pg.evaluate("(t)=>window.__die.seek(t)",0.80)
     pg.wait_for_function("()=>Math.abs(window.__die.t-0.80)<0.004", timeout=30000)
-    # Instruction Fetch, and a neighbour that must NOT react
+    # Instruction Fetch, and a neighbor that must NOT react
     def screen(cu,cv,wy=0.11):
         return pg.evaluate("""({cu,cv,W,H,wy})=>{
           const u=0.015+cu*0.335, v=0.6193+cv*0.1983;

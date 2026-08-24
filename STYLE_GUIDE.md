@@ -9,7 +9,7 @@ Base design tokens (`--accent`, `--accent-deep`, `--fill`, `--fill-hover`,
 `--font-mono`, `--font-display`, `--font-body`, `--space-*`) live in
 `styles/main.css` and are assumed available.
 
-See **Colour and type foundations** below before picking any colour or face by
+See **Color and type foundations** below before picking any color or face by
 hand — in particular, `--accent` and `--fill` are two different purples for two
 different jobs and are not interchangeable.
 
@@ -164,7 +164,7 @@ reveals, is in `.claude/skills/mobile-scheme/SKILL.md`.
 
 ---
 
-## Colour and type foundations
+## Color and type foundations
 
 ### Typefaces — one sans, plus mono for code
 
@@ -208,7 +208,7 @@ judged against the *page*: `#6b2fc9` as text on `#08080b` measures **2.74:1** an
 fails WCAG outright. That asymmetry is the whole reason there are two tokens.
 
 So: **`--fill` behind white, `--accent` on the page.** Never use `--fill` as a
-text colour on dark, and never use `--accent` as a button background.
+text color on dark, and never use `--accent` as a button background.
 
 **Tints derive, they don't get declared.** A translucent purple wash is
 `color-mix(in srgb, var(--accent) N%, transparent)` — or `var(--fill)` for fills.
@@ -316,10 +316,10 @@ supply</strong>`, `<strong>set-less-than</strong>`. This is the standard (and on
 way to bold within `.prose` body copy; don't reach for `<b>`, inline
 `font-weight`, or ALL-CAPS to emphasize a word.
 
-- **Look:** `<strong>` in `.prose` inherits the paragraph's colour and the
+- **Look:** `<strong>` in `.prose` inherits the paragraph's color and the
   browser's bold weight — a plain, muted bold that reads as emphasis without
   shouting. It's the same bold used in `.doc-hero__lead` leads and the flip-card
-  `figcaption` descriptions, so don't add a per-instance colour or weight.
+  `figcaption` descriptions, so don't add a per-instance color or weight.
 - **Scope:** bold the **term being introduced or defined**, not whole phrases or
   sentences — one or two words is the norm.
 - **Sparingly:** if everything in a paragraph is bold, nothing is emphasized.
@@ -356,16 +356,16 @@ Reference implementation: `single-cycle-cpu/basics-of-instructions/index.html`.
   being defined, so it takes the standard `<strong>` treatment (see *Bolding key
   terms*), not `<em>`.
 
-### Instruction-field colours
+### Instruction-field colors
 
 Every instruction-field `<code>` is tinted to match its cell in the
 instruction-format diagrams (`assets/single-cycle-cpu/r-type.jpg`, `i-type.jpg`,
 `s-type.jpg`), so a field named in prose reads as the same field shown in the
-image. Add the matching `fld-*` class to the `<code>`; the colours live in
+image. Add the matching `fld-*` class to the `<code>`; the colors live in
 `styles/alu.css` as `.theme-dark code.fld-*` (scoped under `.theme-dark` + the
-`code` element so they outrank the base code-chip colour).
+`code` element so they outrank the base code-chip color).
 
-| Field(s) | Class | Colour | Text | Chip background |
+| Field(s) | Class | Color | Text | Chip background |
 |---|---|---|---|---|
 | `funct7`, `funct3`, `opcode` | `fld-funct7` / `fld-funct3` / `fld-opcode` | purple | `var(--accent-deep)` | `color-mix(in srgb, var(--accent) 18%, transparent)` |
 | `rs2` | `fld-rs2` | green | `#8fe0a0` | `rgba(134, 214, 162, 0.18)` |
@@ -376,12 +376,12 @@ image. Add the matching `fld-*` class to the `<code>`; the colours live in
 The purple trio (`funct7`/`funct3`/`opcode`) is the same as the default `<code>`
 chip (`.theme-dark code`, which is `var(--accent-deep)` on a 16% accent wash), so
 they already match — but still carry an explicit `fld-*` class so the
-field-colour scheme is complete and self-documenting.
+field-color scheme is complete and self-documenting.
 
 Note the split: the purple trio **derives from `--accent`**, because purple is
 brand. The green, amber, periwinkle and rose stay hard-coded rgba, because they
 are keyed to cells in the instruction-format photographs and are data, not
-brand — the same reasoning that keeps the die-region colours out of the token
+brand — the same reasoning that keeps the die-region colors out of the token
 system.
 
 ```html
@@ -413,7 +413,7 @@ of `alu/alu-slice/index.html`, and the ALUOp list in
 ```
 
 - The card (background `var(--paper)`, `1px solid var(--hairline)`,
-  `var(--radius)`, `var(--shadow-soft)`) and the accent-coloured, mono markers are
+  `var(--radius)`, `var(--shadow-soft)`) and the accent-colored, mono markers are
   already defined — **don't** re-style lists per page.
 - **Exception — lists already inside another card** (e.g. the `.edge-card`) must
   **not** become a card-within-a-card. The `.edge-card ol` / `.edge-card ul` reset
@@ -462,7 +462,7 @@ diagram in `single-cycle-cpu/fetch-decode-execute/index.html` (`#all-together`).
   card disappears. Use the token `var(--paper)` (i.e. just the base `.figure`) so
   the card *frames* the image — dark card on the dark theme, light card on light.
 - **Per-figure CSS is sizing only:** at most `max-width` + `margin-inline: auto`
-  to cap and centre; let the base `.figure` own the background/border/radius/shadow.
+  to cap and center; let the base `.figure` own the background/border/radius/shadow.
   Existing width caps: `.figure--diagram` (26rem), `.figure--diagram-lg` (34rem),
   `.figure--diagram-tall` (20rem, portrait), `.figure--diagram-xl` (48rem).
 
@@ -535,12 +535,12 @@ Rules:
 }
 .doc-hero__text { max-width: 36rem; }
 
-/* Wide screens: nudge the whole hero a little left of centre. */
+/* Wide screens: nudge the whole hero a little left of center. */
 @media (min-width: 1344px) {
   .doc-hero { transform: translateX(-2rem); }
 }
 
-/* Balanced variant (the lesson header): text + picture as a tight unit, centred. */
+/* Balanced variant (the lesson header): text + picture as a tight unit, centered. */
 .doc-hero--balanced { margin-inline: auto; max-width: 88rem; }
 @media (min-width: 769px) {
   .doc-hero--balanced {
@@ -602,7 +602,7 @@ Rules:
 }
 .doc-hero__prompt { color: var(--soft-ink); }
 
-/* Balanced hero: centre the title, lead, and actions. */
+/* Balanced hero: center the title, lead, and actions. */
 .doc-hero--balanced h1.title-eyebrow { justify-content: center; }
 .doc-hero--balanced .doc-hero__lead { text-align: center; }
 .doc-hero--balanced .doc-hero__actions { justify-content: center; }
@@ -627,7 +627,7 @@ Rules:
      between the title and the lead via `order`; the grid gap drives the spacing. */
   .doc-hero--balanced .doc-hero__text { display: contents; }
   .doc-hero--balanced .title-eyebrow { order: 1; margin-bottom: 0; }
-  .doc-hero--balanced h1.title-eyebrow::before { display: none; }   /* drop tick so title centres */
+  .doc-hero--balanced h1.title-eyebrow::before { display: none; }   /* drop tick so title centers */
   .doc-hero--balanced .doc-hero__art { order: 2; }
   .doc-hero--balanced .doc-hero__lead { order: 3; margin-bottom: 0; }
   .doc-hero--balanced .doc-hero__actions { order: 4; }
@@ -662,13 +662,13 @@ A page with a flip card must load, in this order (after the page's other JS):
 (and the `.gate-card*`, `.code-editor*`, `.gate-sim*`, `.tok-*` CSS — in
 `styles/alu.css` for ALU pages, duplicated in `styles/main.css` for the homepage.)
 
-**Syntax colours (`.tok-*`).** `VerilogMini.highlight` classifies each token and
+**Syntax colors (`.tok-*`).** `VerilogMini.highlight` classifies each token and
 `gate-card.js` re-highlights live, so every code block shares one VS-Code-Dark+
 palette. **These exact values live in *both* `styles/alu.css` and
 `styles/main.css` — keep the two copies in sync** (the editor background is
 `#1e1e1e`):
 
-| class | what it colours | hex |
+| class | what it colors | hex |
 |---|---|---|
 | `.tok-kw` | keywords — `input` `output` `wire` `reg` `assign` `module` `always` `if`… | `#569cd6` blue |
 | `.tok-cm` | comments (`//…`, `/*…*/`) | `#6a9955` green |
@@ -726,7 +726,7 @@ Copy a `.gate-card` block from a reference page. The moving parts:
   in sync, like the other `.code-editor__*` rules). Because it's injected globally,
   new code blocks get a working Copy button for free — no markup needed.
 - **Editor footer note (`.code-editor__note`) — optional.** A one-line caption bar
-  *inside* the editor, below the body, mirroring the titlebar's VS Code greys so it
+  *inside* the editor, below the body, mirroring the titlebar's VS Code grays so it
   reads as part of the widget (clipped to the rounded corners by the figure's
   `overflow: hidden`). Use it for a short "the Verilog above shows…" note. Set in
   `var(--font-display)` (readable prose, not mono); reference: the `sc_cpu_control`
@@ -808,16 +808,16 @@ if (ret) ret.addEventListener("click", function () { flipTo(false); });
 
 Hover feedback mirrors the front: hovering the **return arrow** **grows the whole
 card a touch** (the same `1.045` the front uses before its flip) rather than
-recolouring the arrow itself, so the cue reads "grow, then flip":
+recoloring the arrow itself, so the cue reads "grow, then flip":
 
 ```css
 .gate-card.is-flipped .gate-card__face--back:has(.gate-card__return:hover) {
   transform: rotateY(180deg) scale(1.045);
 }
 ```
-The arrow keeps its own colour on hover — it has **no** colour/highlight change.
+The arrow keeps its own color on hover — it has **no** color/highlight change.
 
-### Behaviour notes
+### Behavior notes
 - The output **label** (`.gate-sim__lhs`) follows the declared `output` port, so
   renaming the output in the code updates it.
 - **Multiple outputs.** A card can show more than one live output (e.g. the full
@@ -846,7 +846,7 @@ On grid (`index.html`).
 **Powered by one shared script — never re-implement the schematic or wiring:**
 - `scripts/alu-widget.js` — builds the entire SVG schematic (two ALU slices + the
   carry/`less` wiring) and wires the control panel. Highlighting is driven by
-  three things in the script, the **only** places to edit behaviour: `NAMED_OPS`
+  three things in the script, the **only** places to edit behavior: `NAMED_OPS`
   (friendly names → 4-bit codes), `deriveActiveIds()` (code → the SVG element ids
   to light — the single source of truth), and the generated `OPS` table.
 - `styles/alu-widget.css` — all the base `.alu-*` styles.
@@ -923,7 +923,7 @@ The SVG stage is just the empty `#alu-diagram`; the panel is what you copy:
   beside the `.alu-widget__stage`. Pure `styles/alu-widget.css`; no extra rules.
 - **Home Hands On grid — one card.** In `.handson-grid` the datapath and panel
   share **one paper card styled exactly like the Check Yourself card** (see that
-  entry). Because the schematic is drawn with dark ink/idle colours, the stage
+  entry). Because the schematic is drawn with dark ink/idle colors, the stage
   keeps its own **white plate** (a light-token override) so it stays legible on
   the dark theme, while the panel sits transparently on the card and a hairline
   divides them. All of this lives in `styles/main.css` under
@@ -941,7 +941,7 @@ and the `alu-widget.js` `<script>` — nothing else depends on it.
 ## Interactive waveforms (timing diagrams)
 
 The house style for **any digital timing-diagram / waveform** widget: a
-signal-name panel on the left, a time scale across the top, and colour-coded step
+signal-name panel on the left, a time scale across the top, and color-coded step
 traces on the right, all on the standard card. Reference implementation: the
 "Interactive Waveforms" widget in the home Hands On grid (`scripts/aluwave.js` +
 the `.aluwave` / `.awv-*` rules in `styles/main.css`). What follows is the
@@ -974,10 +974,10 @@ the pattern.
 - **Time-scale numbers**: `var(--font-display)` (the friendly grotesque, *not*
   mono) — deliberately less "techy" than the surrounding labels.
 
-### Colours (role-coded, tuned for the dark card)
+### Colors (role-coded, tuned for the dark card)
 
-Every signal is coloured by **role**, in tones that read on the dark panel — the
-signal's name, its trace, and its bead all share the one colour:
+Every signal is colored by **role**, in tones that read on the dark panel — the
+signal's name, its trace, and its bead all share the one color:
 
 - **Data inputs** → light purple `var(--accent)` (`#a97bff` on dark).
 - **Control signals** → light blue `#60a5fa`.
@@ -988,23 +988,23 @@ Neutral chrome comes from tokens: dividers `var(--hairline)`; gridlines + row
 separators a faint `rgba(253,253,251,0.06)`; header/label/muted text
 `var(--soft-ink)`.
 
-### Traces + travelling beads
+### Traces + traveling beads
 
 - Traces are SVG **step waveforms** (`<path>`, `stroke-width` ~2.5–3, round
   joins/caps) that start **on the vertical divider bar** (t=0) and step between a
   high and a low rail.
 - Motion reuses the **datapath bead treatment exactly**: an overlay `<path>` copy
   of each trace styled as a fat round-capped dash (`stroke-dasharray: 12 100000`)
-  with a colour **glow** (`filter: drop-shadow(0 0 3px currentColor)`), animated
+  with a color **glow** (`filter: drop-shadow(0 0 3px currentColor)`), animated
   by sliding `strokeDashoffset` along the wire (Web Animations API, constant pixel
   speed). Use a **long cycle** (~10 s) so a ripple passes only occasionally, not
-  constantly. Bead colour comes from the signal via `currentColor`. No beads
+  constantly. Bead color comes from the signal via `currentColor`. No beads
   under `prefers-reduced-motion`.
 
 ### Show / hide control
 
-Each row carries a **colourless eye icon** — open eye = shown, slashed eye =
-hidden — in `var(--soft-ink)` (never a coloured swatch). Hiding a signal collapses
+Each row carries a **colorless eye icon** — open eye = shown, slashed eye =
+hidden — in `var(--soft-ink)` (never a colored swatch). Hiding a signal collapses
 its lane to a **short strip** whose slashed-eye + muted label is the un-hide
 control; the remaining lanes shift up to fill *some* (not all) of the freed space.
 
@@ -1015,7 +1015,7 @@ line (`#f5c542`, `vector-effect: non-scaling-stroke`) from the time axis down to
 the bottom of the traces — plus a **value tooltip that follows the cursor**: a
 small dark box (`background: rgba(18,18,24,0.96)`, hairline border, mono type)
 listing the time and each visible signal's value, with **each value in its own
-signal's colour**.
+signal's color**.
 
 ### Responsiveness
 
@@ -1250,7 +1250,7 @@ Rules:
 - Point `href` at the **most specific** source that fits: a single `.v` file for a
   lesson about that circuit, or the repo root for a general "browse everything."
 - The GitHub mark inherits `fill: var(--ink)`, so it stays legible in both themes
-  — don't hard-code a colour.
+  — don't hard-code a color.
 - Keep the subtitle to one short line describing what's on the other end.
 
 ### CSS
@@ -1341,7 +1341,7 @@ The whole card is one `<a>`, so all of it is clickable. It links **internally**
 Rules:
 - The icon is **stroke-based** (`fill: none; stroke: currentColor`), and
   `.recall-card__icon` sets `color: var(--accent)`, so the glyph is the accent
-  purple — don't hard-code a colour or add a `fill`.
+  purple — don't hard-code a color or add a `fill`.
 - Keep the phrasing split across the three lines: the **eyebrow** carries the
   "Go back" intent, the **title** asks the question, the **subtitle** is one short
   line naming what's on the other end.
@@ -1440,7 +1440,7 @@ Three consequences worth internalising:
 
    **One deliberate difference: that bar has no hover underline.** `.nav a` in
    `main.css` draws an animated hairline; the die page draws none, and hover is a
-   colour lift only. The gap looks like an oversight and was "fixed" once before
+   color lift only. The gap looks like an oversight and was "fixed" once before
    being reverted, so treat a missing underline there as correct. The reason is
    that two of its three links — the current page and the filled pill — must not
    carry one anyway, so the rule only ever reached About, and one underlined item
@@ -1454,17 +1454,17 @@ Three consequences worth internalising:
 2. **It has its own token names.** `--void`, `--panel`, `--line`, `--text`,
    `--muted`, `--accent`, `--accent-lit`. They are tuned to the brand but they
    are not the site tokens, so do not paste site CSS in and expect it to resolve.
-3. **The five die-region colours are data, not brand.** Zen 5 cores `#ff5f42`,
+3. **The five die-region colors are data, not brand.** Zen 5 cores `#ff5f42`,
    L3 `#5b8cf0`, SMU `#f0a93a`, Test/Debug `#9b6cf0`, IFOP PHY `#38c9a0`. They
    identify regions on a real die, so they stay hard-coded and never fold into
    the accent. The same reasoning covers the two hard-coded die-shot overlay
    purples noted under **The two purples**. The interface itself stays monochrome
-   plus purple; region colour belongs to the die, never to a button or a border.
+   plus purple; region color belongs to the die, never to a button or a border.
 
 **Serve it over HTTP.** ES modules and the import map do not load from `file://`.
 Use `python tools/serve.py` (it sends `Cache-Control: no-store`)
 rather than `python -m http.server`, which lets the browser serve a stale
-stylesheet. Symptom: new behaviour, old appearance.
+stylesheet. Symptom: new behavior, old appearance.
 
 **Transparent tiles are sorted by their mesh origin, so every tile must own
 one.** All the slabs are glass — `transparent: true`, `depthWrite: false` — which

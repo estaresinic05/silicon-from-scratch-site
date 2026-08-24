@@ -4,7 +4,7 @@ Closes via the X. There was a "Resume scrolling" button; it was removed, and thi
 test kept referencing it and started failing on a null element — the failure was
 the test, not the page.
 
-Projects a region's centre through the real camera (window.__die.state.mvp) to
+Projects a region's center through the real camera (window.__die.state.mvp) to
 find where to click, so it does not depend on guessing screen coordinates.
 """
 from playwright.sync_api import sync_playwright

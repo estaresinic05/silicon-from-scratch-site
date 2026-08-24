@@ -50,11 +50,11 @@ XFADE = 0.6
 # frames in a 60fps master are duplicates. Behind a talking head this is not
 # visible. capture.py reports the real per-clip rate either way.
 # Measured, in this order, so nobody repeats the experiments:
-#   * writing clips into the OneDrive-backed repo caused the worst artefact by
+#   * writing clips into the OneDrive-backed repo caused the worst artifact by
 #     far -- sync uploads during the next take, landing as freezes. Moving OUT
 #     (see above) took the heavy WebGL shots from 41 to 47 fps and removed them.
 #   * dropping the panel to 60Hz to match: WORSE, 41 -> 31. A grab that misses
-#     one 16.7ms frame waits for the next; at 240Hz it is not quantised as hard.
+#     one 16.7ms frame waits for the next; at 240Hz it is not quantized as hard.
 #   * shrinking the captured area: no help. 1280x720 measured SLOWER than
 #     1920x1080 on an idle desktop, so gdigrab's cost here is per-frame
 #     overhead and contention, not pixels.

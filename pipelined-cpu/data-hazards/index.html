@@ -318,10 +318,10 @@
             them cheap to test in hardware.
           </p>
           <!-- The four conditions in one floated card, prose wrapping down its
-               left. The `<code>` elements stay so the field colours keep their
+               left. The `<code>` elements stay so the field colors keep their
                single source of truth in `.theme-dark code.fld-*`; `.hazard-box`
                strips the chip background and padding off them, so they read as
-               plain coloured signal names rather than inline chips. -->
+               plain colored signal names rather than inline chips. -->
           <aside class="hazard-box" aria-label="The four forwarding hazard conditions">
             <div class="hazard-box__group">
               <h3 class="hazard-box__title">EX Hazards</h3>
@@ -423,7 +423,7 @@
              901, the narrowest desktop. 28rem is the smallest number that clips
              no code, so it is also the largest that column can be given, and a
              wider module only narrows the paragraphs beside it. `align-items:
-             center` centres the module against the taller column rather than
+             center` centers the module against the taller column rather than
              pinning it to the top.
 
              Both Verilog blocks on this page are 28rem, and that they agree is a
@@ -548,7 +548,7 @@
         <div class="prose prose--flow">
           <figure class="flow-figure flow-figure--float-left chart-float enlarge-wide">
             <img src="../../assets/pipelined-cpu/stalling.jpg"
-                 alt="A multiple-clock-cycle diagram of lw x3, 40(x7) followed by or x4, x3, x5, sub x14, x3, x8, add x9, x4, x3 and and x16, x1, x10. The load reads data memory in CC4, so its result only exists at the end of that cycle. An arrow from there back to the Execution stage of the or in CC4 is labelled NOT POSSIBLE, because it would run backwards in time. The arrow forward to the Execution stage of the sub in CC5 is legal, as is the later one into the add."
+                 alt="A multiple-clock-cycle diagram of lw x3, 40(x7) followed by or x4, x3, x5, sub x14, x3, x8, add x9, x4, x3 and and x16, x1, x10. The load reads data memory in CC4, so its result only exists at the end of that cycle. An arrow from there back to the Execution stage of the or in CC4 is labeled NOT POSSIBLE, because it would run backwards in time. The arrow forward to the Execution stage of the sub in CC5 is legal, as is the later one into the add."
                  decoding="async" />
           </figure>
 
@@ -569,7 +569,7 @@
             each have to do something this cycle. What they do is nothing, in the
             precise sense of a <strong>NOP</strong>, an instruction with no
             effect. We insert one by setting every control line in the ID/EX
-            pipeline register to zero, so the instruction travelling down the back
+            pipeline register to zero, so the instruction traveling down the back
             half writes no register and touches no memory. That hole is called a
             <strong>bubble</strong>, and the chart below draws it moving through
             the stages like an air bubble in a water pipe.

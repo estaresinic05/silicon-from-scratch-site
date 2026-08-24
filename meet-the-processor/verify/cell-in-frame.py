@@ -1,4 +1,4 @@
-"""How much of stop 07's labelled cell is inside the frame, in NDC.
+"""How much of stop 07's labeled cell is inside the frame, in NDC.
 
 Pixel-peeping a phone screenshot cannot tell 'the OUT label just clears the edge'
 from 'it just does not'. __die.cellFrame projects the four pin names through the
