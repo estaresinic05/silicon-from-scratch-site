@@ -329,15 +329,27 @@
             cell is: three transistor pairs, not two.
           </p>
           <p>
-            The recipe for an arbitrary function follows directly. Write the
-            function you want in the form Y = <span class="ovl">F</span>. Draw F
-            as a network of nMOS switches, series for AND and parallel for OR,
-            between the output and ground. Then draw its dual out of pMOS
-            switches, parallel where the PDN was series and series where it was
-            parallel, between the output and V<sub>DD</sub>. The gate you are
-            left with computes <span class="ovl">F</span> for every input, never
-            floats, and never draws static current.
+            The recipe for any function Y follows directly.
           </p>
+          <ol>
+            <li>Calculate <span class="ovl">Y</span>.</li>
+            <li>
+              Implement the PDN using nMOS.
+              <ul style="margin: var(--space-2) 0 0; padding: 0 0 0 1.2rem;
+                         background: none; border: 0; box-shadow: none;">
+                <li>AND: connect in series.</li>
+                <li>OR: connect in parallel.</li>
+              </ul>
+            </li>
+            <li>
+              Implement the PUN using pMOS as the dual of the PDN.
+              <ul style="margin: var(--space-2) 0 0; padding: 0 0 0 1.2rem;
+                         background: none; border: 0; box-shadow: none;">
+                <li>Replace series with <em style="color: var(--accent);">parallel</em>.</li>
+                <li>Replace parallel with <em style="color: var(--accent);">series</em>.</li>
+              </ul>
+            </li>
+          </ol>
         </div>
       </div>
     </section>
