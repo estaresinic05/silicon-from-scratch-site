@@ -239,19 +239,16 @@
             answer to pull Y <em>down</em>, so what appears at the output is the
             AND inverted.
           </p>
-          <div class="term-card">
-            <p class="term-card__title">The Floating Node</p>
-            <p>
-              There is a second problem. In the three rows where Y reads 1,
-              nothing is driving it. That 1 is only the charge we left on
-              C<sub>L</sub>, connected neither to ground nor to the supply, and a
-              node in that state is <strong>floating</strong>, or
-              <strong>high-impedance</strong>, written Hi-Z. A gate has to drive
-              a definite value for every input, so for every row where the
-              pull-down is open, a <strong>pull-up network</strong> has to close
-              and connect Y to V<sub>DD</sub> instead.
-            </p>
-          </div>
+          <p>
+            There is a second problem. In the three rows where Y reads 1,
+            nothing is driving it. That 1 is only the charge we left on
+            C<sub>L</sub>, connected neither to ground nor to the supply, and a
+            node in that state is <strong>floating</strong>, or
+            <strong>high-impedance</strong>, written Hi-Z. A gate has to drive
+            a definite value for every input, so for every row where the
+            pull-down is open, a <strong>pull-up network</strong> has to close
+            and connect Y to V<sub>DD</sub> instead.
+          </p>
           <p>
             What shape should it have? The PDN pulls Y to 0 when AB is true, so
             the PUN must pull Y to 1 whenever <span class="ovl">AB</span> is
