@@ -210,24 +210,26 @@
           <h2 id="inverting-title">Why CMOS Naturally Inverts</h2>
         </div>
 
-        <div class="prose prose--flow">
-          <p style="margin-top: 0;">
-            Let us try the simplest thing the last section suggests. We want
-            Y = AB, so we take two nMOS transistors, which close when their gates
-            are high, and put them in series between the output Y and ground.
-            The capacitor C<sub>L</sub> stands for whatever Y drives, and we
-            start it charged to V<sub>DD</sub>. Drive A and B high and both
-            switches close, a path opens from Y down to ground, and Y discharges
-            to 0. Any other combination leaves at least one switch open, and Y is
-            not pulled anywhere.
-          </p>
+        <!-- The PDN drawing takes the left track and its paragraph the right. -->
+        <div class="split split--media-left" style="align-items: center; margin-top: 0;">
+          <figure class="figure enlarge-xl" style="max-width: 42rem;">
+            <img src="../../assets/introduction-to-physical-design/pdn-example.jpg"
+                 alt="Two nMOS transistors N1 and N2 in series from the output Y down to ground, their gates driven by A and B, with a load capacitor C-L on Y whose initial voltage is V-DD. Beside it, a truth table: Y is 1 for every input pair except A equals 1 and B equals 1, where both transistors are on and Y is 0."
+                 decoding="async" />
+          </figure>
+          <div class="prose">
+            <p style="margin-top: 0;">
+              Let us try the simplest thing the last section suggests. We want
+              Y = AB, so we take two nMOS transistors, which close when their gates
+              are high, and put them in series between the output Y and ground.
+              The capacitor C<sub>L</sub> stands for whatever Y drives, and we
+              start it charged to V<sub>DD</sub>. Drive A and B high and both
+              switches close, a path opens from Y down to ground, and Y discharges
+              to 0. Any other combination leaves at least one switch open, and Y is
+              not pulled anywhere.
+            </p>
+          </div>
         </div>
-
-        <figure class="figure enlarge-xl" style="max-width: 52rem; margin: var(--space-4) auto 0;">
-          <img src="../../assets/introduction-to-physical-design/pdn-example.jpg"
-               alt="Two nMOS transistors N1 and N2 in series from the output Y down to ground, their gates driven by A and B, with a load capacitor C-L on Y whose initial voltage is V-DD. Beside it, a truth table: Y is 1 for every input pair except A equals 1 and B equals 1, where both transistors are on and Y is 0."
-               decoding="async" />
-        </figure>
 
         <div class="prose prose--flow" style="margin-top: var(--space-4);">
           <p style="margin-top: 0;">
@@ -250,10 +252,7 @@
               and connect Y to V<sub>DD</sub> instead.
             </p>
           </div>
-        </div>
-
-        <div class="prose prose--flow" style="margin-top: var(--space-4);">
-          <p style="margin-top: 0;">
+          <p>
             What shape should it have? The PDN pulls Y to 0 when AB is true, so
             the PUN must pull Y to 1 whenever <span class="ovl">AB</span> is
             true, and <strong>De Morgan's law</strong> rewrites that condition in
@@ -264,25 +263,33 @@
             &nbsp;=&nbsp;
             <span class="ovl"><var>A</var></span> + <span class="ovl"><var>B</var></span>
           </p>
-          <p>
-            Read the right-hand side as instructions. The pull-up should close
-            when A is low <em>or</em> B is low. A switch that closes when its
-            input is low is a pMOS, and OR means parallel. So the PUN is two pMOS
-            in parallel between V<sub>DD</sub> and Y. Start C<sub>L</sub> empty
-            this time and read the table: the pull-up charges Y to 1 in exactly
-            the three rows the pull-down left floating, and in the fourth row it
-            is the pull-up that has nothing to say.
-          </p>
         </div>
 
-        <figure class="figure enlarge-xl" style="max-width: 52rem; margin: var(--space-4) auto 0;">
-          <img src="../../assets/introduction-to-physical-design/pun-example.jpg"
-               alt="Two pMOS transistors P1 and P2 in parallel between V-DD and the output Y, their gates driven by A and B, with a load capacitor C-L on Y whose initial voltage is zero. Beside it, a truth table: Y is 1 whenever at least one transistor is on, and 0 only for A equals 1 and B equals 1, where both are off."
-               decoding="async" />
-        </figure>
+        <!-- The PUN drawing, left, with the sentence that reads its table. -->
+        <div class="split split--media-left" style="align-items: center; margin-top: var(--space-4);">
+          <figure class="figure enlarge-xl" style="max-width: 42rem;">
+            <img src="../../assets/introduction-to-physical-design/pun-example.jpg"
+                 alt="Two pMOS transistors P1 and P2 in parallel between V-DD and the output Y, their gates driven by A and B, with a load capacitor C-L on Y whose initial voltage is zero. Beside it, a truth table: Y is 1 whenever at least one transistor is on, and 0 only for A equals 1 and B equals 1, where both are off."
+                 decoding="async" />
+          </figure>
+          <div class="prose">
+            <p style="margin-top: 0;">
+              Read the right-hand side as instructions. The pull-up should close
+              when A is low <em>or</em> B is low. A switch that closes when its
+              input is low is a pMOS, and OR means parallel. So the PUN is two pMOS
+              in parallel between V<sub>DD</sub> and Y. Start C<sub>L</sub> empty
+              this time and read the table: the pull-up charges Y to 1 in exactly
+              the three rows the pull-down left floating, and in the fourth row it
+              is the pull-up that has nothing to say.
+            </p>
+          </div>
+        </div>
 
-        <div class="split split--media-left" style="align-items: start; margin-top: var(--space-5);">
-          <figure class="figure enlarge-xl" style="max-width: 24rem;">
+        <!-- The complete gate on the right, the two paragraphs that check it on
+             the left. The figure stays first in the source so it leads on a
+             phone; the media-right variant swaps the columns on desktop. -->
+        <div class="split split--media-right" style="align-items: center; margin-top: var(--space-5);">
+          <figure class="figure enlarge-xl" style="max-width: 28rem;">
             <img src="../../assets/introduction-to-physical-design/nand2.jpg"
                  alt="NAND2: two pMOS transistors P1 and P2 in parallel between V-DD and the output Y, and two nMOS transistors N1 and N2 in series between Y and ground, A driving P1 and N1, B driving P2 and N2, with the load capacitor C-L on Y."
                  decoding="async" />
@@ -311,43 +318,50 @@
           </div>
         </div>
 
-        <div class="prose prose--flow" style="margin-top: var(--space-4);">
-          <p style="margin-top: 0;">
-            Now the general lesson. An nMOS closes for a high input and connects
-            the output to <em>ground</em>, so whatever the PDN computes arrives
-            at the output upside down. A pMOS closes for a low input and connects
-            the output to the <em>supply</em>, which is the same inversion seen
-            from the other side. A single stage of static CMOS therefore produces
-            the complement of its pull-down function, and that is what it means
-            to call CMOS a naturally <strong>inverting</strong> technology.
-            Y = <span class="ovl">AB</span>, Y = <span class="ovl">A + B</span>
-            and Y = <span class="ovl">A</span> each come out of one stage.
-            Y = AB does not. To build it you build the NAND and follow it with an
-            inverter, and in a real cell library that is exactly what the AND
-            cell is: three transistor pairs, not two.
-          </p>
-          <p>
-            The recipe for any function Y follows directly.
-          </p>
-          <ol>
-            <li>Calculate <span class="ovl">Y</span>.</li>
-            <li>
-              Implement the PDN using nMOS.
-              <ul style="margin: var(--space-2) 0 0; padding: 0 0 0 1.2rem;
-                         background: none; border: 0; box-shadow: none;">
-                <li>AND: connect in series.</li>
-                <li>OR: connect in parallel.</li>
-              </ul>
-            </li>
-            <li>
-              Implement the PUN using pMOS as the dual of the PDN.
-              <ul style="margin: var(--space-2) 0 0; padding: 0 0 0 1.2rem;
-                         background: none; border: 0; box-shadow: none;">
-                <li>Replace series with <em style="color: var(--accent);">parallel</em>.</li>
-                <li>Replace parallel with <em style="color: var(--accent);">series</em>.</li>
-              </ul>
-            </li>
-          </ol>
+        <!-- The recipe on the left, the general lesson on the right. The list
+             is the thing to remember, so it takes the leading column; see
+             .ial-recipe in alu.css for the columns and the phone stack. -->
+        <div class="split ial-recipe" style="margin-top: var(--space-5);">
+          <div class="prose">
+            <p style="margin-top: 0;">
+              The recipe for any function Y follows directly.
+            </p>
+            <ol style="margin-bottom: 0;">
+              <li>Calculate <span class="ovl">Y</span>.</li>
+              <li>
+                Implement the PDN using nMOS.
+                <ul style="margin: var(--space-2) 0 0; padding: 0 0 0 1.2rem;
+                           background: none; border: 0; box-shadow: none;">
+                  <li>AND: connect in series.</li>
+                  <li>OR: connect in parallel.</li>
+                </ul>
+              </li>
+              <li>
+                Implement the PUN using pMOS as the dual of the PDN.
+                <ul style="margin: var(--space-2) 0 0; padding: 0 0 0 1.2rem;
+                           background: none; border: 0; box-shadow: none;">
+                  <li>Replace series with <em style="color: var(--accent);">parallel</em>.</li>
+                  <li>Replace parallel with <em style="color: var(--accent);">series</em>.</li>
+                </ul>
+              </li>
+            </ol>
+          </div>
+          <div class="prose">
+            <p style="margin-top: 0;">
+              Now the general lesson. An nMOS closes for a high input and connects
+              the output to <em>ground</em>, so whatever the PDN computes arrives
+              at the output upside down. A pMOS closes for a low input and connects
+              the output to the <em>supply</em>, which is the same inversion seen
+              from the other side. A single stage of static CMOS therefore produces
+              the complement of its pull-down function, and that is what it means
+              to call CMOS a naturally <strong>inverting</strong> technology.
+              Y = <span class="ovl">AB</span>, Y = <span class="ovl">A + B</span>
+              and Y = <span class="ovl">A</span> each come out of one stage.
+              Y = AB does not. To build it you build the NAND and follow it with an
+              inverter, and in a real cell library that is exactly what the AND
+              cell is: three transistor pairs, not two.
+            </p>
+          </div>
         </div>
       </div>
     </section>

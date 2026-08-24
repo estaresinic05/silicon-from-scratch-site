@@ -624,6 +624,15 @@
   #main-control .mc-split { grid-template-columns: 1fr; }
 }
 
+/* Implementing Arbitrary Logic, "Why CMOS Naturally Inverts": the three-step
+   recipe on the left, the general lesson beside it. The list column is capped
+   so the numbered card stays a card and does not stretch into a banner. */
+.ial-recipe { grid-template-columns: minmax(0, 38rem) minmax(18rem, 1fr); align-items: start; }
+.ial-recipe .prose { max-width: none; }
+@media (max-width: 900px) {
+  .ial-recipe { grid-template-columns: 1fr; }
+}
+
 /* Testing lesson, "Choosing What to Test": the explanatory paragraphs sit on the
    left, the program.mem listing on the right. Top-align them; the listing sizes
    to its own content in the auto track, in a slightly smaller mono so the whole
