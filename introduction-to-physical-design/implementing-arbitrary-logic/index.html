@@ -140,63 +140,50 @@
             to the plainest picture we have of one: a switch. A transistor either
             joins its two ends or it does not, and the gate decides which. Once we
             think of it that way, the two logic operations we have leaned on since
-            the very first lesson turn out to have shapes. They are not just
-            symbols in an expression. They are ways of arranging switches.
+            the very first lesson turn out to have shapes.
           </p>
         </div>
 
-        <!-- Each drawing sits directly above the card that reads it, so the
-             two columns line up: series over "Series is AND", parallel over
-             "Parallel is OR". -->
-        <div class="split" style="grid-template-columns: 1fr 1fr; align-items: stretch;
-                                  margin-top: var(--space-4);">
-          <div class="prose" style="display: flex; flex-direction: column;">
-            <figure class="figure enlarge-xl" style="max-width: 30rem; margin: 0 auto var(--space-3);">
-              <img src="../../assets/introduction-to-physical-design/and-functionality.jpg"
-                   alt="AND functionality: a wire from x to Y broken by two switches in series, labeled A and B, with the equation Y equals x times A B."
-                   decoding="async" />
-            </figure>
-            <div class="term-card" style="flex: 1; margin: 0;">
-              <p class="term-card__title">Series is AND</p>
-              <p>
-                Put two switches one after the other on the same wire, so that
-                whatever is at x has to pass through A and then B to reach Y. That
-                path is complete only when <em>both</em> switches are closed. If
-                either one is open, the wire is broken. Two switches in
-                <strong>series</strong> therefore behave exactly like an AND: Y
-                sees x when A is true and B is true, and not otherwise.
-              </p>
-            </div>
+        <div class="split split--media-left" style="align-items: center; margin-top: var(--space-4);">
+          <figure class="figure enlarge-xl" style="max-width: 30rem;">
+            <img src="../../assets/introduction-to-physical-design/and-functionality.jpg"
+                 alt="AND functionality: a wire from x to Y broken by two switches in series, labeled A and B, with the equation Y equals x times A B."
+                 decoding="async" />
+          </figure>
+          <div class="prose">
+            <p style="margin-top: 0;">
+              Put two switches one after the other on the same wire, so that
+              whatever is at x has to pass through A and then B to reach Y. That
+              path is complete only when <em>both</em> are closed. Two switches
+              in <strong>series</strong> implement Y = AB.
+            </p>
           </div>
-          <div class="prose" style="display: flex; flex-direction: column;">
-            <figure class="figure enlarge-xl" style="max-width: 30rem; margin: 0 auto var(--space-3);">
-              <img src="../../assets/introduction-to-physical-design/or-functionality.jpg"
-                   alt="OR functionality: a wire from x to Y that splits into two branches, one through switch A and one through switch B, then rejoins, with the equation Y equals x times A plus B."
-                   decoding="async" />
-            </figure>
-            <div class="term-card" style="flex: 1; margin: 0;">
-              <p class="term-card__title">Parallel is OR</p>
-              <p>
-                Now put the two switches side by side, each one offering its own
-                route from x to Y. Only one of those routes needs to be closed. If
-                A is closed, x gets through. If B is closed, x gets through. Two
-                switches in <strong>parallel</strong> behave like an OR: Y sees x
-                when A is true or B is true, and is cut off only when both are
-                open.
-              </p>
-            </div>
+        </div>
+
+        <div class="split split--media-right" style="align-items: center; margin-top: var(--space-4);">
+          <div class="prose">
+            <p style="margin-top: 0;">
+              Now put the two switches side by side, each one its own route from
+              x to Y. Only one of those routes needs to be closed for x to get
+              through. Two switches in <strong>parallel</strong> implement
+              Y = A + B.
+            </p>
           </div>
+          <figure class="figure enlarge-xl" style="max-width: 30rem;">
+            <img src="../../assets/introduction-to-physical-design/or-functionality.jpg"
+                 alt="OR functionality: a wire from x to Y that splits into two branches, one through switch A and one through switch B, then rejoins, with the equation Y equals x times A plus B."
+                 decoding="async" />
+          </figure>
         </div>
 
         <div class="prose prose--flow" style="margin-top: var(--space-4);">
           <p style="margin-top: 0;">
             This is the whole trick, and everything else in the lesson is a
-            consequence of it. Any expression made of ANDs and ORs can be drawn as
-            a network of switches, with series for every AND and parallel for
-            every OR, nested as deeply as the expression demands. A term like
-            A&middot;B + C is two switches in series, and that pair in parallel with a
-            third. Hold on to that picture. We are about to find out that silicon
-            adds one twist to it.
+            consequence of it. Any expression made of ANDs and ORs can be drawn
+            as a network of switches, series for every AND and parallel for every
+            OR, nested as deeply as the expression demands. Y = AB + C is two
+            switches in series, and that pair in parallel with a third. Hold on
+            to that picture. Silicon is about to add one twist to it.
           </p>
         </div>
       </div>
@@ -211,14 +198,14 @@
 
         <div class="prose prose--flow">
           <p style="margin-top: 0;">
-            Let us try the simplest thing the last section suggests. We want the
-            function A&middot;B, so we take two nMOS transistors, which close when
-            their gates are high, and put them in series between an output node
-            Y and ground. The capacitor C<sub>L</sub> stands for whatever Y
-            drives, charged to V<sub>DD</sub> to begin with. Drive A high and B high and both switches close, a path opens from Y
-            down to ground, and the node discharges to logic 0. Any other
-            combination leaves at least one switch open, and the node is not
-            pulled anywhere.
+            Let us try the simplest thing the last section suggests. We want
+            Y = AB, so we take two nMOS transistors, which close when their gates
+            are high, and put them in series between the output Y and ground.
+            The capacitor C<sub>L</sub> stands for whatever Y drives, and we
+            start it charged to V<sub>DD</sub>. Drive A and B high and both
+            switches close, a path opens from Y down to ground, and Y discharges
+            to 0. Any other combination leaves at least one switch open, and Y is
+            not pulled anywhere.
           </p>
         </div>
 
@@ -230,58 +217,47 @@
 
         <div class="prose prose--flow" style="margin-top: var(--space-4);">
           <p style="margin-top: 0;">
-            Look at the table, because this is not an AND. The output goes
-            <em>low</em> when both inputs are high, and only then. That is a
-            NAND. Our series pair of nMOS computes the AND we asked for, but
-            uses the answer to pull the output <em>down</em>, so what appears at
-            Y is the AND inverted.
+            Read the table. Y goes <em>low</em> when both inputs are high, and
+            only then. That is not Y = AB, it is Y = <span class="ovl">AB</span>,
+            a NAND. The series pair computes the AND we asked for, but uses the
+            answer to pull Y <em>down</em>, so what appears at the output is the
+            AND inverted.
           </p>
           <div class="term-card">
             <p class="term-card__title">The Floating Node</p>
             <p>
-              There is a second problem, and it is worse. Look at the three rows
-              where Y reads 1. Nothing is driving that 1. It is only the charge
-              we put on C<sub>L</sub> before we started, and it is connected
-              neither to ground nor to the supply. A node in that condition is
-              said to be <strong>floating</strong>, or in a
-              <strong>high-impedance</strong> state, written Hi-Z. The stored
-              charge leaks slowly away, and the next gate along reads a voltage
-              that nobody chose. A logic gate has to produce a definite 1 or a
-              definite 0 for every input, and half of a gate cannot do that.
-            </p>
-            <p>
-              So the pull-down network on its own is not a gate. For every row
-              where the PDN is open, something else has to close and connect Y
-              to V<sub>DD</sub> instead. That something is the pull-up network,
-              and the question is what shape it should have.
+              There is a second problem. In the three rows where Y reads 1,
+              nothing is driving it. That 1 is only the charge we left on
+              C<sub>L</sub>, connected neither to ground nor to the supply, and a
+              node in that state is <strong>floating</strong>, or
+              <strong>high-impedance</strong>, written Hi-Z. A gate has to drive
+              a definite value for every input, so for every row where the
+              pull-down is open, a <strong>pull-up network</strong> has to close
+              and connect Y to V<sub>DD</sub> instead.
             </p>
           </div>
         </div>
 
         <div class="prose prose--flow" style="margin-top: var(--space-4);">
           <p style="margin-top: 0;">
-            We can answer that with algebra. The PDN pulls Y to 0 exactly when
-            A&middot;B is true, so the function our gate produces is
-            Y = <span class="ovl">A&middot;B</span>. The PUN must pull Y to 1
-            in every remaining case, which is to say whenever
-            <span class="ovl">A&middot;B</span> is true, and
-            <strong>De Morgan's law</strong> tells us what that condition looks
-            like when we write it in terms of the inputs themselves:
+            What shape should it have? The PDN pulls Y to 0 when AB is true, so
+            the PUN must pull Y to 1 whenever <span class="ovl">AB</span> is
+            true, and <strong>De Morgan's law</strong> rewrites that condition in
+            terms of the inputs themselves:
           </p>
           <p class="eq" style="text-align: center; font-size: 1.35rem; margin-block: var(--space-3);">
-            <span class="ovl"><var>A</var>&middot;<var>B</var></span>
+            <span class="ovl"><var>A</var><var>B</var></span>
             &nbsp;=&nbsp;
             <span class="ovl"><var>A</var></span> + <span class="ovl"><var>B</var></span>
           </p>
           <p>
-            Read that right-hand side as a set of instructions. It says the
-            pull-up should close when A is low <em>or</em> B is low. A switch that
-            closes when its input is low is a pMOS, and OR means parallel. So the
-            PUN is two pMOS in parallel between V<sub>DD</sub> and Y, one with
-            its gate on A and one with its gate on B. Start C<sub>L</sub> empty
+            Read the right-hand side as instructions. The pull-up should close
+            when A is low <em>or</em> B is low. A switch that closes when its
+            input is low is a pMOS, and OR means parallel. So the PUN is two pMOS
+            in parallel between V<sub>DD</sub> and Y. Start C<sub>L</sub> empty
             this time and read the table: the pull-up charges Y to 1 in exactly
             the three rows the pull-down left floating, and in the fourth row it
-            is the pull-up that has nothing to say. Put the two together.
+            is the pull-up that has nothing to say.
           </p>
         </div>
 
@@ -291,7 +267,7 @@
                decoding="async" />
         </figure>
 
-        <div class="split split--media-left" style="align-items: start; margin-top: var(--space-4);">
+        <div class="split split--media-left" style="align-items: start; margin-top: var(--space-5);">
           <figure class="figure enlarge-xl" style="max-width: 24rem;">
             <img src="../../assets/introduction-to-physical-design/nand2.jpg"
                  alt="NAND2: two pMOS transistors P1 and P2 in parallel between V-DD and the output Y, and two nMOS transistors N1 and N2 in series between Y and ground, A driving P1 and N1, B driving P2 and N2, with the load capacitor C-L on Y."
@@ -299,42 +275,42 @@
           </figure>
           <div class="prose">
             <p style="margin-top: 0;">
-              Check it against every row. With A and B both high, the two pMOS
-              are off and the two nMOS are on, so Y is pulled firmly to ground.
-              With either input low, at least one pMOS is on and the series pair
-              of nMOS is broken, so Y is pulled firmly to V<sub>DD</sub>. There
-              is no input for which both networks are on, so there is never a
-              path straight from supply to ground, and none for which both are
-              off, so Y never floats. This is the <strong>static CMOS
-              NAND</strong>, the same circuit you identified at the end of
-              Transistor Basics.
+              Put the two networks together and check every row. With A and B
+              both high, the two pMOS are off and the two nMOS are on, so Y is
+              pulled firmly to ground. With either input low, at least one pMOS
+              is on and the series pair is broken, so Y is pulled firmly to
+              V<sub>DD</sub>. There is no input for which both networks are on,
+              so there is never a path straight from supply to ground, and none
+              for which both are off, so Y never floats. This is the
+              <strong>static CMOS NAND</strong>, Y = <span class="ovl">AB</span>,
+              the same circuit you identified at the end of Transistor Basics.
             </p>
             <p>
               Notice the shape of the two halves. The PDN is a series pair and
-              the PUN is a parallel pair. That is not a coincidence, it is De
-              Morgan's law drawn in transistors. Every AND in the pull-down
-              becomes an OR in the pull-up, and every OR becomes an AND, so the
-              two networks are always <strong>duals</strong> of each other:
-              where one is series, the other is parallel. Once the PDN is
-              designed, the PUN is written for you.
+              the PUN is a parallel pair. That is De Morgan's law drawn in
+              transistors. Every AND in the pull-down becomes an OR in the
+              pull-up, and every OR becomes an AND, so the two networks are
+              always <strong>duals</strong> of each other: where one is series,
+              the other is parallel. Once the PDN is designed, the PUN is written
+              for you.
             </p>
           </div>
         </div>
 
         <div class="prose prose--flow" style="margin-top: var(--space-4);">
           <p style="margin-top: 0;">
-            Now the general lesson. An nMOS switch closes for a high input and
-            connects the output to <em>ground</em>, so the function the PDN
-            computes always arrives at the output upside down. A pMOS closes for
-            a low input and connects the output to the <em>supply</em>, which is
-            the same inversion seen from the other side. Either way, a single
-            stage of static CMOS produces the complement of whatever its
-            pull-down network computes. This is what it means to say that CMOS
-            is a naturally <strong>inverting</strong> technology. NAND, NOR, and
-            the inverter itself come out of one stage each. AND and OR do not.
-            To build an AND you build a NAND and follow it with an inverter, and
-            in a real cell library that is exactly what the AND cell is: three
-            transistor pairs, not two.
+            Now the general lesson. An nMOS closes for a high input and connects
+            the output to <em>ground</em>, so whatever the PDN computes arrives
+            at the output upside down. A pMOS closes for a low input and connects
+            the output to the <em>supply</em>, which is the same inversion seen
+            from the other side. A single stage of static CMOS therefore produces
+            the complement of its pull-down function, and that is what it means
+            to call CMOS a naturally <strong>inverting</strong> technology.
+            Y = <span class="ovl">AB</span>, Y = <span class="ovl">A + B</span>
+            and Y = <span class="ovl">A</span> each come out of one stage.
+            Y = AB does not. To build it you build the NAND and follow it with an
+            inverter, and in a real cell library that is exactly what the AND
+            cell is: three transistor pairs, not two.
           </p>
           <p>
             The recipe for an arbitrary function follows directly. Write the
@@ -445,7 +421,7 @@
               the only way onward is through D, and the contact past D is the
               output. The pull-down conducts when D and, at the same time, A or
               both of B and C are true, so the gate computes
-              Y = <span class="ovl">D&middot;(A + B&middot;C)</span>.
+              Y = <span class="ovl">D(A + BC)</span>.
             </p>
             <p>
               Now read the orange strip and watch the dual appear. The supply
@@ -494,10 +470,10 @@
           <p class="quiz__q">Reading the stick diagram at the top of this lesson, which function does the gate implement? Choose from one of the four options below.</p>
 
           <div class="quiz__options" role="group" aria-label="Answer choices">
-            <button class="quiz__opt" type="button" data-hint="Look at the pull-down network again. Is D in series with the rest, or in parallel with it?"><span class="eq"><var>Y</var> = <span class="ovl"><var>D</var> + <var>A</var>&middot;<var>B</var>&middot;<var>C</var></span></span></button>
-            <button class="quiz__opt" type="button" data-correct="true"><span class="eq"><var>Y</var> = <span class="ovl"><var>D</var>&middot;(<var>A</var> + <var>B</var>&middot;<var>C</var>)</span></span></button>
-            <button class="quiz__opt" type="button" data-hint="The pull-down network pulls Y to ground. A single stage of CMOS always inverts."><span class="eq"><var>Y</var> = <var>D</var>&middot;(<var>A</var> + <var>B</var>&middot;<var>C</var>)</span></button>
-            <button class="quiz__opt" type="button" data-hint="Follow the contacts on the green strip once more. Which transistor does the output sit beyond?"><span class="eq"><var>Y</var> = <span class="ovl"><var>A</var>&middot;(<var>B</var> + <var>C</var>&middot;<var>D</var>)</span></span></button>
+            <button class="quiz__opt" type="button" data-hint="Look at the pull-down network again. Is D in series with the rest, or in parallel with it?"><span class="eq"><var>Y</var> = <span class="ovl"><var>D</var> + <var>A</var><var>B</var><var>C</var></span></span></button>
+            <button class="quiz__opt" type="button" data-correct="true"><span class="eq"><var>Y</var> = <span class="ovl"><var>D</var>(<var>A</var> + <var>B</var><var>C</var>)</span></span></button>
+            <button class="quiz__opt" type="button" data-hint="The pull-down network pulls Y to ground. A single stage of CMOS always inverts."><span class="eq"><var>Y</var> = <var>D</var>(<var>A</var> + <var>B</var><var>C</var>)</span></button>
+            <button class="quiz__opt" type="button" data-hint="Follow the contacts on the green strip once more. Which transistor does the output sit beyond?"><span class="eq"><var>Y</var> = <span class="ovl"><var>A</var>(<var>B</var> + <var>C</var><var>D</var>)</span></span></button>
           </div>
 
           <p class="quiz__feedback" role="status" aria-live="polite"></p>
