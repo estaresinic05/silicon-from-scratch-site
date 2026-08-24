@@ -144,35 +144,36 @@
           </p>
         </div>
 
-        <div class="split split--media-left" style="align-items: center; margin-top: var(--space-4);">
-          <figure class="figure enlarge-xl" style="max-width: 30rem;">
-            <img src="../../assets/introduction-to-physical-design/and-functionality.jpg"
+        <!-- The two switch arrangements as a matched pair, the same way the
+             n-type and p-type symbols sit together on Transistor Basics: bare
+             squircle art side by side, a centred caption under each carrying
+             the one sentence that reads it. -->
+        <div class="split" style="grid-template-columns: 1fr 1fr; align-items: start;
+                                  max-width: 58rem; margin-inline: auto;
+                                  margin-top: var(--space-4);">
+          <figure class="figure enlarge-xl"
+                  style="background: none; border: 0; box-shadow: none; padding: 0; margin: 0;">
+            <img class="schematic-art"
+                 src="../../assets/introduction-to-physical-design/and-functionality.jpg"
                  alt="AND functionality: a wire from x to Y broken by two switches in series, labeled A and B, with the equation Y equals x times A B."
                  decoding="async" />
+            <figcaption class="schematic-cap">
+              One after the other on the same wire, so x reaches Y only when
+              <em>both</em> are closed. Switches in <strong>series</strong>
+              implement Y = AB.
+            </figcaption>
           </figure>
-          <div class="prose">
-            <p style="margin-top: 0;">
-              Put two switches one after the other on the same wire, so that
-              whatever is at x has to pass through A and then B to reach Y. That
-              path is complete only when <em>both</em> are closed. Two switches
-              in <strong>series</strong> implement Y = AB.
-            </p>
-          </div>
-        </div>
-
-        <div class="split split--media-right" style="align-items: center; margin-top: var(--space-4);">
-          <div class="prose">
-            <p style="margin-top: 0;">
-              Now put the two switches side by side, each one its own route from
-              x to Y. Only one of those routes needs to be closed for x to get
-              through. Two switches in <strong>parallel</strong> implement
-              Y = A + B.
-            </p>
-          </div>
-          <figure class="figure enlarge-xl" style="max-width: 30rem;">
-            <img src="../../assets/introduction-to-physical-design/or-functionality.jpg"
+          <figure class="figure enlarge-xl"
+                  style="background: none; border: 0; box-shadow: none; padding: 0; margin: 0;">
+            <img class="schematic-art"
+                 src="../../assets/introduction-to-physical-design/or-functionality.jpg"
                  alt="OR functionality: a wire from x to Y that splits into two branches, one through switch A and one through switch B, then rejoins, with the equation Y equals x times A plus B."
                  decoding="async" />
+            <figcaption class="schematic-cap">
+              Side by side, each its own route, so x reaches Y when
+              <em>either</em> is closed. Switches in <strong>parallel</strong>
+              implement Y = A + B.
+            </figcaption>
           </figure>
         </div>
 
