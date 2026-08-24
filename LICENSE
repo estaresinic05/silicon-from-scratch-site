@@ -21,9 +21,11 @@ for commentary or review with attribution and a link.
 
 Some material is used under its owners' terms and remains theirs: processor
 die photography by Fritzchens Fritz (CC0 1.0); figures adapted from Patterson
-and Hennessy, Computer Organization and Design, RISC-V Edition; stock imagery
-credited where it appears; GSAP, loaded from a CDN under its own license; and
-Three.js, vendored under meet-the-processor/vendor/ under the MIT License.
+and Hennessy, Computer Organization and Design, RISC-V Edition; GSAP, loaded
+from a CDN under its own license; Three.js, vendored under
+meet-the-processor/vendor/ under the MIT License; and the Geist and JetBrains
+Mono typefaces, self-hosted under assets/fonts/ under the SIL Open Font
+License.
 
 For permission, open an issue on this repository or contact the author
 through https://github.com/estaresinic05.

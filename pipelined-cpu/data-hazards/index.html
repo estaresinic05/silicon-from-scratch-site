@@ -50,10 +50,13 @@
        icon sized to a multiple of 48px when a page declares several. -->
   <link rel="apple-touch-icon" sizes="480x480" href="../../assets/home/logo-icon.png" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@400;500&display=swap"
-        rel="stylesheet" />
+  <!-- Fonts, self-hosted: Geist (display + body), JetBrains Mono (labels/code). -->
+  <!-- Preload the Geist Latin subset (the face every heading and every line
+       of body copy uses) so text paints in the right font on first load
+       instead of flashing the system fallback while the webfont downloads. -->
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+        href="../../assets/fonts/geist-latin.woff2" />
+  <link rel="stylesheet" href="../../styles/fonts.css" />
 
   <!-- Shared site styles, then the ALU project components (this page lives at
        /pipelined-cpu/data-hazards/, two levels down). -->

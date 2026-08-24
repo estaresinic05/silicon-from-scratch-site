@@ -81,16 +81,13 @@
   }
   </script>
 
-  <!-- Google Fonts: Geist (display + body), JetBrains Mono (labels/code) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Fonts, self-hosted: Geist (display + body), JetBrains Mono (labels/code). -->
   <!-- Preload the Geist Latin subset (the face every heading and every line
        of body copy uses) so text paints in the right font on first load
        instead of flashing the system fallback while the webfont downloads. -->
   <link rel="preload" as="font" type="font/woff2" crossorigin
-        href="https://fonts.gstatic.com/s/geist/v5/gyByhwUxId8gMEwcGFU.woff2" />
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@400;500&display=swap"
-        rel="stylesheet" />
+        href="assets/fonts/geist-latin.woff2" />
+  <link rel="stylesheet" href="styles/fonts.css" />
 
   <!-- Site styles (relative path — domain-ready) -->
   <link rel="stylesheet" href="styles/main.css" />

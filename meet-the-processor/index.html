@@ -33,12 +33,13 @@
      stylesheet and then loaded neither, so every label on it had been quietly
      rendering in a system fallback. "Self-contained" meant no shared CSS, not
      no webfonts. -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Fonts, self-hosted: Geist (display + body), JetBrains Mono (labels/code). -->
+<!-- Preload the Geist Latin subset (the face every heading and every line
+     of body copy uses) so text paints in the right font on first load
+     instead of flashing the system fallback while the webfont downloads. -->
 <link rel="preload" as="font" type="font/woff2" crossorigin
-      href="https://fonts.gstatic.com/s/geist/v5/gyByhwUxId8gMEwcGFU.woff2">
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet">
+      href="../assets/fonts/geist-latin.woff2" />
+<link rel="stylesheet" href="../styles/fonts.css" />
 
 <!-- The shared project-directory drawer. This is the ONE piece of the site's
      CSS this page takes; it lives in its own file precisely so this page can
