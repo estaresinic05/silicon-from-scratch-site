@@ -134,72 +134,73 @@
           <h2 id="series-parallel-title">Switches in Series and in Parallel</h2>
         </div>
 
-        <div class="prose prose--flow">
-          <p style="margin-top: 0;">
-            Before we build anything out of transistors, it is worth stepping back
-            to the plainest picture we have of one: a switch. A transistor either
-            joins its two ends or it does not, and the gate decides which. Once we
-            think of it that way, the two logic operations we have leaned on since
-            the very first lesson turn out to have shapes.
-          </p>
-        </div>
-
-        <!-- The two switch arrangements as one widget: a single card, two
-             rows, each drawing on the left with the sentence that reads it on
-             the right, and a hairline between the rows. .sw-pair__row is a
-             two-column grid here and stacks on a phone (see mobile.css §7). -->
-        <div class="term-card sw-pair" style="max-width: 58rem; margin-inline: auto; padding: 0;">
-          <div class="sw-pair__row"
-               style="display: grid; grid-template-columns: minmax(0, 20rem) 1fr;
-                      gap: var(--space-4); align-items: center;
-                      padding: var(--space-4);">
-            <figure class="figure enlarge-xl"
-                    style="background: none; border: 0; box-shadow: none; padding: 0; margin: 0;">
-              <img class="schematic-art"
-                   src="../../assets/introduction-to-physical-design/and-functionality.jpg"
-                   alt="AND functionality: a wire from x to Y broken by two switches in series, labeled A and B, with the equation Y equals x times A B."
-                   decoding="async" />
-            </figure>
-            <div class="prose">
-              <p style="margin: 0;">
-                Put two switches one after the other on the same wire, so that
-                whatever is at x has to pass through A and then B to reach Y.
-                That path is complete only when <em>both</em> are closed.
-                Switches in <strong>series</strong> implement Y = AB.
-              </p>
+        <!-- The switch widget hangs to the left of the section's prose. The
+             card is one .term-card with two rows, each drawing beside the
+             sentence that reads it, a hairline between them. .sw-pair__row is a
+             two-column grid here and stacks on a phone (see mobile.css §7);
+             the outer .split stacks there too, card first. -->
+        <div class="split split--media-left sw-split"
+             style="grid-template-columns: minmax(0, 58rem) minmax(18rem, 1fr);
+                    align-items: center; margin-top: 0;">
+          <div class="term-card sw-pair" style="margin: 0; padding: 0;">
+            <div class="sw-pair__row"
+                 style="display: grid; grid-template-columns: minmax(0, 20rem) 1fr;
+                        gap: var(--space-4); align-items: center;
+                        padding: var(--space-4);">
+              <figure class="figure enlarge-xl"
+                      style="background: none; border: 0; box-shadow: none; padding: 0; margin: 0;">
+                <img class="schematic-art"
+                     src="../../assets/introduction-to-physical-design/and-functionality.jpg"
+                     alt="AND functionality: a wire from x to Y broken by two switches in series, labeled A and B, with the equation Y equals x times A B."
+                     decoding="async" />
+              </figure>
+              <div class="prose">
+                <p style="margin: 0;">
+                  One after the other on the same wire, so x reaches Y only when
+                  <em>both</em> are closed. Switches in <strong>series</strong>
+                  implement Y = AB.
+                </p>
+              </div>
+            </div>
+            <div class="sw-pair__row"
+                 style="display: grid; grid-template-columns: minmax(0, 20rem) 1fr;
+                        gap: var(--space-4); align-items: center;
+                        padding: var(--space-4);
+                        border-top: 1px solid var(--hairline);">
+              <figure class="figure enlarge-xl"
+                      style="background: none; border: 0; box-shadow: none; padding: 0; margin: 0;">
+                <img class="schematic-art"
+                     src="../../assets/introduction-to-physical-design/or-functionality.jpg"
+                     alt="OR functionality: a wire from x to Y that splits into two branches, one through switch A and one through switch B, then rejoins, with the equation Y equals x times A plus B."
+                     decoding="async" />
+              </figure>
+              <div class="prose">
+                <p style="margin: 0;">
+                  Side by side, each its own route, so x reaches Y when
+                  <em>either</em> is closed. Switches in <strong>parallel</strong>
+                  implement Y = A + B.
+                </p>
+              </div>
             </div>
           </div>
-          <div class="sw-pair__row"
-               style="display: grid; grid-template-columns: minmax(0, 20rem) 1fr;
-                      gap: var(--space-4); align-items: center;
-                      padding: var(--space-4); border-top: 1px solid var(--hairline);">
-            <figure class="figure enlarge-xl"
-                    style="background: none; border: 0; box-shadow: none; padding: 0; margin: 0;">
-              <img class="schematic-art"
-                   src="../../assets/introduction-to-physical-design/or-functionality.jpg"
-                   alt="OR functionality: a wire from x to Y that splits into two branches, one through switch A and one through switch B, then rejoins, with the equation Y equals x times A plus B."
-                   decoding="async" />
-            </figure>
-            <div class="prose">
-              <p style="margin: 0;">
-                Now put the two switches side by side, each one its own route
-                from x to Y. Only one of those routes needs to be closed for x
-                to get through. Switches in <strong>parallel</strong> implement
-                Y = A + B.
-              </p>
-            </div>
-          </div>
-        </div>
 
-        <div class="prose prose--flow" style="margin-top: var(--space-4);">
-          <p style="margin-top: 0;">
-            This is the whole trick, and everything else in the lesson is a
-            consequence of it. Any expression made of ANDs and ORs can be drawn
-            as a network of switches, series for every AND and parallel for every
-            OR, nested as deeply as the expression demands. Y = AB + C is two
-            switches in series, and that pair in parallel with a third. Hold on
-            to that picture. Silicon is about to add one twist to it.
-          </p>
+          <div class="prose">
+            <p style="margin-top: 0;">
+              Before we build anything out of transistors, it is worth stepping
+              back to the plainest picture we have of one: a switch. A transistor
+              either joins its two ends or it does not, and the gate decides
+              which. Once we think of it that way, the two logic operations we
+              have leaned on since the very first lesson turn out to have shapes.
+            </p>
+            <p>
+              This is the whole trick, and everything else in the lesson is a
+              consequence of it. Any expression made of ANDs and ORs can be drawn
+              as a network of switches, series for every AND and parallel for
+              every OR, nested as deeply as the expression demands. Y = AB + C is
+              two switches in series, and that pair in parallel with a third.
+              Hold on to that picture. Silicon is about to add one twist to it.
+            </p>
+          </div>
         </div>
       </div>
     </section>
