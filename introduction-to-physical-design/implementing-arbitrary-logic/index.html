@@ -323,10 +323,7 @@
              .ial-recipe in alu.css for the columns and the phone stack. -->
         <div class="split ial-recipe" style="margin-top: var(--space-5);">
           <div class="prose">
-            <p style="margin-top: 0;">
-              The recipe for any function Y follows directly.
-            </p>
-            <ol style="margin-bottom: 0;">
+            <ol style="margin: 0;">
               <li>Calculate <span class="ovl">Y</span>.</li>
               <li>
                 Implement the PDN using nMOS.
@@ -359,7 +356,8 @@
               and Y = <span class="ovl">A</span> each come out of one stage.
               Y = AB does not. To build it you build the NAND and follow it with an
               inverter, and in a real cell library that is exactly what the AND
-              cell is: three transistor pairs, not two.
+              cell is: three transistor pairs, not two. We can follow the three
+              steps at left to implement any arbitrary logic function, Y.
             </p>
           </div>
         </div>
