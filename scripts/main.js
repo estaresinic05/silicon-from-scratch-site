@@ -194,7 +194,7 @@
         ["Transistor Basics", "introduction-to-physical-design/transistor-basics/"],
         ["Implementing Arbitrary Logic and Stick Diagrams", "introduction-to-physical-design/implementing-arbitrary-logic/"],
         ["Standard Cells and the Library", "coming-soon/"],
-        ["Timing and Static Timing Analysis", "coming-soon/"],
+        ["Setup, Hold and Timing Closure", "coming-soon/"],
         ["The Physical Design Flow", "coming-soon/"]
       ], [
         { src: "assets/introduction-to-physical-design/die-routed.jpg",
