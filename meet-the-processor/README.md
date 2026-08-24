@@ -912,8 +912,8 @@ Two deliberate departures from reality, both stated in the UI:
 
 ## Assets
 
-Textures in `assets/` are downscaled crops of the reference photography in
-`../../../cpu-model-hunt/reference-images` (outside this repo):
+Textures in `assets/` are downscaled crops of the source photography, which
+is kept outside this repo:
 
 | File | Source | Used for |
 |------|--------|----------|

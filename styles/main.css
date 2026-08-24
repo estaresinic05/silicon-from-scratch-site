@@ -1912,98 +1912,6 @@ main section[id] { scroll-margin-top: 5rem; }
 }
 
 /* ------------------------------------------------------------------ *
-   8b. THE CHIP — a CPU with a subtle, scroll-driven arc (Phase 3)
-   The model lives in a normal-flow canvas inside .cpu-stage__viewport, so the
-   page scrolls straight through (no pinning, no overlay). scripts/cpu-hero.js
-   maps the section's progress through the viewport to a gentle zoom + a few
-   degrees of rotation that peak when the section is centered. The static emblem
-   is both the loading state and the no-WebGL / reduced-motion fallback.
- * ------------------------------------------------------------------ */
-.cpu-stage {
-  padding-block: var(--space-7);
-  border-top: 1px solid var(--hairline);
-}
-.kicker--center { justify-content: center; }   /* center the kicker tick + text */
-.cpu-stage h2 { margin-bottom: var(--space-2); }
-.cpu-stage__lead {
-  color: var(--soft-ink);
-  font-size: 1.25rem;
-  max-width: 42ch;
-  margin: var(--space-2) 0 0;
-}
-
-/* Two columns: text on the left, the two rendering stages on the right. */
-.cpu-stage__layout {
-  position: relative;                  /* the canvas overlay positions against this */
-  display: flex;
-  align-items: center;
-  gap: var(--space-5);
-  text-align: left;
-}
-.cpu-stage__text {
-  flex: 0 0 36%;
-  max-width: 36%;
-  position: relative;                  /* keep text in the same stacking context */
-  z-index: 1;                          /* canvas (z-index 2) overlaps it */
-}
-
-/* Reserved-height box on the right. It holds nothing but the fallback emblem
-   and reserves the stage height so the async model load causes no layout shift;
-   the actual chips render in the shared canvas overlay above. */
-.cpu-stage__stage {
-  position: relative;
-  flex: 1;
-  min-width: 0;                        /* let flex children shrink below content */
-  height: min(60vh, 520px);
-}
-
-/* One transparent canvas spanning the whole layout (text + stage). Both chips
-   render into it, so there's no clip seam between them and they can overlap the
-   text. pointer-events: none keeps the text beneath it selectable. */
-.cpu-stage__canvas {
-  position: absolute;
-  inset: 0;
-  z-index: 2;                          /* layer the chips above the text + emblem */
-  width: 100% !important;
-  height: 100% !important;
-  pointer-events: none;
-  opacity: 0;                          /* fades in once the model is ready */
-  transition: opacity 0.6s ease;
-  will-change: transform;
-}
-html.cpu-ready .cpu-stage__canvas { opacity: 1; }
-
-/* Static fallback emblem — centered in the stage box. It is the loading state
-   and the standin whenever the 3D can't run; hidden once the model is ready. */
-.cpu-stage__fallback {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: var(--accent);
-  opacity: 0.85;
-}
-.cpu-stage__fallback svg { width: min(40vmin, 220px); height: auto; }
-html.cpu-ready .cpu-stage__fallback { display: none; }
-
-@media (max-width: 900px) {
-  .cpu-stage__lead { font-size: 1.05rem; }
-  /* Stack: text above, stage below. `align-items: stretch` keeps both children
-     full-width — without it the stage box (whose only content is the absolutely
-     positioned canvas + emblem) would collapse to zero width, leaving the
-     re-mounted canvas with nothing to render into. */
-  .cpu-stage__layout { flex-direction: column; align-items: stretch; gap: var(--space-3); }
-  .cpu-stage__text { flex-basis: auto; max-width: none; }
-  /* `flex: none` is essential: the base rule's `flex: 1` becomes flex-basis:0%
-     in a column and would override the height below, collapsing the box to 0px
-     (canvas + emblem are absolute, so they add no intrinsic height) — which left
-     the re-mounted canvas with zero height and nothing to render. The height is
-     kept tight (wide, short band) so the side-by-side chips fill it with little
-     blank space above/below; cpu-hero.js's MOBILE camDist is tuned to match. */
-  .cpu-stage__stage { flex: none; height: min(40vh, 220px); }
-}
-
-/* ------------------------------------------------------------------ *
    9. THE IDEA
  * ------------------------------------------------------------------ */
 .idea .prose p {
@@ -2543,7 +2451,6 @@ code.ctrl-sig,
   background: var(--bg);
 }
 .theme-dark .section,
-.theme-dark .cpu-stage,
 .theme-dark .epigraph,
 .theme-dark .footer { border-top: 0; }
 

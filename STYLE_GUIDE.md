@@ -1510,9 +1510,3 @@ Where the die descent was developed. Self-contained, linked from nothing, and
 `noindex`. Its `DESIGN.md` / `README.md` are the ancestors of the ones now in
 `meet-the-processor/` — read the shipped ones instead unless you want the history.
 
-### Dormant: `scripts/cpu-hero.js`
-
-A Three.js two-chip turntable for the home hero, driven by ScrollTrigger with a
-static emblem fallback. **No page currently loads it** (only `styles/main.css`
-still references its classes). Leave it alone or finish wiring it; don't treat it
-as a live pattern.

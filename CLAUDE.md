@@ -11,8 +11,8 @@ touching.
 A static educational site teaching how modern processors are designed and built,
 from a single transistor up to a pipelined CPU. **20 pages, no build step, no
 framework, no package manager** — hand-written HTML, three shared stylesheets,
-and vanilla JavaScript. GSAP loads from a CDN with an SRI hash; Three.js loads
-from a CDN via an import map on the two WebGL pages. Deployed on GitHub Pages at
+and vanilla JavaScript. GSAP loads from a CDN with an SRI hash; Three.js is
+vendored under `meet-the-processor/vendor/` and loaded through an import map. Deployed on GitHub Pages at
 **siliconfromscratch.com** (see `CNAME`). The hardware designs themselves live in
 a *separate* repository, `estaresinic05/Silicon-From-Scratch` — do not confuse
 the two.
